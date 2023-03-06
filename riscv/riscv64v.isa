@@ -1,0 +1,21 @@
+// This file contains the ISA description for the RiscV64GV architecture.
+
+// First disasm field is 18 char wide and left justified.
+disasm widths = {-18};
+
+int global_v_latency = 0;
+
+isa RiscV64GV {
+  namespace mpact::sim::riscv::isa64v;
+  slots { riscv64gv; }
+}
+
+#include "riscv/riscv64g.isa"
+#include "riscv/riscv_vector.isa"
+
+slot riscv64gv : riscv64g, riscv_vector {
+  default size = 4;
+  default opcode =
+    disasm: "Illegal instruction at 0x%(@:08x)",
+    semfunc: "&RiscVIllegalInstruction";
+}

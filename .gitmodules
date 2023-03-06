@@ -1,0 +1,4 @@
+[submodule "external/mpact-sim"]
+	path = external/mpact-sim
+	url = https://mpact.googlesource.com/mpact-sim
+	branch = main

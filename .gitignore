@@ -1,0 +1,6 @@
+bazel-bin
+bazel-mpact-riscv
+bazel-out
+bazel-testlogs
+.vscode
+.bazelrc

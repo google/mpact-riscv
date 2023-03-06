@@ -1,0 +1,15 @@
+// RiscV 32 bit G + V instruction decoder.
+decoder RiscV32GV {
+  namespace mpact::sim::riscv::encoding;
+  opcode_enum = "isa32v::OpcodeEnum";
+  includes {
+    #include "riscv/riscv32gv_decoder.h"
+  }
+  // Group these instruction groups in the same decoder function.
+  RiscV32GV = {RiscVGInst32, RiscVVInst32};
+  // Keep this separate (different base format).
+  RiscVCInst16;
+};
+
+#include "riscv/riscv32g.bin_fmt"
+#include "riscv/riscv_vector.bin_fmt"

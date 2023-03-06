@@ -1,0 +1,844 @@
+// This file contains the ISA description for the RiscV32G architecture.
+
+includes {
+#include "absl/functional/bind_front.h"
+}
+
+// First disasm field is 18 char wide and left justified.
+disasm widths = {-18};
+
+int global_latency = 0;
+
+isa RiscV32G {
+  namespace mpact::sim::riscv::isa32;
+  slots { riscv32g; }
+}
+
+// Basic integer ALU instructions, part of the RiscV 32i subset.
+slot riscv32i {
+  includes {
+    #include "riscv/riscv_i_instructions.h"
+  }
+  default size = 4;
+  default latency = global_latency;
+  resources TwoOp = { next_pc, rs1 : rd[..rd]};
+  resources ThreeOp = { next_pc, rs1, rs2 : rd[..rd]};
+  opcodes {
+    addi{: rs1, I_imm12 : rd},
+      resources: TwoOp,
+      disasm: "addi", "%rd, %rs1, %I_imm12",
+      semfunc: "&RV32::RiscVIAdd";
+    slti{: rs1, I_imm12 : rd},
+      resources: TwoOp,
+      disasm: "slti", "%rd, %rs1, %I_imm12",
+      semfunc: "&RV32::RiscVISlt";
+    sltiu{: rs1, I_imm12 : rd},
+      resources: TwoOp,
+      disasm: "sltiu", "%rd, %rs1, %I_imm12",
+      semfunc: "&RV32::RiscVISltu";
+    andi{: rs1, I_imm12 : rd},
+      resources: TwoOp,
+      disasm: "andi", "%rd, %rs1, %I_imm12",
+      semfunc: "&RV32::RiscVIAnd";
+    ori{: rs1, I_imm12 : rd},
+      resources: TwoOp,
+      disasm: "ori", "%rd, %rs1, %I_imm12",
+      semfunc: "&RV32::RiscVIOr";
+    xori{: rs1, I_imm12 : rd},
+      resources: TwoOp,
+      disasm: "xori", "%rd, %rs1, %I_imm12",
+      semfunc: "&RV32::RiscVIXor";
+    slli{: rs1, I_uimm5 : rd},
+      resources: TwoOp,
+      disasm: "slli", "%rd, %rs1, 0x%(I_uimm5:x)",
+      semfunc: "&RV32::RiscVISll";
+    srli{: rs1, I_uimm5 : rd},
+      resources: TwoOp,
+      disasm: "srli", "%rd  %rs1, 0x%(I_uimm5:x)",
+      semfunc: "&RV32::RiscVISrl";
+    srai{: rs1, I_uimm5 : rd},
+      resources: TwoOp,
+      disasm: "srai", "%rd, %rs1, 0x%(I_uimm5:x)",
+      semfunc: "&RV32::RiscVISra";
+    lui{: U_imm20 : rd},
+      resources: { next_pc : rd[0..]},
+      disasm: "lui", "%rd, 0x%(U_imm20:08x)",
+      semfunc: "&RV32::RiscVILui";
+    auipc{: U_imm20 : rd},
+      resources: { next_pc : rd[0..]},
+      disasm: "auipc", "%rd, 0x%(U_imm20:08x)",
+      semfunc: "&RV32::RiscVIAuipc";
+    add{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "add", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVIAdd";
+    slt{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "slt", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVISlt";
+    sltu{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "sltu", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVISltu";
+    and{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "and", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVIAnd";
+    or{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "or", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVIOr";
+    xor{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "xor", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVIXor";
+    sll{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "sll", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVISll";
+    srl{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "srl", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVISrl";
+    sub{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "sub", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVISub";
+    sra{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "sra", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVISra";
+    nop{},
+      disasm: "nop",
+      semfunc: "&RiscVINop";
+    hint{},
+      disasm: "hint",
+      semfunc: "&RiscVINop";
+    jal{: J_imm20 : next_pc, rd},
+      resources: { next_pc : next_pc[0..], rd[0..]},
+      disasm: "jal", "%rd, %(@+J_imm20:08x)",
+      semfunc: "&RV32::RiscVIJal";
+    jalr{: rs1, J_imm12 : next_pc, rd},
+      resources: { next_pc, rs1 : next_pc[0..], rd[0..]},
+      disasm: "jalr", "%rd, %rs1, %J_imm12",
+      semfunc: "&RV32::RiscVIJalr";
+    j{: J_imm20 : next_pc, rd},
+      resources: { next_pc : next_pc[0..], rd[0..]},
+      disasm: "j", "%(@+J_imm20:08x)",
+      semfunc: "&RV32::RiscVIJal";
+    jr{: rs1, J_imm12 : next_pc, rd},
+      resources: { next_pc, rs1 : next_pc[0..], rd[0..]},
+      disasm: "jr", "%rs1, %J_imm12",
+      semfunc: "&RV32::RiscVIJalr";
+    beq{: rs1, rs2, B_imm12 : next_pc},
+      resources: { next_pc, rs1, rs2 : next_pc[0..]},
+      disasm: "beq", "%rs1, %rs2, %(@+B_imm12:08x)",
+      semfunc: "&RV32::RiscVIBeq";
+    bne{: rs1, rs2, B_imm12 : next_pc},
+      resources: { next_pc, rs1, rs2 : next_pc[0..]},
+      disasm: "bne", "%rs1, %rs2, %(@+B_imm12:08x)",
+      semfunc: "&RV32::RiscVIBne";
+    blt{: rs1, rs2, B_imm12 : next_pc},
+      resources: { next_pc, rs1, rs2 : next_pc[0..]},
+      disasm: "blt", "%rs1, %rs2, %(@+B_imm12:08x)",
+      semfunc: "&RV32::RiscVIBlt";
+    bltu{: rs1, rs2, B_imm12 : next_pc},
+      resources: { next_pc, rs1, rs2 : next_pc[0..]},
+      disasm: "bltu", "%rs1, %rs2, %(@+B_imm12:08x)",
+      semfunc: "&RV32::RiscVIBltu";
+    bge{: rs1, rs2, B_imm12 : next_pc},
+      resources: { next_pc, rs1, rs2 : next_pc[0..]},
+      disasm: "bge", "%rs1, %rs2, %(@+B_imm12:08x)",
+      semfunc: "&RV32::RiscVIBge";
+    bgeu{: rs1, rs2, B_imm12 : next_pc},
+      resources: { next_pc, rs1, rs2 : next_pc[0..]},
+      disasm: "bgeu", "%rs1, %rs2, %(@+B_imm12:08x)",
+      semfunc: "&RV32::RiscVIBgeu";
+    lw{(: rs1, I_imm12), (: : rd)},
+      resources: { next_pc, rs1 : rd[0..]},
+      disasm: "lw", "%rd, %I_imm12(%rs1)",
+      semfunc: "&RV32::RiscVILw", "&RV32::RiscVILwChild";
+    lh{(: rs1, I_imm12 :), (: : rd)},
+      resources: { next_pc, rs1 : rd[0..]},
+      disasm: "lh", "%rd, %I_imm12(%rs1)",
+      semfunc: "&RV32::RiscVILh", "&RV32::RiscVILhChild";
+    lhu{(: rs1, I_imm12 :), (: : rd)},
+      resources: { next_pc, rs1 : rd[0..]},
+      disasm: "lhu", "%rd, %I_imm12(%rs1)",
+      semfunc: "&RV32::RiscVILhu", "&RV32::RiscVILhuChild";
+    lb{(: rs1, I_imm12 :), (: : rd)},
+      resources: { next_pc, rs1 : rd[0..]},
+      disasm: "lb", "%rd, %I_imm12(%rs1)",
+      semfunc: "&RV32::RiscVILb", "&RV32::RiscVILbChild";
+    lbu{(: rs1, I_imm12 :), (: : rd)},
+      resources: { next_pc, rs1 : rd[0..]},
+      disasm: "lbu", "%rd, %I_imm12(%rs1)",
+      semfunc: "&RV32::RiscVILbu", "&RV32::RiscVILbuChild";
+    sw{: rs1, S_imm12, rs2 : },
+      resources: { next_pc, rs1, rs2 : },
+      disasm: "sw", "%rs2, %S_imm12(%rs1)",
+      semfunc: "&RV32::RiscVISw";
+    sh{: rs1, S_imm12, rs2 : },
+      resources: { next_pc, rs1, rs2 : },
+      disasm: "sh", "%rs2, %S_imm12(%rs1)",
+      semfunc: "&RV32::RiscVISh";
+    sb{: rs1, S_imm12, rs2 : },
+      resources: { next_pc, rs1, rs2 : },
+      disasm: "sb", "%rs2, %S_imm12(%rs1)",
+      semfunc: "&RV32::RiscVISb";
+    fence{: I_imm12 : },
+      disasm: "fence",
+      semfunc: "&RiscVIFence";
+    ecall{},
+      disasm: "ecall",
+      semfunc: "&RiscVIEcall";
+    ebreak{},
+      disasm: "ebreak",
+      semfunc: "&RiscVIEbreak";
+  }
+}
+
+// Privileged instructions.
+slot privileged {
+  includes {
+    #include "riscv/riscv_priv_instructions.h"
+  }
+  default size = 4;
+  default latency = global_latency;
+  opcodes {
+    uret{: : next_pc},
+      disasm: "uret",
+      semfunc: "&RV32::RiscVPrivURet";
+    sret{: : next_pc},
+      disasm: "sret",
+      semfunc: "&RV32::RiscVPrivSRet";
+    mret{: : next_pc},
+      disasm: "mret",
+      semfunc: "&RV32::RiscVPrivMRet";
+    wfi{},
+      disasm: "wfi",
+      semfunc: "&RiscVPrivWfi";
+    // The sfence instruction has 4 behaviors depending on if rs1 and/or rs2
+    // are 0. These behaviors are split into 4 instructions.
+    sfence_vma_zz{: rs1, rs2},
+      resources: {},
+      disasm: "sfence.vma", "%rs1, %rs2",
+      semfunc: "&RiscVPrivSFenceVmaZZ";
+    sfence_vma_zn{: rs1, rs2},
+      resources: {rs2},
+      disasm: "sfence.vma", "%rs1, %rs2",
+      semfunc: "&RiscVPrivSFenceVmaZN";
+    sfence_vma_nz{: rs1, rs2},
+      resources: { rs1 },
+      disasm: "sfence.vma", "%rs1, %rs2",
+      semfunc: "&RiscVPrivSFenceVmaNZ";
+    sfence_vma_nn{: rs1, rs2},
+      resources: {rs1, rs2},
+      disasm: "sfence.vma", "%rs1, %rs2",
+      semfunc: "&RiscVPrivSFenceVmaNN";
+    // Skipping hypervisor memory management instructions for now.
+  }
+}
+
+// Instruction fence.
+slot zfencei {
+  includes {
+    #include "riscv/riscv_zfencei_instructions.h"
+  }
+  default size = 4;
+  default latency = global_latency;
+  opcodes {
+    fencei{: I_imm12 : },
+      disasm: "fence.i",
+      semfunc: "&RiscVZFencei";
+  }
+}
+
+// RiscV32 multiply/divide instructions.
+slot riscv32m {
+  includes {
+    #include "riscv/riscv_m_instructions.h"
+  }
+  default size = 4;
+  default latency = global_latency;
+  resources ThreeOp = { next_pc, rs1, rs2 : rd[..rd]};
+  opcodes {
+    mul{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "mul", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::MMul";
+    mulh{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "mulh", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::MMulh";
+    mulhu{: rs1, rs2: rd},
+      resources: ThreeOp,
+      disasm: "mulhu", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::MMulhu";
+    mulhsu{: rs1, rs2: rd},
+      resources: ThreeOp,
+      disasm: "mulhsu", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::MMulhsu";
+    div{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "div", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::MDiv";
+    divu{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "divu", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::MDivu";
+    rem{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "rem", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::MRem";
+    remu{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "remu", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::MRemu";
+  }
+}
+
+// The RiscV architecture allows for different subsets of the AMO instructions
+// to be implemented. The following slot definitions define these subsets.
+
+// RiscV atomic memory instructions subset AMO None.
+slot riscv32_amo_none {
+  includes {
+    #include "riscv/riscv_a_instructions.h"
+  }
+  default size = 4;
+  default latency = global_latency;
+  resources TwoOp = { next_pc, rs1 : rd[..rd]};
+  resources ThreeOp = { next_pc, rs1, rs2 : rd[..rd]};
+  opcodes {
+    lrw{(: rs1, A_aq, A_rl :),(: : rd)},
+      resources: TwoOp,
+      semfunc: "&ALrw", "&RV32::RiscVILwChild";
+    scw{(: rs1, rs2, A_aq, A_rl :), (: : rd)},
+      resources: ThreeOp,
+      semfunc: "&AScw", "&RV32::RiscVILwChild";
+  }
+}
+
+// RiscV atomic memory instructions subset AMO swap.
+slot riscv32_amo_swap : riscv32_amo_none {
+  default size = 4;
+  default latency = global_latency;
+  resources TwoOp = { next_pc, rs1 : rd[..rd]};
+  resources ThreeOp = { next_pc, rs1, rs2 : rd[..rd]};
+  opcodes {
+    amoswapw{(: rs1, rs2, A_aq, A_rl: ), (: : rd)},
+      resources: ThreeOp,
+      semfunc: "&AAmoswapw", "&RV32::RiscVILwChild";
+  }
+}
+
+// RiscV atomic memory instructions subset AMO logical.
+slot riscv32_amo_logical : riscv32_amo_swap {
+  default size = 4;
+  default latency = global_latency;
+  resources TwoOp = { next_pc, rs1 : rd[..rd]};
+  resources ThreeOp = { next_pc, rs1, rs2 : rd[..rd]};
+  opcodes {
+    amoandw{(: rs1, rs2, A_aq, A_rl: ), (: : rd)},
+      resources: ThreeOp,
+      semfunc: "&AAmoandw", "&RV32::RiscVILwChild";
+    amoorw{(: rs1, rs2, A_aq, A_rl: ), (: : rd)},
+      resources: ThreeOp,
+      semfunc: "&AAmoorw", "&RV32::RiscVILwChild";
+    amoxorw{(: rs1, rs2, A_aq, A_rl: ), (: : rd)},
+      resources: ThreeOp,
+      semfunc: "&AAmoxorw", "&RV32::RiscVILwChild";
+  }
+}
+
+// RiscV atomic memory instructions subset AMO arithmetic.
+slot riscv32_amo_arithmetic : riscv32_amo_logical {
+  default size = 4;
+  default latency = global_latency;
+  resources TwoOp = { next_pc, rs1 : rd[..rd]};
+  resources ThreeOp = { next_pc, rs1, rs2 : rd[..rd]};
+  opcodes {
+    amoaddw{(: rs1, rs2, A_aq, A_rl: ), (: : rd)},
+      resources: ThreeOp,
+      semfunc: "&AAmoaddw", "&RV32::RiscVILwChild";
+    amomaxw{(: rs1, rs2, A_aq, A_rl: ), (: : rd)},
+      resources: ThreeOp,
+      semfunc: "&AAmomaxw", "&RV32::RiscVILwChild";
+    amomaxuw{(: rs1, rs2, A_aq, A_rl: ), (: : rd)},
+      resources: ThreeOp,
+      semfunc: "&AAmomaxuw", "&RV32::RiscVILwChild";
+    amominw{(: rs1, rs2, A_aq, A_rl: ), (: : rd)},
+      resources: ThreeOp,
+      semfunc: "&AAmominw", "&RV32::RiscVILwChild";
+    amominuw{(: rs1, rs2, A_aq, A_rl: ), (: : rd)},
+      resources: ThreeOp,
+      semfunc: "&AAmominuw", "&RV32::RiscVILwChild";
+  }
+}
+
+// RiscV32 CSR manipulation instructions.
+slot zicsr {
+  includes {
+    #include "riscv/riscv_zicsr_instructions.h"
+  }
+  default size = 4;
+  default latency = global_latency;
+  opcodes {
+    csrrw{: rs1, csr : rd, csr},
+      resources: { next_pc, rs1, csr : rd[0..], csr[0..]},
+      semfunc: "&RV32::RiscVZiCsrrw",
+      disasm: "csrw", "%rd, %csr, %rs1";
+    csrrs{: rs1, csr : rd, csr},
+      resources: { next_pc, rs1, csr : rd[0..], csr[0..]},
+      semfunc: "&RV32::RiscVZiCsrrs",
+      disasm: "csrs", "%rd, %csr, %rs1";
+    csrrc{: rs1, csr : rd, csr},
+      resources: { next_pc, rs1, csr : rd[0..], csr[0..]},
+      semfunc: "&RV32::RiscVZiCsrrc",
+      disasm: "csrc", "%rd, %csr, %rs1";
+    csrrs_nr{: rs1, csr : rd, csr},
+      resources: { next_pc, rs1, csr : rd[0..], csr[0..]},
+      semfunc: "&RV32::RiscVZiCsrrs",
+      disasm: "csrs", "%csr, %rs1";
+    csrrc_nr{: rs1, csr : rd, csr},
+      resources: { next_pc, rs1, csr : rd[0..], csr[0..]},
+      semfunc: "&RV32::RiscVZiCsrrc",
+      disasm: "csrc", "%csr, %rs1";
+    csrrw_nr{: rs1, csr : csr},
+      resources: { next_pc, rs1: csr[0..]},
+      semfunc: "&RV32::RiscVZiCsrrwNr", // rd == 0 (x0).
+      disasm: "csrw", "%csr, %rs1";
+    csrrs_nw{: csr : rd},
+      resources: { next_pc, csr: rd[0..]},
+      semfunc: "&RV32::RiscVZiCsrrNw", // rs1 == 0 (x0).
+      disasm: "csrs", "%rd, %csr";
+    csrrc_nw{: csr : rd},
+      resources: { next_pc, csr: rd[0..]},
+      semfunc: "&RV32::RiscVZiCsrrNw", // rs1 == 0 (x0).
+      disasm: "csrc", "%rd, %csr";
+    csrrwi{: CSR_uimm5, csr : rd, csr},
+      resources: { next_pc, csr: rd[0..], csr[0..]},
+      semfunc: "&RV32::RiscVZiCsrrw",
+      disasm: "csrwi", "%rd, %csr, %CSR_uimm5";
+    csrrsi{: CSR_uimm5, csr : rd, csr},
+      resources: { next_pc, csr: rd[0..], csr[0..]},
+      semfunc: "&RV32::RiscVZiCsrrs",
+      disasm: "csrsi", "%rd, %csr, %CSR_uimm5";
+    csrrci{: CSR_uimm5, csr : rd, csr},
+      resources: { next_pc, csr: rd[0..], csr[0..]},
+      semfunc: "&RV32::RiscVZiCsrrc",
+      disasm: "csrci", "%rd, %csr, %CSR_uimm5";
+    csrrsi_nr{: CSR_uimm5, csr : rd, csr},
+      resources: { next_pc, csr: rd[0..], csr[0..]},
+      semfunc: "&RV32::RiscVZiCsrrs",
+      disasm: "csrsi", "%csr, %CSR_uimm5";
+    csrrci_nr{: CSR_uimm5, csr : rd, csr},
+      resources: { next_pc, csr: rd[0..], csr[0..]},
+      semfunc: "&RV32::RiscVZiCsrrc",
+      disasm: "csrci", "%csr, %CSR_uimm5";
+    csrrwi_nr{: CSR_uimm5, csr : csr},
+      resources: { next_pc : csr[0..]},
+      semfunc: "&RV32::RiscVZiCsrrwNr",  // rd == 0 (x0).
+      disasm: "csrrwi", "%csr, %CSR_uimm5";
+    csrrsi_nw{: csr : rd},
+      resources: { next_pc, csr : rd[0..]},
+      semfunc: "&RV32::RiscVZiCsrrNw", // uimm5 == 0.
+      disasm: "csrsi", "%rd, %csr, 0";
+    csrrci_nw{: csr : rd},
+      resources: { next_pc, csr : rd[0..]},
+      semfunc: "&RV32::RiscVZiCsrrNw", // uimm5 == 0.
+      disasm: "csrwi", "%rd, %csr, 0";
+  }
+}
+
+// RiscV32 F (single precision floating point) instructions.
+slot riscv32f {
+  includes {
+    #include "riscv/riscv_f_instructions.h"
+  }
+  default size = 4;
+  default latency = global_latency;
+  resources TwoOp = { next_pc, frs1 : frd[0..]};
+  resources ThreeOp = { next_pc, frs1, frs2 : frd[0..]};
+  resources FourOp = { next_pc, frs1, frs2, frs3 : frd[0..]};
+  opcodes {
+    flw{(: rs1, I_imm12 : ), (: : frd)},
+      resources: { next_pc, rs1 : frd[0..]},
+      semfunc: "&RV32::RiscVILw", "&RiscVIFlwChild",
+      disasm: "flw", "%frd, %I_imm12(%rs1)";
+    fsw{: rs1, S_imm12, frs2},
+      resources: { next_pc, rs1, frs2},
+      semfunc: "&RV32::RiscVFSw",
+      disasm: "fsw", "%frs2, %S_imm12(%rs1)";
+    fadd_s{: frs1, frs2, rm : frd},
+      resources: ThreeOp,
+      semfunc: "&RiscVFAdd",
+      disasm: "fadd", "%frd, %frs1, %frs2";
+    fsub_s{: frs1, frs2, rm : frd},
+      resources: ThreeOp,
+      semfunc: "&RiscVFSub",
+      disasm: "fsub", "%frd, %frs1, %frs2";
+    fmul_s{: frs1, frs2, rm : frd},
+      resources: ThreeOp,
+      semfunc: "&RiscVFMul",
+      disasm: "fmul", "%frd, %frs1, %frs2";
+    fdiv_s{: frs1, frs2, rm : frd},
+      resources: ThreeOp,
+      semfunc: "&RiscVFDiv",
+      disasm: "fdiv", "%frd, %frs1, %frs2";
+    fsqrt_s{: frs1, rm : frd},
+      resources: TwoOp,
+      semfunc: "&RiscVFSqrt",
+      disasm: "fsqrt", "%frd, %frs1";
+    fmin_s{: frs1, frs2 : frd, fflags},
+      resources: ThreeOp,
+      semfunc: "&RiscVFMin",
+      disasm: "fmin", "%frd, %frs1, %frs2";
+    fmax_s{: frs1, frs2 : frd, fflags},
+      resources: ThreeOp,
+      semfunc: "&RiscVFMax",
+      disasm: "fmax", "%frd, %frs1, %frs2";
+    fmadd_s{: frs1, frs2, frs3, rm : frd, fflags},
+      resources: FourOp,
+      semfunc: "&RiscVFMadd",
+      disasm: "fmadd", "%frd, %frs1, %frs2, %frs3";
+    fmsub_s{: frs1, frs2, frs3, rm : frd, fflags},
+      resources: FourOp,
+      semfunc: "&RiscVFMsub",
+      disasm: "fmsub", "%frd, %frs1, %frs2, %frs3";
+    fnmadd_s{: frs1, frs2, frs3, rm : frd, fflags},
+      resources: FourOp,
+      semfunc: "&RiscVFNmadd",
+      disasm: "fnmadd", "%frd, %frs1, %frs2, %frs3";
+    fnmsub_s{: frs1, frs2, frs3, rm : frd, fflags},
+      resources: FourOp,
+      semfunc: "&RiscVFNmsub",
+      disasm: "fnmsub", "%frd, %frs1, %frs2, %frs3";
+    fcvt_ws{: frs1, rm : rd, fflags},
+      resources: TwoOp,
+      semfunc: "&RV32::RiscVFCvtWs",
+      disasm: "fcvt.w.s", "%rd, %frs1";
+    fcvt_sw{: rs1, rm : frd},
+      resources: TwoOp,
+      semfunc: "&RiscVFCvtSw",
+      disasm: "fcvt.s.w", "%frd, %rs1";
+    fcvt_wus{: frs1, rm : rd, fflags},
+      resources: TwoOp,
+      semfunc: "&RV32::RiscVFCvtWus",
+      disasm: "fcvt.wu.s", "%rd, %frs1";
+    fcvt_swu{: rs1, rm : frd},
+      resources: TwoOp,
+      semfunc: "&RiscVFCvtSwu",
+      disasm: "fcvt.s.wu", "%frd, %rs1";
+    fsgnj_s{: frs1, frs2 : frd},
+      resources: ThreeOp,
+      semfunc: "&RiscVFSgnj",
+      disasm: "fsgn.s", "%frd, %frs1, %frs2";
+    fsgnjn_s{: frs1, frs2 : frd},
+      resources: ThreeOp,
+      semfunc: "&RiscVFSgnjn",
+      disasm: "fsgnjx.s", "%frd, %frs1, %frs2";
+    fsgnjx_s{: frs1, frs2 : frd},
+      resources: ThreeOp,
+      semfunc: "&RiscVFSgnjx",
+      disasm: "fsgnjx.s", "%frd, %frs1, %frs2";
+    fmv_xw{: frs1 : rd},
+      resources: { next_pc, frs1 : rd[0..]},
+      disasm: "mv.x.w", "%rd, %frs1",
+      semfunc: "&RV32::RiscVFMvxw";
+    fmv_wx{: rs1 : frd},
+      resources: { next_pc, rs1 : frd[0..]},
+      disasm: "mv.w.x", "%frd, %rs1",
+      semfunc: "&RiscVFMvwx";
+    fcmpeq_s{: frs1, frs2 : rd, fflags},
+      resources: { next_pc, frs1, frs2 : rd[0..]},
+      semfunc: "&RV32::RiscVFCmpeq",
+      disasm: "fcmpeq", "%rd, %frs1, %frs2";
+    fcmplt_s{: frs1, frs2 : rd, fflags},
+      resources: { next_pc, frs1, frs2 : rd[0..]},
+      semfunc: "&RV32::RiscVFCmplt",
+      disasm: "fcmplt", "%rd, %frs1, %frs2";
+    fcmple_s{: frs1, frs2 : rd, fflags},
+      resources: { next_pc, frs1, frs2 : rd[0..]},
+      semfunc: "&RV32::RiscVFCmple",
+      disasm: "fcmple", "%rd, %frs1, %frs2";
+    fclass_s{: frs1 : rd},
+      resources: { next_pc, frs1 : rd[0..]},
+      semfunc: "&RV32::RiscVFClass",
+      disasm: "fclass", "%rd, %frs1";
+  }
+}
+
+// RiscV32 D (double precision floating point) instructions.
+slot riscv32d {
+  includes {
+    #include "riscv/riscv_d_instructions.h"
+  }
+  default size = 4;
+  default latency = global_latency;
+  opcodes {
+    fld{(: rs1, I_imm12 : ), (: : drd)},
+      resources: {next_pc, rs1 : drd[0..]},
+      semfunc: "&RV32::RiscVILd", "&RV64::RiscVILdChild",
+      disasm: "fld", "%drd, %I_imm12(%rs1)";
+    fsd{: rs1, S_imm12, drs2},
+      resources: {next_pc, rs1, drs2},
+      semfunc: "&RV32::RiscVDSd",
+      disasm: "fsd", "%drs2, %S_imm12(%rs1)";
+    fadd_d{: drs1, drs2, rm : drd},
+      resources: {next_pc, drs1, drs2 : drd[0..]},
+      semfunc: "&RiscVDAdd",
+      disasm: "fadd.d", "%drd, %drs1, %drs2";
+    fsub_d{: drs1, drs2, rm : drd},
+      resources: {next_pc, drs1, drs2 : drd[0..]},
+      semfunc: "&RiscVDSub",
+      disasm: "fsub.d", "%drd, %drs1, %drs2";
+    fmul_d{: drs1, drs2, rm : drd},
+      resources: {next_pc, drs1, drs2 : drd[0..]},
+      semfunc: "&RiscVDMul",
+      disasm: "fmul.d", "%drd, %drs1, %drs2";
+    fdiv_d{: drs1, drs2, rm : drd},
+      resources: {next_pc, drs1, drs2 : drd[0..]},
+      semfunc: "&RiscVDDiv",
+      disasm: "fdiv.d", "%drd, %drs1, %drs2";
+    fsqrt_d{: drs1, rm : drd},
+      resources: {next_pc, drs1 : drd[0..]},
+      semfunc: "&RiscVDSqrt",
+      disasm: "fsqrt.d", "%drd, %drs1";
+    fmin_d{: drs1, drs2 : drd, fflags},
+      resources: {next_pc, drs1, drs2 : drd[0..]},
+      semfunc: "&RiscVDMin",
+      disasm: "fmin.d", "%drd, %drs1, %drs2";
+    fmax_d{: drs1, drs2 : drd, fflags},
+      resources: {next_pc, drs1, drs2 : drd[0..]},
+      semfunc: "&RiscVDMax",
+      disasm: "fmax.d", "%drd, %drs1, %drs2";
+    fmadd_d{: drs1, drs2, drs3, rm : drd, fflags},
+      resources: {next_pc, drs1, drs2, drs3 : drd[0..]},
+      semfunc: "&RiscVDMadd",
+      disasm: "fmadd.d", "%drd, %drs1, %drs2, %drs3";
+    fmsub_d{: drs1, drs2, drs3, rm : drd, fflags},
+      resources: {next_pc, drs1, drs2, drs3 : drd[0..]},
+      semfunc: "&RiscVDMsub",
+      disasm: "fmsub.d", "%drd, %drs1, %drs2, %drs3";
+    fnmadd_d{: drs1, drs2, drs3, rm : drd, fflags},
+      resources: {next_pc, drs1, drs2, drs3 : drd[0..]},
+      semfunc: "&RiscVDNmadd",
+      disasm: "fnmadd.d", "%drd, %drs1, %drs2, %drs3";
+    fnmsub_d{: drs1, drs2, drs3, rm : drd, fflags},
+      resources: {next_pc, drs1, drs2, drs3 : drd[0..]},
+      semfunc: "&RiscVDNmsub",
+      disasm: "fnmsub.d", "%drd, %drs1, %drs2, %drs3";
+    fcvt_wd{: drs1, rm : rd, fflags},
+      resources: {next_pc, drs1 : rd[0..]},
+      semfunc: "&RV32::RiscVDCvtWd",
+      disasm: "fcvt.w.d", "%rd, %drs1";
+    fcvt_dw{: rs1, rm : drd},
+      resources: {next_pc, rs1 : drd[0..]},
+      semfunc: "&RiscVDCvtDw",
+      disasm: "fcvt.d.w", "%drd, %rs1";
+    fcvt_wud{: drs1, rm : rd, fflags},
+      resources: {next_pc, drs1 : rd[0..]},
+      semfunc: "&RV32::RiscVDCvtWud",
+      disasm: "fcvt.wu.d", "%rd, %drs1";
+    fcvt_dwu{: rs1, rm : drd},
+      resources: {next_pc, rs1 : drd[0..]},
+      semfunc: "&RiscVDCvtDwu",
+      disasm: "fcvt.d.wu", "%drd, %rs1";
+    fcvt_sd{: drs1, rm : drd},
+      resources: {next_pc, drs1 : drd[0..]},
+      semfunc: "&RiscVDCvtSd",
+      disasm: "fcvt.s.d", "%drd, %drs1";
+    fcvt_ds{: drs1, rm : drd},
+      resources: {next_pc, drs1 : drd[0..]},
+      semfunc: "&RiscVDCvtDs",
+      disasm: "fcvt.d.s", "%drd, %drs1";
+    fsgnj_d{: drs1, drs2 : drd},
+      resources: {next_pc, drs1, drs2 : drd[0..]},
+      semfunc: "&RiscVDSgnj",
+      disasm: "fsgnj.d", "%drd, %drs1, %drs2";
+    fsgnjn_d{: drs1, drs2 : drd},
+      resources: {next_pc, drs1, drs2 : drd[0..]},
+      semfunc: "&RiscVDSgnjn",
+      disasm: "fsgnjn.d", "%drd, %drs1, %drs2";
+    fsgnjx_d{: drs1, drs2 : drd},
+      resources: {next_pc, drs1, drs2 : drd[0..]},
+      semfunc: "&RiscVDSgnjx",
+      disasm: "fsgnjx.d", "%drd, %drs1, %drs2";
+    fcmpeq_d{: drs1, drs2 : rd, fflags},
+      resources: {next_pc, drs1, drs2 : rd[0..]},
+      semfunc: "&RV32::RiscVDCmpeq",
+      disasm: "fcmpeq.d", "%rd, %drs1, %drs2";
+    fcmplt_d{: drs1, drs2 : rd, fflags},
+      resources: {next_pc, drs1, drs2 : rd[0..]},
+      semfunc: "&RV32::RiscVDCmplt",
+      disasm: "fcmplt.d", "%rd, %drs1, %drs2";
+    fcmple_d{: drs1, drs2 : rd, fflags},
+      resources: {next_pc, drs1, drs2 : rd[0..]},
+      semfunc: "&RV32::RiscVDCmple",
+      disasm: "fcmple.d", "%rd, %drs1, %drs2";
+    fclass_d{: drs1 : rd},
+      resources: {next_pc, drs1 : rd[0..]},
+      semfunc: "&RV32::RiscVDClass",
+      disasm: "fclass.d", "%rd, %drs1";
+  }
+}
+
+// RISCV32 C (compact instructions).
+slot riscv32c {
+  default size = 2;
+  default latency = global_latency;
+  opcodes {
+    clwsp{(: x2, I_ci_uimm6x4 : ), (: : rd)},
+      resources:{next_pc,x2 : rd[0..]},
+      disasm: "lw", "%rd, %I_ci_uimm6x4(%x2)",
+      semfunc: "&RV32::RiscVILw", "&RV32::RiscVILwChild";
+    cflwsp{(: x2, I_ci_uimm6x4 : ), (: : frd)},
+      resources:{next_pc,x2 : frd[0..]},
+      disasm: "flw", "%frd, %I_ci_uimm6x4(%x2)",
+      semfunc: "&RV32::RiscVILw", "&RV32::RiscVILwChild";
+    cfldsp{(: x2, I_ci_uimm6x8 : ), (: : drd)},
+      resources:{next_pc,x2 : drd[0..]},
+      disasm: "fld", "%drd, %I_ci_uimm6x8(%x2)",
+      semfunc: "&RV64::RiscVILd", "&RV64::RiscVILdChild";
+    cswsp{: x2, I_css_uimm6x4, crs2 : },
+      resources: {next_pc,x2, crs2},
+      disasm: "sw", "%crs2, %I_css_uimm6x4(%x2)",
+      semfunc: "&RV32::RiscVISw";
+    cfswsp{: x2, I_css_uimm6x4, cfrs2 : },
+      resources: {next_pc,x2, cfrs2},
+      disasm: "fsw", "%cfrs2, %I_css_uimm6x4(%x2)",
+      semfunc: "&RV32::RiscVISw";
+    cfsdsp{: x2, I_css_uimm6x8, cdrs2 : },
+      resources: {next_pc,x2, cdrs2},
+      disasm: "fsd", "%cdrs2, %I_css_uimm6x8(%x2)",
+      semfunc: "&RV64::RiscVISd";
+    clw{(: c3rs1, I_cl_uimm5x4 : ), (: : c3rd)},
+      resources: {next_pc,c3rs1 : c3rd[0..]},
+      disasm: "lw", "%c3rd, %I_cl_uimm5x4(%c3rs1)",
+      semfunc: "&RV32::RiscVILw", "&RV32::RiscVILwChild";
+    cflw{(: c3rs1, I_cl_uimm5x4 : ), (: : c3frd)},
+      resources: {next_pc,c3rs1 : c3frd[0..]},
+      disasm: "flw", "%c3frd, %I_cl_uimm5x4(%c3rs1)",
+      semfunc: "&RV32::RiscVILw", "&RV32::RiscVILwChild";
+    cfld{(: c3rs1, I_cl_uimm5x8 : ), (: : c3drd)},
+      resources: {next_pc,c3rs1 : c3drd[0..]},
+      disasm: "fld", "%c3drd, %I_cl_uimm5x8(%c3rs1)",
+      semfunc: "&RV64::RiscVILd", "&RV64::RiscVILdChild";
+    csw{: c3rs1, I_cl_uimm5x4, c3rs2 : },
+      resources: {next_pc,c3rs1, c3rs2},
+      disasm: "sw", "%c3rs2, %I_cl_uimm5x4(%c3rs1)",
+      semfunc: "&RV32::RiscVISw";
+    cfsw{: c3rs1, I_cl_uimm5x4, c3frs2 : },
+      resources: {next_pc,c3rs1, c3frs2},
+      disasm: "fsw", "%c3frs2, %I_cl_uimm5x4(%c3rs1)",
+      semfunc: "&RV32::RiscVISw";
+    cfsd{: c3rs1, I_cl_uimm5x8, c3drs2 : },
+      resources: {next_pc,c3rs1, c3drs2},
+      disasm: "fsd", "%c3drs2, %I_cl_uimm5x8(%c3rs1)",
+      semfunc: "&RV32::RiscVDSd";
+    cj{: I_cj_imm11, x0 : next_pc, x0},
+      resources: {next_pc,x0 : next_pc[0..], x0[0..]},
+      disasm: "j", "%(@+I_cj_imm11:08x)",
+      semfunc: "&RV32::RiscVIJal";
+    cjal{: I_cj_imm11, x0 : next_pc, x1},
+      resources: {next_pc,x0 : next_pc[0..], x1[0..]},
+      disasm: "jal", "%(@+I_cj_imm11:08x)",
+      semfunc: "&RV32::RiscVIJal";
+    cjr{: crs1, x0 : next_pc, x0},
+      resources: {next_pc,crs1, x0 : next_pc[0..], x0[0..]},
+      disasm: "jr", "%crs1",
+      semfunc: "&RV32::RiscVIJalr";
+    cjalr{: crs1, x0 : next_pc, x1},
+      resources: {next_pc,crs1, x0 : next_pc[0..], x1[0..]},
+      disasm: "jalr", "%crs1",
+      semfunc: "&RV32::RiscVIJalr";
+    cbeqz{: c3rs1, x0, I_cb_imm8 : next_pc},
+      resources: {next_pc,c3rs1, x0 : next_pc[0..]},
+      disasm: "beqz", "%c3rs1, %(@+I_cb_imm8:08x)",
+      semfunc: "&RV32::RiscVIBeq";
+    cbnez{: c3rs1, x0, I_cb_imm8 : next_pc},
+      resources: {next_pc,c3rs1, x0 : next_pc[0..]},
+      disasm: "bnez", "%c3rs1, %(@+I_cb_imm8:08x)",
+      semfunc: "&RV32::RiscVIBne";
+    cli{: x0, I_ci_imm6 : rd},
+      resources: {next_pc,x0 : rd[0..]},
+      disasm: "li", "%rd, %I_ci_imm6",
+      semfunc: "&RV32::RiscVIAdd";
+    clui{: I_ci_imm6_12 : rd},
+      resources: {next_pc : rd[0..]},
+      disasm: "lui", "%rd, 0x%(I_ci_imm6_12:x)",
+      semfunc: "&RV32::RiscVILui";
+    caddi{: rd, I_ci_imm6 : rd},
+      resources: {next_pc, rd : rd[0..]},
+      disasm: "addi", "%rd, %rd, %I_ci_imm6",
+      semfunc: "&RV32::RiscVIAdd";
+    caddi16sp{: x2, I_ci_imm6x16 : x2},
+      resources: {next_pc, x2 : x2[0..]},
+      disasm: "addi", "%x2, %x2, %(I_ci_imm6x16:d)",
+      semfunc: "&RV32::RiscVIAdd";
+    caddi4spn{: x2, I_ciw_uimm8x4 : c3rd},
+      resources: {next_pc, x2 : c3rd[0..]},
+      disasm: "addi", "%c3rd, %x2, %I_ciw_uimm8x4",
+      semfunc: "&RV32::RiscVIAdd";
+    cslli{: rd, I_ci_uimm6 : rd},
+      resources: {next_pc, rd : rd[0..]},
+      disasm: "slli", "%rd, %rd, 0x%(I_ci_uimm6:x)",
+      semfunc: "&RV32::RiscVISll";
+    csrli{: c3rs1, I_ci_uimm6 : c3rs1},
+      resources: {next_pc, c3rs1 : c3rs1[0..]},
+      disasm: "srli", "%c3rs1, %c3rs1, 0x%(I_ci_uimm6:x)",
+      semfunc: "&RV32::RiscVISrl";
+    csrai{: c3rs1, I_ci_uimm6 : c3rs1},
+      resources: {next_pc, c3rs1 : c3rs1[0..]},
+      disasm: "srai", "%c3rs1, %c3rs1, 0x%(I_ci_uimm6:x)",
+      semfunc: "&RV32::RiscVISra";
+    candi{: c3rs1, I_ci_imm6 : c3rs1},
+      resources: {next_pc, c3rs1 : c3rs1[0..]},
+      disasm: "andi", "%c3rs1, %c3rs1, %I_ci_imm6",
+      semfunc: "&RV32::RiscVIAnd";
+    cmv{: crs2 , x0: rd},
+      resources: {next_pc, crs2, x0 : rd[0..]},
+      disasm: "mv", "%rd, %crs2",
+      semfunc: "&RV32::RiscVIAdd";
+    cadd{: crs2, rd: rd},
+      resources: {next_pc, crs2, rd : rd[0..]},
+      disasm: "add", "%rd, %rd, %crs2",
+      semfunc: "&RV32::RiscVIAdd";
+    cand{: c3rs1, c3rs2 : c3rs1},
+      resources: {next_pc, c3rs1, c3rs2 : c3rs1[0..]},
+      disasm: "and", "%c3rs1, %c3rs1, %c3rs2",
+      semfunc: "&RV32::RiscVIAnd";
+    cor{: c3rs1, c3rs2 : c3rs1},
+      resources: {next_pc, c3rs1, c3rs2 : c3rs1[0..]},
+      disasm: "or", "%c3rs1, %c3rs1, %c3rs2",
+      semfunc: "&RV32::RiscVIOr";
+    cxor{: c3rs1, c3rs2 : c3rs1},
+      resources: {next_pc, c3rs1, c3rs2 : c3rs1[0..]},
+      disasm: "xor", "%c3rs1, %c3rs1, %c3rs2",
+      semfunc: "&RV32::RiscVIXor";
+    csub{: c3rs1, c3rs2 : c3rs1},
+      resources: {next_pc, c3rs1, c3rs2 : c3rs1[0..]},
+      disasm: "sub", "%c3rs1, %c3rs1, %c3rs2",
+      semfunc: "&RV32::RiscVISub";
+    cnop{},
+      disasm: "nop",
+      resources: {next_pc},
+      semfunc: "&RiscVINop";
+    cebreak{},
+      disasm: "ebreak",
+      resources: {next_pc},
+      semfunc: "&RiscVIEbreak";
+  }
+}
+
+// This should be the RiscV32G set, where G stands for IMAFDZicsr_Zifencei.
+slot riscv32g : riscv32i, riscv32c, riscv32m, riscv32_amo_arithmetic, riscv32f, riscv32d, zicsr, zfencei, privileged {
+  default size = 4;
+  default opcode =
+    disasm: "Illegal instruction at 0x%(@:08x)",
+    semfunc: "&RiscVIllegalInstruction";
+}
+
+
