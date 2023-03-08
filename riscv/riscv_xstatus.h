@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RISCV_RISCV_XSTATUS_H_
-#define RISCV_RISCV_XSTATUS_H_
+#ifndef MPACT_RISCV_RISCV_RISCV_XSTATUS_H_
+#define MPACT_RISCV_RISCV_RISCV_XSTATUS_H_
 
 #include "riscv/riscv_csr.h"
 #include "riscv/riscv_misa.h"
@@ -229,4 +229,4 @@ class RiscVUStatus : public RiscVSimpleCsr<uint64_t> {
 }  // namespace sim
 }  // namespace mpact
 
-#endif  // RISCV_RISCV_XSTATUS_H_
+#endif  // MPACT_RISCV_RISCV_RISCV_XSTATUS_H_

@@ -399,11 +399,11 @@ void RiscVState::StoreMemory(const Instruction *inst, DataBuffer *address_db,
 
 void RiscVState::Fence(const Instruction *inst, int fm, int predecessor,
                        int successor) {
-  // TODO(torerik): Add fence operation once operations have non-zero latency.
+  // TODO: Add fence operation once operations have non-zero latency.
 }
 
 void RiscVState::FenceI(const Instruction *inst) {
-  // TODO(torerik): Add instruction fence operation when needed.
+  // TODO: Add instruction fence operation when needed.
 }
 
 void RiscVState::ECall(const Instruction *inst) {

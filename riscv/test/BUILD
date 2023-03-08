@@ -13,7 +13,7 @@
 # limitations under the License.
 # Unit tests for RiscV simulator classes.
 
-package(default_applicable_licenses = [":license"])
+package(default_applicable_licenses = ["//:license"])
 
 cc_library(
     name = "riscv_vector_instructions_test_base",
@@ -25,7 +25,6 @@ cc_library(
         "@com_google_absl//absl/functional:bind_front",
         "@com_google_absl//absl/random",
         "@com_google_absl//absl/strings",
-        "@com_google_googletest//:gtest_main",
         "@mpact-sim//mpact/sim/generic:core",
         "@mpact-sim//mpact/sim/generic:instruction",
         "@mpact-sim//mpact/sim/generic:type_helpers",
@@ -60,6 +59,18 @@ cc_library(
         "@mpact-sim//mpact/sim/generic:core",
         "@mpact-sim//mpact/sim/generic:instruction",
         "@mpact-sim//mpact/sim/util/memory",
+    ],
+)
+
+cc_test(
+    name = "riscv_vector_true_test",
+    size = "small",
+    srcs = [
+        "riscv_vector_true_test.cc",
+    ],
+    deps = [
+        "//riscv:riscv_state",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RISCV_STOULL_WRAPPER_H_
-#define RISCV_STOULL_WRAPPER_H_
+#ifndef MPACT_RISCV_RISCV_STOULL_WRAPPER_H_
+#define MPACT_RISCV_RISCV_STOULL_WRAPPER_H_
 
 #include <string>
 
@@ -35,4 +35,4 @@ absl::StatusOr<uint64_t> stoull(const std::string str, size_t *indx = nullptr,
 }  // namespace sim
 }  // namespace mpact
 
-#endif  // RISCV_STOULL_WRAPPER_H_
+#endif  // MPACT_RISCV_RISCV_STOULL_WRAPPER_H_

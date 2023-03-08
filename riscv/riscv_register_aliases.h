@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RISCV_RISCV_REGISTER_ALIASES_H_
-#define RISCV_RISCV_REGISTER_ALIASES_H_
+#ifndef MPACT_RISCV_RISCV_RISCV_REGISTER_ALIASES_H_
+#define MPACT_RISCV_RISCV_RISCV_REGISTER_ALIASES_H_
 
 namespace mpact {
 namespace sim {
@@ -33,4 +33,4 @@ constexpr char kFRegisterAliases[32][6] = {
 }  // namespace sim
 }  // namespace mpact
 
-#endif  // RISCV_RISCV_REGISTER_ALIASES_H_
+#endif  // MPACT_RISCV_RISCV_RISCV_REGISTER_ALIASES_H_

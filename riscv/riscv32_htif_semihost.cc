@@ -119,7 +119,7 @@ void RiscV32HtifSemiHost::StoreEvent(uint64_t address, int size) {
   int64_t return_value = 0;
   // The first parameter specifies the syscall.
   switch (parameter_span[0]) {
-    // TODO(torerik): Add other semihosting calls.
+    // TODO: Add other semihosting calls.
     case 56:  // sys_openat
     {
       int dirfd = parameter_span[1];

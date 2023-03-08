@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RISCV_TEST_RISCV_VECTOR_FP_TEST_UTILITIES_H_
-#define RISCV_TEST_RISCV_VECTOR_FP_TEST_UTILITIES_H_
+#ifndef MPACT_RISCV_RISCV_TEST_RISCV_VECTOR_FP_TEST_UTILITIES_H_
+#define MPACT_RISCV_RISCV_TEST_RISCV_VECTOR_FP_TEST_UTILITIES_H_
 
 #include <algorithm>
 #include <cmath>
@@ -950,4 +950,4 @@ class RiscVFPInstructionsTestBase
 }  // namespace sim
 }  // namespace mpact
 
-#endif  // RISCV_TEST_RISCV_VECTOR_FP_TEST_UTILITIES_H_
+#endif  // MPACT_RISCV_RISCV_TEST_RISCV_VECTOR_FP_TEST_UTILITIES_H_

@@ -129,10 +129,9 @@ uint64_t RV32VectorSourceOperand::AsUint64(int i) {
 
 RV32VectorTrueOperand::RV32VectorTrueOperand(RiscVState *state)
     : RV32VectorSourceOperand(
-          state->GetRegister<RVVectorRegister>("TrueReg").first) {
+          state->GetRegister<RVVectorRegister>(kName).first) {
   // Ensure the value is all ones.
-  auto [reg, created] = state->GetRegister<RVVectorRegister>("TrueReg");
-  if (!created) return;
+  auto *reg = state->GetRegister<RVVectorRegister>(kName).first;
   auto data = reg->data_buffer()->Get<uint64_t>();
   for (int i = 0; i < data.size(); i++) {
     data[i] = std::numeric_limits<uint64_t>::max();

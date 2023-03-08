@@ -16,7 +16,7 @@
 load("@mpact-sim//mpact/sim/decoder:mpact_sim_isa.bzl", "mpact_bin_fmt_decoder", "mpact_isa_decoder")
 
 package(
-    default_applicable_licenses = [":license"],
+    default_applicable_licenses = ["//:license"],
     default_visibility = ["//visibility:public"],
 )
 

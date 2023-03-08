@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RISCV_RISCV_INSTRUCTION_HELPERS_H_
-#define RISCV_RISCV_INSTRUCTION_HELPERS_H_
+#ifndef MPACT_RISCV_RISCV_RISCV_INSTRUCTION_HELPERS_H_
+#define MPACT_RISCV_RISCV_RISCV_INSTRUCTION_HELPERS_H_
 
 #include <limits>
 #include <tuple>
@@ -565,4 +565,4 @@ typename FPTypeInfo<T>::UIntType ClassifyFP(T val) {
 }  // namespace sim
 }  // namespace mpact
 
-#endif  // RISCV_RISCV_INSTRUCTION_HELPERS_H_
+#endif  // MPACT_RISCV_RISCV_RISCV_INSTRUCTION_HELPERS_H_

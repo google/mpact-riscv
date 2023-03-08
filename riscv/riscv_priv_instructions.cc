@@ -34,7 +34,7 @@ using UIntReg =
     typename std::make_unsigned<typename RegisterType::ValueType>::type;
 
 void RiscVPrivURet(const Instruction *inst) {
-  // TODO(torerik) Fill in semantics.
+  // TODO Fill in semantics.
 }
 
 void RiscVPrivSRet(const Instruction *inst) {
@@ -152,7 +152,7 @@ using UIntReg =
     typename std::make_unsigned<typename RegisterType::ValueType>::type;
 
 void RiscVPrivURet(const Instruction *inst) {
-  // TODO(torerik) Fill in semantics.
+  // TODO Fill in semantics.
 }
 
 void RiscVPrivSRet(const Instruction *inst) {
@@ -280,7 +280,7 @@ void RiscVPrivSFenceVmaZZ(const Instruction *inst) {
                 *ExceptionCode::kIllegalInstruction, inst->address(), inst);
     return;
   }
-  // TODO(torerik) Fill in semantics.
+  // TODO Fill in semantics.
 }
 
 void RiscVPrivSFenceVmaZN(const Instruction *inst) {
@@ -293,7 +293,7 @@ void RiscVPrivSFenceVmaZN(const Instruction *inst) {
                 *ExceptionCode::kIllegalInstruction, inst->address(), inst);
     return;
   }
-  // TODO(torerik) Fill in semantics.
+  // TODO Fill in semantics.
 }
 
 void RiscVPrivSFenceVmaNZ(const Instruction *inst) {
@@ -306,7 +306,7 @@ void RiscVPrivSFenceVmaNZ(const Instruction *inst) {
                 *ExceptionCode::kIllegalInstruction, inst->address(), inst);
     return;
   }
-  // TODO(torerik) Fill in semantics.
+  // TODO Fill in semantics.
 }
 
 void RiscVPrivSFenceVmaNN(const Instruction *inst) {
@@ -319,7 +319,7 @@ void RiscVPrivSFenceVmaNN(const Instruction *inst) {
                 *ExceptionCode::kIllegalInstruction, inst->address(), inst);
     return;
   }
-  // TODO(torerik) Fill in semantics.
+  // TODO Fill in semantics.
 }
 
 }  // namespace riscv

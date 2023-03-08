@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RISCV_RISCV32_HTIF_SEMIHOST_H_
-#define RISCV_RISCV32_HTIF_SEMIHOST_H_
+#ifndef MPACT_RISCV_RISCV_RISCV32_HTIF_SEMIHOST_H_
+#define MPACT_RISCV_RISCV_RISCV32_HTIF_SEMIHOST_H_
 
 #include <string>
 
@@ -81,4 +81,4 @@ class RiscV32HtifSemiHost {
 }  // namespace sim
 }  // namespace mpact
 
-#endif  // RISCV_RISCV32_HTIF_SEMIHOST_H_
+#endif  // MPACT_RISCV_RISCV_RISCV32_HTIF_SEMIHOST_H_

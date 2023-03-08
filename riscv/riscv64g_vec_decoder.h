@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RISCV_RISCV64G_VEC_DECODER_H_
-#define RISCV_RISCV64G_VEC_DECODER_H_
+#ifndef MPACT_RISCV_RISCV_RISCV64G_VEC_DECODER_H_
+#define MPACT_RISCV_RISCV_RISCV64G_VEC_DECODER_H_
 
 #include <memory>
 
@@ -76,4 +76,4 @@ class RiscV64GVecDecoder : public generic::DecoderInterface {
 }  // namespace sim
 }  // namespace mpact
 
-#endif  // RISCV_RISCV64G_VEC_DECODER_H_
+#endif  // MPACT_RISCV_RISCV_RISCV64G_VEC_DECODER_H_

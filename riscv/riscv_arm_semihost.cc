@@ -197,14 +197,14 @@ absl::Status RiscVArmSemihost::SysClose(uint64_t parameter, uint64_t *ret_val) {
 // Currently not implemented, will implement once there is need for it.
 absl::Status RiscVArmSemihost::SysClock(uint64_t parameter, uint64_t *ret_val) {
   return absl::UnimplementedError("SysClock not implemented");
-  // TODO(torerik): Complete implementation.
+  // TODO: Complete implementation.
 }
 
 // Currently not implemented, will implement once there is need for it.
 absl::Status RiscVArmSemihost::SysElapsed(uint64_t parameter,
                                           uint64_t *ret_val) {
   return absl::UnimplementedError("SysElapsed not implemented");
-  // TODO(torerik): Complete implementation.
+  // TODO: Complete implementation.
 }
 
 // Return the value of the simulated errno.
@@ -267,7 +267,7 @@ absl::Status RiscVArmSemihost::SysFlen(uint64_t parameter, uint64_t *ret_val) {
 absl::Status RiscVArmSemihost::SysGetCmdline(uint64_t parameter,
                                              uint64_t *ret_val) {
   return absl::UnimplementedError("SysGetCmdline not implemented");
-  // TODO(torerik): Complete implementation.
+  // TODO: Complete implementation.
 }
 
 // Returns 0 information indicating that the call doesn't provide this info.
@@ -294,7 +294,7 @@ absl::Status RiscVArmSemihost::SysHeapInfo(uint64_t parameter,
 absl::Status RiscVArmSemihost::SysIsError(uint64_t parameter,
                                           uint64_t *ret_val) {
   return absl::UnimplementedError("SysGetCmdline not implemented");
-  // TODO(torerik): Complete implementation.
+  // TODO: Complete implementation.
 }
 
 // Check if the fd is a tty.
@@ -405,7 +405,7 @@ absl::Status RiscVArmSemihost::SysRead(uint64_t parameter, uint64_t *ret_val) {
 // Read a byte from the debug console. This is not implemented for now.
 absl::Status RiscVArmSemihost::SysReadc(uint64_t parameter, uint64_t *ret_val) {
   return absl::UnimplementedError("SysReadc not implemented");
-  // TODO(torerik): Complete implementation.
+  // TODO: Complete implementation.
 }
 
 // Remove a file from the host file system. This will not be implemented.

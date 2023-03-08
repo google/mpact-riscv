@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RISCV_DEBUG_COMMAND_SHELL_H_
-#define RISCV_DEBUG_COMMAND_SHELL_H_
+#ifndef MPACT_RISCV_RISCV_DEBUG_COMMAND_SHELL_H_
+#define MPACT_RISCV_RISCV_DEBUG_COMMAND_SHELL_H_
 
 #include <iostream>
 #include <istream>
@@ -97,4 +97,4 @@ class DebugCommandShell {
 }  // namespace sim
 }  // namespace mpact
 
-#endif  // RISCV_DEBUG_COMMAND_SHELL_H_
+#endif  // MPACT_RISCV_RISCV_DEBUG_COMMAND_SHELL_H_

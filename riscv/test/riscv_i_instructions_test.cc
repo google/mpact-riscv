@@ -557,15 +557,15 @@ TEST_F(RV32IInstructionTest, RV32ISb) {
 // implement these instructions beyond interface stubs.
 
 TEST_F(RV32IInstructionTest, RV32IFence) {
-  // TODO(torerik): implement test once the RiscVState handles the call.
+  // TODO: implement test once the RiscVState handles the call.
 }
 
 TEST_F(RV32IInstructionTest, RV32IEcall) {
-  // TODO(torerik): implement test once the RiscVState handles the call.
+  // TODO: implement test once the RiscVState handles the call.
 }
 
 TEST_F(RV32IInstructionTest, RV32IEbreak) {
-  // TODO(torerik): implement test once the RiscVState handles the call.
+  // TODO: implement test once the RiscVState handles the call.
 }
 
 }  // namespace

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RISCV_RISCV_REGISTER_H_
-#define RISCV_RISCV_REGISTER_H_
+#ifndef MPACT_RISCV_RISCV_RISCV_REGISTER_H_
+#define MPACT_RISCV_RISCV_RISCV_REGISTER_H_
 
 #include <any>
 #include <string>
@@ -94,17 +94,18 @@ class RV32VectorTrueOperand : public RV32VectorSourceOperand {
 
   RV32VectorTrueOperand() = delete;
   bool AsBool(int) final { return true; }
-  int8_t AsInt8(int) final { return 1; }
-  uint8_t AsUint8(int) final { return 1; }
-  int16_t AsInt16(int) final { return 1; }
-  uint16_t AsUint16(int) final { return 1; }
-  int32_t AsInt32(int) final { return 1; }
-  uint32_t AsUint32(int) final { return 1; }
-  int64_t AsInt64(int) final { return 1; }
-  uint64_t AsUint64(int) final { return 1; }
+  int8_t AsInt8(int) final { return 0xff; }
+  uint8_t AsUint8(int) final { return 0xff; }
+  int16_t AsInt16(int) final { return 0xffff; }
+  uint16_t AsUint16(int) final { return 0xffff; }
+  int32_t AsInt32(int) final { return 0xffff'ffff; }
+  uint32_t AsUint32(int) final { return 0xffff'ffff; }
+  int64_t AsInt64(int) final { return 0xffff'ffff'ffff'ffffULL; }
+  uint64_t AsUint64(int) final { return 0xffff'ffff'ffff'ffffLL; }
   std::string AsString() const override { return ""; }
 
  private:
+  static constexpr char kName[] = "__VectorTrue__";
 };
 
 class RV32VectorDestinationOperand
@@ -150,4 +151,4 @@ using RVVectorRegister =
 }  // namespace sim
 }  // namespace mpact
 
-#endif  // RISCV_RISCV_REGISTER_H_
+#endif  // MPACT_RISCV_RISCV_RISCV_REGISTER_H_

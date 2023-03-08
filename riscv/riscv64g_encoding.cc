@@ -32,7 +32,7 @@ namespace sim {
 namespace riscv {
 namespace isa64 {
 
-// TODO(torerik)
+// TODO
 using generic::SimpleResourceOperand;
 
 // Generic helper functions to create register operands.

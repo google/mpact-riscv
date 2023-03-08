@@ -742,7 +742,7 @@ inline T RecipSqrt7Helper(T value) {
   auto fp_class = std::fpclassify(value);
   switch (fp_class) {
     case FP_INFINITE:
-      // TODO(torerik): raise exception.
+      // TODO: raise exception.
       return std::signbit(value) ? std::numeric_limits<T>::quiet_NaN() : 0.0;
     case FP_NAN:
       // Just propagate the NaN.
@@ -752,7 +752,7 @@ inline T RecipSqrt7Helper(T value) {
                                  : std::numeric_limits<T>::infinity();
     case FP_SUBNORMAL:
     case FP_NORMAL:
-      // TODO(torerik): raise exception if negative.
+      // TODO: raise exception if negative.
       if (std::signbit(value)) return std::numeric_limits<T>::quiet_NaN();
       return RecipSqrt7(value);
       break;
@@ -854,7 +854,7 @@ inline T Recip7Helper(T value, FPRoundingMode rm) {
 
   switch (fp_class) {
     case FP_INFINITE:
-      // TODO(torerik): raise exception.
+      // TODO: raise exception.
       return std::signbit(value) ? -0.0 : 0;
     case FP_NAN:
       // Just propagate the NaN.

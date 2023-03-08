@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RISCV_RISCV_XIP_XIE_H_
-#define RISCV_RISCV_XIP_XIE_H_
+#ifndef MPACT_RISCV_RISCV_RISCV_XIP_XIE_H_
+#define MPACT_RISCV_RISCV_RISCV_XIP_XIE_H_
 
 #include "riscv/riscv_csr.h"
 
 // This file defines the classes for the interrupt pending and enable
 // registers for machine mode (mip/mie), supervisor mode (sip/sie), and
-// TODO(torerik) user mode (uip/uie).
+// TODO user mode (uip/uie).
 
 namespace mpact {
 namespace sim {
@@ -264,4 +264,4 @@ class RiscVSIe : public RiscVSimpleCsr<uint32_t> {
 }  // namespace sim
 }  // namespace mpact
 
-#endif  // RISCV_RISCV_XIP_XIE_H_
+#endif  // MPACT_RISCV_RISCV_RISCV_XIP_XIE_H_

@@ -51,13 +51,13 @@ absl::Status WriteBackLoadData(int vector_register_byte_length,
   auto *dest_op =
       static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
   if (dest_op->size() < max_regs) {
-    // TODO(torerik): signal error.
+    // TODO: signal error.
     return absl::InternalError("Not enough registers in destination operand");
   }
   // Compute the number of values to be written.
   int value_count = masks.size();
   if (vector_length - vector_start != value_count) {
-    // TODO(torerik): signal error.
+    // TODO: signal error.
     return absl::InternalError(
         absl::StrCat("The number of mask elements (", value_count,
                      ") differs from the number of elements to write (",
@@ -210,7 +210,7 @@ void VlStrided(int element_width, const Instruction *inst) {
   int emul = element_width * rv_vector->vector_length_multiplier() /
              rv_vector->selected_element_width();
   if ((emul > 64) || (emul == 0)) {
-    // TODO(torerik): signal vector error.
+    // TODO: signal vector error.
     LOG(WARNING) << "EMUL (" << emul << ") out of range";
     return;
   }
@@ -321,7 +321,7 @@ void VlIndexed(int index_width, const Instruction *inst) {
   int index_emul = index_width * lmul / element_width;
   // Validate that emul has a legal value.
   if ((index_emul > 64) || (index_emul == 0)) {
-    // TODO(torerik): signal vector error.
+    // TODO: signal vector error.
     LOG(WARNING) << absl::StrCat(
         "Vector load indexed: emul (index) out of range: ", index_emul);
     rv_vector->set_vector_exception();
@@ -454,7 +454,7 @@ void VlSegment(int element_width, const Instruction *inst) {
   if (emul * num_fields > 64) {
     // This is a reserved encoding error.
     // If > 64, it means that the number of registers required is > 8.
-    // TODO(torerik): signal error.
+    // TODO: signal error.
     rv_vector->set_vector_exception();
     return;
   }
@@ -513,7 +513,7 @@ void VlSegmentStrided(int element_width, const Instruction *inst) {
   if (emul * num_fields > 64) {
     // This is a reserved encoding error.
     // If > 64, it means that the number of registers required is > 8.
-    // TODO(torerik): signal error.
+    // TODO: signal error.
     rv_vector->set_vector_exception();
     return;
   }
@@ -580,7 +580,7 @@ void VlSegmentIndexed(int index_width, const Instruction *inst) {
   int index_emul = (element_width * lmul8) / element_width;
   // Validate that index_emul has a legal value.
   if ((index_emul > 64) || (index_emul == 0)) {
-    // TODO(torerik): signal vector error.
+    // TODO: signal vector error.
     LOG(WARNING) << absl::StrCat(
         "Vector load indexed: emul (index) out of range: ", index_emul);
     rv_vector->set_vector_exception();
@@ -620,7 +620,7 @@ void VlSegmentIndexed(int index_width, const Instruction *inst) {
         break;
       default:
         offset = 0;
-        // TODO(torerik): signal error.
+        // TODO: signal error.
         LOG(ERROR) << "Internal error - illegal value for index_width";
         rv_vector->set_vector_exception();
         return;
@@ -832,7 +832,7 @@ void VsIndexed(int index_width, const Instruction *inst) {
   int index_emul = index_width * lmul8 / element_width;
   // Validate that emul has a legal value.
   if ((index_emul > 64) || (index_emul == 0)) {
-    // TODO(torerik): signal vector error.
+    // TODO: signal vector error.
     rv_vector->set_vector_exception();
     return;
   }
@@ -874,7 +874,7 @@ void VsIndexed(int index_width, const Instruction *inst) {
         break;
       default:
         offset = 0;
-        // TODO(torerik): signal error.
+        // TODO: signal error.
         LOG(ERROR) << "Illegal value for index type width";
         return;
     }
@@ -895,7 +895,7 @@ void VsIndexed(int index_width, const Instruction *inst) {
         break;
       default:
         offset = 0;
-        // TODO(torerik): signal error.
+        // TODO: signal error.
         LOG(ERROR) << "Illegal value for element width";
         break;
     }
@@ -952,7 +952,7 @@ void VsSegment(int element_width, const Instruction *inst) {
   if (emul * num_fields > 64) {
     // This is a reserved encoding error.
     // If > 64, it means that the number of registers required is > 8.
-    // TODO(torerik): signal error.
+    // TODO: signal error.
     LOG(ERROR) << "Reserved encoding error";
     rv_vector->set_vector_exception();
     return;
@@ -1044,7 +1044,7 @@ void VsSegmentStrided(int element_width, const Instruction *inst) {
   if (emul * num_fields > 64) {
     // This is a reserved encoding error.
     // If > 64, it means that the number of registers required is > 8.
-    // TODO(torerik): signal error.
+    // TODO: signal error.
     LOG(ERROR) << "Reserved encoding error";
     rv_vector->set_vector_exception();
     return;
@@ -1139,7 +1139,7 @@ void VsSegmentIndexed(int index_width, const Instruction *inst) {
   if (lmul * num_fields > 64) {
     // This is a reserved encoding error.
     // If > 64, it means that the number of registers required is > 8.
-    // TODO(torerik): signal error.
+    // TODO: signal error.
     LOG(ERROR) << "Reserved encoding error - lmul * num_fields out of range";
     rv_vector->set_vector_exception();
     return;
@@ -1147,7 +1147,7 @@ void VsSegmentIndexed(int index_width, const Instruction *inst) {
   if (emul == 0 || emul > 64) {
     // This is a reserved encoding error.
     // If > 64, it means that the number of registers required is > 8.
-    // TODO(torerik): signal error.
+    // TODO: signal error.
     LOG(ERROR) << "Reserved encoding error - emul out of range.";
     rv_vector->set_vector_exception();
     return;

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RISCV_TEST_RISCV_VECTOR_INSTRUCTIONS_TEST_BASE_H_
-#define RISCV_TEST_RISCV_VECTOR_INSTRUCTIONS_TEST_BASE_H_
+#ifndef MPACT_RISCV_RISCV_TEST_RISCV_VECTOR_INSTRUCTIONS_TEST_BASE_H_
+#define MPACT_RISCV_RISCV_TEST_RISCV_VECTOR_INSTRUCTIONS_TEST_BASE_H_
 
 #include <algorithm>
 #include <ios>
@@ -1233,4 +1233,4 @@ class RiscVVectorInstructionsTestBase : public testing::Test {
 }  // namespace sim
 }  // namespace mpact
 
-#endif  // RISCV_TEST_RISCV_VECTOR_INSTRUCTIONS_TEST_BASE_H_
+#endif  // MPACT_RISCV_RISCV_TEST_RISCV_VECTOR_INSTRUCTIONS_TEST_BASE_H_

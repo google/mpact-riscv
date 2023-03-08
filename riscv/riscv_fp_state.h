@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RISCV_RISCV_FP_STATE_H_
-#define RISCV_RISCV_FP_STATE_H_
+#ifndef MPACT_RISCV_RISCV_RISCV_FP_STATE_H_
+#define MPACT_RISCV_RISCV_RISCV_FP_STATE_H_
 
 #include <cstdint>
 
@@ -178,4 +178,4 @@ class ScopedFPRoundingMode {
 }  // namespace sim
 }  // namespace mpact
 
-#endif  // RISCV_RISCV_FP_STATE_H_
+#endif  // MPACT_RISCV_RISCV_RISCV_FP_STATE_H_

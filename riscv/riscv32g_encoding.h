@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RISCV_RISCV32G_ENCODING_H_
-#define RISCV_RISCV32G_ENCODING_H_
+#ifndef MPACT_RISCV_RISCV_RISCV32G_ENCODING_H_
+#define MPACT_RISCV_RISCV_RISCV32G_ENCODING_H_
 
 #include <functional>
 #include <string>
@@ -134,4 +134,4 @@ class RiscV32GEncoding : public RiscV32GEncodingBase {
 }  // namespace sim
 }  // namespace mpact
 
-#endif  // RISCV_RISCV32G_ENCODING_H_
+#endif  // MPACT_RISCV_RISCV_RISCV32G_ENCODING_H_

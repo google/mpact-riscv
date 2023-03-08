@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RISCV_RISCV_SIM_CSRS_H_
-#define RISCV_RISCV_SIM_CSRS_H_
+#ifndef MPACT_RISCV_RISCV_RISCV_SIM_CSRS_H_
+#define MPACT_RISCV_RISCV_RISCV_SIM_CSRS_H_
 
 #include <string>
 
@@ -44,4 +44,4 @@ class RiscVSimModeCsr : public RiscVSimpleCsr<uint32_t> {
 }  // namespace sim
 }  // namespace mpact
 
-#endif  // RISCV_RISCV_SIM_CSRS_H_
+#endif  // MPACT_RISCV_RISCV_RISCV_SIM_CSRS_H_
