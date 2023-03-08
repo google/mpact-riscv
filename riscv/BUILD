@@ -159,7 +159,7 @@ cc_library(
     ],
     deps = [
         ":riscv_g",
-        "//riscv:riscv_state",
+        ":riscv_state",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/status",
         "@mpact-sim//mpact/sim/generic:arch_state",
@@ -429,7 +429,7 @@ cc_library(
     hdrs = ["riscv_arm_semihost.h"],
     copts = ["-O3"],
     deps = [
-        "//riscv:riscv_state",
+        ":riscv_state",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/functional:bind_front",
         "@com_google_absl//absl/log",
@@ -632,9 +632,9 @@ cc_binary(
     ],
     copts = ["-O3"],
     deps = [
+        ":riscv_state",
         ":riscv_test_mem_watcher",
         ":riscv_top",
-        "//riscv:riscv_state",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
         "@com_google_absl//absl/functional:bind_front",
