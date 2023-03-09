@@ -40,7 +40,6 @@ using ::mpact::sim::riscv::Vslideup;
 
 using ::mpact::sim::riscv::test::kA5Mask;
 using ::mpact::sim::riscv::test::kLmulSettingByLogSize;
-using ::mpact::sim::riscv::test::kRs1;
 using ::mpact::sim::riscv::test::kRs1Name;
 using ::mpact::sim::riscv::test::kSewSettingsByByteSize;
 using ::mpact::sim::riscv::test::kVd;

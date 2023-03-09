@@ -519,6 +519,21 @@ static uint32_t SetNf(uint32_t iword, uint32_t nf) {
   return (iword | ((nf & 0x7) << 29));
 }
 
+// This test is only used to make sure all functions and variables are used,
+// instead of deleting them and then having to put them back later as more
+// encodings are added.
+TEST(RiscV32GVBinDecoderTest, None) {
+  (void)kRdValue;
+  (void)kSuccValue;
+  (void)kPredValue;
+  (void)SetRd(0, 0);
+  (void)SetRs1(0, 0);
+  (void)SetPred(0, 0);
+  (void)SetSucc(0, 0);
+  (void)Set16Rd(0, 0);
+  (void)Set16Rs2(0, 0);
+}
+
 TEST(RiscV32GVBinDecoderTest, VectorConfig) {
   EXPECT_EQ(DecodeRiscV32GV(kVsetvli_xn), OpcodeEnum::kVsetvliXn);
   EXPECT_EQ(DecodeRiscV32GV(kVsetvli_nz), OpcodeEnum::kVsetvliNz);
