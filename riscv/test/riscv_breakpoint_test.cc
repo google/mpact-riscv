@@ -22,7 +22,9 @@
 
 namespace {
 
+#ifndef EXPECT_OK
 #define EXPECT_OK(x) EXPECT_TRUE(x.ok())
+#endif
 
 using ::mpact::sim::generic::Component;
 using ::mpact::sim::generic::DataBuffer;

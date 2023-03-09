@@ -31,7 +31,9 @@
 
 namespace {
 
+#ifndef EXPECT_OK
 #define EXPECT_OK(x) EXPECT_TRUE(x.ok())
+#endif
 
 using ::mpact::sim::generic::Instruction;
 using ::mpact::sim::riscv::RiscVArmSemihost;
