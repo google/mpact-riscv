@@ -181,15 +181,10 @@ void Vsetvl(bool rd_zero, bool rs1_zero, const Instruction *inst) {
     if (avl <= new_max_length) {
       // If the requested vl is less than max use it.
       vl = avl;
+    } else if (avl < (new_max_length << 1)) {
+      // If the requested vl is less than 2 * max, set vl to half the requested.
+      vl = (avl + 1) >> 1;
     }
-
-    // The RISCV spec has the following constraint when VLMAX < AVL < 2 * VLMAX:
-    //    ceil(AVL / 2) <= vl <= VLMAX
-    //
-    // This allows vl to be assigned to half of the requested AVL value, however
-    // vl may be assigned to VLMAX instead. SiFive implementations of the RISCV
-    // vector engine set vl to VLMAX in this case, which is the same approach
-    // followed here.
   }
   rv_vector->set_vector_length(vl);
   if (!rd_zero) {  // Update register if there is a writable destination.

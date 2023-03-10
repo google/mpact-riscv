@@ -206,13 +206,13 @@ slot privileged {
   default size = 4;
   default latency = global_latency;
   opcodes {
-    uret{: : next_pc(0)},
+    uret{: : next_pc},
       disasm: "uret",
       semfunc: "&RV32::RiscVPrivURet";
-    sret{: : next_pc(0)},
+    sret{: : next_pc},
       disasm: "sret",
       semfunc: "&RV32::RiscVPrivSRet";
-    mret{: : next_pc(0)},
+    mret{: : next_pc},
       disasm: "mret",
       semfunc: "&RV32::RiscVPrivMRet";
     wfi{},

@@ -34,11 +34,6 @@ exports_files([
     "riscv_vector.bin_fmt",
 ])
 
-config_setting(
-    name = "arm_cpu",
-    values = {"cpu" : "arm"},
-)
-
 cc_library(
     name = "riscv_state",
     srcs = [
@@ -51,14 +46,9 @@ cc_library(
         "riscv_vector_state.cc",
         "riscv_xip_xie.cc",
         "riscv_xstatus.cc",
-    ] + select({
-        "arm_cpu": ["riscv_fp_host_arm.cc"],
-        "//conditions:default": ["riscv_fp_host_x86.cc"],
-    }),
+    ],
     hdrs = [
         "riscv_csr.h",
-        "riscv_fp_host.h",
-        "riscv_fp_info.h",
         "riscv_fp_state.h",
         "riscv_misa.h",
         "riscv_register.h",
@@ -82,6 +72,7 @@ cc_library(
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/types:any",
         "@mpact-sim//mpact/sim/generic:arch_state",
         "@mpact-sim//mpact/sim/generic:core",
         "@mpact-sim//mpact/sim/generic:instruction",
