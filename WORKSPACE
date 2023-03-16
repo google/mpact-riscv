@@ -16,6 +16,7 @@ workspace(name = "com_google_mpact-riscv")
 
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file", "http_archive")
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 # Additional bazel rules.
 http_archive(
@@ -107,9 +108,10 @@ http_archive(
     url = "https://github.com/bazelbuild/rules_foreign_cc/archive/refs/tags/0.9.0.tar.gz",
 )
 
-local_repository(
+git_repository(
     name = "mpact-sim",
-    path = "external/mpact-sim",
+    branch = "main",
+    remote = "https://mpact.googlesource.com/mpact-sim",
 )
 
 # Additional rules for licenses
