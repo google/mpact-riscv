@@ -122,7 +122,7 @@ inline void RiscVConvertFloatWithFflagsOp(const Instruction *instruction) {
       FromUint sign = lhs_u & (1ULL << (FPTypeInfo<From>::kBitSize - 1));
       // Turn the value into a denormal.
       constexpr FromUint hidden = 1ULL << (kSigSize - 1);
-      FromUint tmp_u = hidden | (sig >> 1);
+      FromUint tmp_u = sign | hidden | (sig >> 1);
       From tmp = *reinterpret_cast<From *>(&tmp_u);
       // Divide so that only the bits we care about are left in the significand.
       int shift = kBias + kSigSize - exp_value - 1;
@@ -132,7 +132,7 @@ inline void RiscVConvertFloatWithFflagsOp(const Instruction *instruction) {
       auto *rv_fp = static_cast<RiscVState *>(instruction->state())->rv_fp();
       {
         // The rounding happens during this division.
-        ScopedFPRoundingMode set_fp_status(rv_fp, rm);
+        ScopedFPRoundingMode set_fp_rm(rv_fp, rm);
         tmp /= div;
       }
       // Convert back to normalized number, by using the original sign
@@ -353,8 +353,11 @@ inline void RiscVUnaryFloatNaNBoxOp(const Instruction *instruction,
     }
     rm_value = *(rv_fp->GetRoundingMode());
   }
-  ScopedFPStatus set_fp_status(rv_fp, rm_value);
-  Result dest_value = operation(lhs);
+  Result dest_value;
+  {
+    ScopedFPStatus set_fp_status(rv_fp, rm_value);
+    dest_value = operation(lhs);
+  }
   if (std::isnan(dest_value) && std::signbit(dest_value)) {
     ResUint res_value = *reinterpret_cast<ResUint *>(&dest_value);
     res_value &= FPTypeInfo<Result>::kInfMask;
@@ -398,8 +401,11 @@ inline void RiscVUnaryFloatOp(const Instruction *instruction,
     }
     rm_value = *rv_fp->GetRoundingMode();
   }
-  ScopedFPStatus set_fp_status(rv_fp, rm_value);
-  Result dest_value = operation(lhs);
+  Result dest_value;
+  {
+    ScopedFPStatus set_fp_status(rv_fp, rm_value);
+    dest_value = operation(lhs);
+  }
   auto *dest = instruction->Destination(0);
   using UInt = typename FPTypeInfo<Result>::UIntType;
   auto *reg_dest =
@@ -429,8 +435,10 @@ inline void RiscVUnaryFloatWithFflagsOp(
   }
   uint32_t flag = 0;
   Result dest_value;
-  ScopedFPStatus set_fp_status(rv_fp, rm_value);
-  dest_value = operation(lhs, flag);
+  {
+    ScopedFPStatus set_fp_status(rv_fp, rm_value);
+    dest_value = operation(lhs, flag);
+  }
   auto *dest = instruction->Destination(0);
   using UInt = typename FPTypeInfo<Result>::UIntType;
   auto *reg_dest =
@@ -465,8 +473,11 @@ inline void RiscVBinaryFloatNaNBoxOp(
     }
     rm_value = *rv_fp->GetRoundingMode();
   }
-  ScopedFPStatus fp_status(rv_fp, rm_value);
-  Result dest_value = operation(lhs, rhs);
+  Result dest_value;
+  {
+    ScopedFPStatus fp_status(rv_fp, rm_value);
+    dest_value = operation(lhs, rhs);
+  }
   if (std::isnan(dest_value)) {
     *reinterpret_cast<typename FPTypeInfo<Result>::UIntType *>(&dest_value) =
         FPTypeInfo<Result>::kCanonicalNaN;
@@ -510,8 +521,11 @@ inline void RiscVTernaryFloatNaNBoxOp(
     }
     rm_value = *rv_fp->GetRoundingMode();
   }
-  ScopedFPStatus fp_status(rv_fp, rm_value);
-  Result dest_value = operation(rs1, rs2, rs3);
+  Result dest_value;
+  {
+    ScopedFPStatus fp_status(rv_fp, rm_value);
+    dest_value = operation(rs1, rs2, rs3);
+  }
   auto *reg = static_cast<generic::RegisterDestinationOperand<Register> *>(
                   instruction->Destination(0))
                   ->GetRegister();

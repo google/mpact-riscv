@@ -130,7 +130,6 @@ void Vfcvtxufv(const Instruction *inst) {
     return;
   }
   int sew = rv_vector->selected_element_width();
-  ScopedFPStatus set_fpstatus(rv_fp);
   switch (sew) {
     case 4:
       return RiscVUnaryVectorOpWithFflags<uint32_t, float>(
@@ -159,7 +158,6 @@ void Vfcvtxfv(const Instruction *inst) {
     return;
   }
   int sew = rv_vector->selected_element_width();
-  ScopedFPStatus set_fpstatus(rv_fp);
   switch (sew) {
     case 4:
       return RiscVUnaryVectorOpWithFflags<int32_t, float>(
@@ -236,9 +234,7 @@ void Vfcvtfxv(const Instruction *inst) {
 void Vfcvtrtzxufv(const Instruction *inst) {
   auto *rv_state = static_cast<RiscVState *>(inst->state());
   auto *rv_vector = rv_state->rv_vector();
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
   int sew = rv_vector->selected_element_width();
-  ScopedFPStatus set_rounding_mode(rv_fp, FPRoundingMode::kRoundTowardsZero);
   switch (sew) {
     case 4:
       return RiscVUnaryVectorOpWithFflags<uint32_t, float>(
@@ -261,9 +257,7 @@ void Vfcvtrtzxufv(const Instruction *inst) {
 void Vfcvtrtzxfv(const Instruction *inst) {
   auto *rv_state = static_cast<RiscVState *>(inst->state());
   auto *rv_vector = rv_state->rv_vector();
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
   int sew = rv_vector->selected_element_width();
-  ScopedFPStatus set_rounding_mode(rv_fp, FPRoundingMode::kRoundTowardsZero);
   switch (sew) {
     case 4:
       return RiscVUnaryVectorOpWithFflags<int32_t, float>(
@@ -292,7 +286,6 @@ void Vfwcvtxufv(const Instruction *inst) {
     return;
   }
   int sew = rv_vector->selected_element_width();
-  ScopedFPStatus set_fpstatus(rv_fp);
   switch (sew) {
     case 4:
       return RiscVUnaryVectorOpWithFflags<uint64_t, float>(
@@ -316,7 +309,6 @@ void Vfwcvtxfv(const Instruction *inst) {
     return;
   }
   int sew = rv_vector->selected_element_width();
-  ScopedFPStatus set_fpstatus(rv_fp);
   switch (sew) {
     case 4:
       return RiscVUnaryVectorOpWithFflags<int64_t, float>(
@@ -404,9 +396,7 @@ void Vfwcvtfxv(const Instruction *inst) {
 void Vfwcvtrtzxufv(const Instruction *inst) {
   auto *rv_state = static_cast<RiscVState *>(inst->state());
   auto *rv_vector = rv_state->rv_vector();
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
   int sew = rv_vector->selected_element_width();
-  ScopedFPStatus set_rounding_mode(rv_fp, FPRoundingMode::kRoundTowardsZero);
   switch (sew) {
     case 4:
       return RiscVUnaryVectorOpWithFflags<uint64_t, float>(
@@ -424,9 +414,7 @@ void Vfwcvtrtzxufv(const Instruction *inst) {
 void Vfwcvtrtzxfv(const Instruction *inst) {
   auto *rv_state = static_cast<RiscVState *>(inst->state());
   auto *rv_vector = rv_state->rv_vector();
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
   int sew = rv_vector->selected_element_width();
-  ScopedFPStatus set_rounding_mode(rv_fp, FPRoundingMode::kRoundTowardsZero);
   switch (sew) {
     case 4:
       return RiscVUnaryVectorOpWithFflags<int64_t, float>(
@@ -450,7 +438,6 @@ void Vfncvtxufw(const Instruction *inst) {
     return;
   }
   int sew = rv_vector->selected_element_width();
-  ScopedFPStatus set_fpstatus(rv_fp);
   switch (sew) {
     case 4:
       return RiscVUnaryVectorOpWithFflags<uint16_t, float>(
@@ -479,7 +466,6 @@ void Vfncvtxfw(const Instruction *inst) {
     return;
   }
   int sew = rv_vector->selected_element_width();
-  ScopedFPStatus set_fpstatus(rv_fp);
   switch (sew) {
     case 4:
       return RiscVUnaryVectorOpWithFflags<int16_t, float>(
@@ -612,9 +598,7 @@ void Vfncvtfxw(const Instruction *inst) {
 void Vfncvtrtzxufw(const Instruction *inst) {
   auto *rv_state = static_cast<RiscVState *>(inst->state());
   auto *rv_vector = rv_state->rv_vector();
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
   int sew = rv_vector->selected_element_width();
-  ScopedFPStatus set_rounding_mode(rv_fp, FPRoundingMode::kRoundTowardsZero);
   switch (sew) {
     case 4:
       return RiscVUnaryVectorOpWithFflags<uint16_t, float>(
@@ -637,9 +621,7 @@ void Vfncvtrtzxufw(const Instruction *inst) {
 void Vfncvtrtzxfw(const Instruction *inst) {
   auto *rv_state = static_cast<RiscVState *>(inst->state());
   auto *rv_vector = rv_state->rv_vector();
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
   int sew = rv_vector->selected_element_width();
-  ScopedFPStatus set_rounding_mode(rv_fp, FPRoundingMode::kRoundTowardsZero);
   switch (sew) {
     case 4:
       return RiscVUnaryVectorOpWithFflags<int16_t, float>(

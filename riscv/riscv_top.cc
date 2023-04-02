@@ -293,6 +293,11 @@ absl::StatusOr<int> RiscVTop::Step(int num) {
       executed = ExecuteInstruction(inst);
       counter_num_cycles_.Increment(1);
       state_->AdvanceDelayLines();
+      // Check for interrupt.
+      if (state_->is_interrupt_available()) {
+        uint64_t epc = (executed ? state_->pc_operand()->AsUint64(0) : pc);
+        state_->TakeAvailableInterrupt(epc);
+      }
     } while (!executed);
     count++;
     // Update counters.
@@ -360,6 +365,11 @@ absl::Status RiscVTop::Run() {
         executed = ExecuteInstruction(inst);
         counter_num_cycles_.Increment(1);
         state_->AdvanceDelayLines();
+        // Check for interrupt.
+        if (state_->is_interrupt_available()) {
+          uint64_t epc = (executed ? state_->pc_operand()->AsUint64(0) : pc);
+          state_->TakeAvailableInterrupt(epc);
+        }
       } while (!executed);
       // Update counters.
       counter_opcode_[inst->opcode()].Increment(1);

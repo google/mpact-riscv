@@ -108,10 +108,25 @@ http_archive(
     url = "https://github.com/bazelbuild/rules_foreign_cc/archive/refs/tags/0.9.0.tar.gz",
 )
 
+# MPACT-Sim repo
 git_repository(
     name = "mpact-sim",
     branch = "main",
     remote = "https://mpact.googlesource.com/mpact-sim",
+)
+
+# Binding to tool targets in mpact-sim. This is required for the macros
+# in mpact_sim_isa.bzl to work properly when generating code for the
+# decoders. These create the //external:decoder_gen and
+# //external:bin_format_gen aliases used in mpact_sim_isa.bzl.
+bind(
+    name = "decoder_gen",
+    actual = "@mpact-sim//mpact/sim/decoder:decoder_gen",
+)
+
+bind(
+    name = "bin_format_gen",
+    actual = "@mpact-sim//mpact/sim/decoder:bin_format_gen",
 )
 
 # Additional rules for licenses

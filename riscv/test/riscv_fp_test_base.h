@@ -425,8 +425,11 @@ class RiscVFPInstructionTestBase : public testing::Test {
 
         inst->Execute(nullptr);
 
-        ScopedFPStatus set_fpstatus(rv_fp_);
-        auto op_val = operation(lhs_span[i]);
+        R op_val;
+        {
+          ScopedFPStatus set_fpstatus(rv_fp_);
+          op_val = operation(lhs_span[i]);
+        }
         auto reg_val = state_->GetRegister<DestRegisterType>(kRdName)
                            .first->data_buffer()
                            ->template Get<R>(0);
@@ -474,21 +477,27 @@ class RiscVFPInstructionTestBase : public testing::Test {
         SetRegisterValues<R, DestRegisterType>({{kRdName, 0}});
 
         inst->Execute(nullptr);
+        auto fflags = rv_fp_->fflags()->GetUint32();
 
-        ScopedFPStatus set_fpstatus(rv_fp_);
-        auto [op_val, flag] = operation(lhs_span[i]);
+        R op_val;
+        uint32_t flag;
+        {
+          ScopedFPRoundingMode scoped_rm(rv_fp_, rm);
+          std::tie(op_val, flag) = operation(lhs_span[i]);
+        }
+
         auto reg_val = state_->GetRegister<DestRegisterType>(kRdName)
                            .first->data_buffer()
                            ->template Get<R>(0);
-        FPCompare<R>(op_val, reg_val, delta_position,
-                     absl::StrCat(name, "  ", i, ": ", lhs_span[i]));
+        FPCompare<R>(
+            op_val, reg_val, delta_position,
+            absl::StrCat(name, "  ", i, ": ", lhs_span[i], " rm: ", rm));
         auto lhs_uint = *reinterpret_cast<LhsInt *>(&lhs_span[i]);
         auto op_val_uint = *reinterpret_cast<RInt *>(&op_val);
-        auto fflags = rv_fp_->fflags()->GetUint32();
         EXPECT_EQ(flag, fflags)
             << name << "(" << lhs_span[i] << ")  " << std::hex << name << "(0x"
             << lhs_uint << ") == " << op_val << std::hex << "  0x"
-            << op_val_uint;
+            << op_val_uint << " rm: " << rm;
       }
     }
   }
@@ -536,15 +545,19 @@ class RiscVFPInstructionTestBase : public testing::Test {
 
         inst->Execute(nullptr);
 
-        ScopedFPStatus set_fpstatus(rv_fp_);
-        auto op_val = operation(lhs_span[i], rhs_span[i]);
+        R op_val;
+        {
+          ScopedFPStatus set_fpstatus(rv_fp_);
+          op_val = operation(lhs_span[i], rhs_span[i]);
+        }
         auto reg_val = state_->GetRegister<DestRegisterType>(kRdName)
                            .first->data_buffer()
                            ->template Get<R>(0);
-        FPCompare<R>(
-            op_val, reg_val, delta_position,
-            absl::StrCat(name, "  ", i, ": ", lhs_span[i], "  ", rhs_span[i]));
+        FPCompare<R>(op_val, reg_val, delta_position,
+                     absl::StrCat(name, "  ", i, ": ", lhs_span[i], "  ",
+                                  rhs_span[i], " rm: ", rm));
       }
+      if (HasFailure()) return;
     }
   }
 
@@ -595,8 +608,12 @@ class RiscVFPInstructionTestBase : public testing::Test {
 
         inst->Execute(nullptr);
 
-        ScopedFPStatus set_fpstatus(rv_fp_);
-        auto [op_val, flag] = operation(lhs_span[i], rhs_span[i]);
+        R op_val;
+        uint32_t flag;
+        {
+          ScopedFPStatus set_fpstatus(rv_fp_);
+          std::tie(op_val, flag) = operation(lhs_span[i], rhs_span[i]);
+        }
         auto reg_val = state_->GetRegister<DestRegisterType>(kRdName)
                            .first->data_buffer()
                            ->template Get<R>(0);
@@ -658,8 +675,11 @@ class RiscVFPInstructionTestBase : public testing::Test {
 
         inst->Execute(nullptr);
 
-        ScopedFPStatus set_fpstatus(rv_fp_);
-        auto op_val = operation(lhs_span[i], mhs_span[i], rhs_span[i]);
+        R op_val;
+        {
+          ScopedFPStatus set_fpstatus(rv_fp_);
+          op_val = operation(lhs_span[i], mhs_span[i], rhs_span[i]);
+        }
         auto reg_val = state_->GetRegister<DestRegisterType>(kRdName)
                            .first->data_buffer()
                            ->template Get<R>(0);
@@ -698,7 +718,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
     FromUint sig = kSigMask & val_u;
     // Turn the value into a denormal.
     constexpr FromUint hidden = 1ULL << (kSigSize - 1);
-    FromUint tmp_u = ((exp != 0) ? hidden : 0ULL) | (sig >> 1);
+    FromUint tmp_u = sign | ((exp != 0) ? hidden : 0ULL) | (sig >> 1);
     T tmp = *reinterpret_cast<T *>(&tmp_u);
     if (exp_value - kBias + 1 < kSigSize) {
       // Divide so that only the bits we care about are left in the significand.

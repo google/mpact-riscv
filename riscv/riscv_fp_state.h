@@ -18,6 +18,8 @@
 #include <cstdint>
 
 #include "riscv/riscv_csr.h"
+#include "riscv/riscv_fp_host.h"
+#include "riscv/riscv_fp_info.h"
 
 // This file contains code that manages the fp state of the RiscV processor.
 
@@ -25,26 +27,8 @@ namespace mpact {
 namespace sim {
 namespace riscv {
 
-// RiscV floating point rounding modes. Note, for now, kRoundToNearestTiesToMax
-// is treated as if it is kRRoundToNearest.
-enum class FPRoundingMode : uint32_t {
-  kRoundToNearest = 0b000,
-  kRoundTowardsZero = 0b001,
-  kRoundDown = 0b010,
-  kRoundUp = 0b011,
-  kRoundToNearestTiesToMax = 0b100,
-  kDynamic = 0b111,  // kDynamic can only be used in the instruction rm field.
-};
-
-enum class FPExceptions : uint32_t {
-  kInexact = 0b00001,
-  kUnderflow = 0b00010,
-  kOverflow = 0b00100,
-  kDivByZero = 0b01000,
-  kInvalidOp = 0b10000,
-};
-
 class RiscVFPState;
+class HostFloatingPointInterface;
 
 // Floating point CSR.
 class RiscVFcsr : public RiscVSimpleCsr<uint32_t> {
@@ -107,8 +91,6 @@ class RiscVFflags : public RiscVSimpleCsr<uint32_t> {
 
 class RiscVFPState {
  public:
-  static constexpr uint32_t kX86ExceptionFlags = 0x1f80;
-
   RiscVFPState() = delete;
   RiscVFPState(const RiscVFPState &) = delete;
   explicit RiscVFPState(RiscVState *rv_state);
@@ -118,10 +100,6 @@ class RiscVFPState {
 
   void SetRoundingMode(FPRoundingMode mode);
 
-  uint32_t sim_fp_status() const { return sim_fp_status_; }
-  void set_sim_fp_status(uint32_t fp_status) {
-    sim_fp_status_ = fp_status | kX86ExceptionFlags;
-  }
   bool rounding_mode_valid() const { return rounding_mode_valid_; }
 
   // FP CSRs.
@@ -130,48 +108,20 @@ class RiscVFPState {
   RiscVFflags *fflags() const { return fflags_; }
   // Parent state.
   RiscVState *rv_state() const { return rv_state_; }
+  // Host interface.
+  HostFloatingPointInterface *host_fp_interface() const {
+    return host_fp_interface_;
+  }
 
  private:
   RiscVState *rv_state_;
   RiscVFcsr *fcsr_ = nullptr;
   RiscVFrm *frm_ = nullptr;
   RiscVFflags *fflags_ = nullptr;
+  HostFloatingPointInterface *host_fp_interface_;
 
-  uint32_t sim_fp_status_ = kX86ExceptionFlags;
   bool rounding_mode_valid_ = true;
   FPRoundingMode rounding_mode_ = FPRoundingMode::kRoundToNearest;
-};
-
-// This class is used to set the native fp status and rounding mode to the
-// current simulated status and rounding mode, and then copying the native
-// status back to the simulated status using RAII.
-class ScopedFPStatus {
- public:
-  ScopedFPStatus() = delete;
-  explicit ScopedFPStatus(RiscVFPState *fp_state);
-  ScopedFPStatus(RiscVFPState *fp_state, uint32_t rm);
-  ScopedFPStatus(RiscVFPState *fp_state, FPRoundingMode rm);
-  ~ScopedFPStatus();
-
- private:
-  RiscVFPState *fp_state_;
-  uint32_t x86_rm_;
-  uint32_t cpu_fp_status_;
-};
-
-// This class is used to set the native fp rounding mode without affecting the
-// current simulated status (fp flags).
-class ScopedFPRoundingMode {
- public:
-  ScopedFPRoundingMode();
-  explicit ScopedFPRoundingMode(RiscVFPState *fp_state);
-  ScopedFPRoundingMode(RiscVFPState *fp_state, uint32_t rm);
-  ScopedFPRoundingMode(RiscVFPState *fp_state, FPRoundingMode rm);
-  ~ScopedFPRoundingMode();
-
- private:
-  uint32_t x86_rm_;
-  uint32_t cpu_fp_status_;
 };
 
 }  // namespace riscv
