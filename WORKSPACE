@@ -77,14 +77,6 @@ http_archive(
     urls = ["https://github.com/google/googletest/archive/refs/tags/v1.13.0.tar.gz"],
 )
 
-ALL_CONTENT = """\
-filegroup(
-  name = "all_srcs",
-  srcs = glob(["**"]),
-  visibility = ["//visibility:public"],
-)
-"""
-
 # Antlr4 c++ runtime.
 http_archive(
     name = "org_antlr4_cpp_runtime",
