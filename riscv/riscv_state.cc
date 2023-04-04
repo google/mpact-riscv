@@ -14,6 +14,7 @@
 
 #include "riscv/riscv_state.h"
 
+#include <cstdint>
 #include <iostream>
 #include <limits>
 #include <string>
@@ -21,6 +22,7 @@
 
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "absl/strings/str_cat.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "riscv/riscv_csr.h"
@@ -431,7 +433,9 @@ void RiscVState::ECall(const Instruction *inst) {
       LOG(ERROR) << "Unknown privilege mode";
       return;
   }
-  Trap(/*is_interrupt*/ false, 0, *code, inst->address(), inst);
+
+  uint64_t epc = inst->address();
+  Trap(/*is_interrupt*/ false, 0, *code, epc, inst);
 }
 
 void RiscVState::EBreak(const Instruction *inst) {
@@ -439,6 +443,8 @@ void RiscVState::EBreak(const Instruction *inst) {
     bool res = handler(inst);
     if (res) return;
   }
+
+  // Set the return address to the current instruction.
   auto epc = (inst != nullptr) ? inst->address() : 0;
   Trap(/*is_interrupt=*/false, 0, 3, epc, inst);
 }
@@ -454,6 +460,30 @@ void RiscVState::WFI(const Instruction *inst) {
                           : "unknown location";
 
   LOG(INFO) << "No handler for wfi: treating as nop: " << where;
+}
+
+void RiscVState::Cease(const Instruction *inst) {
+  if (on_cease_ != nullptr) {
+    const bool res = on_cease_(inst);
+    if (res) return;
+  }
+
+  // If no handler is specidied, then CEASE is treated as an infinite loop.
+  auto current_xlen = xlen();
+  auto *db = pc_dst_operand_->AllocateDataBuffer();
+  if (current_xlen == RiscVXlen::RV32) {
+    db->SetSubmit<uint32_t>(0, static_cast<uint32_t>(inst->address()));
+  } else if (current_xlen == RiscVXlen::RV64) {
+    db->SetSubmit<uint64_t>(0, inst->address());
+  } else {
+    LOG(ERROR) << "Unknown xlen";
+  }
+
+  const std::string where = (inst != nullptr)
+                                ? absl::StrCat(absl::Hex(inst->address()))
+                                : "unknown location";
+
+  LOG(INFO) << "No handler for cease: treating as an infinite loop: " << where;
 }
 
 void RiscVState::Trap(bool is_interrupt, uint64_t trap_value,
@@ -573,6 +603,10 @@ void RiscVState::Trap(bool is_interrupt, uint64_t trap_value,
   mstatus_->Submit();
 }
 
+// CheckForInterrupt is called whenever any relevant bits in the interrupt
+// enable and set bits are changed. It should always be scheduled to execute
+// from the function_delay_line, that way it is executed after an instruction
+// has completed execution.
 void RiscVState::CheckForInterrupt() {
   // Compute interrupts enabled at each level using [ms]ideleg.
   uint32_t interrupts = mip_->AsUint32() & mie_->AsUint32();
@@ -597,13 +631,13 @@ void RiscVState::CheckForInterrupt() {
 
   InterruptCode code;
   if (mie && (m_interrupts != 0)) {
-    // Take interrupt to machine mode.
+    // Take an interrupt to machine mode.
     code = PickInterrupt(m_interrupts);
   } else if (sie && (s_interrupts != 0)) {
-    // Take interrupt to supervisor mode.
+    // Take an interrupt to supervisor mode.
     code = PickInterrupt(s_interrupts);
   } else if (uie && (u_interrupts != 0)) {
-    // Take interrupt to user mode.
+    // Take an interrupt to user mode.
     code = PickInterrupt(u_interrupts);
     LOG(ERROR) << "User mode interrupts not supported yet";
     return;
@@ -612,21 +646,19 @@ void RiscVState::CheckForInterrupt() {
     return;
   }
 
-  // Compute return pc by getting current instruction and adding its size.
-  auto pc = pc_src_operand_->AsUint64(0);
-  auto *db = db_factory()->Allocate<uint32_t>(1);
-  memory_->Load(pc, db, nullptr, nullptr);
-  auto inst_word = db->Get<uint32_t>(0);
-  // Check to see if it is a 16 bit instruction.
-  uint64_t epc = pc;
-  if ((inst_word & 0b11) != 0b11) {
-    epc += 2;
-  } else {
-    epc += 4;
-  }
-  function_delay_line()->Add(1, [this, code, epc]() -> void {
-    Trap(/*is_interrupt*/ true, 0, *code, epc, nullptr);
-  });
+  available_interrupt_code_ = code;
+  is_interrupt_available_ = true;
+}
+
+// Take the interrupt that is pending.
+void RiscVState::TakeAvailableInterrupt(uint64_t epc) {
+  // Make sure an interrupt is set as pending by CheckForInterrupt.
+  if (!is_interrupt_available_) return;
+  // Initiate the interrupt.
+  Trap(/*is_interrupt*/ true, 0, *available_interrupt_code_, epc, nullptr);
+  // Clear pending interrupt.
+  is_interrupt_available_ = false;
+  available_interrupt_code_ = InterruptCode::kNone;
 }
 
 // The priority order of the interrupts are as follows:

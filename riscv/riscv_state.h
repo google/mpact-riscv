@@ -24,6 +24,7 @@
 
 #include "absl/functional/any_invocable.h"
 #include "absl/status/status.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "mpact/sim/generic/arch_state.h"
 #include "mpact/sim/generic/data_buffer.h"
@@ -280,6 +281,10 @@ class RiscVState : public ArchState {
   void EBreak(const Instruction *inst);
   // WFI
   void WFI(const Instruction *inst);
+  // Ceases execution on the core. This is a non-standard instruction that
+  // quiesces traffic for embedded cores before halting. The core must be reset
+  // to come out of this state.
+  void Cease(const Instruction *inst);
   // Trap.
   void Trap(bool is_interrupt, uint64_t trap_value, uint64_t exception_code,
             uint64_t epc, const Instruction *inst);
@@ -288,8 +293,12 @@ class RiscVState : public ArchState {
     on_ebreak_.emplace_back(std::move(handler));
   }
   // This function is called after any event that may have caused an interrupt
-  // to be registered as pending or enabled.
+  // to be registered as pending or enabled. If the interrupt can be taken
+  // it registers it as available.
   void CheckForInterrupt();
+  // This function is called when the return pc for the available interrupt
+  // is known. If there is no available interrupt, it just returns.
+  void TakeAvailableInterrupt(uint64_t epc);
 
   // Accessors.
   void set_memory(util::MemoryInterface *memory) { memory_ = memory; }
@@ -308,6 +317,10 @@ class RiscVState : public ArchState {
 
   void set_on_wfi(absl::AnyInvocable<bool(const Instruction *)> callback) {
     on_wfi_ = std::move(callback);
+  }
+
+  void set_on_cease(absl::AnyInvocable<bool(const Instruction *)> callback) {
+    on_cease_ = std::move(callback);
   }
 
   void set_on_trap(
@@ -333,6 +346,7 @@ class RiscVState : public ArchState {
   void set_privilege_mode(PrivilegeMode privilege_mode) {
     privilege_mode_ = privilege_mode;
   }
+  inline bool is_interrupt_available() const { return is_interrupt_available_; }
 
   // Getters for select CSRs.
   RiscVMStatus *mstatus() const { return mstatus_; }
@@ -376,7 +390,11 @@ class RiscVState : public ArchState {
                           const Instruction *)>
       on_trap_;
   absl::AnyInvocable<bool(const Instruction *)> on_wfi_;
+  absl::AnyInvocable<bool(const Instruction *)> on_cease_;
   std::vector<RiscVCsrInterface *> csr_vec_;
+  // For interrupt handling.
+  bool is_interrupt_available_ = false;
+  InterruptCode available_interrupt_code_ = InterruptCode::kNone;
   // By default, execute in machine mode.
   PrivilegeMode privilege_mode_ = PrivilegeMode::kMachine;
   // Handles to frequently used CSRs.
