@@ -101,10 +101,11 @@ http_archive(
 )
 
 # MPACT-Sim repo
-git_repository(
+http_archive(
     name = "mpact-sim",
-    branch = "main",
-    remote = "https://mpact.googlesource.com/mpact-sim",
+    sha256 = "8bff1907a07410cca3dbde8795797fff237bf19f4d3d696df4c5d8219de276b0",
+    strip_prefix = "mpact-sim-0.0.1",
+    url = "https://github.com/google/mpact-sim/archive/refs/tags/0.0.1.tar.gz",
 )
 
 # Binding to tool targets in mpact-sim. This is required for the macros
