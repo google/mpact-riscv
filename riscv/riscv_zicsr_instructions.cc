@@ -172,7 +172,7 @@ static inline void RVZiCsrrwNr(Instruction *instruction) {
   }
   auto *csr = result.value();
   // Write the new value to the csr.
-  uint32_t new_value = generic::GetInstructionSource<T>(instruction, 0);
+  T new_value = generic::GetInstructionSource<T>(instruction, 0);
   csr->Write(new_value);
 }
 

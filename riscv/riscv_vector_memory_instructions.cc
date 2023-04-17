@@ -15,6 +15,7 @@
 #include "riscv/riscv_vector_memory_instructions.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <vector>
 
 #include "absl/log/log.h"
@@ -152,7 +153,8 @@ absl::Status WriteBackSegmentLoadData(int vector_register_byte_length,
 // versions are all modeled by the same function. Flags are bound during decode
 // to the two first parameters to specify if rd or rs1 are x0.
 void Vsetvl(bool rd_zero, bool rs1_zero, const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+  auto *rv_state = static_cast<RiscVState *>(inst->state());
+  auto *rv_vector = rv_state->rv_vector();
   uint32_t vtype = GetInstructionSource<uint32_t>(inst, 1) & 0b1'1'111'111;
   // Get previous vtype.
   uint32_t prev_vtype = rv_vector->vtype();
@@ -196,7 +198,11 @@ void Vsetvl(bool rd_zero, bool rs1_zero, const Instruction *inst) {
     auto *reg = static_cast<generic::RegisterDestinationOperand<uint32_t> *>(
                     inst->Destination(0))
                     ->GetRegister();
-    reg->data_buffer()->Set<uint32_t>(0, vl);
+    if (rv_state->xlen() == RiscVXlen::RV32) {
+      reg->data_buffer()->Set<uint32_t>(0, vl);
+    } else {
+      reg->data_buffer()->Set<uint64_t>(0, vl);
+    }
   }
 }
 
