@@ -210,8 +210,22 @@ cc_test(
         "riscv32g_encoding_test.cc",
     ],
     deps = [
-        "//riscv:riscv32g_bin_fmt",
         "//riscv:riscv32g_decoder",
+        "//riscv:riscv_g",
+        "//riscv:riscv_state",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "riscv64g_encoding_test",
+    size = "small",
+    srcs = [
+        "riscv64g_encoding_test.cc",
+    ],
+    deps = [
+        "//riscv:riscv64g_decoder",
+        "//riscv:riscv64g_isa",
         "//riscv:riscv_g",
         "//riscv:riscv_state",
         "@com_google_googletest//:gtest_main",
