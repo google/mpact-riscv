@@ -54,7 +54,7 @@ http_archive(
 # ELFIO header based library.
 http_archive(
     name = "com_github_serge1_elfio",
-    build_file = "BUILD.elfio",
+    build_file = "@mpact-sim//:external/BUILD.elfio",
     sha256 = "767b269063fc35aba6d361139f830aa91c45dc6b77942f082666876c1aa0be0f",
     strip_prefix = "elfio-3.9",
     urls = ["https://github.com/serge1/ELFIO/releases/download/Release_3.9/elfio-3.9.tar.gz"],
@@ -79,7 +79,7 @@ http_archive(
 # Antlr4 c++ runtime.
 http_archive(
     name = "org_antlr4_cpp_runtime",
-    build_file = "BUILD.antlr4",
+    build_file = "@mpact-sim//:external/BUILD.antlr4",
     sha256 = "8018c335316e61bb768e5bd4a743a9303070af4e1a8577fa902cd053c17249da",
     urls = ["https://www.antlr.org/download/antlr4-cpp-runtime-4.11.1-source.zip"],
 )
