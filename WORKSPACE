@@ -102,9 +102,9 @@ http_archive(
 # MPACT-Sim repo
 http_archive(
     name = "mpact-sim",
-    sha256 = "8bff1907a07410cca3dbde8795797fff237bf19f4d3d696df4c5d8219de276b0",
-    strip_prefix = "mpact-sim-0.0.1",
-    url = "https://github.com/google/mpact-sim/archive/refs/tags/0.0.1.tar.gz",
+    sha256 = "8464cf3a56cbd33f73cb83943ce5ce51547cede06278546bdb187cf19fe917b2",
+    strip_prefix = "mpact-sim-0.0.2",
+    url = "https://github.com/google/mpact-sim/archive/refs/tags/0.0.2.tar.gz",
 )
 
 # Binding to tool targets in mpact-sim. This is required for the macros
