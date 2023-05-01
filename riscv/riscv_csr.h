@@ -259,19 +259,19 @@ class RiscVSimpleCsr : public RiscVCsrInterface {
 
   // Return the value, modified as per read mask.
   uint32_t AsUint32() override {
-    return static_cast<uint32_t>(value_ & read_mask_);
+    return static_cast<uint32_t>(GetUint32() & read_mask_);
   }
   uint64_t AsUint64() override {
-    return static_cast<uint64_t>(value_ & read_mask_);
+    return static_cast<uint64_t>(GetUint64() & read_mask_);
   }
   // Write the value, modified as per write mask.
   void Write(uint32_t value) override {
     T t_value = static_cast<T>(value);
-    Set((t_value & write_mask_) | (value_ & ~write_mask_));
+    Set((t_value & write_mask_) | (GetUint32() & ~write_mask_));
   }
   void Write(uint64_t value) override {
     T t_value = static_cast<T>(value);
-    Set((t_value & write_mask_) | (value_ & ~write_mask_));
+    Set((t_value & write_mask_) | (GetUint64() & ~write_mask_));
   }
   // Set the bits specified in the value. Don't change the other bits.
   void SetBits(uint32_t value) override { Write(GetUint32() | value); }

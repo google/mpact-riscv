@@ -14,7 +14,7 @@
 
 # Build rules for RiscV simulator code.
 
-load("@mpact-sim//mpact/sim/decoder:mpact_sim_isa.bzl", "mpact_bin_fmt_decoder", "mpact_isa_decoder")
+load("@com_google_mpact-sim//mpact/sim/decoder:mpact_sim_isa.bzl", "mpact_bin_fmt_decoder", "mpact_isa_decoder")
 
 package(
     default_applicable_licenses = ["//:license"],
@@ -82,11 +82,11 @@ cc_library(
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
-        "@mpact-sim//mpact/sim/generic:arch_state",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/generic:type_helpers",
-        "@mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/generic:arch_state",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )
 
@@ -127,11 +127,11 @@ cc_library(
         "@com_google_absl//absl/numeric:int128",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/types:span",
-        "@mpact-sim//mpact/sim/generic:arch_state",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/generic:type_helpers",
-        "@mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/generic:arch_state",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )
 
@@ -172,10 +172,10 @@ cc_library(
         ":riscv_state",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/status",
-        "@mpact-sim//mpact/sim/generic:arch_state",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/generic:type_helpers",
+        "@com_google_mpact-sim//mpact/sim/generic:arch_state",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
     ],
 )
 
@@ -307,11 +307,11 @@ cc_library(
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
-        "@mpact-sim//mpact/sim/generic:arch_state",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/generic:program_error",
-        "@mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/generic:arch_state",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:program_error",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )
 
@@ -339,11 +339,11 @@ cc_library(
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:span",
-        "@mpact-sim//mpact/sim/generic:arch_state",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/generic:program_error",
-        "@mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/generic:arch_state",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:program_error",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )
 
@@ -368,11 +368,11 @@ cc_library(
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
-        "@mpact-sim//mpact/sim/generic:arch_state",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/generic:program_error",
-        "@mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/generic:arch_state",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:program_error",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )
 
@@ -393,11 +393,11 @@ cc_library(
         ":riscv_state",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/log",
-        "@mpact-sim//mpact/sim/generic:arch_state",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/generic:program_error",
-        "@mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/generic:arch_state",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:program_error",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )
 
@@ -424,12 +424,12 @@ cc_library(
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/synchronization",
-        "@mpact-sim//mpact/sim/generic:component",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:core_debug_interface",
-        "@mpact-sim//mpact/sim/generic:decode_cache",
-        "@mpact-sim//mpact/sim/generic:type_helpers",
-        "@mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/generic:component",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:core_debug_interface",
+        "@com_google_mpact-sim//mpact/sim/generic:decode_cache",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )
 
@@ -445,10 +445,10 @@ cc_library(
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",
-        "@mpact-sim//mpact/sim/generic:arch_state",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/generic:arch_state",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )
 
@@ -466,8 +466,8 @@ cc_library(
         "@com_google_absl//absl/functional:any_invocable",
         "@com_google_absl//absl/functional:bind_front",
         "@com_google_absl//absl/strings",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )
 
@@ -486,9 +486,9 @@ cc_library(
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",
-        "@mpact-sim//mpact/sim/generic:component",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/generic:component",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )
 
@@ -506,9 +506,9 @@ cc_library(
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
+        "@com_google_mpact-sim//mpact/sim/generic:core_debug_interface",
+        "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
         "@com_google_re2//:re2",
-        "@mpact-sim//mpact/sim/generic:core_debug_interface",
-        "@mpact-sim//mpact/sim/util/program_loader:elf_loader",
     ],
 )
 
@@ -519,7 +519,7 @@ cc_library(
     copts = ["-O3"],
     deps = [
         "@com_google_absl//absl/container:flat_hash_map",
-        "@mpact-sim//mpact/sim/generic:type_helpers",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
     ],
 )
 
@@ -561,13 +561,13 @@ cc_binary(
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/time",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:counters",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/proto:component_data_cc_proto",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
         "@com_google_protobuf//:protobuf",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:counters",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/proto:component_data_cc_proto",
-        "@mpact-sim//mpact/sim/util/memory",
-        "@mpact-sim//mpact/sim/util/program_loader:elf_loader",
     ],
 )
 
@@ -590,13 +590,13 @@ cc_binary(
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/time",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:counters",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/proto:component_data_cc_proto",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
         "@com_google_protobuf//:protobuf",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:counters",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/proto:component_data_cc_proto",
-        "@mpact-sim//mpact/sim/util/memory",
-        "@mpact-sim//mpact/sim/util/program_loader:elf_loader",
     ],
 )
 
@@ -610,7 +610,7 @@ cc_library(
     ],
     deps = [
         "@com_google_absl//absl/strings",
-        "@mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )
 
@@ -629,9 +629,9 @@ cc_binary(
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/util/memory",
-        "@mpact-sim//mpact/sim/util/program_loader:elf_loader",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
     ],
 )
 
@@ -652,9 +652,9 @@ cc_binary(
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:type_helpers",
-        "@mpact-sim//mpact/sim/util/memory",
-        "@mpact-sim//mpact/sim/util/program_loader:elf_loader",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
     ],
 )

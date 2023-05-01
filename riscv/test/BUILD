@@ -26,10 +26,10 @@ cc_library(
         "@com_google_absl//absl/functional:bind_front",
         "@com_google_absl//absl/random",
         "@com_google_absl//absl/strings",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/generic:type_helpers",
-        "@mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )
 
@@ -43,8 +43,8 @@ cc_library(
         "@com_google_absl//absl/random",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:span",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
     ],
 )
 
@@ -57,9 +57,9 @@ cc_library(
         "@com_google_absl//absl/random",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:span",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )
 
@@ -114,8 +114,8 @@ cc_test(
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
     ],
 )
 
@@ -130,8 +130,8 @@ cc_test(
         "//riscv:riscv_state",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
     ],
 )
 
@@ -146,9 +146,9 @@ cc_test(
         "//riscv:riscv_state",
         "@com_google_absl//absl/log:check",
         "@com_google_googletest//:gtest_main",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )
 
@@ -160,8 +160,8 @@ cc_test(
         "//riscv:riscv_g",
         "//riscv:riscv_state",
         "@com_google_googletest//:gtest_main",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
     ],
 )
 
@@ -178,9 +178,9 @@ cc_test(
         "//riscv:riscv_g",
         "//riscv:riscv_state",
         "@com_google_googletest//:gtest_main",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )
 
@@ -197,9 +197,9 @@ cc_test(
         "//riscv:riscv_g",
         "//riscv:riscv_state",
         "@com_google_googletest//:gtest_main",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )
 
@@ -241,8 +241,8 @@ cc_test(
     deps = [
         "//riscv:riscv32_htif_semihost",
         "@com_google_googletest//:gtest_main",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )
 
@@ -260,10 +260,10 @@ cc_test(
         "//riscv:riscv_state",
         "@com_google_absl//absl/log:check",
         "@com_google_googletest//:gtest_main",
-        "@mpact-sim//mpact/sim/generic:arch_state",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/generic:arch_state",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )
 
@@ -277,9 +277,9 @@ cc_test(
         "//riscv:riscv_breakpoint",
         "@com_google_absl//absl/functional:bind_front",
         "@com_google_googletest//:gtest_main",
-        "@mpact-sim//mpact/sim/generic:component",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/generic:component",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )
 
@@ -301,10 +301,10 @@ cc_test(
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
         "@com_google_googletest//:gtest_main",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/util/memory",
-        "@mpact-sim//mpact/sim/util/program_loader:elf_loader",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
     ],
 )
 
@@ -326,10 +326,10 @@ cc_test(
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
         "@com_google_googletest//:gtest_main",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/util/memory",
-        "@mpact-sim//mpact/sim/util/program_loader:elf_loader",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
     ],
 )
 
@@ -360,10 +360,10 @@ cc_test(
         "@com_google_absl//absl/numeric:bits",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/generic:type_helpers",
-        "@mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )
 
@@ -381,9 +381,9 @@ cc_test(
         "@com_google_absl//absl/random",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/generic:type_helpers",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
     ],
 )
 
@@ -402,9 +402,9 @@ cc_test(
         "@com_google_absl//absl/random",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/generic:type_helpers",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
     ],
 )
 
@@ -421,9 +421,9 @@ cc_test(
         "@com_google_absl//absl/random",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/generic:type_helpers",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
     ],
 )
 
@@ -439,9 +439,9 @@ cc_test(
         "//riscv:riscv_v",
         "@com_google_absl//absl/random",
         "@com_google_googletest//:gtest_main",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/generic:type_helpers",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
     ],
 )
 
@@ -464,9 +464,9 @@ cc_test(
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:span",
         "@com_google_googletest//:gtest_main",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/generic:type_helpers",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
     ],
 )
 
@@ -490,9 +490,9 @@ cc_test(
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:span",
         "@com_google_googletest//:gtest_main",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/generic:type_helpers",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
     ],
 )
 
@@ -515,9 +515,9 @@ cc_test(
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:span",
         "@com_google_googletest//:gtest_main",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/generic:type_helpers",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
     ],
 )
 
@@ -540,9 +540,9 @@ cc_test(
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:span",
         "@com_google_googletest//:gtest_main",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/generic:type_helpers",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
     ],
 )
 
@@ -558,9 +558,9 @@ cc_test(
         "//riscv:riscv_v",
         "@com_google_absl//absl/random",
         "@com_google_googletest//:gtest_main",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/generic:type_helpers",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
     ],
 )
 
@@ -588,9 +588,9 @@ cc_test(
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/status",
         "@com_google_googletest//:gtest_main",
-        "@mpact-sim//mpact/sim/generic:core",
-        "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/util/memory",
-        "@mpact-sim//mpact/sim/util/program_loader:elf_loader",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
     ],
 )
