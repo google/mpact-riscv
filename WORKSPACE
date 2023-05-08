@@ -14,7 +14,7 @@
 
 workspace(name = "com_google_mpact-riscv")
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 # Additional bazel rules.
 http_archive(
@@ -30,16 +30,16 @@ bazel_skylib_workspace()
 # MPACT-Sim repo
 http_archive(
     name = "com_google_mpact-sim",
-    sha256 = "8464cf3a56cbd33f73cb83943ce5ce51547cede06278546bdb187cf19fe917b2",
-    strip_prefix = "mpact-sim-0.0.2",
-    url = "https://github.com/google/mpact-sim/archive/refs/tags/0.0.2.tar.gz",
+    sha256 = "47776a05412e83c1b1eac796191f3831a9c0249efca7e7887c65584f03182769",
+    strip_prefix = "mpact-sim-0.0.3",
+    url = "https://github.com/google/mpact-sim/archive/refs/tags/0.0.3.tar.gz",
 )
 
-load("//@mpact-sim//:repos.bzl", "mpact_sim_repos")
+load("@com_google_mpact-sim//:repos.bzl", "mpact_sim_repos")
 
 mpact_sim_repos()
 
-load("//@mpact-sim//:deps.bzl", "mpact_sim_deps")
+load("@com_google_mpact-sim//:deps.bzl", "mpact_sim_deps")
 
 mpact_sim_deps()
 
