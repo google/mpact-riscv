@@ -508,7 +508,7 @@ cc_library(
         "@com_google_absl//absl/strings:str_format",
         "@com_google_mpact-sim//mpact/sim/generic:core_debug_interface",
         "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
-        "@com_google_re2//:re2",
+        "@com_googlesource_code_re2//:re2",
     ],
 )
 
