@@ -42,11 +42,3 @@ mpact_sim_repos()
 load("@com_google_mpact-sim//:deps.bzl", "mpact_sim_deps")
 
 mpact_sim_deps()
-
-# Google re2
-http_archive(
-    name = "com_google_re2",
-    sha256 = "7a9a4824958586980926a300b4717202485c4b4115ac031822e29aa4ef207e48",
-    strip_prefix = "re2-2023-03-01",
-    urls = ["https://github.com/google/re2/archive/refs/tags/2023-03-01.tar.gz"],
-)
