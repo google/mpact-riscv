@@ -173,6 +173,7 @@ cc_test(
         "-ffp-model=strict",
         "-fprotect-parens",
     ],
+    tags = ["not_run:arm"],
     deps = [
         ":riscv_fp_test_base",
         "//riscv:riscv_g",
@@ -192,6 +193,7 @@ cc_test(
         "-ffp-model=strict",
         "-fprotect-parens",
     ],
+    tags = ["not_run:arm"],
     deps = [
         ":riscv_fp_test_base",
         "//riscv:riscv_g",
