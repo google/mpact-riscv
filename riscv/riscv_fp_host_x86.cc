@@ -274,7 +274,7 @@ ScopedFPStatus::~ScopedFPStatus() {
   auto *host_fp_interface =
       static_cast<X86FloatingPointInterface *>(fp_state_->host_fp_interface());
   // Save the fp status of the simulated instructions.
-  uint32_t sim_status = ((x86_sim_status)&0x1fff) | host_rm_;
+  uint32_t sim_status = ((x86_sim_status) & 0x1fff) | host_rm_;
   // Save the new status as the x86 version of the RiscV status.
   host_fp_interface->set_x86_status(x86_sim_status);
   // Restore host cpu status.
