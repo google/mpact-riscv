@@ -62,7 +62,7 @@ class DebugCommandShell {
   // Helper method used to parse a numeric string or use the string as a
   // symbol name for lookup in the loader.
   absl::StatusOr<uint64_t> GetValueFromString(int core,
-                                              const std::string str_value,
+                                              const std::string &str_value,
                                               int radix);
 
   std::vector<CoreAccess> core_access_;

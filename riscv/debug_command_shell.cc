@@ -567,7 +567,7 @@ std::string DebugCommandShell::WriteMemory(int core,
 }
 
 absl::StatusOr<uint64_t> DebugCommandShell::GetValueFromString(
-    int core, const std::string str_value, int radix) {
+    int core, const std::string &str_value, int radix) {
   size_t index;
   // Attempt to convert to a number.
   auto convert_result = internal::stoull(str_value, &index, radix);
