@@ -271,11 +271,16 @@ void CreateCsrs(RiscVState *state, std::vector<RiscVCsrInterface *> &csr_vec) {
 
   // Simulator CSRs
 
-  // Access currrent privilege mode.
+  // Access current privilege mode.
   CHECK_NE(CreateCsr<RiscVSimModeCsr>(state, csr_vec, "$mode",
                                       RiscVCsrEnum::kSimMode, state),
            nullptr);
 }
+
+// This value is in the RV32ISA manual to support MMU, although in "BARE" mode
+// only the bottom 32-bit is valid.
+constexpr uint64_t kRiscv32MaxMemorySize = 0x3f'ffff'ffffULL;
+constexpr uint64_t kRiscv64MaxMemorySize = 0x00ff'ffff'ffff'ffffULL;
 
 RiscVState::RiscVState(absl::string_view id, RiscVXlen xlen,
                        util::MemoryInterface *memory,
@@ -299,7 +304,7 @@ RiscVState::RiscVState(absl::string_view id, RiscVXlen xlen,
       db = db_factory()->Allocate<RV32Register::ValueType>(1);
       db->Set<uint32_t>(0, 0);
       CreateCsrs<uint32_t>(this, csr_vec_);
-      max_physical_address_ = 0x3'ffff'ffffULL;
+      max_physical_address_ = kRiscv32MaxMemorySize;
       break;
     }
     case RiscVXlen::RV64: {
@@ -310,7 +315,7 @@ RiscVState::RiscVState(absl::string_view id, RiscVXlen xlen,
       db = db_factory()->Allocate<RV64Register::ValueType>(1);
       db->Set<uint64_t>(0, 0);
       CreateCsrs<uint64_t>(this, csr_vec_);
-      max_physical_address_ = 0x00ff'ffff'ffff'ffffULL;
+      max_physical_address_ = kRiscv64MaxMemorySize;
       break;
     }
     default:
@@ -351,6 +356,21 @@ RiscVState::~RiscVState() {
     delete csr;
   }
   csr_vec_.clear();
+}
+
+void RiscVState::set_max_physical_address(uint64_t max_physical_address) {
+  switch (xlen_) {
+    case RiscVXlen::RV32:
+      max_physical_address_ =
+          std::min(max_physical_address, kRiscv32MaxMemorySize);
+      break;
+    case RiscVXlen::RV64:
+      max_physical_address_ =
+          std::min(max_physical_address, kRiscv64MaxMemorySize);
+      break;
+    default:
+      break;
+  }
 }
 
 void RiscVState::LoadMemory(const Instruction *inst, uint64_t address,

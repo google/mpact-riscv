@@ -15,6 +15,7 @@
 #ifndef MPACT_RISCV_RISCV_RISCV_STATE_H_
 #define MPACT_RISCV_RISCV_RISCV_STATE_H_
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
@@ -306,6 +307,8 @@ class RiscVState : public ArchState {
   util::AtomicMemoryOpInterface *atomic_memory() const {
     return atomic_memory_;
   }
+
+  void set_max_physical_address(const uint64_t max_physical_address);
   uint64_t max_physical_address() const { return max_physical_address_; }
 
   // Setters for handlers for ecall, and trap. The handler returns true

@@ -61,4 +61,31 @@ TEST(RiscVStateTest, Memory) {
   delete state;
 }
 
+TEST(RiscVStateTest, OutOfBoundLoad) {
+  auto *state = new RiscVState("test", RiscVXlen::RV32);
+  state->set_max_physical_address(kMemAddr - 4);
+  state->set_on_trap([](bool is_interrupt, uint64_t trap_value,
+                        uint64_t exception_code, uint64_t epc,
+                        const mpact::sim::riscv::Instruction *inst) -> bool {
+    if (exception_code ==
+        static_cast<uint64_t>(
+            mpact::sim::riscv::ExceptionCode::kLoadAccessFault)) {
+      std::cerr << "Load Access Fault" << std::endl;
+      return true;
+    }
+    return false;
+  });
+  auto *db = state->db_factory()->Allocate<uint32_t>(1);
+  // Create a dummy instruction so trap can dereference the address.
+  auto *dummy_inst = new mpact::sim::riscv::Instruction(0x0, nullptr);
+  dummy_inst->set_size(4);
+  testing::internal::CaptureStderr();
+  state->LoadMemory(dummy_inst, kMemAddr, db, nullptr, nullptr);
+  const std::string stderr = testing::internal::GetCapturedStderr();
+  EXPECT_THAT(stderr, testing::HasSubstr("Load Access Fault"));
+  db->DecRef();
+  dummy_inst->DecRef();
+  delete state;
+}
+
 }  // namespace
