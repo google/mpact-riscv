@@ -399,6 +399,7 @@ cc_test(
         ":riscv_vector_instructions_test_base",
         "//riscv:riscv_state",
         "//riscv:riscv_v",
+        "@com_google_absl//absl/base",
         "@com_google_absl//absl/functional:bind_front",
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/random",

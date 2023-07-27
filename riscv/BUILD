@@ -122,6 +122,7 @@ cc_library(
     ],
     deps = [
         ":riscv_state",
+        "@com_google_absl//absl/base",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/numeric:bits",
         "@com_google_absl//absl/numeric:int128",
@@ -170,6 +171,7 @@ cc_library(
     deps = [
         ":riscv_g",
         ":riscv_state",
+        "@com_google_absl//absl/base",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/status",
         "@com_google_mpact-sim//mpact/sim/generic:arch_state",

@@ -23,6 +23,7 @@
 #include <type_traits>
 #include <vector>
 
+#include "absl/base/casts.h"
 #include "absl/log/check.h"
 #include "absl/random/random.h"
 #include "absl/strings/string_view.h"
@@ -149,7 +150,10 @@ T VaaddHelper(RiscVVectorOpmInstructionsTest *tester, T vs2, T vs1) {
   res_l += tester->RoundBits<T>(2, res_l) << 1;
   // Add carry.
   res += (res_l >> 4);
-  res = (res << 3) | ((res_l >> 1) & 0b111);
+  // Use unsigned type to avoid undefined behavior of left-shifting negative
+  // numbers.
+  using UT = typename std::make_unsigned<T>::type;
+  res = (absl::bit_cast<UT>(res) << 3) | ((res_l >> 1) & 0b111);
   return res;
 }
 
@@ -163,7 +167,10 @@ T VasubHelper(RiscVVectorOpmInstructionsTest *tester, T vs2, T vs1) {
   T res_h = (vs2 >> 4) - (vs1 >> 4);
   // Subtract borrow.
   res_h -= ((res_l >> 4) & 0b1);
-  T res = ((res_h << 3) | ((res_l >> 1) & 0b111));
+  // Use unsigned type to avoid undefined behavior of left-shifting negative
+  // numbers.
+  using UT = typename std::make_unsigned<T>::type;
+  T res = (absl::bit_cast<UT>(res_h) << 3) | ((res_l >> 1) & 0b111);
   res += tester->RoundBits<T>(2, res_l);
   return res;
 }
@@ -765,8 +772,14 @@ inline void VmaddVVHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->TernaryOpTestHelperVV<T, T, T>(
       absl::StrCat("Vmadd", sizeof(T) * 8, "vv"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T vs1, T vd) {
-        T prod = vs1 * vd;
-        return prod + vs2;
+        if (sizeof(T) < 4) {
+          uint32_t vs1_32 = vs1;
+          uint32_t vs2_32 = vs2;
+          uint32_t vd_32 = vd;
+          return static_cast<T>((vs1_32 * vd_32) + vs2_32);
+        }
+        T res = vs1 * vd + vs2;
+        return res;
       });
 }
 
@@ -777,8 +790,14 @@ inline void VmaddVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->TernaryOpTestHelperVX<T, T, T>(
       absl::StrCat("Vmadd", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T vs1, T vd) {
-        T prod = vs1 * vd;
-        return prod + vs2;
+        if (sizeof(T) < 4) {
+          uint32_t vs1_32 = vs1;
+          uint32_t vs2_32 = vs2;
+          uint32_t vd_32 = vd;
+          return static_cast<T>((vs1_32 * vd_32) + vs2_32);
+        }
+        T res = vs1 * vd + vs2;
+        return res;
       });
 }
 
@@ -809,8 +828,16 @@ inline void VnmsubVVHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->SetSemanticFunction(&Vnmsub);
   tester->TernaryOpTestHelperVV<T, T, T>(
       absl::StrCat("Vnmsub", sizeof(T) * 8, "vv"), /*sew*/ sizeof(T) * 8,
-      tester->instruction(),
-      [](T vs2, T vs1, T vd) { return -(vs1 * vd) + vs2; });
+      tester->instruction(), [](T vs2, T vs1, T vd) {
+        if (sizeof(T) < 4) {
+          uint32_t vs1_32 = vs1;
+          uint32_t vs2_32 = vs2;
+          uint32_t vd_32 = vd;
+          return static_cast<T>(-(vs1_32 * vd_32) + vs2_32);
+        }
+        T res = -(vs1 * vd) + vs2;
+        return res;
+      });
 }
 
 // Vnmsub vector-scalar test helper function.
@@ -819,8 +846,16 @@ inline void VnmsubVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->SetSemanticFunction(&Vnmsub);
   tester->TernaryOpTestHelperVX<T, T, T>(
       absl::StrCat("Vnmsub", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
-      tester->instruction(),
-      [](T vs2, T vs1, T vd) { return -(vs1 * vd) + vs2; });
+      tester->instruction(), [](T vs2, T vs1, T vd) {
+        if (sizeof(T) < 4) {
+          uint32_t vs1_32 = vs1;
+          uint32_t vs2_32 = vs2;
+          uint32_t vd_32 = vd;
+          return static_cast<T>(-(vs1_32 * vd_32) + vs2_32);
+        }
+        T res = -(vs1 * vd) + vs2;
+        return res;
+      });
 }
 
 // Test vnmsub instructions.
@@ -850,7 +885,16 @@ inline void VmaccVVHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->SetSemanticFunction(&Vmacc);
   tester->TernaryOpTestHelperVV<T, T, T>(
       absl::StrCat("Vmacc", sizeof(T) * 8, "vv"), /*sew*/ sizeof(T) * 8,
-      tester->instruction(), [](T vs2, T vs1, T vd) { return vs1 * vs2 + vd; });
+      tester->instruction(), [](T vs2, T vs1, T vd) {
+        if (sizeof(T) < 4) {
+          uint32_t vs1_32 = vs1;
+          uint32_t vs2_32 = vs2;
+          uint32_t vd_32 = vd;
+          return static_cast<T>((vs1_32 * vs2_32) + vd_32);
+        }
+        T res = (vs1 * vs2) + vd;
+        return res;
+      });
 }
 
 // Vmacc vector-scalar test helper function.
@@ -859,7 +903,16 @@ inline void VmaccVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->SetSemanticFunction(&Vmacc);
   tester->TernaryOpTestHelperVX<T, T, T>(
       absl::StrCat("Vmacc", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
-      tester->instruction(), [](T vs2, T vs1, T vd) { return vs1 * vs2 + vd; });
+      tester->instruction(), [](T vs2, T vs1, T vd) {
+        if (sizeof(T) < 4) {
+          uint32_t vs1_32 = vs1;
+          uint32_t vs2_32 = vs2;
+          uint32_t vd_32 = vd;
+          return static_cast<T>((vs1_32 * vs2_32) + vd_32);
+        }
+        T res = (vs1 * vs2) + vd;
+        return res;
+      });
 }
 
 // Test vmacc instructions.
@@ -889,8 +942,16 @@ inline void VnmsacVVHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->SetSemanticFunction(&Vnmsac);
   tester->TernaryOpTestHelperVV<T, T, T>(
       absl::StrCat("Vnmsac", sizeof(T) * 8, "vv"), /*sew*/ sizeof(T) * 8,
-      tester->instruction(),
-      [](T vs2, T vs1, T vd) { return -(vs1 * vs2) + vd; });
+      tester->instruction(), [](T vs2, T vs1, T vd) {
+        if (sizeof(T) < 4) {
+          uint32_t vs1_32 = vs1;
+          uint32_t vs2_32 = vs2;
+          uint32_t vd_32 = vd;
+          return static_cast<T>(-(vs1_32 * vs2_32) + vd_32);
+        }
+        T res = -(vs1 * vs2) + vd;
+        return res;
+      });
 }
 
 // Vnmsac vector-scalar test helper function.
@@ -899,8 +960,16 @@ inline void VnmsacVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->SetSemanticFunction(&Vnmsac);
   tester->TernaryOpTestHelperVX<T, T, T>(
       absl::StrCat("Vnmsac", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
-      tester->instruction(),
-      [](T vs2, T vs1, T vd) { return -(vs1 * vs2) + vd; });
+      tester->instruction(), [](T vs2, T vs1, T vd) {
+        if (sizeof(T) < 4) {
+          uint32_t vs1_32 = vs1;
+          uint32_t vs2_32 = vs2;
+          uint32_t vd_32 = vd;
+          return static_cast<T>(-(vs1_32 * vs2_32) + vd_32);
+        }
+        T res = -(vs1 * vs2) + vd;
+        return res;
+      });
 }
 
 // Test vnmsac instructions.
@@ -1061,7 +1130,10 @@ inline void VwsubVVHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->BinaryOpTestHelperVV<WT, T, T>(
       absl::StrCat("Vwsub", sizeof(T) * 8, "vv"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T vs1) -> WT {
-        return static_cast<WT>(vs2) - static_cast<WT>(vs1);
+        WT vs2_w = vs2;
+        WT vs1_w = vs1;
+        WT res = vs2_w - vs1_w;
+        return res;
       });
 }
 
@@ -1073,7 +1145,10 @@ inline void VwsubVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->BinaryOpTestHelperVX<WT, T, T>(
       absl::StrCat("Vwsub", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T vs1) -> WT {
-        return static_cast<WT>(vs2) - static_cast<WT>(vs1);
+        WT vs2_w = vs2;
+        WT vs1_w = vs1;
+        WT res = vs2_w - vs1_w;
+        return res;
       });
 }
 
@@ -1440,7 +1515,12 @@ inline void VwmaccVVHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->TernaryOpTestHelperVV<WT, T, T>(
       absl::StrCat("Vwmacc", sizeof(T) * 8, "vv"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T vs1, WT vd) -> WT {
-        return static_cast<WT>(vs2) * static_cast<WT>(vs1) + vd;
+        WT vs1_w = vs1;
+        WT vs2_w = vs2;
+        WT prod = vs1_w * vs2_w;
+        using UWT = typename std::make_unsigned<WT>::type;
+        WT res = absl::bit_cast<UWT>(prod) + absl::bit_cast<UWT>(vd);
+        return res;
       });
 }
 
@@ -1452,7 +1532,12 @@ inline void VwmaccVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->TernaryOpTestHelperVX<WT, T, T>(
       absl::StrCat("Vwmacc", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T vs1, WT vd) -> WT {
-        return static_cast<WT>(vs2) * static_cast<WT>(vs1) + vd;
+        WT vs1_w = vs1;
+        WT vs2_w = vs2;
+        WT prod = vs1_w * vs2_w;
+        using UWT = typename std::make_unsigned<WT>::type;
+        WT res = absl::bit_cast<UWT>(prod) + absl::bit_cast<UWT>(vd);
+        return res;
       });
 }
 
@@ -1482,7 +1567,12 @@ inline void VwmaccusVVHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->TernaryOpTestHelperVV<WT, T, UT>(
       absl::StrCat("Vwmaccus", sizeof(T) * 8, "vv"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, UT vs1, WT vd) -> WT {
-        return static_cast<WT>(vs2) * static_cast<WT>(vs1) + vd;
+        using UWT = typename std::make_unsigned<WT>::type;
+        UWT vs1_w = vs1;
+        WT vs2_w = vs2;
+        WT prod = vs1_w * vs2_w;
+        WT res = absl::bit_cast<UWT>(prod) + absl::bit_cast<UWT>(vd);
+        return res;
       });
 }
 
@@ -1495,7 +1585,12 @@ inline void VwmaccusVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->TernaryOpTestHelperVX<WT, T, UT>(
       absl::StrCat("Vwmaccus", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, UT vs1, WT vd) -> WT {
-        return static_cast<WT>(vs2) * static_cast<WT>(vs1) + vd;
+        using UWT = typename std::make_unsigned<WT>::type;
+        UWT vs1_w = vs1;
+        WT vs2_w = vs2;
+        WT prod = vs1_w * vs2_w;
+        WT res = absl::bit_cast<UWT>(prod) + absl::bit_cast<UWT>(vd);
+        return res;
       });
 }
 
@@ -1525,7 +1620,12 @@ inline void VwmaccsuVVHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->TernaryOpTestHelperVV<WT, UT, T>(
       absl::StrCat("Vwmaccsu", sizeof(T) * 8, "vv"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](UT vs2, T vs1, WT vd) -> WT {
-        return static_cast<WT>(vs2) * static_cast<WT>(vs1) + vd;
+        using UWT = typename std::make_unsigned<WT>::type;
+        WT vs1_w = vs1;
+        UWT vs2_w = vs2;
+        WT prod = vs1_w * vs2_w;
+        WT res = absl::bit_cast<UWT>(prod) + absl::bit_cast<UWT>(vd);
+        return res;
       });
 }
 
@@ -1538,7 +1638,12 @@ inline void VwmaccsuVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->TernaryOpTestHelperVX<WT, UT, T>(
       absl::StrCat("Vwmaccsu", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](UT vs2, T vs1, WT vd) -> WT {
-        return static_cast<WT>(vs2) * static_cast<WT>(vs1) + vd;
+        using UWT = typename std::make_unsigned<WT>::type;
+        WT vs1_w = vs1;
+        UWT vs2_w = vs2;
+        WT prod = vs1_w * vs2_w;
+        WT res = absl::bit_cast<UWT>(prod) + absl::bit_cast<UWT>(vd);
+        return res;
       });
 }
 

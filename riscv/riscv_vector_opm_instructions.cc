@@ -486,8 +486,11 @@ void Vmul(const Instruction *inst) {
           [](uint8_t vs2, uint8_t vs1) -> uint8_t { return vs2 * vs1; });
     case 2:
       return RiscVBinaryVectorOp<uint16_t, uint16_t, uint16_t>(
-          rv_vector, inst,
-          [](uint16_t vs2, uint16_t vs1) -> uint16_t { return vs2 * vs1; });
+          rv_vector, inst, [](uint16_t vs2, uint16_t vs1) -> uint16_t {
+            uint32_t vs2_32 = vs2;
+            uint32_t vs1_32 = vs1;
+            return static_cast<uint16_t>(vs2_32 * vs1_32);
+          });
     case 4:
       return RiscVBinaryVectorOp<uint32_t, uint32_t, uint32_t>(
           rv_vector, inst,
@@ -604,7 +607,10 @@ void Vmadd(const Instruction *inst) {
       return RiscVTernaryVectorOp<uint16_t, uint16_t, uint16_t>(
           rv_vector, inst,
           [](uint16_t vs2, uint16_t vs1, uint16_t vd) -> uint16_t {
-            return vs1 * vd + vs2;
+            uint32_t vs2_32 = vs2;
+            uint32_t vs1_32 = vs1;
+            uint32_t vd_32 = vd;
+            return static_cast<uint16_t>(vs1_32 * vd_32 + vs2_32);
           });
     case 4:
       return RiscVTernaryVectorOp<uint32_t, uint32_t, uint32_t>(
@@ -639,7 +645,10 @@ void Vnmsub(const Instruction *inst) {
       return RiscVTernaryVectorOp<uint16_t, uint16_t, uint16_t>(
           rv_vector, inst,
           [](uint16_t vs2, uint16_t vs1, uint16_t vd) -> uint16_t {
-            return -(vs1 * vd) + vs2;
+            uint32_t vs2_32 = vs2;
+            uint32_t vs1_32 = vs1;
+            uint32_t vd_32 = vd;
+            return static_cast<uint16_t>(-(vs1_32 * vd_32) + vs2_32);
           });
     case 4:
       return RiscVTernaryVectorOp<uint32_t, uint32_t, uint32_t>(
@@ -674,7 +683,10 @@ void Vmacc(const Instruction *inst) {
       return RiscVTernaryVectorOp<uint16_t, uint16_t, uint16_t>(
           rv_vector, inst,
           [](uint16_t vs2, uint16_t vs1, uint16_t vd) -> uint16_t {
-            return vs1 * vs2 + vd;
+            uint32_t vs2_32 = vs2;
+            uint32_t vs1_32 = vs1;
+            uint32_t vd_32 = vd;
+            return static_cast<uint16_t>(vs1_32 * vs2_32 + vd_32);
           });
     case 4:
       return RiscVTernaryVectorOp<uint32_t, uint32_t, uint32_t>(
@@ -709,7 +721,10 @@ void Vnmsac(const Instruction *inst) {
       return RiscVTernaryVectorOp<uint16_t, uint16_t, uint16_t>(
           rv_vector, inst,
           [](uint16_t vs2, uint16_t vs1, uint16_t vd) -> uint16_t {
-            return -(vs1 * vs2) + vd;
+            uint32_t vs2_32 = vs2;
+            uint32_t vs1_32 = vs1;
+            uint32_t vd_32 = vd;
+            return static_cast<uint16_t>(-(vs1_32 * vs2_32) + vd_32);
           });
     case 4:
       return RiscVTernaryVectorOp<uint32_t, uint32_t, uint32_t>(
@@ -1127,7 +1142,12 @@ void Vwmul(const Instruction *inst) {
 // Widening multiply accumulate helper function.
 template <typename Vd, typename Vs2, typename Vs1>
 Vd VwmaccHelper(Vs2 vs2, Vs1 vs1, Vd vd) {
-  return static_cast<Vd>(vs2) * static_cast<Vd>(vs1) + vd;
+  Vd vs2_w = static_cast<Vd>(vs2);
+  Vd vs1_w = static_cast<Vd>(vs1);
+  Vd prod = vs2_w * vs1_w;
+  using UVd = typename std::make_unsigned<Vd>::type;
+  Vd res = absl::bit_cast<UVd>(prod) + absl::bit_cast<UVd>(vd);
+  return res;
 }
 
 // Unsigned widening multiply and add.

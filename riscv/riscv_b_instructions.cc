@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <type_traits>
 
+#include "absl/base/casts.h"
 #include "absl/numeric/bits.h"
 #include "absl/types/span.h"
 #include "mpact/sim/generic/instruction.h"
@@ -36,7 +37,9 @@ using IntReg = typename std::make_signed<UIntReg>::type;
 // Handles instructions that perform a shift and add operation.
 void ShNaddHelper(const generic::Instruction* instruction, int shift) {
   RiscVBinaryOp<RegisterType, IntReg, IntReg>(
-      instruction, [shift](IntReg a, IntReg b) { return (a << shift) + b; });
+      instruction, [shift](IntReg a, IntReg b) {
+        return (absl::bit_cast<UIntReg>(a) << shift) + b;
+      });
 }
 
 // Handles instructions that perform an unsigned shift and add operation. Note

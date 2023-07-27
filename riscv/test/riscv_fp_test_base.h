@@ -720,7 +720,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
     constexpr FromUint hidden = 1ULL << (kSigSize - 1);
     FromUint tmp_u = sign | ((exp != 0) ? hidden : 0ULL) | (sig >> 1);
     T tmp = *reinterpret_cast<T *>(&tmp_u);
-    if (exp_value - kBias + 1 < kSigSize) {
+    if ((exp_value >= kBias) && (exp_value - kBias + 1 < kSigSize)) {
       // Divide so that only the bits we care about are left in the significand.
       int shift = kBias + kSigSize - exp_value - 1;
       FromUint div_exp = shift + kBias;

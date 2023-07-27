@@ -287,29 +287,27 @@ TEST_F(RiscVVectorUnaryInstructionsTest, Vsext2_16) {
   SetSemanticFunction(&Vsext2);
   UnaryOpTestHelperV<int16_t, int8_t>("Vsext2_16", /*sew*/ 16, instruction_,
                                       [](int8_t vs2) -> int16_t {
-                                        int16_t res = vs2;
-                                        res <<= 8;
-                                        res >>= 8;
+                                        int16_t res = static_cast<int16_t>(vs2);
                                         return res;
                                       });
 }
 
 TEST_F(RiscVVectorUnaryInstructionsTest, Vsext2_32) {
   SetSemanticFunction(&Vsext2);
-  UnaryOpTestHelperV<int32_t, int16_t>("Vsext2_32", /*sew*/ 32, instruction_,
-                                       [](int16_t vs2) -> int32_t {
-                                         int32_t res = vs2;
-                                         return (res << 16) >> 16;
-                                       });
+  UnaryOpTestHelperV<int32_t, int16_t>(
+      "Vsext2_32", /*sew*/ 32, instruction_, [](int16_t vs2) -> int32_t {
+        int32_t res = static_cast<int32_t>(vs2);
+        return res;
+      });
 }
 
 TEST_F(RiscVVectorUnaryInstructionsTest, Vsext2_64) {
   SetSemanticFunction(&Vsext2);
-  UnaryOpTestHelperV<int64_t, int32_t>("Vsext2_64", /*sew*/ 64, instruction_,
-                                       [](int32_t vs2) -> int64_t {
-                                         int64_t res = vs2;
-                                         return (res << 32) >> 32;
-                                       });
+  UnaryOpTestHelperV<int64_t, int32_t>(
+      "Vsext2_64", /*sew*/ 64, instruction_, [](int32_t vs2) -> int64_t {
+        int64_t res = static_cast<int64_t>(vs2);
+        return res;
+      });
 }
 
 // Zero extension from sew/4 to sew. Testing for sew of 32 and 64.
@@ -332,18 +330,18 @@ TEST_F(RiscVVectorUnaryInstructionsTest, Vsext4_32) {
   SetSemanticFunction(&Vsext4);
   UnaryOpTestHelperV<int32_t, int8_t>("Vzext4_32", /*sew*/ 32, instruction_,
                                       [](int8_t vs2) -> int32_t {
-                                        int32_t res = vs2;
-                                        return (res << 24) >> 24;
+                                        int32_t res = static_cast<int32_t>(vs2);
+                                        return res;
                                       });
 }
 
 TEST_F(RiscVVectorUnaryInstructionsTest, Vsext4_64) {
   SetSemanticFunction(&Vsext4);
-  UnaryOpTestHelperV<int64_t, int16_t>("Vzext4_64", /*sew*/ 64, instruction_,
-                                       [](int16_t vs2) -> int64_t {
-                                         int64_t res = vs2;
-                                         return (res << 48) >> 48;
-                                       });
+  UnaryOpTestHelperV<int64_t, int16_t>(
+      "Vzext4_64", /*sew*/ 64, instruction_, [](int16_t vs2) -> int64_t {
+        int64_t res = static_cast<int64_t>(vs2);
+        return res;
+      });
 }
 
 // Zero extension from sew/8 to sew. Testing for sew of 64.
@@ -361,8 +359,8 @@ TEST_F(RiscVVectorUnaryInstructionsTest, Vsext8_64) {
   SetSemanticFunction(&Vsext8);
   UnaryOpTestHelperV<int64_t, int8_t>("Vzext8_64", /*sew*/ 64, instruction_,
                                       [](int8_t vs2) -> int64_t {
-                                        int64_t res = vs2;
-                                        return (res << 56) >> 56;
+                                        int64_t res = static_cast<int64_t>(vs2);
+                                        return res;
                                       });
 }
 

@@ -114,32 +114,35 @@ inline void RiscVConvertFloatWithFflagsOp(const Instruction *instruction) {
     // If the number of bits in the significand is greater or equal to
     // unbiased exponent, and there is a 1 among the extra bits, we need to
     // perform rounding.
-    FromUint mask = (1ULL << (kSigSize - unbiased_exp)) - 1;
     if (unbiased_exp < 0) {
       flags = *FPExceptions::kInexact;
-    } else if ((unbiased_exp <= kSigSize) && ((sig & mask) != 0)) {
-      flags = *FPExceptions::kInexact;
-      FromUint sign = lhs_u & (1ULL << (FPTypeInfo<From>::kBitSize - 1));
-      // Turn the value into a denormal.
-      constexpr FromUint hidden = 1ULL << (kSigSize - 1);
-      FromUint tmp_u = sign | hidden | (sig >> 1);
-      From tmp = *reinterpret_cast<From *>(&tmp_u);
-      // Divide so that only the bits we care about are left in the significand.
-      int shift = kBias + kSigSize - exp_value - 1;
-      FromUint div_exp = shift + kBias;
-      FromUint div_u = div_exp << kSigSize;
-      From div = *reinterpret_cast<From *>(&div_u);
-      auto *rv_fp = static_cast<RiscVState *>(instruction->state())->rv_fp();
-      {
-        // The rounding happens during this division.
-        ScopedFPRoundingMode set_fp_rm(rv_fp, rm);
-        tmp /= div;
+    } else if (unbiased_exp <= kSigSize) {
+      FromUint mask = (1ULL << (kSigSize - unbiased_exp)) - 1;
+      if ((sig & mask) != 0) {
+        flags = *FPExceptions::kInexact;
+        FromUint sign = lhs_u & (1ULL << (FPTypeInfo<From>::kBitSize - 1));
+        // Turn the value into a denormal.
+        constexpr FromUint hidden = 1ULL << (kSigSize - 1);
+        FromUint tmp_u = sign | hidden | (sig >> 1);
+        From tmp = *reinterpret_cast<From *>(&tmp_u);
+        // Divide so that only the bits we care about are left in the
+        // significand.
+        int shift = kBias + kSigSize - exp_value - 1;
+        FromUint div_exp = shift + kBias;
+        FromUint div_u = div_exp << kSigSize;
+        From div = *reinterpret_cast<From *>(&div_u);
+        auto *rv_fp = static_cast<RiscVState *>(instruction->state())->rv_fp();
+        {
+          // The rounding happens during this division.
+          ScopedFPRoundingMode set_fp_rm(rv_fp, rm);
+          tmp /= div;
+        }
+        // Convert back to normalized number, by using the original sign
+        // and exponent, and the normalized and significand from the division.
+        tmp_u = *reinterpret_cast<FromUint *>(&tmp);
+        lhs_u = sign | exp | ((tmp_u << (shift + 1)) & kSigMask);
+        lhs = *reinterpret_cast<From *>(&lhs_u);
       }
-      // Convert back to normalized number, by using the original sign
-      // and exponent, and the normalized and significand from the division.
-      tmp_u = *reinterpret_cast<FromUint *>(&tmp);
-      lhs_u = sign | exp | ((tmp_u << (shift + 1)) & kSigMask);
-      lhs = *reinterpret_cast<From *>(&lhs_u);
     }
     value = static_cast<To>(lhs);
   }
@@ -160,8 +163,8 @@ inline void RiscVConvertFloatWithFflagsOp(const Instruction *instruction) {
   }
 }
 
-// Helper function to read a NaN boxed source value, converting it to NaN if it
-// isn't formatted properly.
+// Helper function to read a NaN boxed source value, converting it to NaN if
+// it isn't formatted properly.
 template <typename RegValue, typename Argument>
 inline Argument GetNaNBoxedSource(const Instruction *instruction, int arg) {
   if (sizeof(RegValue) <= sizeof(Argument)) {
@@ -278,9 +281,9 @@ inline void RVStore(const Instruction *instruction) {
   db->DecRef();
 }
 
-// Generic helper function for binary instructions with NaN boxing. This is used
-// for those instructions that produce results in fp registers, but are not
-// really executing an fp operation that requires rounding.
+// Generic helper function for binary instructions with NaN boxing. This is
+// used for those instructions that produce results in fp registers, but are
+// not really executing an fp operation that requires rounding.
 template <typename RegValue, typename Result, typename Argument>
 inline void RiscVBinaryNaNBoxOp(
     const Instruction *instruction,
