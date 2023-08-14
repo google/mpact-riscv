@@ -14,6 +14,8 @@
 
 # Build rules for RiscV simulator code.
 
+load("//tools/build_defs/build_test:build_test.bzl", "build_test")
+load("//tools/build_defs/license:license.bzl", "license")
 load("@com_google_mpact-sim//mpact/sim/decoder:mpact_sim_isa.bzl", "mpact_bin_fmt_decoder", "mpact_isa_decoder")
 
 package(
@@ -37,6 +39,22 @@ exports_files([
 config_setting(
     name = "arm_cpu",
     values = {"cpu": "arm"},
+)
+
+build_test(
+    name = "darwinn_dive_riscv_iss_build",
+    targets = [
+        "//platforms/darwinn/simulator/dive/riscv_iss:riscv_iss_cpu_tracer",
+        "//platforms/darwinn/simulator/dive/riscv_iss:riscv_iss_memory_bridge",
+        "//platforms/darwinn/simulator/dive/riscv_iss:riscv_iss_wrapper",
+    ],
+)
+
+build_test(
+    name = "kelvin_sim_build",
+    targets = [
+        "//learning/brain/research/kelvin/sim:kelvin_sim",
+    ],
 )
 
 cc_library(
