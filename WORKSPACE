@@ -21,8 +21,7 @@ http_archive(
     name = "com_google_mpact-sim",
     sha256 = "8b35b5f172f241fd207f5f54d81aacab1617dea16607b36e3417ef47f2366afc",
     strip_prefix = "mpact-sim-c4b68d7bdef36b9eb2e85f8dc22ccc4eb27ba4c5",
-    url = "https://github.com/google/mpact-sim/archive/c4b68d7bdef36b9eb2e85f8dc
-22ccc4eb27ba4c5.tar.gz",
+    url = "https://github.com/google/mpact-sim/archive/c4b68d7bdef36b9eb2e85f8dc22ccc4eb27ba4c5.tar.gz",
 )
 
 
