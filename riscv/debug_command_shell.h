@@ -15,12 +15,14 @@
 #ifndef MPACT_RISCV_RISCV_DEBUG_COMMAND_SHELL_H_
 #define MPACT_RISCV_RISCV_DEBUG_COMMAND_SHELL_H_
 
+#include <cstdint>
 #include <iostream>
 #include <istream>
 #include <ostream>
 #include <string>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/util/program_loader/elf_program_loader.h"
@@ -29,6 +31,10 @@
 namespace mpact {
 namespace sim {
 namespace riscv {
+
+namespace mpact::sim::generic {
+class DataBuffer;
+}  // namespace mpact::sim::generic
 
 // This class implements an interactive command shell for a set of cores
 // simulated by the MPact simulator using the CoreDebugInterface.
@@ -52,6 +58,18 @@ class DebugCommandShell {
   void Run(std::istream &is, std::ostream &os);
 
  private:
+  // Helper method for formatting single data buffer value.
+  std::string FormatSingleDbValue(generic::DataBuffer *db,
+                                  const std::string &format, int width,
+                                  int index) const;
+  // Helper method for formatting multiple data buffer values.
+  std::string FormatAllDbValues(generic::DataBuffer *db,
+                                const std::string &format, int width) const;
+  // Helper method for writing single data buffer value.
+  absl::Status WriteSingleValueToDb(const std::string &str_value,
+                                    generic::DataBuffer *db, std::string format,
+                                    int width, int index) const;
+
   // Helper method for processing read memory command.
   std::string ReadMemory(int core, const std::string &str_value,
                          const std::string &format);
@@ -81,6 +99,8 @@ class DebugCommandShell {
   LazyRE2 read_reg_re_;
   LazyRE2 read_reg2_re_;
   LazyRE2 write_reg_re_;
+  LazyRE2 rd_vreg_re_;
+  LazyRE2 wr_vreg_re_;
   LazyRE2 read_mem_re_;
   LazyRE2 read_mem2_re_;
   LazyRE2 write_mem_re_;

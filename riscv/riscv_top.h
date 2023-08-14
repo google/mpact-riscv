@@ -16,12 +16,21 @@
 #define MPACT_RISCV_RISCV_RISCV_TOP_H_
 
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <string>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/synchronization/notification.h"
 #include "mpact/sim/generic/component.h"
 #include "mpact/sim/generic/core_debug_interface.h"
+#include "mpact/sim/generic/counters.h"
+#include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/decode_cache.h"
+#include "mpact/sim/generic/decoder_interface.h"
+#include "mpact/sim/generic/register.h"
 #include "mpact/sim/util/memory/memory_interface.h"
 #include "mpact/sim/util/memory/memory_watcher.h"
 #include "riscv/riscv32g_enums.h"
@@ -71,6 +80,8 @@ class RiscVTop : public generic::Component, public generic::CoreDebugInterface {
   // Register access by register name.
   absl::StatusOr<uint64_t> ReadRegister(const std::string &name) override;
   absl::Status WriteRegister(const std::string &name, uint64_t value) override;
+  absl::StatusOr<generic::DataBuffer *> GetRegisterDataBuffer(
+      const std::string &name) override;
   // Read and Write memory methods bypass any semihosting.
   absl::StatusOr<size_t> ReadMemory(uint64_t address, void *buf,
                                     size_t length) override;

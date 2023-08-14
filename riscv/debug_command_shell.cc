@@ -14,14 +14,21 @@
 
 #include "riscv/debug_command_shell.h"
 
+#include <cstdint>
 #include <cstring>
 #include <istream>
 #include <ostream>
 #include <string>
 #include <vector>
 
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
+#include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/string_view.h"
+#include "mpact/sim/generic/data_buffer.h"
+#include "re2/re2.h"
 #include "riscv/stoull_wrapper.h"
 
 namespace mpact {
@@ -42,6 +49,10 @@ DebugCommandShell::DebugCommandShell(std::vector<CoreAccess> core_access)
       read_reg_re_{R"(\s*reg\s+get\s+(\$?\w+)(\s+[foduxX]\d+)?\s*)"},
       read_reg2_re_{R"(\s*reg\s+(\$?\w+)(\s+[foduxX]\d+)?\s*)"},
       write_reg_re_{R"(\s*reg\s+set\s+(\$?\w+)\s+(\w+)\s*)"},
+      rd_vreg_re_{
+          R"(\s*vreg\s+get\s+(\$?\w+)(?:(?:\s*\:(\d+))?(?:\s+(?:([oduxX])(8|16|32|64))?)?)?\s*)"},
+      wr_vreg_re_{
+          R"(\s*vreg\s+set\s+(\$?\w+)\s*\:(\d+)\s+([oduxX])(8|16|32|64)\s+(\w+)\s*)"},
       read_mem_re_{R"(\s*mem\s+get\s+(\w+)\s+([foduxX]\d+)?\s*)"},
       read_mem2_re_{R"(\s*mem\s+(\w+)\s+([foduxX]\d+)?\s*)"},
       write_mem_re_{R"(\s*mem\s+set\s+(\w+)\s+([oduxX]\d+)?\s+(\w+)\s*)"},
@@ -66,6 +77,19 @@ DebugCommandShell::DebugCommandShell(std::vector<CoreAccess> core_access)
     reg NAME [FORMAT]              - get the value of register NAME.
     reg set NAME VALUE             - set register NAME to VALUE.
     reg set NAME SYMBOL            - set register NAME to value of SYMBOL.
+    vreg get NAME[:INDEX] [FORMAT] - get the value of register NAME as a vector
+                                     of elements according to FORMAT. The format
+                                     is a letter (o, d u x, or X) followed by
+                                     width (8, 16, 32, 64). The default format
+                                     is x32. INDEX may be specified as a number
+                                     to select a specific vector element.
+    vreg set NAME[:INDEX] [FORMAT] - set the value of vector register NAME to
+      VALUE                          the given value. If INDEX is specified,
+                                     only the given element is updated. If INDEX
+                                     is omitted, the value will be written to
+                                     the 0th element in the vector (according)
+                                     to FORMAT, and the rest of the vector is
+                                     cleared.
     mem get VALUE [FORMAT]         - get memory from location VALUE according to
                                      format. The format is a letter (o, d, u, x,
                                      or X) followed by width (8, 16, 32, 64).
@@ -257,6 +281,92 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
       continue;
     }
 
+    // vreg read NAME:[INDEX] [FORMAT]
+    if (std::string name, index, format, width; RE2::FullMatch(
+            line_view, *rd_vreg_re_, &name, &index, &format, &width)) {
+      if (format.empty()) format = "x";
+      if (width.empty()) width = "32";
+      int width_value;
+      if (!absl::SimpleAtoi(width, &width_value)) {
+        os << "Error: converting '" << width << "' to integer\n";
+        os.flush();
+        continue;
+      }
+      // Get the data buffer.
+      auto result =
+          core_access_[core].debug_interface->GetRegisterDataBuffer(name);
+      // Check for error when accessing register.
+      if (!result.ok()) {
+        os << "Error: " << result.status().message() << std::endl;
+        os.flush();
+        continue;
+      }
+      auto *db = result.value();
+      // Check for null data buffer.
+      if (db == nullptr) {
+        os << "Error: register '" << name << "' has no data buffer\n";
+        os.flush();
+        continue;
+      }
+      // Output the value to os.
+      if (index.empty()) {
+        // Output the entire register.
+        os << FormatAllDbValues(db, format, width_value) << std::endl;
+        os.flush();
+        continue;
+      }
+      int index_value;
+      if (!absl::SimpleAtoi(index, &index_value)) {
+        os << "Error: converting '" << index << "' to integer\n";
+        os.flush();
+        continue;
+      }
+      os << FormatSingleDbValue(db, format, width_value, index_value)
+         << std::endl;
+      os.flush();
+      continue;
+    }
+
+    // vreg set NAME[:INDEX] [FORMAT] VALUE
+    if (std::string name, index, format, width, value; RE2::FullMatch(
+            line_view, *wr_vreg_re_, &name, &index, &format, &width, &value)) {
+      if (format.empty()) format = "x";
+      if (width.empty()) width = "32";
+      int width_value;
+      if (!absl::SimpleAtoi(width, &width_value)) {
+        os << "Error: converting '" << width << "' to integer\n";
+        os.flush();
+        continue;
+      }
+      // Get the data buffer.
+      auto result =
+          core_access_[core].debug_interface->GetRegisterDataBuffer(name);
+      // Check for error when accessing register.
+      if (!result.ok()) {
+        os << "Error: " << result.status().message() << std::endl;
+        continue;
+      }
+      auto *db = result.value();
+      // Check for null data buffer.
+      if (db == nullptr) {
+        os << "Error: register '" << name << "' has no data buffer\n";
+        continue;
+      }
+      int index_value;
+      if (!absl::SimpleAtoi(index, &index_value)) {
+        os << "Error: converting '" << index << "' to integer\n";
+        os.flush();
+        continue;
+      }
+      auto status =
+          WriteSingleValueToDb(value, db, format, width_value, index_value);
+      if (!status.ok()) {
+        os << "Error: " << status.message() << std::endl;
+        os.flush();
+      }
+      continue;
+    }
+
     // mem get VALUE | SYMBOL [FORMAT]
 
     if (std::string str_value, format;
@@ -388,6 +498,183 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
     os << absl::StrCat("Error: unrecognized command '", line, "'") << std::endl;
     os.flush();
   }
+}
+
+namespace {
+
+template <typename T>
+struct HexFormat {};
+
+template <>
+struct HexFormat<uint8_t> {
+  static const absl::ParsedFormat<'x'> format;
+  static const absl::ParsedFormat<'X'> format_cap;
+};
+const absl::ParsedFormat<'x'> HexFormat<uint8_t>::format{"%02x"};
+const absl::ParsedFormat<'X'> HexFormat<uint8_t>::format_cap{"%02X"};
+
+template <>
+struct HexFormat<uint16_t> {
+  static const absl::ParsedFormat<'x'> format;
+  static const absl::ParsedFormat<'X'> format_cap;
+};
+const absl::ParsedFormat<'x'> HexFormat<uint16_t>::format{"%04x"};
+const absl::ParsedFormat<'X'> HexFormat<uint16_t>::format_cap{"%04X"};
+
+template <>
+struct HexFormat<uint32_t> {
+  static const absl::ParsedFormat<'x'> format;
+  static const absl::ParsedFormat<'X'> format_cap;
+};
+const absl::ParsedFormat<'x'> HexFormat<uint32_t>::format{"%08x"};
+const absl::ParsedFormat<'X'> HexFormat<uint32_t>::format_cap{"%08X"};
+
+template <>
+struct HexFormat<uint64_t> {
+  static const absl::ParsedFormat<'x'> format;
+  static const absl::ParsedFormat<'X'> format_cap;
+};
+const absl::ParsedFormat<'x'> HexFormat<uint64_t>::format{"%016x"};
+const absl::ParsedFormat<'X'> HexFormat<uint64_t>::format_cap{"%016X"};
+
+// Templated helper function to help format integer values of different widths.
+template <typename T>
+std::string FormatDbValue(generic::DataBuffer *db, const std::string &format,
+                          int index) {
+  std::string output;
+  if (index < 0 || index >= db->size<T>()) return "Error: index out of range";
+  T value = db->Get<T>(index);
+  switch (format[0]) {
+    case 'd':
+      output += absl::StrFormat("%d", value);
+      break;
+    case 'o':
+      output += absl::StrFormat("%o", value);
+      break;
+    case 'u':
+      output += absl::StrFormat("%u", value);
+      break;
+    case 'x':
+      output += absl::StrFormat(HexFormat<T>::format, value);
+      break;
+    case 'X':
+      output += absl::StrFormat(HexFormat<T>::format_cap, value);
+      break;
+    default:
+      output = absl::StrCat("Error: invalid '", format, "'");
+      break;
+  }
+  return output;
+}
+
+template <typename T>
+absl::Status WriteDbValue(const std::string &str_value,
+                          const std::string &format, int index,
+                          generic::DataBuffer *db) {
+  if (index < 0 || index >= db->size<T>())
+    return absl::OutOfRangeError("Error: index out of range");
+  if (format[0] == 'd') {
+    int64_t value;
+    if (!absl::SimpleAtoi(str_value, &value)) {
+      return absl::InvalidArgumentError(
+          absl::StrCat("Error: could not convert '", str_value, "' to number"));
+    }
+    db->Set<T>(index, static_cast<T>(value));
+    return absl::OkStatus();
+  }
+  if (format[0] == 'u') {
+    uint64_t value;
+    if (!absl::SimpleAtoi(str_value, &value)) {
+      return absl::InvalidArgumentError(
+          absl::StrCat("Error: could not convert '", str_value, "' to number"));
+    }
+    db->Set<T>(index, static_cast<T>(value));
+    return absl::OkStatus();
+  }
+  if (format[0] == 'x' || format[0] == 'X') {
+    uint64_t value;
+    if (!absl::SimpleHexAtoi(str_value, &value)) {
+      return absl::InvalidArgumentError(
+          absl::StrCat("Error: could not convert '", str_value, "' to number"));
+    }
+    db->Set<T>(index, static_cast<T>(value));
+    return absl::OkStatus();
+  }
+  return absl::InternalError(absl::StrCat("Unsupported format '", format, "'"));
+}
+
+}  // namespace
+
+std::string DebugCommandShell::FormatSingleDbValue(generic::DataBuffer *db,
+                                                   const std::string &format,
+                                                   int width, int index) const {
+  switch (width) {
+    case 8:
+      return FormatDbValue<uint8_t>(db, format, index);
+    case 16:
+      return FormatDbValue<uint16_t>(db, format, index);
+    case 32:
+      return FormatDbValue<uint32_t>(db, format, index);
+    case 64:
+      return FormatDbValue<uint64_t>(db, format, index);
+    default:
+      return absl::StrCat("Error: illegal width '", width, "'");
+  }
+}
+
+std::string DebugCommandShell::FormatAllDbValues(generic::DataBuffer *db,
+                                                 const std::string &format,
+                                                 int width) const {
+  std::string output;
+  std::string sep;
+  switch (width) {
+    case 8:
+      for (int i = 0; i < db->size<uint8_t>(); ++i) {
+        output += sep + FormatDbValue<uint8_t>(db, format, i);
+        sep = ":";
+      }
+      break;
+    case 16:
+      for (int i = 0; i < db->size<uint16_t>(); ++i) {
+        output += sep + FormatDbValue<uint16_t>(db, format, i);
+        sep = ":";
+      }
+      break;
+    case 32:
+      for (int i = 0; i < db->size<uint32_t>(); ++i) {
+        output += sep + FormatDbValue<uint32_t>(db, format, i);
+        sep = ":";
+      }
+      break;
+    case 64:
+      for (int i = 0; i < db->size<uint64_t>(); ++i) {
+        output += sep + FormatDbValue<uint64_t>(db, format, i);
+        sep = ":";
+      }
+      break;
+    default:
+      output = absl::StrCat("Error: illegal width '", width, "'");
+      break;
+  }
+  return output;
+}
+
+absl::Status DebugCommandShell::WriteSingleValueToDb(
+    const std::string &str_value, generic::DataBuffer *db, std::string format,
+    int width, int index) const {
+  switch (width) {
+    case 8:
+      return WriteDbValue<uint8_t>(str_value, format, index, db);
+    case 16:
+      return WriteDbValue<uint16_t>(str_value, format, index, db);
+    case 32:
+      return WriteDbValue<uint32_t>(str_value, format, index, db);
+    case 64:
+      return WriteDbValue<uint64_t>(str_value, format, index, db);
+    default:
+      return absl::InternalError("Error");
+  }
+  return absl::OkStatus();
 }
 
 std::string DebugCommandShell::ReadMemory(int core,
