@@ -49,10 +49,10 @@ DebugCommandShell::DebugCommandShell(std::vector<CoreAccess> core_access)
       read_reg_re_{R"(\s*reg\s+get\s+(\$?\w+)(\s+[foduxX]\d+)?\s*)"},
       read_reg2_re_{R"(\s*reg\s+(\$?\w+)(\s+[foduxX]\d+)?\s*)"},
       write_reg_re_{R"(\s*reg\s+set\s+(\$?\w+)\s+(\w+)\s*)"},
-      rd_vreg_re_{
-          R"(\s*vreg\s+get\s+(\$?\w+)(?:(?:\s*\:(\d+))?(?:\s+(?:([oduxX])(8|16|32|64))?)?)?\s*)"},
-      wr_vreg_re_{
-          R"(\s*vreg\s+set\s+(\$?\w+)\s*\:(\d+)\oduxX])(8|16|32|64)\s+(\w+)\s*)"},
+      rd_vreg_re_{R"(\s*vreg(?:\s+get)?\s+(\$?\w+)(?:(?:\s*\:(\d+))?)"
+                  R"((?:\s+(?:([oduxX])(8|16|32|64))?)?)?\s*)"},
+      wr_vreg_re_{R"(\s*vreg\s+set\s+(\$?\w+)\s*\:(\d+))"
+                  R"(\s+([oduxX])(8|16|32|64)\s+(\w+)\s*)"},
       read_mem_re_{R"(\s*mem\s+get\s+(\w+)\s+([foduxX]\d+)?\s*)"},
       read_mem2_re_{R"(\s*mem\s+(\w+)\s+([foduxX]\d+)?\s*)"},
       write_mem_re_{R"(\s*mem\s+set\s+(\w+)\s+([oduxX]\d+)?\s+(\w+)\s*)"},
