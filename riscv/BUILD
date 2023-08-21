@@ -488,6 +488,7 @@ cc_library(
     deps = [
         "@com_google_absl//absl/container:btree",
         "@com_google_absl//absl/functional:any_invocable",
+        "@com_google_absl//absl/functional:bind_front",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",

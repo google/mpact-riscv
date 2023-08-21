@@ -14,9 +14,11 @@
 
 #include "riscv/riscv_breakpoint.h"
 
+#include <cstdint>
 #include <list>
 #include <utility>
 
+#include "absl/functional/bind_front.h"
 #include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
@@ -25,13 +27,23 @@ namespace mpact {
 namespace sim {
 namespace riscv {
 
-RiscVBreakpointManager::RiscVBreakpointManager(MemoryInterface *memory,
-                                               InvalidateFcn invalidate_fcn)
-    : memory_(memory), invalidate_fcn_(std::move(invalidate_fcn)) {
+RiscVBreakpointManager::RiscVBreakpointManager(
+    MemoryInterface *memory, InvalidateFcn invalidate_fcn,
+    InstructionSizeFcn instruction_size_fcn)
+    : memory_(memory),
+      invalidate_fcn_(std::move(invalidate_fcn)),
+      instruction_size_fcn_(std::move(instruction_size_fcn)) {
   // Allocate two data buffers (32 and 16 bit) once, so we don't have to
   // do it every time we access breakpoint instructions.
   db4_ = db_factory_.Allocate<uint32_t>(1);
   db2_ = db_factory_.Allocate<uint16_t>(1);
+}
+
+RiscVBreakpointManager::RiscVBreakpointManager(MemoryInterface *memory,
+                                               InvalidateFcn invalidate_fcn)
+    : RiscVBreakpointManager(
+          memory, std::move(invalidate_fcn),
+          absl::bind_front(&RiscVBreakpointManager::GetInstructionSize, this)) {
 }
 
 RiscVBreakpointManager::~RiscVBreakpointManager() {
@@ -53,24 +65,23 @@ absl::Status RiscVBreakpointManager::SetBreakpoint(uint64_t address) {
   // Read the instruction word at the location. Determine the size, then swap it
   // with the correct ebreak instruction.
   memory_->Load(address, db4_, nullptr, nullptr);
-  int size = 0;
   uint32_t iword = db4_->Get<uint32_t>(0);
-  if ((iword & 0b11) != 0b11) {
-    // 16 bit instruction.
-    size = 2;
-    db2_->Set<uint16_t>(0, kEBreak16);
-    memory_->Store(address, db2_);
-  } else if ((iword & 0b111'11) != 0b11111) {
-    // 32 bit instruction.
-    size = 4;
-    db4_->Set<uint32_t>(0, kEBreak32);
-    memory_->Store(address, db4_);
-  } else {
-    // No valid 16/32 bit opcode.
-    return absl::InternalError(absl::StrCat(
-        "Error SetBreakpoint: No valid instruction of size 16 or 32 bits at ",
-        absl::Hex(address)));
+  int size = instruction_size_fcn_(address, iword);
+  switch (size) {
+    case 2:
+      db2_->Set<uint16_t>(0, kEBreak16);
+      memory_->Store(address, db2_);
+      break;
+    case 4:
+      db4_->Set<uint32_t>(0, kEBreak32);
+      memory_->Store(address, db4_);
+      break;
+    default:
+      return absl::InternalError(absl::StrCat(
+          "Error SetBreakpoint: No valid instruction of size 16 or 32 bits at ",
+          absl::Hex(address)));
   }
+
   // Invalidate the decode cache entry.
   invalidate_fcn_(address);
   // Insert into the map.
@@ -177,12 +188,19 @@ void RiscVBreakpointManager::ClearAllBreakpoints() {
   breakpoint_map_.clear();
 }
 
-bool RiscVBreakpointManager::IsBreakpoint(uint64_t address) {
+bool RiscVBreakpointManager::IsBreakpoint(uint64_t address) const {
   auto iter = breakpoint_map_.find(address);
   if (iter == breakpoint_map_.end()) return false;
 
   auto *bp_info = iter->second;
   return bp_info->is_active;
+}
+
+int RiscVBreakpointManager::GetInstructionSize(
+    uint64_t, uint32_t instruction_word) const {
+  if ((instruction_word & 0b11) != 0b11) return 2;
+  if ((instruction_word & 0b111'11) != 0b11111) return 4;
+  return 0;
 }
 
 }  // namespace riscv

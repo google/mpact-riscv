@@ -15,10 +15,11 @@
 #ifndef MPACT_RISCV_RISCV_RISCV_BREAKPOINT_H_
 #define MPACT_RISCV_RISCV_RISCV_BREAKPOINT_H_
 
+#include <cstdint>
+
 #include "absl/container/btree_map.h"
 #include "absl/functional/any_invocable.h"
 #include "absl/status/status.h"
-#include "mpact/sim/generic/component.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/util/memory/memory_interface.h"
 
@@ -44,7 +45,20 @@ class RiscVBreakpointManager {
 
   // Callback type for function to invalidate an instruction.
   using InvalidateFcn = absl::AnyInvocable<void(uint64_t)>;
+  // Since RiscV can be customized to a great extent, it is possible that the
+  // instruction size may need to be determined in different ways for different
+  // implementations. Thus, require a function to return the instruction size in
+  // bytes. The function is called from SetBreakpoint with the 64 bit address
+  // and the 32 bit instruction word located at the desired breakpoint address.
+  // For now, the function must return either 2 (bytes), 4 (bytes), or 0 (for an
+  // unrecognized instruction).
+  using InstructionSizeFcn = absl::AnyInvocable<int(uint64_t, uint32_t)>;
 
+  RiscVBreakpointManager(MemoryInterface *memory, InvalidateFcn invalidate_fcn,
+                         InstructionSizeFcn instruction_size_fcn);
+  // This constructor will use an internal instruction size function that sets
+  // the instruction size based on base RiscV architecture instruction
+  // encodings.
   RiscVBreakpointManager(MemoryInterface *memory, InvalidateFcn invalidate_fcn);
   ~RiscVBreakpointManager();
 
@@ -59,7 +73,7 @@ class RiscVBreakpointManager {
   // Clear all breakpoints.
   void ClearAllBreakpoints();
   // Is the address an active breakpoint?
-  bool IsBreakpoint(uint64_t address);
+  bool IsBreakpoint(uint64_t address) const;
 
  private:
   // Structure keeping track of breakpoint information.
@@ -80,8 +94,11 @@ class RiscVBreakpointManager {
           instruction_word(instruction_word_) {}
   };
 
+  // Returns the size of the instruction word in bytes.
+  int GetInstructionSize(uint64_t address, uint32_t instruction_word) const;
   MemoryInterface *memory_;
   InvalidateFcn invalidate_fcn_;
+  InstructionSizeFcn instruction_size_fcn_;
   DataBuffer *db4_ = nullptr;
   DataBuffer *db2_ = nullptr;
   DataBufferFactory db_factory_;
