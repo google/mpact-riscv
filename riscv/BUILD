@@ -562,7 +562,6 @@ cc_binary(
         ":riscv_arm_semihost",
         ":riscv_state",
         ":riscv_top",
-        "//third_party/re2",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
         "@com_google_absl//absl/functional:any_invocable",
@@ -580,6 +579,7 @@ cc_binary(
         "@com_google_mpact-sim//mpact/sim/util/memory",
         "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
         "@com_google_protobuf//:protobuf",
+        "@com_googlesource_code_re2//:re2",
     ],
 )
 
@@ -594,7 +594,6 @@ cc_binary(
         ":riscv_arm_semihost",
         ":riscv_state",
         ":riscv_top",
-        "//third_party/re2",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
         "@com_google_absl//absl/functional:any_invocable",
@@ -612,6 +611,7 @@ cc_binary(
         "@com_google_mpact-sim//mpact/sim/util/memory",
         "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
         "@com_google_protobuf//:protobuf",
+        "@com_googlesource_code_re2//:re2",
     ],
 )
 
