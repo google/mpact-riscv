@@ -22,8 +22,10 @@
 #include <string>
 #include <vector>
 
+#include "absl/functional/any_invocable.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/string_view.h"
 #include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/util/program_loader/elf_program_loader.h"
 #include "re2/re2.h"
@@ -48,6 +50,15 @@ class DebugCommandShell {
     util::ElfProgramLoader *loader;
   };
 
+  // Type of custom command processing invocables. It takes a string_view of
+  // the current text input, the current core access structure, and a string
+  // to be written to the command shell output. The invocable should return
+  // true if the command input string was successfully matched, regardless of
+  // any error while executing the command, in which case the output string
+  // should be set to an appropriate error message.
+  using CommandFunction = absl::AnyInvocable<bool(
+      absl::string_view, const CoreAccess &, std::string &)>;
+
   // Default constructor is deleted.
   DebugCommandShell() = delete;
   // Pass in a vector of CoreAccess structs, one per core in the system.
@@ -56,6 +67,11 @@ class DebugCommandShell {
   // The run method is the command interpreter. It parses the command strings,
   // executes the corresponding commands, displays results and error messages.
   void Run(std::istream &is, std::ostream &os);
+
+  // This adds a custom command to the command interpreter. Usage will be added
+  // to the standard command usage. The callable will be called before the
+  // standard commands are processed.
+  void AddCommand(absl::string_view usage, CommandFunction command_function);
 
  private:
   // Helper method for formatting single data buffer value.
@@ -111,6 +127,8 @@ class DebugCommandShell {
   LazyRE2 help_re_;
 
   uint8_t mem_buffer_[kMemBufferSize];
+  std::vector<CommandFunction> command_functions_;
+  std::vector<std::string> command_usage_;
 };
 
 }  // namespace riscv

@@ -15,11 +15,13 @@
 #include <signal.h>
 
 #include <cstdint>
+#include <cstdlib>
 #include <fstream>
 #include <functional>
 #include <ios>
 #include <iostream>
 #include <memory>
+#include <optional>
 #include <ostream>
 #include <string>
 #include <vector>
@@ -28,8 +30,12 @@
 #include "absl/flags/parse.h"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/string_view.h"
+#include "absl/time/clock.h"
 #include "absl/time/time.h"
+#include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/generic/counters.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/proto/component_data.pb.h"
@@ -39,8 +45,10 @@
 #include "mpact/sim/util/program_loader/elf_program_loader.h"
 #include "riscv/debug_command_shell.h"
 #include "riscv/riscv_arm_semihost.h"
+#include "riscv/riscv_state.h"
 #include "riscv/riscv_top.h"
 #include "src/google/protobuf/text_format.h"
+#include "third_party/re2/re2.h"
 
 using ::mpact::sim::generic::Instruction;
 using ::mpact::sim::proto::ComponentData;
@@ -131,6 +139,32 @@ static void sim_sigint_handler(int arg) {
 }
 
 using ::mpact::sim::riscv::RiscVTop;
+
+// This is an example custom command that is added to the interactive
+// debug command shell.
+static bool PrintRegisters(
+    absl::string_view input,
+    const mpact::sim::riscv::DebugCommandShell::CoreAccess &core_access,
+    std::string &output) {
+  static const std::string reg_info_re{R"(\s*reg\s+info\s*)"};
+  if (!RE2::FullMatch(input, reg_info_re)) {
+    return false;
+  }
+  std::string output_str;
+  for (int i = 0; i < 32; i++) {
+    std::string reg_name = absl::StrCat("x", i);
+    auto result = core_access.debug_interface->ReadRegister(reg_name);
+    if (!result.ok()) {
+      output = absl::StrCat("Failed to read register '", reg_name, "'");
+      return true;
+    }
+    output_str +=
+        absl::StrCat("x", absl::Dec(i, absl::kZeroPad2), " = [",
+                     absl::Hex(result.value(), absl::kZeroPad16), "]\n");
+  }
+  output = output_str;
+  return true;
+}
 
 int main(int argc, char **argv) {
   auto arg_vec = absl::ParseCommandLine(argc, argv);
@@ -257,6 +291,10 @@ int main(int argc, char **argv) {
   bool interactive = absl::GetFlag(FLAGS_i) || absl::GetFlag(FLAGS_interactive);
   if (interactive) {
     mpact::sim::riscv::DebugCommandShell cmd_shell({{&riscv_top, &elf_loader}});
+    // Add custom command to interactive debug command shell.
+    cmd_shell.AddCommand(
+        "    reg info                       - print all scalar regs",
+        PrintRegisters);
     cmd_shell.Run(std::cin, std::cout);
   } else {
     std::cerr << "Starting simulation\n";

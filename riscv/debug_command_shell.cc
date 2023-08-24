@@ -19,6 +19,7 @@
 #include <istream>
 #include <ostream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "absl/status/status.h"
@@ -61,9 +62,8 @@ DebugCommandShell::DebugCommandShell(std::vector<CoreAccess> core_access)
       clear_break_re_{R"(\s*break\s+clear\s+(\w+)\s*)"},
       clear_all_break_re_{R"(\s*break\s+clear-all\s*)"},
       help_re_{R"(\s*help\s*)"} {
-  help_message_ = R"raw(
-
-    quit                           - exit command shell.
+  help_message_ =
+      R"raw(    quit                           - exit command shell.
     core [N]                       - direct subsequent commands to core N
                                      (default: 0).
     run                            - run program from current pc until a
@@ -157,6 +157,18 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
     line_view = absl::string_view(previous_line);
 
     // Start matching commands.
+
+    // First try any added custom commands.
+    bool executed = false;
+    for (auto &fcn : command_functions_) {
+      std::string output;
+      executed = fcn(line_view, core_access_[core], output);
+      if (executed) {
+        os << output << std::endl;
+        break;
+      }
+    }
+    if (executed) continue;
 
     // quit
     if (RE2::FullMatch(line_view, *quit_re_)) return;
@@ -443,6 +455,9 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
 
     // help
     if (RE2::FullMatch(line_view, *help_re_)) {
+      for (auto const &usage : command_usage_) {
+        os << usage << std::endl;
+      }
       os << help_message_;
       os.flush();
       continue;
@@ -498,6 +513,12 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
     os << absl::StrCat("Error: unrecognized command '", line, "'") << std::endl;
     os.flush();
   }
+}
+
+void DebugCommandShell::AddCommand(absl::string_view usage,
+                                   CommandFunction command_function) {
+  command_usage_.emplace_back(usage);
+  command_functions_.emplace_back(std::move(command_function));
 }
 
 namespace {
