@@ -169,8 +169,8 @@ static bool PrintRegisters(
     absl::string_view input,
     const mpact::sim::riscv::DebugCommandShell::CoreAccess &core_access,
     std::string &output) {
-  static const std::string reg_info_re{R"(\s*reg\s+info\s*)"};
-  if (!RE2::FullMatch(input, reg_info_re)) {
+  static const LazyRE2 reg_info_re{R"(\s*xyzreg\s+info\s*)"};
+  if (!RE2::FullMatch(input, *reg_info_re)) {
     return false;
   }
   std::string output_str;
