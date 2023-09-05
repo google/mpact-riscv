@@ -430,6 +430,39 @@ TEST_F(RiscVTopTest, RegisterNames) {
   }
 }
 
+// Directly read/write the memory addresses that are out-of-bound.
+TEST_F(RiscVTopTest, ReadWriteOutOfBoundMemory) {
+  // Set the machine to have 16-byte memory
+  constexpr uint64_t kTestMemerySize = 0x10;
+  constexpr uint64_t kBinaryAddress = 0;
+  riscv_top_->state()->set_max_physical_address(kTestMemerySize - 1);
+  uint8_t mem_bytes[kTestMemerySize + 4] = {0};
+  // Read the memory with the length greater than the physical memory size. The
+  // read operation is successful within the physical memory size range.
+  auto result =
+      riscv_top_->ReadMemory(kBinaryAddress, mem_bytes, sizeof(mem_bytes));
+  EXPECT_OK(result);
+  EXPECT_EQ(result.value(), kTestMemerySize);
+  // Read the memory with the staring address out of the physical memory range.
+  // The read operation returns error.
+  result =
+      riscv_top_->ReadMemory(kTestMemerySize + 4, mem_bytes, sizeof(mem_bytes));
+  EXPECT_FALSE(result.ok());
+
+  // Write the memory with the length greater than the physical memory size. The
+  // write operation is successful within the physical memory size range.
+  result =
+      riscv_top_->WriteMemory(kBinaryAddress, mem_bytes, sizeof(mem_bytes));
+  EXPECT_OK(result);
+  EXPECT_EQ(result.value(), kTestMemerySize);
+
+  // Write the memory with the staring address out of the physical memory range.
+  // The write operation returns error.
+  result = riscv_top_->WriteMemory(kTestMemerySize + 4, mem_bytes,
+                                   sizeof(mem_bytes));
+  EXPECT_FALSE(result.ok());
+}
+
 // This test will verify that the 64 bit version executes a program properly.
 // No need to test other aspects of the top.
 TEST_F(RiscVTopTest, RiscV64) {
