@@ -15,6 +15,7 @@
 #include "riscv/riscv_vector_opm_instructions.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <functional>
 #include <ios>
 #include <limits>
@@ -25,7 +26,9 @@
 
 #include "absl/base/casts.h"
 #include "absl/log/check.h"
+#include "absl/numeric/int128.h"
 #include "absl/random/random.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/instruction.h"
@@ -35,7 +38,7 @@
 namespace {
 
 using Instruction = ::mpact::sim::generic::Instruction;
-using ::mpact::sim::riscv::WideType;
+using ::mpact::sim::generic::WideType;
 using ::mpact::sim::riscv::test::RiscVVectorInstructionsTestBase;
 
 using ::mpact::sim::riscv::Vaadd;

@@ -17,10 +17,13 @@
 #include <string>
 
 #include "mpact/sim/generic/program_error.h"
+#include "mpact/sim/generic/type_helpers.h"
 
 namespace mpact {
 namespace sim {
 namespace riscv {
+
+using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 
 RiscV32Decoder::RiscV32Decoder(RiscVState *state, util::MemoryInterface *memory)
     : state_(state), memory_(memory) {

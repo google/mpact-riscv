@@ -16,6 +16,9 @@
 #define MPACT_RISCV_RISCV_TEST_RISCV_VECTOR_INSTRUCTIONS_TEST_BASE_H_
 
 #include <algorithm>
+#include <cstdint>
+#include <cstring>
+#include <functional>
 #include <ios>
 #include <limits>
 #include <string>
@@ -25,11 +28,14 @@
 
 #include "absl/functional/bind_front.h"
 #include "absl/random/random.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/immediate_operand.h"
 #include "mpact/sim/generic/instruction.h"
+#include "mpact/sim/generic/register.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "mpact/sim/util/memory/memory_interface.h"
@@ -53,7 +59,10 @@ namespace test {
 using ::absl::Span;
 using ::mpact::sim::generic::ImmediateOperand;
 using ::mpact::sim::generic::Instruction;
+using ::mpact::sim::generic::NarrowType;
 using ::mpact::sim::generic::RegisterBase;
+using ::mpact::sim::generic::SameSignedType;
+using ::mpact::sim::generic::WideType;
 using ::mpact::sim::riscv::RiscVState;
 using ::mpact::sim::riscv::RiscVVectorState;
 using ::mpact::sim::riscv::RiscVXlen;

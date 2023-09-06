@@ -25,6 +25,8 @@ namespace mpact {
 namespace sim {
 namespace riscv {
 
+using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
+
 // Helper functions to convert between 32 and 64 bit views of mstatus.
 static inline uint64_t StretchMStatus32(uint32_t value) {
   uint64_t value64 = static_cast<uint64_t>(value);

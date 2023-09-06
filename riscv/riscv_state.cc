@@ -36,6 +36,8 @@ namespace mpact {
 namespace sim {
 namespace riscv {
 
+using ::mpact::sim::generic::operator*;  // NOLINT: used below (clang error).
+
 // These helper templates are used to store information about the CSR registers
 // for 32 and 64 bit versions of RiscV.
 template <typename T>

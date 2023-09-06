@@ -15,6 +15,7 @@
 #include "riscv/riscv_vector_reduction_instructions.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <limits>
 #include <string>
 #include <vector>
@@ -31,9 +32,9 @@
 namespace {
 using ::absl::Span;
 using ::mpact::sim::generic::Instruction;
+using ::mpact::sim::generic::WideType;
 using ::mpact::sim::riscv::RV32Register;
 using ::mpact::sim::riscv::RVVectorRegister;
-using ::mpact::sim::riscv::WideType;
 using ::mpact::sim::riscv::test::RiscVVectorInstructionsTestBase;
 
 using ::mpact::sim::riscv::Vredand;

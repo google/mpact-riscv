@@ -17,6 +17,8 @@
 #include <cstdint>
 
 #include "absl/log/log.h"
+#include "mpact/sim/generic/type_helpers.h"
+#include "riscv/riscv_csr.h"
 #include "riscv/riscv_fp_host.h"
 #include "riscv/riscv_fp_info.h"
 #include "riscv/riscv_state.h"
@@ -24,6 +26,8 @@
 namespace mpact {
 namespace sim {
 namespace riscv {
+
+using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 
 constexpr char kFcsrName[] = "fcsr";
 constexpr uint32_t kFcsrInitial = 0b000'0'0'0'0'0;

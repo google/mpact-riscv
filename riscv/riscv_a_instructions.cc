@@ -14,7 +14,10 @@
 
 #include "riscv/riscv_a_instructions.h"
 
+#include <cstdint>
+
 #include "absl/status/status.h"
+#include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/memory_interface.h"
 #include "riscv/riscv_state.h"
@@ -22,6 +25,8 @@
 namespace mpact {
 namespace sim {
 namespace riscv {
+
+using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 
 // This file contains the definitions of the semantic functions for the A, or
 // atomic, subset of the RiscV architecture. Each semantic function calls the

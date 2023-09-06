@@ -20,6 +20,8 @@ namespace mpact {
 namespace sim {
 namespace riscv {
 
+using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
+
 constexpr char kPcName[] = "pc";
 
 constexpr char kX0Name[] = "x0";

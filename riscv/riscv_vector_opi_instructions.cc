@@ -15,6 +15,8 @@
 #include "riscv/riscv_vector_opi_instructions.h"
 
 #include <algorithm>
+#include <cstdint>
+#include <cstring>
 #include <limits>
 #include <type_traits>
 
@@ -35,6 +37,8 @@ namespace mpact {
 namespace sim {
 namespace riscv {
 
+using ::mpact::sim::generic::MakeUnsigned;
+using ::mpact::sim::generic::WideType;
 using std::numeric_limits;
 
 // Vector arithmetic operations.
@@ -1152,7 +1156,8 @@ void Vmvr(int num_regs, Instruction *inst) {
   for (int i = start_reg; i < num_regs; i++) {
     auto *src_db = src_op->GetRegister(i)->data_buffer();
     auto *dest_db = dest_op->AllocateDataBuffer(i);
-    memcpy(dest_db->raw_ptr(), src_db->raw_ptr(), dest_db->size<uint8_t>());
+    std::memcpy(dest_db->raw_ptr(), src_db->raw_ptr(),
+                dest_db->size<uint8_t>());
     dest_db->Submit();
   }
   rv_vector->clear_vstart();

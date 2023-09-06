@@ -15,7 +15,9 @@
 #include "riscv/riscv_vector_fp_instructions.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <cstring>
+#include <functional>
 #include <ios>
 #include <limits>
 #include <string>
@@ -25,10 +27,14 @@
 
 #include "absl/log/log.h"
 #include "absl/random/random.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/instruction.h"
+#include "mpact/sim/generic/type_helpers.h"
+#include "riscv/riscv_fp_host.h"
+#include "riscv/riscv_fp_info.h"
 #include "riscv/riscv_fp_state.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_vector_state.h"
@@ -38,6 +44,7 @@
 namespace {
 
 using Instruction = ::mpact::sim::generic::Instruction;
+using ::mpact::sim::generic::operator*;
 
 // Functions to test.
 using ::mpact::sim::riscv::Vfadd;

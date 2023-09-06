@@ -17,15 +17,20 @@
 #include <type_traits>
 
 #include "absl/log/log.h"
+#include "absl/strings/str_cat.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/type_helpers.h"
+#include "riscv/riscv_csr.h"
 #include "riscv/riscv_misa.h"
+#include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
 #include "riscv/riscv_xstatus.h"
 
 namespace mpact {
 namespace sim {
 namespace riscv {
+
+using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 
 namespace RV32 {
 

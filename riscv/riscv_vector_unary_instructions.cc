@@ -14,12 +14,13 @@
 
 #include "riscv/riscv_vector_unary_instructions.h"
 
-#include <algorithm>
-#include <limits>
+#include <cstdint>
+#include <functional>
 #include <optional>
 #include <type_traits>
 
 #include "absl/log/log.h"
+#include "absl/strings/str_cat.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "riscv/riscv_register.h"
@@ -31,7 +32,9 @@ namespace mpact {
 namespace sim {
 namespace riscv {
 
-using SignedXregType = SameSignedType<RV32Register::ValueType, int64_t>::type;
+using SignedXregType =
+    ::mpact::sim::generic::SameSignedType<RV32Register::ValueType,
+                                          int64_t>::type;
 
 // Move scalar to vector register.
 void VmvToScalar(Instruction *inst) {

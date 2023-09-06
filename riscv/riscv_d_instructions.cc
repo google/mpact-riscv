@@ -28,6 +28,8 @@ namespace mpact {
 namespace sim {
 namespace riscv {
 
+using ::mpact::sim::generic::operator*;
+
 // The following instruction semantic functions implement the double precision
 // floating point instructions in the RiscV architecture. They all utilize the
 // templated helper functions in riscv_instruction_helpers.h to implement

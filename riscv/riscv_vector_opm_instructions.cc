@@ -14,9 +14,11 @@
 
 #include "riscv/riscv_vector_opm_instructions.h"
 
+#include <cstdint>
 #include <functional>
 #include <limits>
 #include <optional>
+#include <type_traits>
 
 #include "absl/log/log.h"
 #include "mpact/sim/generic/type_helpers.h"
@@ -27,6 +29,8 @@
 namespace mpact {
 namespace sim {
 namespace riscv {
+
+using ::mpact::sim::generic::WideType;
 
 // Helper function used to factor out some code from Vaadd* instructions.
 template <typename T>

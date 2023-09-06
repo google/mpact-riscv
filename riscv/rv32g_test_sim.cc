@@ -40,7 +40,7 @@
 
 using HaltReason = ::mpact::sim::generic::CoreDebugInterface::HaltReason;
 using AddressRange = ::mpact::sim::util::MemoryWatcher::AddressRange;
-using ::mpact::sim::riscv::operator*;  // NOLINT: clang-tidy false positive.
+using ::mpact::sim::generic::operator*;  // NOLINT: clang-tidy false positive.
 using ::mpact::sim::riscv::RiscVTop;
 using ::mpact::sim::riscv::RiscVXlen;
 

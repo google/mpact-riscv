@@ -14,11 +14,14 @@
 
 #include "riscv/riscv_vector_fp_instructions.h"
 
+#include <cstdint>
+#include <functional>
 #include <tuple>
 
 #include "absl/log/log.h"
-#include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/type_helpers.h"
+#include "riscv/riscv_fp_host.h"
+#include "riscv/riscv_fp_info.h"
 #include "riscv/riscv_fp_state.h"
 #include "riscv/riscv_state.h"
 #include "riscv/riscv_vector_instruction_helpers.h"
@@ -27,6 +30,8 @@
 namespace mpact {
 namespace sim {
 namespace riscv {
+
+using ::mpact::sim::generic::FPTypeInfo;
 
 // Floating point add.
 void Vfadd(const Instruction *inst) {
@@ -238,7 +243,7 @@ void Vfmul(const Instruction *inst) {
   }
 }
 
-// Floating point divistion vs2/vs1;
+// Floating point division vs2/vs1;
 void Vfdiv(const Instruction *inst) {
   auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
   auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();

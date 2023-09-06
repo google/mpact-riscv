@@ -14,14 +14,24 @@
 
 #include "riscv/riscv64_decoder.h"
 
+#include <cstdint>
 #include <string>
 
 #include "absl/strings/str_cat.h"
+#include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/program_error.h"
+#include "mpact/sim/generic/type_helpers.h"
+#include "mpact/sim/util/memory/memory_interface.h"
+#include "riscv/riscv64g_decoder.h"
+#include "riscv/riscv64g_encoding.h"
+#include "riscv/riscv64g_enums.h"
+#include "riscv/riscv_state.h"
 
 namespace mpact {
 namespace sim {
 namespace riscv {
+
+using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 
 RiscV64Decoder::RiscV64Decoder(RiscVState *state, util::MemoryInterface *memory)
     : RiscV64Decoder(state, memory, /*use_abi_names*/ true) {}

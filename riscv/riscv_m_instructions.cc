@@ -17,7 +17,6 @@
 #include <limits>
 #include <type_traits>
 
-#include "absl/log/log.h"
 #include "absl/numeric/int128.h"
 #include "mpact/sim/generic/instruction_helpers.h"
 #include "mpact/sim/generic/type_helpers.h"
@@ -28,6 +27,8 @@ namespace sim {
 namespace riscv {
 
 using ::mpact::sim::generic::BinaryOp;
+using ::mpact::sim::generic::NarrowType;
+using ::mpact::sim::generic::WideType;
 
 namespace RV32 {
 

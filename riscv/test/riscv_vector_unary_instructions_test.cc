@@ -14,29 +14,26 @@
 
 #include "riscv/riscv_vector_unary_instructions.h"
 
-#include <algorithm>
+#include <cstdint>
 #include <cstring>
 #include <ios>
-#include <limits>
-#include <string>
-#include <type_traits>
 #include <vector>
 
 #include "absl/random/random.h"
+#include "absl/types/span.h"
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "riscv/riscv_register.h"
-#include "riscv/riscv_vector_state.h"
 #include "riscv/test/riscv_vector_instructions_test_base.h"
 
 namespace {
 
 using ::absl::Span;
 using ::mpact::sim::generic::Instruction;
+using ::mpact::sim::generic::SameSignedType;
 using ::mpact::sim::riscv::RV32Register;
 using ::mpact::sim::riscv::RVVectorRegister;
-using ::mpact::sim::riscv::SameSignedType;
 using ::mpact::sim::riscv::test::RiscVVectorInstructionsTestBase;
 
 using ::mpact::sim::riscv::Vcpop;

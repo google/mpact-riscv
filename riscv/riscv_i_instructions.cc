@@ -14,6 +14,7 @@
 
 #include "riscv/riscv_i_instructions.h"
 
+#include <cstdint>
 #include <functional>
 #include <iostream>
 #include <limits>
@@ -25,6 +26,7 @@
 #include "mpact/sim/generic/register.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "riscv/riscv_instruction_helpers.h"
+#include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
 
 namespace mpact {
@@ -156,8 +158,8 @@ using RegisterType = RV64Register;
 using UIntReg =
     typename std::make_unsigned<typename RegisterType::ValueType>::type;
 using IntReg = typename std::make_signed<UIntReg>::type;
-using NarrowIntReg = typename NarrowType<IntReg>::type;
-using NarrowUIntReg = typename NarrowType<UIntReg>::type;
+using NarrowIntReg = typename ::mpact::sim::generic::NarrowType<IntReg>::type;
+using NarrowUIntReg = typename ::mpact::sim::generic::NarrowType<UIntReg>::type;
 
 void RiscVIAdd(const Instruction *instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(

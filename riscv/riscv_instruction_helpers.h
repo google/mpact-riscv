@@ -15,8 +15,11 @@
 #ifndef MPACT_RISCV_RISCV_RISCV_INSTRUCTION_HELPERS_H_
 #define MPACT_RISCV_RISCV_RISCV_INSTRUCTION_HELPERS_H_
 
+#include <cstdint>
+#include <functional>
 #include <limits>
 #include <tuple>
+#include <type_traits>
 
 #include "absl/log/log.h"
 #include "mpact/sim/generic/arch_state.h"
@@ -25,12 +28,17 @@
 #include "mpact/sim/generic/operand_interface.h"
 #include "mpact/sim/generic/register.h"
 #include "mpact/sim/generic/type_helpers.h"
+#include "riscv/riscv_fp_host.h"
+#include "riscv/riscv_fp_info.h"
 #include "riscv/riscv_fp_state.h"
 #include "riscv/riscv_state.h"
 
 namespace mpact {
 namespace sim {
 namespace riscv {
+
+using ::mpact::sim::generic::operator*;
+using ::mpact::sim::generic::FPTypeInfo;
 
 // Templated helper function for convert instruction semantic functions.
 template <typename From, typename To>

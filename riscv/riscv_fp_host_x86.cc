@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <ios>
+#include <cstdint>
 
-#include "absl/log/log.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "riscv/riscv_fp_host.h"
 #include "riscv/riscv_fp_info.h"
@@ -26,6 +25,8 @@
 namespace mpact {
 namespace sim {
 namespace riscv {
+
+using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 
 // x86 flags.
 constexpr uint8_t kPE = 32;  // Inexact result

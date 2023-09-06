@@ -14,15 +14,12 @@
 
 #include "riscv/riscv_vector_opi_instructions.h"
 
-#include <algorithm>
-#include <ios>
+#include <cstdint>
 #include <limits>
-#include <string>
-#include <type_traits>
 #include <vector>
 
 #include "absl/functional/bind_front.h"
-#include "absl/random/random.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/instruction.h"
@@ -38,7 +35,8 @@ namespace {
 
 using ::absl::Span;
 using ::mpact::sim::generic::Instruction;
-using ::mpact::sim::riscv::MakeUnsigned;
+using ::mpact::sim::generic::MakeUnsigned;
+using ::mpact::sim::generic::WideType;
 using ::mpact::sim::riscv::RiscVVectorState;
 using ::mpact::sim::riscv::RV32Register;
 using ::mpact::sim::riscv::RVVectorRegister;
@@ -84,7 +82,6 @@ using ::mpact::sim::riscv::Vssubu;
 using ::mpact::sim::riscv::Vsub;
 using ::mpact::sim::riscv::Vxor;
 
-using ::mpact::sim::riscv::WideType;
 using ::mpact::sim::riscv::test::kVd;
 using ::mpact::sim::riscv::test::kVectorLengthInBytes;
 using ::mpact::sim::riscv::test::kVs2;
