@@ -14,12 +14,12 @@
 
 #include <signal.h>
 
+#include <cstdint>
 #include <fstream>
-#include <functional>
 #include <iomanip>
 #include <ios>
 #include <iostream>
-#include <memory>
+#include <optional>
 #include <ostream>
 #include <string>
 #include <vector>
@@ -43,7 +43,10 @@
 // https://github.com/riscv-software-src/riscv-tests and report the results.
 
 using HaltReason = ::mpact::sim::generic::CoreDebugInterface::HaltReason;
+using HaltReasonValueType =
+    ::mpact::sim::generic::CoreDebugInterface::HaltReasonValueType;
 using AddressRange = ::mpact::sim::util::MemoryWatcher::AddressRange;
+using ::mpact::sim::riscv::operator*;  // NOLINT: clang-tidy false positive.
 using ::mpact::sim::riscv::RiscVTop;
 using ::mpact::sim::riscv::RiscVXlen;
 
@@ -108,7 +111,7 @@ int main(int argc, char **argv) {
   }
 
   // Run the executable.
-  HaltReason halt_reason;
+  HaltReasonValueType halt_reason;
   bool ok = true;
   uint64_t pc = entry_point;
   bool commit_trace = absl::GetFlag(FLAGS_log_commits);
@@ -189,7 +192,7 @@ int main(int argc, char **argv) {
       std::cerr << trace_str << std::endl;
     }
     pc = riscv_top.ReadRegister("pc").value();
-  } while (halt_reason == HaltReason::kNone);
+  } while (halt_reason == *HaltReason::kNone);
 
   if (!ok) {
     std::cerr << "Failure in stepping or obtaining halt reason";
@@ -204,7 +207,7 @@ int main(int argc, char **argv) {
   }
 
   int ret = -1;
-  if (halt_reason == HaltReason::kUserRequest) {
+  if (halt_reason == *HaltReason::kUserRequest) {
     auto db = riscv_top.state()->db_factory()->Allocate<uint32_t>(1);
     memory.Load(tohost, db, nullptr, nullptr);
     auto value = db->Get<uint32_t>(0);

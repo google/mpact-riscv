@@ -75,7 +75,7 @@ class RiscVTop : public generic::Component, public generic::CoreDebugInterface {
   absl::Status Wait() override;
 
   absl::StatusOr<RunStatus> GetRunStatus() override;
-  absl::StatusOr<HaltReason> GetLastHaltReason() override;
+  absl::StatusOr<HaltReasonValueType> GetLastHaltReason() override;
 
   // Register access by register name.
   absl::StatusOr<uint64_t> ReadRegister(const std::string &name) override;
@@ -98,6 +98,7 @@ class RiscVTop : public generic::Component, public generic::CoreDebugInterface {
 
   // Called when a halt is requested.
   void RequestHalt(HaltReason halt_reason, const Instruction *inst);
+  void RequestHalt(HaltReasonValueType halt_reason, const Instruction *inst);
 
   // Accessors.
   RiscVState *state() const { return state_; }
@@ -116,7 +117,7 @@ class RiscVTop : public generic::Component, public generic::CoreDebugInterface {
   generic::DataBufferFactory db_factory_;
   // Current status and last halt reasons.
   RunStatus run_status_ = RunStatus::kHalted;
-  HaltReason halt_reason_ = HaltReason::kNone;
+  HaltReasonValueType halt_reason_ = *HaltReason::kNone;
   // Halting flag. This is set to true when execution must halt.
   bool halted_ = false;
   absl::Notification *run_halted_ = nullptr;

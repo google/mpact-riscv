@@ -30,6 +30,7 @@
 #include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/decode_cache.h"
+#include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "mpact/sim/util/memory/memory_interface.h"
 #include "riscv/riscv32_decoder.h"
@@ -226,7 +227,7 @@ absl::Status RiscVTop::Halt() {
   if (run_status_ != RunStatus::kRunning) {
     return absl::FailedPreconditionError("RiscVTop::Halt: Core is not running");
   }
-  halt_reason_ = HaltReason::kUserRequest;
+  halt_reason_ = *HaltReason::kUserRequest;
   halted_ = true;
   return absl::OkStatus();
 }
@@ -272,8 +273,8 @@ absl::StatusOr<int> RiscVTop::Step(int num) {
   halted_ = false;
   // First check to see if the previous halt was due to a breakpoint. If so,
   // need to step over the breakpoint.
-  if (halt_reason_ == HaltReason::kSoftwareBreakpoint) {
-    halt_reason_ = HaltReason::kNone;
+  if (halt_reason_ == *HaltReason::kSoftwareBreakpoint) {
+    halt_reason_ = *HaltReason::kNone;
     auto status = StepPastBreakpoint();
     if (!status.ok()) return status;
     count++;
@@ -315,7 +316,7 @@ absl::StatusOr<int> RiscVTop::Step(int num) {
     next_pc = state_->pc_operand()->AsUint64(0);
   }
   // Update the pc register, now that it can be read.
-  if (halt_reason_ == HaltReason::kSoftwareBreakpoint) {
+  if (halt_reason_ == *HaltReason::kSoftwareBreakpoint) {
     // If at a breakpoint, keep the pc at the current value.
     SetPc(pc);
   } else {
@@ -324,7 +325,7 @@ absl::StatusOr<int> RiscVTop::Step(int num) {
   }
   // If there is no halt request, there is no specific halt reason.
   if (!halted_) {
-    halt_reason_ = HaltReason::kNone;
+    halt_reason_ = *HaltReason::kNone;
   }
   run_status_ = RunStatus::kHalted;
   return count;
@@ -338,8 +339,8 @@ absl::Status RiscVTop::Run() {
   }
   // First check to see if the previous halt was due to a breakpoint. If so,
   // need to step over the breakpoint.
-  if (halt_reason_ == HaltReason::kSoftwareBreakpoint) {
-    halt_reason_ = HaltReason::kNone;
+  if (halt_reason_ == *HaltReason::kSoftwareBreakpoint) {
+    halt_reason_ = *HaltReason::kNone;
     auto status = StepPastBreakpoint();
     if (!status.ok()) return status;
   }
@@ -386,7 +387,7 @@ absl::Status RiscVTop::Run() {
       next_pc = pc_operand->AsUint64(0);
     }
     // Update the pc register, now that it can be read.
-    if (halt_reason_ == HaltReason::kSoftwareBreakpoint) {
+    if (halt_reason_ == *HaltReason::kSoftwareBreakpoint) {
       // If at a breakpoint, keep the pc at the current value.
       SetPc(pc);
     } else {
@@ -421,7 +422,7 @@ absl::StatusOr<RiscVTop::RunStatus> RiscVTop::GetRunStatus() {
   return run_status_;
 }
 
-absl::StatusOr<RiscVTop::HaltReason> RiscVTop::GetLastHaltReason() {
+absl::StatusOr<RiscVTop::HaltReasonValueType> RiscVTop::GetLastHaltReason() {
   return halt_reason_;
 }
 
@@ -503,8 +504,8 @@ absl::Status RiscVTop::WriteRegister(const std::string &name, uint64_t value) {
 
   // If stopped at a software breakpoint and the pc is changed, change the
   // halt reason, since the next instruction won't be were we stopped.
-  if ((name == "pc") && (halt_reason_ == HaltReason::kSoftwareBreakpoint)) {
-    halt_reason_ = HaltReason::kNone;
+  if ((name == "pc") && (halt_reason_ == *HaltReason::kSoftwareBreakpoint)) {
+    halt_reason_ = *HaltReason::kNone;
   }
 
   auto *db = (iter->second)->data_buffer();
@@ -654,9 +655,16 @@ absl::StatusOr<std::string> RiscVTop::GetDisassembly(uint64_t address) {
   return disasm;
 }
 
-void RiscVTop::RequestHalt(HaltReason halt_reason, const Instruction *inst) {
+void RiscVTop::RequestHalt(HaltReasonValueType halt_reason,
+                           const Instruction *inst) {
   // First set the halt_reason_, then the halt flag.
   halt_reason_ = halt_reason;
+  halted_ = true;
+}
+
+void RiscVTop::RequestHalt(HaltReason halt_reason, const Instruction *inst) {
+  // First set the halt_reason_, then the halt flag.
+  halt_reason_ = *halt_reason;
   halted_ = true;
 }
 
