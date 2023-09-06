@@ -548,7 +548,7 @@ absl::StatusOr<size_t> RiscVTop::ReadMemory(uint64_t address, void *buffer,
   if (run_status_ != RunStatus::kHalted) {
     return absl::FailedPreconditionError("ReadMemory: Core must be halted");
   }
-  if (address >= state_->max_physical_address()) {
+  if (address > state_->max_physical_address()) {
     return absl::InvalidArgumentError("Invalid memory address");
   }
   length = std::min(length, state_->max_physical_address() - address + 1);
@@ -566,7 +566,7 @@ absl::StatusOr<size_t> RiscVTop::WriteMemory(uint64_t address,
   if (run_status_ != RunStatus::kHalted) {
     return absl::FailedPreconditionError("WriteMemory: Core must be halted");
   }
-  if (address >= state_->max_physical_address()) {
+  if (address > state_->max_physical_address()) {
     return absl::InvalidArgumentError("Invalid memory address");
   }
   length = std::min(length, state_->max_physical_address() - address + 1);

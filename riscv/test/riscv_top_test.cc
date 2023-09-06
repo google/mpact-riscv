@@ -434,8 +434,9 @@ TEST_F(RiscVTopTest, RegisterNames) {
 TEST_F(RiscVTopTest, ReadWriteOutOfBoundMemory) {
   // Set the machine to have 16-byte memory
   constexpr uint64_t kTestMemerySize = 0x10;
+  constexpr uint64_t kMaxPhysicalAddress = kTestMemerySize - 1;
   constexpr uint64_t kBinaryAddress = 0;
-  riscv_top_->state()->set_max_physical_address(kTestMemerySize - 1);
+  riscv_top_->state()->set_max_physical_address(kMaxPhysicalAddress);
   uint8_t mem_bytes[kTestMemerySize + 4] = {0};
   // Read the memory with the length greater than the physical memory size. The
   // read operation is successful within the physical memory size range.
@@ -443,6 +444,11 @@ TEST_F(RiscVTopTest, ReadWriteOutOfBoundMemory) {
       riscv_top_->ReadMemory(kBinaryAddress, mem_bytes, sizeof(mem_bytes));
   EXPECT_OK(result);
   EXPECT_EQ(result.value(), kTestMemerySize);
+  // Read at the maximum physical address, so only one byte can be read.
+  result =
+      riscv_top_->ReadMemory(kMaxPhysicalAddress, mem_bytes, sizeof(mem_bytes));
+  EXPECT_OK(result);
+  EXPECT_EQ(result.value(), 1);
   // Read the memory with the staring address out of the physical memory range.
   // The read operation returns error.
   result =
@@ -455,6 +461,11 @@ TEST_F(RiscVTopTest, ReadWriteOutOfBoundMemory) {
       riscv_top_->WriteMemory(kBinaryAddress, mem_bytes, sizeof(mem_bytes));
   EXPECT_OK(result);
   EXPECT_EQ(result.value(), kTestMemerySize);
+  // Write at the maximum physical address, so only one byte can be written.
+  result = riscv_top_->WriteMemory(kMaxPhysicalAddress, mem_bytes,
+                                   sizeof(mem_bytes));
+  EXPECT_OK(result);
+  EXPECT_EQ(result.value(), 1);
 
   // Write the memory with the staring address out of the physical memory range.
   // The write operation returns error.
