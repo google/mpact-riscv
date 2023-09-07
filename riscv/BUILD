@@ -15,7 +15,6 @@
 # Build rules for RiscV simulator code.
 
 load("@com_google_mpact-sim//mpact/sim/decoder:mpact_sim_isa.bzl", "mpact_bin_fmt_decoder", "mpact_isa_decoder")
-load("//tools/build_defs/build_test:build_test.bzl", "build_test")
 
 package(
     default_applicable_licenses = ["//:license"],
@@ -667,12 +666,5 @@ cc_binary(
         "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
         "@com_google_mpact-sim//mpact/sim/util/memory",
         "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
-    ],
-)
-
-build_test(
-    name = "darwinn",
-    targets = [
-        "//platforms/darwinn/simulator/dive/riscv_iss:riscv_iss_wrapper",
     ],
 )
