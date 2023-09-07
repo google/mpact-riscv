@@ -25,6 +25,8 @@ namespace mpact {
 namespace sim {
 namespace riscv {
 
+using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
+
 // arm flags.
 constexpr uint8_t kArmIX = 16;  // Inexact result
 constexpr uint8_t kArmUF = 8;   // Underflow
