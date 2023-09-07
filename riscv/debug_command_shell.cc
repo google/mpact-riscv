@@ -108,7 +108,7 @@ DebugCommandShell::DebugCommandShell(std::vector<CoreAccess> core_access)
     break SYMBOL                   - set breakpoint at value of SYMBOL.
     break clear VALUE              - clear breakpoint at address VALUE.
     break clear SYMBOL             - clear breakpoint at value of SYMBOL.
-    break clear all                - remove all breakpoints.
+    break clear-all                - remove all breakpoints.
     help                           - display this message.
 
 )raw";
