@@ -92,6 +92,7 @@ void RiscVPrivSRet(const Instruction *inst) {
   mstatus->set_spie(1);
   mstatus->set_spp(*PrivilegeMode::kUser & 0b1);
   state->set_privilege_mode(static_cast<PrivilegeMode>(target_mode));
+  state->SignalReturnFromInterrupt();
   mstatus->Submit();
 }
 
@@ -145,6 +146,7 @@ void RiscVPrivMRet(const Instruction *inst) {
     mstatus->set_mpp(*PrivilegeMode::kMachine);
   }
   state->set_privilege_mode(static_cast<PrivilegeMode>(target_mode));
+  state->SignalReturnFromInterrupt();
   mstatus->Submit();
 }
 
@@ -188,7 +190,7 @@ void RiscVPrivSRet(const Instruction *inst) {
   res = state->csr_set()->GetCsr(*RiscVCsrEnum::kMStatus);
   if (!res.ok()) {
     LOG(ERROR) << absl::StrCat("At PC=", absl::Hex(inst->address()),
-                               " mret: cannot access mstatus");
+                               " sret: cannot access mstatus");
     return;
   }
   auto *mstatus = static_cast<RiscVMStatus *>(*res);
@@ -196,7 +198,7 @@ void RiscVPrivSRet(const Instruction *inst) {
   res = state->csr_set()->GetCsr(*RiscVCsrEnum::kMIsa);
   if (!res.ok()) {
     LOG(ERROR) << absl::StrCat("At PC=", absl::Hex(inst->address()),
-                               " mret: cannot access isa");
+                               " sret: cannot access isa");
     return;
   }
   // Set mstatus:mpp to new privilege mode as per RiscV Privileged Architectures
@@ -211,6 +213,7 @@ void RiscVPrivSRet(const Instruction *inst) {
   mstatus->set_spie(1);
   mstatus->set_spp(*PrivilegeMode::kUser & 0b1);
   state->set_privilege_mode(static_cast<PrivilegeMode>(target_mode));
+  state->SignalReturnFromInterrupt();
   mstatus->Submit();
 }
 
@@ -264,6 +267,7 @@ void RiscVPrivMRet(const Instruction *inst) {
     mstatus->set_mpp(*PrivilegeMode::kMachine);
   }
   state->set_privilege_mode(static_cast<PrivilegeMode>(target_mode));
+  state->SignalReturnFromInterrupt();
   mstatus->Submit();
 }
 

@@ -680,6 +680,7 @@ void RiscVState::TakeAvailableInterrupt(uint64_t epc) {
   Trap(/*is_interrupt*/ true, 0, *available_interrupt_code_, epc, nullptr);
   // Clear pending interrupt.
   is_interrupt_available_ = false;
+  ++interrupt_handler_depth_;
   available_interrupt_code_ = InterruptCode::kNone;
 }
 

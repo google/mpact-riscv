@@ -301,6 +301,15 @@ class RiscVState : public ArchState {
   // is known. If there is no available interrupt, it just returns.
   void TakeAvailableInterrupt(uint64_t epc);
 
+  // Indicates that the program has returned from handling an interrupt. This
+  // decrements the interrupt handler depth and should be called by the
+  // implementations of mret, sret, and uret.
+  void SignalReturnFromInterrupt() { --interrupt_handler_depth_; }
+
+  // Returns the depth of the interrupt handler currently being executed, or
+  // zero if no interrupt handler is being executed.
+  int InterruptHandlerDepth() const { return interrupt_handler_depth_; }
+
   // Accessors.
   void set_memory(util::MemoryInterface *memory) { memory_ = memory; }
   util::MemoryInterface *memory() const { return memory_; }
@@ -397,6 +406,7 @@ class RiscVState : public ArchState {
   std::vector<RiscVCsrInterface *> csr_vec_;
   // For interrupt handling.
   bool is_interrupt_available_ = false;
+  int interrupt_handler_depth_ = 0;
   InterruptCode available_interrupt_code_ = InterruptCode::kNone;
   // By default, execute in machine mode.
   PrivilegeMode privilege_mode_ = PrivilegeMode::kMachine;
