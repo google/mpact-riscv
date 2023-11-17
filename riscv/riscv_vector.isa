@@ -450,7 +450,7 @@ slot riscv_vector {
     vadd_vx{: vs2, rs1, vmask : vd},
       disasm: "vadd.vx", "%vd, %vs2, %rs1, %vmask",
       semfunc: "&Vadd";
-    vadd_vi{: vs2, simm5, vmask, vd},
+    vadd_vi{: vs2, simm5, vmask : vd},
       disasm: "vadd.vi", "%vd, %simm5, %vmask",
       semfunc: "&Vadd";
     vsub_vv{: vs2, vs1, vmask : vd},
