@@ -495,6 +495,12 @@ void RiscV64GVecEncoding::InitializeSourceOperandGetters() {
         return GetRegisterSourceOp<RV64Register>(
             state_, absl::StrCat(RiscVState::kXregPrefix, 2), xreg_alias_[2]);
       }));
+  source_op_getters_.insert(
+      std::make_pair(static_cast<int>(SourceOpEnum::kFs1), [this]() {
+        const int num = encoding64::v_arith::ExtractRs1(inst_word_);
+        return GetRegisterSourceOp<RV64Register>(state_, freg_names_[num],
+                                                 freg_abi_names_[num]);
+      }));
   source_op_getters_.insert(std::make_pair(
       static_cast<int>(SourceOpEnum::kNone), []() { return nullptr; }));
 }
@@ -603,6 +609,19 @@ void RiscV64GVecEncoding::InitializeDestinationOperandGetters() {
       static_cast<int>(DestOpEnum::kFflags), [this](int latency) {
         return GetCSRSetBitsDestinationOp<uint32_t>(state_, "fflags", latency,
                                                     "");
+      }));
+  dest_op_getters_.insert(
+      std::make_pair(static_cast<int>(DestOpEnum::kFd), [this](int latency) {
+        const int num = encoding64::v_arith::ExtractRd(inst_word_);
+        return GetRegisterDestinationOp<RV64Register>(
+            state_, freg_names_[num], latency, freg_abi_names_[num]);
+      }));
+  dest_op_getters_.insert(std::make_pair(
+      static_cast<int>(DestOpEnum::kVdMask), [this](int latency) {
+        // Note: The mask register is always v0.
+        constexpr int kNum = 0;
+        return GetVectorMaskRegisterDestinationOp<RVVectorRegister>(
+            state_, latency, kNum);
       }));
   dest_op_getters_.insert(std::make_pair(static_cast<int>(DestOpEnum::kNone),
                                          [](int latency) { return nullptr; }));
