@@ -17,6 +17,8 @@
 
 #include <cstdint>
 
+#include "riscv/riscv_csr.h"
+
 // This file contains the definition of the vector state class. This class
 // is used by the vector instructions to obtain information about the state
 // and configuration of the vector unit. This class is also used to provide
@@ -27,10 +29,101 @@ namespace sim {
 namespace riscv {
 
 class RiscVState;
+class RiscVVectorState;
+
+// Implementation of the 'vl' CSR.
+class RiscVVl : public RiscVSimpleCsr<uint32_t> {
+ public:
+  explicit RiscVVl(RiscVVectorState* vector_state);
+
+  // Overrides. Note that this CSR is read-only.
+  uint32_t AsUint32() override;
+  uint64_t AsUint64() override { return static_cast<uint64_t>(AsUint32()); }
+
+ private:
+  const RiscVVectorState* const vector_state_;
+};
+
+// Implementation of the 'vtype' CSR.
+class RiscVVtype : public RiscVSimpleCsr<uint32_t> {
+ public:
+  explicit RiscVVtype(RiscVVectorState* vector_state);
+
+  // Overrides. Note that this CSR is read-only.
+  uint32_t AsUint32() override;
+  uint64_t AsUint64() override { return static_cast<uint64_t>(AsUint32()); }
+
+ private:
+  const RiscVVectorState* const vector_state_;
+};
+
+// Implementation of the 'vstart' CSR.
+class RiscVVstart : public RiscVSimpleCsr<uint32_t> {
+ public:
+  explicit RiscVVstart(RiscVVectorState* vector_state);
+
+  // Overrides.
+  uint32_t AsUint32() override;
+  uint64_t AsUint64() override { return static_cast<uint64_t>(AsUint32()); }
+  void Write(uint32_t value) override;
+  void Write(uint64_t value) override { Write(static_cast<uint32_t>(value)); }
+
+ private:
+  RiscVVectorState* const vector_state_;
+};
+
+// Implementation of the 'vxsat' CSR.
+class RiscVVxsat : public RiscVSimpleCsr<uint32_t> {
+ public:
+  explicit RiscVVxsat(RiscVVectorState* vector_state);
+
+  // Overrides.
+  uint32_t AsUint32() override;
+  uint64_t AsUint64() override { return static_cast<uint64_t>(AsUint32()); }
+  void Write(uint32_t value) override;
+  void Write(uint64_t value) override { Write(static_cast<uint32_t>(value)); }
+
+ private:
+  RiscVVectorState* const vector_state_;
+};
+
+// Implementation of the 'vxrm' CSR.
+class RiscVVxrm : public RiscVSimpleCsr<uint32_t> {
+ public:
+  explicit RiscVVxrm(RiscVVectorState* vector_state);
+
+  // Overrides.
+  uint32_t AsUint32() override;
+  uint64_t AsUint64() override { return static_cast<uint64_t>(AsUint32()); }
+  void Write(uint32_t value) override;
+  void Write(uint64_t value) override { Write(static_cast<uint32_t>(value)); }
+
+ private:
+  RiscVVectorState* const vector_state_;
+};
+
+// Implementation of the 'vcsr' CSR. This CSR mirrors the bits in 'vxsat' and
+// 'vxrm' as follows:
+//
+//   bits 2:1 - vxrm
+//   bits 0:0 - vxsat
+class RiscVVcsr : public RiscVSimpleCsr<uint32_t> {
+ public:
+  explicit RiscVVcsr(RiscVVectorState* vector_state);
+
+  // Overrides.
+  uint32_t AsUint32() override;
+  uint64_t AsUint64() override { return static_cast<uint64_t>(AsUint32()); }
+  void Write(uint32_t value) override;
+  void Write(uint64_t value) override { Write(static_cast<uint32_t>(value)); }
+
+ private:
+  RiscVVectorState* const vector_state_;
+};
 
 class RiscVVectorState {
  public:
-  RiscVVectorState(RiscVState *state, int byte_length);
+  RiscVVectorState(RiscVState* state, int byte_length);
 
   void SetVectorType(uint32_t vtype);
 
@@ -58,6 +151,9 @@ class RiscVVectorState {
   int vxrm() const { return vxrm_; }
   void set_vxrm(int value) { vxrm_ = value & 0x3; }
 
+  const RiscVState* riscv_state() const { return state_; }
+  RiscVState* riscv_state() { return state_; }
+
  private:
   // Vector length multiplier is scaled by 8, to provide integer representation
   // of values from 1/8, 1/4, 1/2, 1, 2, 4, 8, as 1, 2, 4, 8, 16, 32, 64.
@@ -70,7 +166,7 @@ class RiscVVectorState {
   void set_vector_tail_agnostic(bool value) { vector_tail_agnostic_ = value; }
   void set_vector_mask_agnostic(bool value) { vector_mask_agnostic_ = value; }
 
-  RiscVState *state_ = nullptr;
+  RiscVState* state_ = nullptr;
   uint32_t vtype_;
   bool vector_exception_ = false;
   int vector_register_byte_length_ = 0;
@@ -84,6 +180,14 @@ class RiscVVectorState {
   bool vector_mask_agnostic_ = false;
   bool vxsat_ = false;
   int vxrm_ = 0;
+
+  RiscVVl vl_csr_;
+  RiscVVtype vtype_csr_;
+  RiscVSimpleCsr<uint32_t> vlenb_csr_;
+  RiscVVstart vstart_csr_;
+  RiscVVxsat vxsat_csr_;
+  RiscVVxrm vxrm_csr_;
+  RiscVVcsr vcsr_csr_;
 };
 
 }  // namespace riscv

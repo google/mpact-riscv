@@ -43,6 +43,11 @@ enum class RiscVCsrEnum {
   kUStatus = 0x000,
   kUIe = 0x004,
   kUTvec = 0x005,
+  // User vector CSRs.
+  kVstart = 0x008,
+  kVxsat = 0x009,
+  kVxrm = 0x00a,
+  kVcsr = 0x00f,
   // User trap handling.
   kUScratch = 0x040,
   kUEpc = 0x041,
@@ -109,6 +114,10 @@ enum class RiscVCsrEnum {
   kMInstret = 0xb02,  // Machine instructions-retired counter.
 
   // Ignoring machine performance counters for now.
+
+  kVl = 0xc20,     // Vector length.
+  kVtype = 0xc21,  // Vector type.
+  kVlenb = 0xc22,  // Vector length in bytes.
 
   kMCycleH = 0xc80,   // Upper 32 bits of mcycle.
   kMInstretH = 0x82,  // Upper 32 bits of MInstret
