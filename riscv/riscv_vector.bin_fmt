@@ -288,10 +288,10 @@ instruction group RiscVVInst32[32] : Inst32Format {
   vsll_vi   : VArith : func6 == 0b100'101, func3 == 0b011, opcode == 0b101'0111;
   vsmul_vv  : VArith : func6 == 0b100'111, func3 == 0b000, opcode == 0b101'0111;
   vsmul_vx  : VArith : func6 == 0b100'111, func3 == 0b100, opcode == 0b101'0111;
-  vmv1r_vi  : VArith : func6 == 0b100'111, uimm5 == 1, func3 == 0b011, opcode == 0b101'0111;
-  vmv2r_vi  : VArith : func6 == 0b100'111, uimm5 == 2, func3 == 0b011, opcode == 0b101'0111;
-  vmv4r_vi  : VArith : func6 == 0b100'111, uimm5 == 4, func3 == 0b011, opcode == 0b101'0111;
-  vmv8r_vi  : VArith : func6 == 0b100'111, uimm5 == 8, func3 == 0b011, opcode == 0b101'0111;
+  vmv1r_vi  : VArith : func6 == 0b100'111, uimm5 == 0, func3 == 0b011, opcode == 0b101'0111;
+  vmv2r_vi  : VArith : func6 == 0b100'111, uimm5 == 1, func3 == 0b011, opcode == 0b101'0111;
+  vmv4r_vi  : VArith : func6 == 0b100'111, uimm5 == 3, func3 == 0b011, opcode == 0b101'0111;
+  vmv8r_vi  : VArith : func6 == 0b100'111, uimm5 == 7, func3 == 0b011, opcode == 0b101'0111;
   vsrl_vv   : VArith : func6 == 0b101'000, func3 == 0b000, opcode == 0b101'0111;
   vsrl_vx   : VArith : func6 == 0b101'000, func3 == 0b100, opcode == 0b101'0111;
   vsrl_vi   : VArith : func6 == 0b101'000, func3 == 0b011, opcode == 0b101'0111;
