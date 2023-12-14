@@ -358,7 +358,16 @@ class RiscVState : public ArchState {
   void set_privilege_mode(PrivilegeMode privilege_mode) {
     privilege_mode_ = privilege_mode;
   }
+
+  // Returns true if an interrupt is available for the core to take or false
+  // otherwise.
   inline bool is_interrupt_available() const { return is_interrupt_available_; }
+  // Resets the is_interrupt_available flag to false. This should only be called
+  // when resetting the RISCV core, as 'is_interrupt_available' is Normally
+  // reset during the interrupt handling flow.
+  inline void reset_is_interrupt_available() {
+    is_interrupt_available_ = false;
+  }
 
   // Getters for select CSRs.
   RiscVMStatus *mstatus() const { return mstatus_; }
