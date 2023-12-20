@@ -14,8 +14,11 @@
 
 #include "riscv/riscv_misa.h"
 
+#include <cstdint>
+
 #include "absl/log/log.h"
 #include "mpact/sim/generic/type_helpers.h"
+#include "riscv/riscv_csr.h"
 #include "riscv/riscv_state.h"
 
 namespace mpact {
@@ -58,12 +61,12 @@ uint32_t RiscVMIsa::GetUint32() {
   return CompressMisa64(GetUint64());
 }
 
-void RiscVMIsa::Set(uint32_t value) {
+void RiscVMIsa::Write(uint32_t value) {
   /* misa is not writable */
   LOG(WARNING) << "misa is not writable - write ignored";
 }
 
-void RiscVMIsa::Set(uint64_t value) {
+void RiscVMIsa::Write(uint64_t value) {
   /* misa is not writable */
   LOG(WARNING) << "misa is not writable - write ignored";
 }

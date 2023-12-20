@@ -14,11 +14,15 @@
 
 #include "riscv/riscv_csr.h"
 
+#include <cstdint>
 #include <string>
 #include <utility>
 
 #include "absl/log/log.h"
+#include "absl/status/status.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "mpact/sim/generic/data_buffer.h"
 #include "riscv/riscv_state.h"
 
 namespace mpact {
@@ -114,7 +118,7 @@ absl::Status RiscVCsrSet::RemoveCsr(uint64_t csr_index) {
 }
 
 RiscVCsrSourceOperand::RiscVCsrSourceOperand(RiscVCsrInterface *csr,
-                                             const std::string op_name)
+                                             std::string op_name)
     : csr_(csr), op_name_(op_name) {}
 
 RiscVCsrSourceOperand::RiscVCsrSourceOperand(RiscVCsrInterface *csr)

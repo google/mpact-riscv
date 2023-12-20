@@ -16,8 +16,11 @@
 #define MPACT_RISCV_RISCV_RISCV_CSR_H_
 
 #include <any>
+#include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
@@ -360,7 +363,7 @@ class RiscVCsrSet {
 class RiscVCsrSourceOperand : public generic::SourceOperandInterface {
  public:
   // Constructor. Note, default constructor is deleted.
-  RiscVCsrSourceOperand(RiscVCsrInterface *csr, const std::string op_name);
+  RiscVCsrSourceOperand(RiscVCsrInterface *csr, std::string op_name);
   explicit RiscVCsrSourceOperand(RiscVCsrInterface *csr);
   RiscVCsrSourceOperand() = delete;
 

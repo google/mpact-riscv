@@ -15,6 +15,8 @@
 #ifndef MPACT_RISCV_RISCV_RISCV_MISA_H_
 #define MPACT_RISCV_RISCV_RISCV_MISA_H_
 
+#include <cstdint>
+
 #include "riscv/riscv_csr.h"
 
 namespace mpact {
@@ -37,8 +39,10 @@ class RiscVMIsa : public RiscVSimpleCsr<uint64_t> {
   // RiscVSimpleCsr method overrides.
   uint32_t AsUint32() override;
   uint32_t GetUint32() override;
-  void Set(uint32_t) override;
-  void Set(uint64_t) override;
+  // Overwriting Write methods to disable writing to the register. However,
+  // the value can be changed programmatically by using the Set method.
+  void Write(uint32_t) override;
+  void Write(uint64_t) override;
 
   bool HasSupervisorMode();
   bool HasUserMode();
