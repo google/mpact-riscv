@@ -14,10 +14,11 @@
 
 #ifndef MPACT_RISCV_RISCV_RISCV64G_VEC_ENCODING_H_
 #define MPACT_RISCV_RISCV_RISCV64G_VEC_ENCODING_H_
-#include <functional>
+#include <cstdint>
 #include <string>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/functional/any_invocable.h"
 #include "mpact/sim/generic/simple_resource.h"
 #include "mpact/sim/generic/simple_resource_operand.h"
 #include "riscv/riscv64gv_decoder.h"

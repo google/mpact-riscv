@@ -38,6 +38,8 @@ class RiscVMIsa : public RiscVSimpleCsr<uint64_t> {
 
   // RiscVSimpleCsr method overrides.
   uint32_t AsUint32() override;
+  // Note, GetUInt32() compresses the full 64 bit stored version of Misa into
+  // the 32 bit view. Use GetUInt64 to get the full uncompressed view.
   uint32_t GetUint32() override;
   // Overwriting Write methods to disable writing to the register. However,
   // the value can be changed programmatically by using the Set method.

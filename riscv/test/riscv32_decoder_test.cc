@@ -14,11 +14,11 @@
 
 #include "riscv/riscv32_decoder.h"
 
-#include <ios>
 #include <string>
 
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "absl/strings/str_cat.h"
 #include "elfio/elfio.hpp"
 #include "elfio/elfio_section.hpp"
 #include "elfio/elfio_symbols.hpp"

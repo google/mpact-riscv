@@ -14,6 +14,8 @@
 
 #include "riscv/riscv32gv_bin_decoder.h"
 
+#include <cstdint>
+
 #include "googlemock/include/gmock/gmock.h"
 #include "riscv/riscv32gv_enums.h"
 

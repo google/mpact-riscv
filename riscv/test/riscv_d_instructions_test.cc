@@ -19,7 +19,6 @@
 
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/instruction.h"
-#include "riscv/riscv_fp_state.h"
 #include "riscv/test/riscv_fp_test_base.h"
 
 namespace {

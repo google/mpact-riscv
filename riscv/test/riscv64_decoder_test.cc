@@ -14,7 +14,6 @@
 
 #include "riscv/riscv64_decoder.h"
 
-#include <ios>
 #include <string>
 
 #include "absl/log/check.h"

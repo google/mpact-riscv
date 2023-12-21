@@ -304,6 +304,7 @@ cc_test(
         "@com_github_serge1_elfio//:elfio",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
+        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
         "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
@@ -591,5 +592,18 @@ cc_test(
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
         "@com_google_mpact-sim//mpact/sim/util/memory",
         "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
+    ],
+)
+
+cc_test(
+    name = "riscv_misa_test",
+    size = "small",
+    srcs = [
+        "riscv_misa_test.cc",
+    ],
+    deps = [
+        "//riscv:riscv_state",
+        "@com_google_absl//absl/log:check",
+        "@com_google_googletest//:gtest_main",
     ],
 )
