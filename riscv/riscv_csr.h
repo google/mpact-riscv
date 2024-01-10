@@ -122,8 +122,8 @@ enum class RiscVCsrEnum {
   kVtype = 0xc21,  // Vector type.
   kVlenb = 0xc22,  // Vector length in bytes.
 
-  kMCycleH = 0xc80,   // Upper 32 bits of mcycle.
-  kMInstretH = 0x82,  // Upper 32 bits of MInstret
+  kMCycleH = 0xb80,    // Upper 32 bits of mcycle.
+  kMInstretH = 0xb82,  // Upper 32 bits of MInstret
 
   // Ignoring machine counter setup for now.
 
