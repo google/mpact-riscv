@@ -21,17 +21,17 @@
 #include <string>
 #include <vector>
 
+#include "googlemock/include/gmock/gmock.h"
 #include "absl/functional/bind_front.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/string_view.h"
-#include "googlemock/include/gmock/gmock.h"
+#include "riscv/riscv_register.h"
+#include "riscv/riscv_state.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/immediate_operand.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "mpact/sim/util/memory/memory_interface.h"
-#include "riscv/riscv_register.h"
-#include "riscv/riscv_state.h"
 
 // This file contains the test fixture and tests for testing RiscV vector
 // memory instructions.

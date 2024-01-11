@@ -17,10 +17,10 @@
 #include <cstdint>
 
 #include "absl/status/status.h"
+#include "riscv/riscv_state.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/memory_interface.h"
-#include "riscv/riscv_state.h"
 
 namespace mpact {
 namespace sim {

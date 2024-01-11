@@ -17,17 +17,17 @@
 #include <cstdint>
 #include <string>
 
+#include "googlemock/include/gmock/gmock.h"
 #include "absl/log/check.h"
 #include "absl/status/status.h"
-#include "googlemock/include/gmock/gmock.h"
+#include "riscv/riscv32_htif_semihost.h"
+#include "riscv/riscv_arm_semihost.h"
 #include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "mpact/sim/util/memory/memory_interface.h"
 #include "mpact/sim/util/memory/memory_watcher.h"
 #include "mpact/sim/util/program_loader/elf_program_loader.h"
-#include "riscv/riscv32_htif_semihost.h"
-#include "riscv/riscv_arm_semihost.h"
 
 namespace {
 

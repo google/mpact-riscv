@@ -18,14 +18,14 @@
 #include <utility>
 
 #include "absl/log/log.h"
-#include "mpact/sim/generic/immediate_operand.h"
-#include "mpact/sim/generic/literal_operand.h"
-#include "mpact/sim/generic/operand_interface.h"
-#include "mpact/sim/generic/simple_resource_operand.h"
 #include "riscv/riscv32g_bin_decoder.h"
 #include "riscv/riscv32g_enums.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
+#include "mpact/sim/generic/immediate_operand.h"
+#include "mpact/sim/generic/literal_operand.h"
+#include "mpact/sim/generic/operand_interface.h"
+#include "mpact/sim/generic/simple_resource_operand.h"
 
 namespace mpact {
 namespace sim {

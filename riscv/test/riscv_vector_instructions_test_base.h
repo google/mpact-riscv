@@ -26,12 +26,16 @@
 #include <type_traits>
 #include <vector>
 
+#include "googlemock/include/gmock/gmock.h"
 #include "absl/functional/bind_front.h"
 #include "absl/random/random.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
-#include "googlemock/include/gmock/gmock.h"
+#include "riscv/riscv_register.h"
+#include "riscv/riscv_state.h"
+#include "riscv/riscv_vector_memory_instructions.h"
+#include "riscv/riscv_vector_state.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/immediate_operand.h"
 #include "mpact/sim/generic/instruction.h"
@@ -39,10 +43,6 @@
 #include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "mpact/sim/util/memory/memory_interface.h"
-#include "riscv/riscv_register.h"
-#include "riscv/riscv_state.h"
-#include "riscv/riscv_vector_memory_instructions.h"
-#include "riscv/riscv_vector_state.h"
 
 // This file defines commonly used constants in the vector instruction tests
 // as well as a base class for the vector instruction test fixtures. This base

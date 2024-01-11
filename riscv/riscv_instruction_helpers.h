@@ -22,16 +22,16 @@
 #include <type_traits>
 
 #include "absl/log/log.h"
+#include "riscv/riscv_fp_host.h"
+#include "riscv/riscv_fp_info.h"
+#include "riscv/riscv_fp_state.h"
+#include "riscv/riscv_state.h"
 #include "mpact/sim/generic/arch_state.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/operand_interface.h"
 #include "mpact/sim/generic/register.h"
 #include "mpact/sim/generic/type_helpers.h"
-#include "riscv/riscv_fp_host.h"
-#include "riscv/riscv_fp_info.h"
-#include "riscv/riscv_fp_state.h"
-#include "riscv/riscv_state.h"
 
 namespace mpact {
 namespace sim {

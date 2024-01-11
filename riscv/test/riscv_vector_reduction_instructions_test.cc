@@ -20,14 +20,14 @@
 #include <string>
 #include <vector>
 
+#include "googlemock/include/gmock/gmock.h"
 #include "absl/random/random.h"
 #include "absl/strings/string_view.h"
-#include "googlemock/include/gmock/gmock.h"
-#include "mpact/sim/generic/instruction.h"
-#include "mpact/sim/generic/type_helpers.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_vector_state.h"
 #include "riscv/test/riscv_vector_instructions_test_base.h"
+#include "mpact/sim/generic/instruction.h"
+#include "mpact/sim/generic/type_helpers.h"
 
 namespace {
 using ::absl::Span;

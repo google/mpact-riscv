@@ -20,14 +20,14 @@
 #include <cstring>
 #include <string>
 
-#include "absl/log/check.h"
 #include "googlemock/include/gmock/gmock.h"
+#include "absl/log/check.h"
+#include "riscv/riscv_register.h"
+#include "riscv/riscv_state.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "mpact/sim/util/memory/memory_interface.h"
-#include "riscv/riscv_register.h"
-#include "riscv/riscv_state.h"
 
 // This file implements the tests for the class that implements the ARM style
 // semihosting for the RiscV architecture. The test is done for both 32 bit and

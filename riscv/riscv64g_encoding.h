@@ -19,11 +19,11 @@
 #include <string>
 
 #include "absl/container/flat_hash_map.h"
-#include "mpact/sim/generic/simple_resource.h"
-#include "mpact/sim/generic/simple_resource_operand.h"
 #include "riscv/riscv64g_decoder.h"
 #include "riscv/riscv64g_enums.h"
 #include "riscv/riscv_state.h"
+#include "mpact/sim/generic/simple_resource.h"
+#include "mpact/sim/generic/simple_resource_operand.h"
 
 namespace mpact {
 namespace sim {

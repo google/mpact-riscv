@@ -17,12 +17,12 @@
 #include <functional>
 
 #include "absl/log/log.h"
-#include "mpact/sim/generic/instruction.h"
-#include "mpact/sim/generic/type_helpers.h"
 #include "riscv/riscv_fp_host.h"
 #include "riscv/riscv_state.h"
 #include "riscv/riscv_vector_instruction_helpers.h"
 #include "riscv/riscv_vector_state.h"
+#include "mpact/sim/generic/instruction.h"
+#include "mpact/sim/generic/type_helpers.h"
 
 namespace mpact {
 namespace sim {

@@ -18,9 +18,9 @@
 #include <type_traits>
 
 #include "absl/numeric/int128.h"
+#include "riscv/riscv_register.h"
 #include "mpact/sim/generic/instruction_helpers.h"
 #include "mpact/sim/generic/type_helpers.h"
-#include "riscv/riscv_register.h"
 
 namespace mpact {
 namespace sim {

@@ -26,13 +26,6 @@
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/synchronization/notification.h"
-#include "mpact/sim/generic/component.h"
-#include "mpact/sim/generic/core_debug_interface.h"
-#include "mpact/sim/generic/data_buffer.h"
-#include "mpact/sim/generic/decode_cache.h"
-#include "mpact/sim/generic/type_helpers.h"
-#include "mpact/sim/util/memory/flat_demand_memory.h"
-#include "mpact/sim/util/memory/memory_interface.h"
 #include "riscv/riscv32_decoder.h"
 #include "riscv/riscv32g_enums.h"
 #include "riscv/riscv64_decoder.h"
@@ -43,6 +36,13 @@
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_register_aliases.h"
 #include "riscv/riscv_state.h"
+#include "mpact/sim/generic/component.h"
+#include "mpact/sim/generic/core_debug_interface.h"
+#include "mpact/sim/generic/data_buffer.h"
+#include "mpact/sim/generic/decode_cache.h"
+#include "mpact/sim/generic/type_helpers.h"
+#include "mpact/sim/util/memory/flat_demand_memory.h"
+#include "mpact/sim/util/memory/memory_interface.h"
 
 namespace mpact {
 namespace sim {

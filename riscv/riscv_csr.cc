@@ -22,8 +22,8 @@
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "mpact/sim/generic/data_buffer.h"
 #include "riscv/riscv_state.h"
+#include "mpact/sim/generic/data_buffer.h"
 
 namespace mpact {
 namespace sim {

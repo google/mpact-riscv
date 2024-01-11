@@ -20,8 +20,8 @@
 #include "absl/base/casts.h"
 #include "absl/numeric/bits.h"
 #include "absl/types/span.h"
-#include "mpact/sim/generic/instruction.h"
 #include "riscv/riscv_instruction_helpers.h"
+#include "mpact/sim/generic/instruction.h"
 
 namespace mpact {
 namespace sim {

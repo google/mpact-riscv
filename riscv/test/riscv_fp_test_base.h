@@ -20,15 +20,15 @@
 #include <string>
 #include <vector>
 
+#include "googlemock/include/gmock/gmock.h"
 #include "absl/random/random.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
-#include "googlemock/include/gmock/gmock.h"
-#include "mpact/sim/generic/instruction.h"
-#include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "riscv/riscv_fp_state.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
+#include "mpact/sim/generic/instruction.h"
+#include "mpact/sim/util/memory/flat_demand_memory.h"
 
 namespace mpact {
 namespace sim {

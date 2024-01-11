@@ -24,16 +24,16 @@
 #include <type_traits>
 #include <vector>
 
+#include "googlemock/include/gmock/gmock.h"
 #include "absl/base/casts.h"
 #include "absl/log/check.h"
 #include "absl/numeric/int128.h"
 #include "absl/random/random.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "googlemock/include/gmock/gmock.h"
-#include "mpact/sim/generic/instruction.h"
 #include "riscv/riscv_vector_state.h"
 #include "riscv/test/riscv_vector_instructions_test_base.h"
+#include "mpact/sim/generic/instruction.h"
 
 namespace {
 

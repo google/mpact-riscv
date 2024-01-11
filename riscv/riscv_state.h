@@ -27,6 +27,13 @@
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "riscv/riscv_csr.h"
+#include "riscv/riscv_fp_state.h"
+#include "riscv/riscv_misa.h"
+#include "riscv/riscv_register.h"
+#include "riscv/riscv_vector_state.h"
+#include "riscv/riscv_xip_xie.h"
+#include "riscv/riscv_xstatus.h"
 #include "mpact/sim/generic/arch_state.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/instruction.h"
@@ -35,13 +42,6 @@
 #include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "mpact/sim/util/memory/memory_interface.h"
-#include "riscv/riscv_csr.h"
-#include "riscv/riscv_fp_state.h"
-#include "riscv/riscv_misa.h"
-#include "riscv/riscv_register.h"
-#include "riscv/riscv_vector_state.h"
-#include "riscv/riscv_xip_xie.h"
-#include "riscv/riscv_xstatus.h"
 
 namespace mpact {
 namespace sim {

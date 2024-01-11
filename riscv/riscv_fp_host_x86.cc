@@ -14,10 +14,10 @@
 
 #include <cstdint>
 
-#include "mpact/sim/generic/type_helpers.h"
 #include "riscv/riscv_fp_host.h"
 #include "riscv/riscv_fp_info.h"
 #include "riscv/riscv_fp_state.h"
+#include "mpact/sim/generic/type_helpers.h"
 
 // This file implements the x86 versions of the methods/classes that interact
 // with the host floating point hw.

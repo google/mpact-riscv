@@ -18,14 +18,14 @@
 #include <memory>
 
 #include "absl/memory/memory.h"
+#include "riscv/riscv32g_decoder.h"
+#include "riscv/riscv32g_encoding.h"
+#include "riscv/riscv_state.h"
 #include "mpact/sim/generic/arch_state.h"
 #include "mpact/sim/generic/decoder_interface.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/program_error.h"
 #include "mpact/sim/util/memory/memory_interface.h"
-#include "riscv/riscv32g_decoder.h"
-#include "riscv/riscv32g_encoding.h"
-#include "riscv/riscv_state.h"
 
 namespace mpact {
 namespace sim {

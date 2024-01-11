@@ -16,8 +16,8 @@
 
 #include <cstdint>
 
-#include "absl/log/check.h"
 #include "googlemock/include/gmock/gmock.h"
+#include "absl/log/check.h"
 #include "riscv/riscv_register.h"
 
 namespace {

@@ -17,11 +17,11 @@
 #include <algorithm>
 
 #include "absl/log/log.h"
-#include "mpact/sim/generic/data_buffer.h"
-#include "mpact/sim/generic/instruction.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
 #include "riscv/riscv_vector_state.h"
+#include "mpact/sim/generic/data_buffer.h"
+#include "mpact/sim/generic/instruction.h"
 
 namespace mpact {
 namespace sim {

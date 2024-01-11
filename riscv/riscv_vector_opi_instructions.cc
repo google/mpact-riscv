@@ -21,12 +21,12 @@
 #include <type_traits>
 
 #include "absl/log/log.h"
-#include "mpact/sim/generic/instruction.h"
-#include "mpact/sim/generic/type_helpers.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
 #include "riscv/riscv_vector_instruction_helpers.h"
 #include "riscv/riscv_vector_state.h"
+#include "mpact/sim/generic/instruction.h"
+#include "mpact/sim/generic/type_helpers.h"
 
 // This file contains the instruction semantic functions for most of the
 // vector instructions in the OPIVV, OPIVX, and OPIVI encoding spaces. The

@@ -24,6 +24,11 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/synchronization/notification.h"
+#include "riscv/riscv32g_enums.h"
+#include "riscv/riscv64g_enums.h"
+#include "riscv/riscv_breakpoint.h"
+#include "riscv/riscv_fp_state.h"
+#include "riscv/riscv_state.h"
 #include "mpact/sim/generic/component.h"
 #include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/generic/counters.h"
@@ -33,11 +38,6 @@
 #include "mpact/sim/generic/register.h"
 #include "mpact/sim/util/memory/memory_interface.h"
 #include "mpact/sim/util/memory/memory_watcher.h"
-#include "riscv/riscv32g_enums.h"
-#include "riscv/riscv64g_enums.h"
-#include "riscv/riscv_breakpoint.h"
-#include "riscv/riscv_fp_state.h"
-#include "riscv/riscv_state.h"
 
 namespace mpact {
 namespace sim {

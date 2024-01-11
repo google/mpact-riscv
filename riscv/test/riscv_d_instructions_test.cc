@@ -18,8 +18,8 @@
 #include <tuple>
 
 #include "googlemock/include/gmock/gmock.h"
-#include "mpact/sim/generic/instruction.h"
 #include "riscv/test/riscv_fp_test_base.h"
+#include "mpact/sim/generic/instruction.h"
 
 namespace {
 
