@@ -413,7 +413,7 @@ class RiscVFPInstructionsTestBase
                     *reinterpret_cast<typename FPTypeInfo<Vd>::IntType *>(
                         &reg_val);
                 if ((count >= vstart) && mask_value && (count < num_values)) {
-                  ScopedFPStatus set_fpstatus(rv_fp_);
+                  ScopedFPStatus set_fpstatus(rv_fp_->host_fp_interface());
                   auto op_val = operation(vs2_value[count], vs1_value[count]);
                   auto int_op_val =
                       *reinterpret_cast<typename FPTypeInfo<Vd>::IntType *>(
@@ -563,7 +563,7 @@ class RiscVFPInstructionsTestBase
                   Vd op_val;
                   uint32_t flag;
                   {
-                    ScopedFPStatus set_fpstatus(rv_fp_);
+                    ScopedFPStatus set_fpstatus(rv_fp_->host_fp_interface());
                     auto [op_val_tmp, flag_tmp] =
                         operation(vs2_value[count], vs1_value[count]);
                     op_val = op_val_tmp;
@@ -733,7 +733,7 @@ class RiscVFPInstructionsTestBase
                   Vd op_val;
                   uint32_t flag;
                   {
-                    ScopedFPStatus set_fpstatus(rv_fp_);
+                    ScopedFPStatus set_fpstatus(rv_fp_->host_fp_interface());
                     auto [op_val_tmp, flag_tmp] =
                         operation(vs2_value[count], fs1_value);
                     op_val = op_val_tmp;
@@ -894,7 +894,7 @@ class RiscVFPInstructionsTestBase
                 auto reg_val = vreg_[reg]->data_buffer()->Get<Vd>(i);
                 auto int_reg_val = *reinterpret_cast<VdInt *>(&reg_val);
                 if ((count >= vstart) && (count < num_values)) {
-                  ScopedFPStatus set_fpstatus(rv_fp_);
+                  ScopedFPStatus set_fpstatus(rv_fp_->host_fp_interface());
                   auto op_val =
                       operation(vs2_value[count], fs1_value, mask_value);
                   auto int_op_val = *reinterpret_cast<VdInt *>(&op_val);

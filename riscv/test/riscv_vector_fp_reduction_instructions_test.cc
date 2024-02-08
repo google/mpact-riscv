@@ -152,7 +152,7 @@ class RiscVFPReductionInstructionsTest
           EXPECT_FALSE(rv_vector_->vector_exception());
           // Initialize the accumulator with the value from vs1[0].
           Vd accumulator = static_cast<Vd>(vs1_span[0]);
-          ScopedFPStatus set_fpstatus(rv_fp_);
+          ScopedFPStatus set_fpstatus(rv_fp_->host_fp_interface());
           for (int i = 0; i < num_values; i++) {
             int mask_index = i >> 3;
             int mask_offset = i & 0b111;

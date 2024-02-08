@@ -15,15 +15,17 @@
 #include "riscv/riscv_vector_fp_compare_instructions.h"
 
 #include <algorithm>
-#include <string>
+#include <cstdint>
+#include <functional>
 
 #include "googlemock/include/gmock/gmock.h"
 #include "absl/random/random.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
+#include "riscv/riscv_fp_host.h"
 #include "riscv/riscv_fp_state.h"
 #include "riscv/riscv_register.h"
-#include "riscv/riscv_vector_state.h"
 #include "riscv/test/riscv_vector_fp_test_utilities.h"
 #include "riscv/test/riscv_vector_instructions_test_base.h"
 #include "mpact/sim/generic/instruction.h"
@@ -166,7 +168,7 @@ class RiscVFPCompareInstructionsTest
             inst_value = (inst_value >> mask_offset) & 0b1;
             if ((i >= vstart) && (i < num_values)) {
               // Set rounding mode and perform the computation.
-              ScopedFPStatus set_fpstatus(rv_fp_);
+              ScopedFPStatus set_fpstatus(rv_fp_->host_fp_interface());
               uint8_t expected_value =
                   operation(vs2_value[i], vs1_value[i], mask_value);
               auto int_vs2_val =
@@ -291,7 +293,7 @@ class RiscVFPCompareInstructionsTest
             if ((i >= vstart) && (i < num_values)) {
               // Set rounding mode and perform the computation.
 
-              ScopedFPStatus set_fpstatus(rv_fp_);
+              ScopedFPStatus set_fpstatus(rv_fp_->host_fp_interface());
               uint8_t expected_value =
                   operation(vs2_value[i], fs1_value, mask_value);
               auto int_vs2_val =

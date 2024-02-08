@@ -390,7 +390,7 @@ class RiscVFPUnaryInstructionsTest
                   Vd op_val;
                   uint32_t flag;
                   {
-                    ScopedFPStatus set_fp_status(rv_fp_);
+                    ScopedFPStatus set_fp_status(rv_fp_->host_fp_interface());
                     auto [op_val_tmp, flag_tmp] = operation(vs2_value[count]);
                     op_val = op_val_tmp;
                     flag = flag_tmp;
@@ -502,7 +502,7 @@ template <typename F, typename I>
 std::tuple<I, uint32_t> ConvertHelper(F value, RiscVFPState *fp_state) {
   constexpr F kMin = static_cast<F>(std::numeric_limits<I>::min());
   constexpr F kMax = static_cast<F>(std::numeric_limits<I>::max());
-  ScopedFPStatus status(fp_state);
+  ScopedFPStatus status(fp_state->host_fp_interface());
   auto fp_class = std::fpclassify(value);
   switch (fp_class) {
     case FP_INFINITE:
@@ -843,7 +843,7 @@ inline T Vrecip7vTestHelper(T vs2, RiscVFPState *rv_fp) {
       }
     }
   }
-  ScopedFPStatus status(rv_fp, FPRoundingMode::kRoundTowardsZero);
+  ScopedFPStatus status(rv_fp->host_fp_interface(), FPRoundingMode::kRoundTowardsZero);
   T value = 1.0 / vs2;
   UInt uint_val = *reinterpret_cast<UInt *>(&value);
   UInt mask = FPTypeInfo<T>::kSigMask >> 7;
@@ -877,7 +877,7 @@ inline T Vfrsqrt7vTestHelper(T vs2, RiscVFPState *rv_fp) {
   if (std::isinf(vs2)) {
     return 0.0;
   }
-  ScopedFPStatus status(rv_fp, FPRoundingMode::kRoundTowardsZero);
+  ScopedFPStatus status(rv_fp->host_fp_interface(), FPRoundingMode::kRoundTowardsZero);
   T value = 1.0 / sqrt(vs2);
   UInt uint_val = *reinterpret_cast<UInt *>(&value);
   UInt mask = FPTypeInfo<T>::kSigMask >> 7;

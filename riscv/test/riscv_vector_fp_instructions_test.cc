@@ -271,7 +271,7 @@ class RiscVFPInstructionsTest
                     *reinterpret_cast<typename FPTypeInfo<Vd>::IntType *>(
                         &vd_value[count]);
                 if ((count >= vstart) && mask_value && (count < num_values)) {
-                  ScopedFPStatus set_fpstatus(rv_fp_);
+                  ScopedFPStatus set_fpstatus(rv_fp_->host_fp_interface());
                   auto op_val = operation(vs2_value[count], vs1_value[count],
                                           vd_value[count]);
                   auto int_op_val =
@@ -459,7 +459,7 @@ class RiscVFPInstructionsTest
                 if ((count >= vstart) && mask_value && (count < num_values)) {
                   // Set rounding mode and perform the computation.
 
-                  ScopedFPStatus set_fpstatus(rv_fp_);
+                  ScopedFPStatus set_fpstatus(rv_fp_->host_fp_interface());
                   auto op_val =
                       operation(vs2_value[count], fs1_value, vd_value[count]);
                   // Extract the integer view of the fp values.

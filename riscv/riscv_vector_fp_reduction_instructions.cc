@@ -21,7 +21,6 @@
 #include "riscv/riscv_state.h"
 #include "riscv/riscv_vector_instruction_helpers.h"
 #include "riscv/riscv_vector_state.h"
-#include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/type_helpers.h"
 
 namespace mpact {
@@ -44,7 +43,7 @@ void Vfredosum(const Instruction *inst) {
     return;
   }
   int sew = rv_vector->selected_element_width();
-  ScopedFPStatus set_fpstatus(rv_fp);
+  ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface());
   switch (sew) {
     case 4:
       return RiscVBinaryReductionVectorOp<float, float, float>(
@@ -72,7 +71,7 @@ void Vfwredosum(const Instruction *inst) {
     return;
   }
   int sew = rv_vector->selected_element_width();
-  ScopedFPStatus set_fpstatus(rv_fp);
+  ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface());
   switch (sew) {
     case 4:
       return RiscVBinaryReductionVectorOp<double, float, double>(
@@ -114,7 +113,7 @@ void Vfredmin(const Instruction *inst) {
     return;
   }
   int sew = rv_vector->selected_element_width();
-  ScopedFPStatus set_fpstatus(rv_fp);
+  ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface());
   switch (sew) {
     case 4:
       return RiscVBinaryReductionVectorOp<float, float, float>(
@@ -150,7 +149,7 @@ void Vfredmax(const Instruction *inst) {
     return;
   }
   int sew = rv_vector->selected_element_width();
-  ScopedFPStatus set_fpstatus(rv_fp);
+  ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface());
   switch (sew) {
     case 4:
       return RiscVBinaryReductionVectorOp<float, float, float>(

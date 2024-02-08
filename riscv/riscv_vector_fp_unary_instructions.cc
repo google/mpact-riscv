@@ -15,14 +15,16 @@
 #include "riscv/riscv_vector_fp_unary_instructions.h"
 
 #include <cmath>
-#include <ios>
+#include <cstdint>
 #include <limits>
 #include <tuple>
-#include <type_traits>
 
 #include "absl/log/log.h"
+#include "riscv/riscv_fp_host.h"
+#include "riscv/riscv_fp_info.h"
 #include "riscv/riscv_fp_state.h"
 #include "riscv/riscv_instruction_helpers.h"
+#include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
 #include "riscv/riscv_vector_instruction_helpers.h"
 #include "riscv/riscv_vector_state.h"
@@ -186,7 +188,7 @@ void Vfcvtfxuv(const Instruction *inst) {
     return;
   }
   int sew = rv_vector->selected_element_width();
-  ScopedFPStatus set_fpstatus(rv_fp);
+  ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface());
   switch (sew) {
     case 4:
       return RiscVUnaryVectorOp<float, uint32_t>(
@@ -213,7 +215,7 @@ void Vfcvtfxv(const Instruction *inst) {
     return;
   }
   int sew = rv_vector->selected_element_width();
-  ScopedFPStatus set_fpstatus(rv_fp);
+  ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface());
   switch (sew) {
     case 4:
       return RiscVUnaryVectorOp<float, int32_t>(
@@ -348,7 +350,7 @@ void Vfwcvtfxuv(const Instruction *inst) {
     return;
   }
   int sew = rv_vector->selected_element_width();
-  ScopedFPStatus set_fpstatus(rv_fp);
+  ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface());
   switch (sew) {
     case 2:
       return RiscVUnaryVectorOp<float, uint16_t>(
@@ -375,7 +377,7 @@ void Vfwcvtfxv(const Instruction *inst) {
     return;
   }
   int sew = rv_vector->selected_element_width();
-  ScopedFPStatus set_fpstatus(rv_fp);
+  ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface());
   switch (sew) {
     case 2:
       return RiscVUnaryVectorOp<float, int16_t>(
@@ -494,7 +496,7 @@ void Vfncvtffw(const Instruction *inst) {
     return;
   }
   int sew = rv_vector->selected_element_width();
-  ScopedFPStatus set_fpstatus(rv_fp);
+  ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface());
   switch (sew) {
     case 8:
       return RiscVUnaryVectorOp<float, double>(
@@ -558,7 +560,7 @@ void Vfncvtfxuw(const Instruction *inst) {
     return;
   }
   int sew = rv_vector->selected_element_width();
-  ScopedFPStatus set_fpstatus(rv_fp);
+  ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface());
   switch (sew) {
     case 8:
       return RiscVUnaryVectorOp<float, uint64_t>(
@@ -581,7 +583,7 @@ void Vfncvtfxw(const Instruction *inst) {
     return;
   }
   int sew = rv_vector->selected_element_width();
-  ScopedFPStatus set_fpstatus(rv_fp);
+  ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface());
   switch (sew) {
     case 8:
       return RiscVUnaryVectorOp<float, int64_t>(
@@ -669,7 +671,7 @@ void Vfsqrtv(const Instruction *inst) {
     return;
   }
   int sew = rv_vector->selected_element_width();
-  ScopedFPStatus set_fpstatus(rv_fp);
+  ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface());
   switch (sew) {
     case 4:
       return RiscVUnaryVectorOp<float, float>(
@@ -747,7 +749,7 @@ void Vfrsqrt7v(const Instruction *inst) {
   auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
   auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
-  ScopedFPStatus set_fpstatus(rv_fp);
+  ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface());
   switch (sew) {
     case 4:
       return RiscVUnaryVectorOp<float, float>(
@@ -856,7 +858,7 @@ void Vfrec7v(const Instruction *inst) {
   auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
   auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
-  ScopedFPStatus set_fpstatus(rv_fp);
+  ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface());
   auto rm = rv_fp->GetRoundingMode();
   switch (sew) {
     case 4:

@@ -40,13 +40,13 @@ HostFloatingPointInterface *GetHostFloatingPointInterface();
 class ScopedFPStatus {
  public:
   ScopedFPStatus() = delete;
-  explicit ScopedFPStatus(RiscVFPState *fp_state);
-  ScopedFPStatus(RiscVFPState *fp_state, uint32_t rm);
-  ScopedFPStatus(RiscVFPState *fp_state, FPRoundingMode rm);
+  explicit ScopedFPStatus(HostFloatingPointInterface *fp_interface);
+  ScopedFPStatus(HostFloatingPointInterface *fp_interface, uint32_t rm);
+  ScopedFPStatus(HostFloatingPointInterface *fp_interface, FPRoundingMode rm);
   ~ScopedFPStatus();
 
  private:
-  RiscVFPState *fp_state_ = nullptr;
+  HostFloatingPointInterface *fp_interface_ = nullptr;
   uint32_t host_rm_ = 0;
   uint64_t cpu_fp_status_ = 0;
 };
@@ -56,9 +56,10 @@ class ScopedFPStatus {
 class ScopedFPRoundingMode {
  public:
   ScopedFPRoundingMode();
-  explicit ScopedFPRoundingMode(RiscVFPState *fp_state);
-  ScopedFPRoundingMode(RiscVFPState *fp_state, uint32_t rm);
-  ScopedFPRoundingMode(RiscVFPState *fp_state, FPRoundingMode rm);
+  explicit ScopedFPRoundingMode(HostFloatingPointInterface *fp_interface);
+  ScopedFPRoundingMode(HostFloatingPointInterface *fp_interface, uint32_t rm);
+  ScopedFPRoundingMode(HostFloatingPointInterface *fp_interface,
+                       FPRoundingMode rm);
   ~ScopedFPRoundingMode();
 
  private:

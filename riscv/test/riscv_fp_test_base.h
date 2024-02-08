@@ -16,14 +16,22 @@
 #define MPACT_RISCV_RISCV_TEST_RISCV_FP_TEST_BASE_H_
 
 #include <cmath>
+#include <cstdint>
+#include <functional>
 #include <ios>
+#include <limits>
 #include <string>
+#include <tuple>
+#include <type_traits>
 #include <vector>
 
 #include "googlemock/include/gmock/gmock.h"
 #include "absl/random/random.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
+#include "riscv/riscv_fp_host.h"
+#include "riscv/riscv_fp_info.h"
 #include "riscv/riscv_fp_state.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
@@ -427,7 +435,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
 
         R op_val;
         {
-          ScopedFPStatus set_fpstatus(rv_fp_);
+          ScopedFPStatus set_fpstatus(rv_fp_->host_fp_interface());
           op_val = operation(lhs_span[i]);
         }
         auto reg_val = state_->GetRegister<DestRegisterType>(kRdName)
@@ -482,7 +490,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
         R op_val;
         uint32_t flag;
         {
-          ScopedFPRoundingMode scoped_rm(rv_fp_, rm);
+          ScopedFPRoundingMode scoped_rm(rv_fp_->host_fp_interface(), rm);
           std::tie(op_val, flag) = operation(lhs_span[i]);
         }
 
@@ -547,7 +555,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
 
         R op_val;
         {
-          ScopedFPStatus set_fpstatus(rv_fp_);
+          ScopedFPStatus set_fpstatus(rv_fp_->host_fp_interface());
           op_val = operation(lhs_span[i], rhs_span[i]);
         }
         auto reg_val = state_->GetRegister<DestRegisterType>(kRdName)
@@ -611,7 +619,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
         R op_val;
         uint32_t flag;
         {
-          ScopedFPStatus set_fpstatus(rv_fp_);
+          ScopedFPStatus set_fpstatus(rv_fp_->host_fp_interface());
           std::tie(op_val, flag) = operation(lhs_span[i], rhs_span[i]);
         }
         auto reg_val = state_->GetRegister<DestRegisterType>(kRdName)
@@ -677,7 +685,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
 
         R op_val;
         {
-          ScopedFPStatus set_fpstatus(rv_fp_);
+          ScopedFPStatus set_fpstatus(rv_fp_->host_fp_interface());
           op_val = operation(lhs_span[i], mhs_span[i], rhs_span[i]);
         }
         auto reg_val = state_->GetRegister<DestRegisterType>(kRdName)

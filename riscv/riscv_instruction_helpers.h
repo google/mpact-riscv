@@ -142,7 +142,7 @@ inline void RiscVConvertFloatWithFflagsOp(const Instruction *instruction) {
         auto *rv_fp = static_cast<RiscVState *>(instruction->state())->rv_fp();
         {
           // The rounding happens during this division.
-          ScopedFPRoundingMode set_fp_rm(rv_fp, rm);
+          ScopedFPRoundingMode set_fp_rm(rv_fp->host_fp_interface(), rm);
           tmp /= div;
         }
         // Convert back to normalized number, by using the original sign
@@ -366,7 +366,7 @@ inline void RiscVUnaryFloatNaNBoxOp(const Instruction *instruction,
   }
   Result dest_value;
   {
-    ScopedFPStatus set_fp_status(rv_fp, rm_value);
+    ScopedFPStatus set_fp_status(rv_fp->host_fp_interface(), rm_value);
     dest_value = operation(lhs);
   }
   if (std::isnan(dest_value) && std::signbit(dest_value)) {
@@ -414,7 +414,7 @@ inline void RiscVUnaryFloatOp(const Instruction *instruction,
   }
   Result dest_value;
   {
-    ScopedFPStatus set_fp_status(rv_fp, rm_value);
+    ScopedFPStatus set_fp_status(rv_fp->host_fp_interface(), rm_value);
     dest_value = operation(lhs);
   }
   auto *dest = instruction->Destination(0);
@@ -447,7 +447,7 @@ inline void RiscVUnaryFloatWithFflagsOp(
   uint32_t flag = 0;
   Result dest_value;
   {
-    ScopedFPStatus set_fp_status(rv_fp, rm_value);
+    ScopedFPStatus set_fp_status(rv_fp->host_fp_interface(), rm_value);
     dest_value = operation(lhs, flag);
   }
   auto *dest = instruction->Destination(0);
@@ -486,7 +486,7 @@ inline void RiscVBinaryFloatNaNBoxOp(
   }
   Result dest_value;
   {
-    ScopedFPStatus fp_status(rv_fp, rm_value);
+    ScopedFPStatus fp_status(rv_fp->host_fp_interface(), rm_value);
     dest_value = operation(lhs, rhs);
   }
   if (std::isnan(dest_value)) {
@@ -534,7 +534,7 @@ inline void RiscVTernaryFloatNaNBoxOp(
   }
   Result dest_value;
   {
-    ScopedFPStatus fp_status(rv_fp, rm_value);
+    ScopedFPStatus fp_status(rv_fp->host_fp_interface(), rm_value);
     dest_value = operation(rs1, rs2, rs3);
   }
   auto *reg = static_cast<generic::RegisterDestinationOperand<Register> *>(
