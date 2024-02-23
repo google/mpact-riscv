@@ -294,7 +294,7 @@ ScopedFPRoundingMode::ScopedFPRoundingMode(
   // Pack fpsr and fpcr into cpu_fp_status
   cpu_fp_status_ = (fpsr << 32) | (fpcr & 0xffff'ffff);
   auto *host_fp_interface =
-      static_cast<ArmFloatingPointInterface *>(fp_interface_);
+      static_cast<ArmFloatingPointInterface *>(fp_interface);
   // Get the translated version of the simulated RiscV status.
   auto arm_fp_regs = host_fp_interface->arm_fp_regs();
   if (riscv_rm_value != 0b111) {
@@ -322,7 +322,7 @@ ScopedFPRoundingMode::ScopedFPRoundingMode(
   // Pack fpsr and fpcr into cpu_fp_status
   cpu_fp_status_ = (fpsr << 32) | (fpcr & 0xffff'ffff);
   auto *host_fp_interface =
-      static_cast<ArmFloatingPointInterface *>(fp_interface_);
+      static_cast<ArmFloatingPointInterface *>(fp_interface);
   // Get the translated version of the simulated RiscV status.
   auto arm_fp_regs = host_fp_interface->arm_fp_regs();
   auto rm_value = static_cast<uint32_t>(rm);
