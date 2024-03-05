@@ -80,7 +80,7 @@ class RiscVMIp : public RiscVSimpleCsr<uint32_t> {
     uint64_t bit_value = value & BitMask;
     uint64_t new_value =
         (GetUint64() & ~(BitMask << Shift)) | (bit_value << Shift);
-    Write(new_value);
+    Set(new_value);
   }
 };
 
@@ -199,7 +199,7 @@ class RiscVMIe : public RiscVSimpleCsr<uint32_t> {
     uint64_t bit_value = value & BitMask;
     uint64_t new_value =
         (GetUint64() & ~(BitMask << Shift)) | (bit_value << Shift);
-    Write(new_value);
+    Set(new_value);
   }
 };
 
