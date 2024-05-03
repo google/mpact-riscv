@@ -588,14 +588,14 @@ slot riscv_vector {
     vmv_vi{: vs2, simm5, vmask_true: vd},
       disasm: "vmv.vi", "%vd, %simm5",
       semfunc: "&Vmerge";
-    vmseq_vv{: vs2, vs1, vmask: vd_mask},
-      disasm: "vmseq.vv", "%vd_mask, %vs2, %vs1, %vmask",
+    vmseq_vv{: vs2, vs1, vmask: vd},
+      disasm: "vmseq.vv", "%vd, %vs2, %vs1, %vmask",
       semfunc: "&Vmseq";
-    vmseq_vx{: vs2, rs1, vmask: vd_mask},
-      disasm: "vmseq.vx", "%vd_mask, %vs2, %rs1, %vmask",
+    vmseq_vx{: vs2, rs1, vmask: vd},
+      disasm: "vmseq.vx", "%vd, %vs2, %rs1, %vmask",
       semfunc: "&Vmseq";
-    vmseq_vi{: vs2, simm5, vmask: vd_mask},
-      disasm: "vmseq.vi", "%vd_mask, %vs2, %simm5, %vmask",
+    vmseq_vi{: vs2, simm5, vmask: vd},
+      disasm: "vmseq.vi", "%vd, %vs2, %simm5, %vmask",
       semfunc: "&Vmseq";
     vmsne_vv{: vs2, vs1, vmask: vd_mask},
       disasm: "vmsne.vv", "%vd_mask, %vs2, %vs1, %vmask",
