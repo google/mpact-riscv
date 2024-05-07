@@ -647,6 +647,12 @@ void RiscV64GVecEncoding::InitializeVectorSourceOperandGetters() {
          [this]() -> SourceOperandInterface * {
            return new RV32VectorTrueOperand(state_);
          });
+  Insert(source_op_getters_, SourceOpEnum::kVm,
+         [this]() -> SourceOperandInterface * {
+           auto vm = encoding64::v_arith::ExtractVm(inst_word_);
+           return new generic::ImmediateOperand<bool>(
+               vm, absl::StrCat("vm.", vm ? "t" : "f"));
+         });
   Insert(source_op_getters_, SourceOpEnum::kVs1,
          [this]() -> SourceOperandInterface * {
            auto num = encoding64::v_arith::ExtractVs1(inst_word_);

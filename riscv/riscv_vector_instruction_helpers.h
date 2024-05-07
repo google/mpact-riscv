@@ -16,6 +16,8 @@
 #define MPACT_RISCV_RISCV_RISCV_VECTOR_INSTRUCTION_HELPERS_H_
 
 #include <algorithm>
+#include <cstdint>
+#include <functional>
 #include <limits>
 #include <optional>
 #include <type_traits>
@@ -31,6 +33,55 @@ namespace sim {
 namespace riscv {
 
 using ::mpact::sim::generic::GetInstructionSource;
+
+// This helper function handles the case of instructions that target a vector
+// mask.
+// It clears the masked bit and uses the mask value in the
+// instruction, such as carry generation from add with carry.
+// Note that this function will modify masked bits no matter what the mask
+// value is.
+template <typename Vs2, typename Vs1>
+void RiscVSetMaskBinaryVectorMaskOp(RiscVVectorState *rv_vector,
+                                    const Instruction *inst,
+                                    std::function<bool(Vs2, Vs1, bool)> op) {
+  if (rv_vector->vector_exception()) return;
+  auto *dest_op =
+      static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+  // Get the vector start element index and compute where to start
+  // the operation.
+  const int num_elements = rv_vector->vector_length();
+  const int vector_index = rv_vector->vstart();
+  // Allocate data buffer for the new register data.
+  auto *dest_db = dest_op->CopyDataBuffer();
+  auto dest_span = dest_db->Get<uint8_t>();
+  // Determine if it's vector-vector or vector-scalar.
+  const bool vector_scalar = inst->Source(1)->shape()[0] == 1;
+  // Get the vector mask.
+  auto *mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(2));
+  bool vm_unmasked_bit = false;
+  if (inst->SourcesSize() > 3) {
+    vm_unmasked_bit = GetInstructionSource<bool>(inst, 3);
+  }
+  const bool mask_used = !vm_unmasked_bit;
+  auto mask_span = mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
+  for (int i = vector_index; i < num_elements; i++) {
+    const int mask_index = i >> 3;
+    const int mask_offset = i & 0b111;
+    const bool mask_value = ((mask_span[mask_index] >> mask_offset) & 0b1) != 0;
+    const Vs2 vs2 = GetInstructionSource<Vs2>(inst, 0, i);
+    const Vs1 vs1 = GetInstructionSource<Vs1>(inst, 1, vector_scalar ? 0 : i);
+
+    // Clear the masked register bit.
+    dest_span[mask_index] &= ~(1 << mask_offset);
+
+    // Mask value is used only when `vm_unmasked_bit` is 0.
+    dest_span[mask_index] |=
+        (op(vs2, vs1, mask_used & mask_value) << mask_offset);
+  }
+  // Submit the destination db .
+  dest_db->Submit();
+  rv_vector->clear_vstart();
+}
 
 // This helper function handles the case of instructions that target a vector
 // mask and uses the mask value in the instruction, such as carry generation
@@ -53,14 +104,29 @@ void RiscVMaskBinaryVectorMaskOp(RiscVVectorState *rv_vector,
   bool vector_scalar = inst->Source(1)->shape()[0] == 1;
   // Get the vector mask.
   auto *mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(2));
+  bool vm_unmasked_bit = false;
+  if (inst->SourcesSize() > 3) {
+    vm_unmasked_bit = GetInstructionSource<bool>(inst, 3);
+  }
+  const bool mask_used = !vm_unmasked_bit;
   auto mask_span = mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
   for (int i = vector_index; i < num_elements; i++) {
     int mask_index = i >> 3;
     int mask_offset = i & 0b111;
     bool mask_value = ((mask_span[mask_index] >> mask_offset) & 0b1) != 0;
+    if (mask_used && !mask_value) {
+      continue;
+    }
+
     Vs2 vs2 = GetInstructionSource<Vs2>(inst, 0, i);
     Vs1 vs1 = GetInstructionSource<Vs1>(inst, 1, vector_scalar ? 0 : i);
-    dest_span[mask_index] |= (op(vs2, vs1, mask_value) << mask_offset);
+
+    // Clear the masked register bit.
+    dest_span[mask_index] &= ~(1 << mask_offset);
+
+    // Mask value is used only when `vm_unmasked_bit` is 0.
+    dest_span[mask_index] |=
+        (op(vs2, vs1, mask_used & mask_value) << mask_offset);
   }
   // Submit the destination db .
   dest_db->Submit();

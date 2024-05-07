@@ -549,14 +549,14 @@ slot riscv_vector {
     vadc_vi{: vs2, simm5, vmask: vd},
       disasm: "vadc.vi", "%vd, %vs2, %simm5, %vmask",
       semfunc: "&Vadc";
-    vmadc_vv{: vs2, vs1, vmask: vd},
-      disasm: "vmadc.vv", "%vd, %vs2, %vs1, %vmask ",
+    vmadc_vv{: vs2, vs1, vmask, vm: vd},
+      disasm: "vmadc.vv", "%vd, %vs2, %vs1, %vmask, %vm ",
       semfunc: "&Vmadc";
-    vmadc_vx{: vs2, rs1, vmask: vd},
-      disasm: "vmadc.vx", "%vd, %vs2, %rs1, %vmask",
+    vmadc_vx{: vs2, rs1, vmask, vm: vd},
+      disasm: "vmadc.vx", "%vd, %vs2, %rs1, %vmask, %vm",
       semfunc: "&Vmadc";
-    vmadc_vi{: vs2, simm5, vmask: vd},
-      disasm: "vmadc.vi", "%vd, %vs2, %simm5, %vmask",
+    vmadc_vi{: vs2, simm5, vmask, vm: vd},
+      disasm: "vmadc.vi", "%vd, %vs2, %simm5, %vmask, %vm",
       semfunc: "&Vmadc";
     vsbc_vv{: vs2, vs1, vmask: vd},
       disasm: "vsbc.vv", "%vd, %vs2, %vs1, %vmask",
@@ -564,11 +564,11 @@ slot riscv_vector {
     vsbc_vx{: vs2, rs1, vmask: vd},
       disasm: "vsbc.vx", "%vd, %vs2, %rs1, %vmask",
       semfunc: "&Vsbc";
-    vmsbc_vv{: vs2, vs1, vmask: vd},
-      disasm: "vmsbc.vv", "%vd, %vs2, %vs1, %vmask",
+    vmsbc_vv{: vs2, vs1, vmask, vm: vd},
+      disasm: "vmsbc.vv", "%vd, %vs2, %vs1, %vmask, %vm",
       semfunc: "&Vmsbc";
-    vmsbc_vx{: vs2, rs1, vmask: vd},
-      disasm: "vmsbc.vx", "%vd, %vs2, %rs1, %vmask",
+    vmsbc_vx{: vs2, rs1, vmask, vm: vd},
+      disasm: "vmsbc.vx", "%vd, %vs2, %rs1, %vmask, %vm",
       semfunc: "&Vmsbc";
     vmerge_vv{: vs2, vs1, vmask: vd},
       disasm: "vmerge.vv", "%vd, %vs2, %vs1, %vmask",

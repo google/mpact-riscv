@@ -976,7 +976,7 @@ void Vmadc(Instruction *inst) {
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
-      return RiscVMaskBinaryVectorMaskOp<uint8_t, uint8_t>(
+      return RiscVSetMaskBinaryVectorMaskOp<uint8_t, uint8_t>(
           rv_vector, inst, [](uint8_t vs2, uint8_t vs1, bool mask) -> bool {
             uint16_t sum = static_cast<uint16_t>(vs2) +
                            static_cast<uint16_t>(vs1) +
@@ -985,7 +985,7 @@ void Vmadc(Instruction *inst) {
             return sum;
           });
     case 2:
-      return RiscVMaskBinaryVectorMaskOp<uint16_t, uint16_t>(
+      return RiscVSetMaskBinaryVectorMaskOp<uint16_t, uint16_t>(
           rv_vector, inst, [](uint16_t vs2, uint16_t vs1, bool mask) -> bool {
             uint32_t sum = static_cast<uint32_t>(vs2) +
                            static_cast<uint32_t>(vs1) +
@@ -994,7 +994,7 @@ void Vmadc(Instruction *inst) {
             return sum != 0;
           });
     case 4:
-      return RiscVMaskBinaryVectorMaskOp<uint32_t, uint32_t>(
+      return RiscVSetMaskBinaryVectorMaskOp<uint32_t, uint32_t>(
           rv_vector, inst, [](uint32_t vs2, uint32_t vs1, bool mask) -> bool {
             uint64_t sum = static_cast<uint64_t>(vs2) +
                            static_cast<uint64_t>(vs1) +
@@ -1003,7 +1003,7 @@ void Vmadc(Instruction *inst) {
             return sum != 0;
           });
     case 8:
-      return RiscVMaskBinaryVectorMaskOp<uint64_t, uint64_t>(
+      return RiscVSetMaskBinaryVectorMaskOp<uint64_t, uint64_t>(
           rv_vector, inst, [](uint64_t vs2, uint64_t vs1, bool mask) -> bool {
             // Compute carry by doing two additions. First get the carry out
             // from adding the low byte.
@@ -1064,25 +1064,25 @@ void Vmsbc(Instruction *inst) {
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
-      return RiscVMaskBinaryVectorMaskOp<uint8_t, uint8_t>(
+      return RiscVSetMaskBinaryVectorMaskOp<uint8_t, uint8_t>(
           rv_vector, inst, [](uint8_t vs2, uint8_t vs1, bool mask) -> bool {
             return static_cast<uint16_t>(vs2) <
                    static_cast<uint16_t>(mask) + static_cast<uint16_t>(vs1);
           });
     case 2:
-      return RiscVMaskBinaryVectorMaskOp<uint16_t, uint16_t>(
+      return RiscVSetMaskBinaryVectorMaskOp<uint16_t, uint16_t>(
           rv_vector, inst, [](uint16_t vs2, uint16_t vs1, bool mask) -> bool {
             return static_cast<uint32_t>(vs2) <
                    static_cast<uint32_t>(mask) + static_cast<uint32_t>(vs1);
           });
     case 4:
-      return RiscVMaskBinaryVectorMaskOp<uint32_t, uint32_t>(
+      return RiscVSetMaskBinaryVectorMaskOp<uint32_t, uint32_t>(
           rv_vector, inst, [](uint32_t vs2, uint32_t vs1, bool mask) -> bool {
             return static_cast<uint64_t>(vs2) <
                    static_cast<uint64_t>(mask) + static_cast<uint64_t>(vs1);
           });
     case 8:
-      return RiscVMaskBinaryVectorMaskOp<uint64_t, uint64_t>(
+      return RiscVSetMaskBinaryVectorMaskOp<uint64_t, uint64_t>(
           rv_vector, inst, [](uint64_t vs2, uint64_t vs1, bool mask) -> bool {
             if (vs2 < vs1) return true;
             if (vs2 == vs1) return mask;
