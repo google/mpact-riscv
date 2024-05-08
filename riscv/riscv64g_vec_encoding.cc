@@ -616,13 +616,6 @@ void RiscV64GVecEncoding::InitializeDestinationOperandGetters() {
         return GetRegisterDestinationOp<RV64Register>(
             state_, freg_names_[num], latency, freg_abi_names_[num]);
       }));
-  dest_op_getters_.insert(std::make_pair(
-      static_cast<int>(DestOpEnum::kVdMask), [this](int latency) {
-        // Note: The mask register is always v0.
-        constexpr int kNum = 0;
-        return GetVectorMaskRegisterDestinationOp<RVVectorRegister>(
-            state_, latency, kNum);
-      }));
   dest_op_getters_.insert(std::make_pair(static_cast<int>(DestOpEnum::kNone),
                                          [](int latency) { return nullptr; }));
 }

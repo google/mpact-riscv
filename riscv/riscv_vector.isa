@@ -597,56 +597,56 @@ slot riscv_vector {
     vmseq_vi{: vs2, simm5, vmask: vd},
       disasm: "vmseq.vi", "%vd, %vs2, %simm5, %vmask",
       semfunc: "&Vmseq";
-    vmsne_vv{: vs2, vs1, vmask: vd_mask},
-      disasm: "vmsne.vv", "%vd_mask, %vs2, %vs1, %vmask",
+    vmsne_vv{: vs2, vs1, vmask: vd},
+      disasm: "vmsne.vv", "%vd, %vs2, %vs1, %vmask",
       semfunc: "&Vmsne";
-    vmsne_vx{: vs2, rs1, vmask: vd_mask},
-      disasm: "vmsne.vx", "%vd_mask, %vs2, %rs1, %vmask",
+    vmsne_vx{: vs2, rs1, vmask: vd},
+      disasm: "vmsne.vx", "%vd, %vs2, %rs1, %vmask",
       semfunc: "&Vmsne";
-    vmsne_vi{: vs2, simm5, vmask: vd_mask},
-      disasm: "vmsne.vi", "%vd_mask, %vs2, %simm5, %vmask",
+    vmsne_vi{: vs2, simm5, vmask: vd},
+      disasm: "vmsne.vi", "%vd, %vs2, %simm5, %vmask",
       semfunc: "&Vmsne";
-    vmsltu_vv{: vs2, vs1, vmask: vd_mask},
-      disasm: "vmsltu.vv", "%vd_mask, %vs2, %vs1, %vmask",
+    vmsltu_vv{: vs2, vs1, vmask: vd},
+      disasm: "vmsltu.vv", "%vd, %vs2, %vs1, %vmask",
       semfunc: "&Vmsltu";
-    vmsltu_vx{: vs2, rs1, vmask: vd_mask},
-      disasm: "vmsltu.vx", "%vd_mask, %vs2, %rs1, %vmask",
+    vmsltu_vx{: vs2, rs1, vmask: vd},
+      disasm: "vmsltu.vx", "%vd, %vs2, %rs1, %vmask",
       semfunc: "&Vmsltu";
-    vmslt_vv{: vs2, vs1, vmask: vd_mask},
-      disasm: "vmslt.vv", "%vd_mask, %vs2, %vs1, %vmask",
+    vmslt_vv{: vs2, vs1, vmask: vd},
+      disasm: "vmslt.vv", "%vd, %vs2, %vs1, %vmask",
       semfunc: "&Vmslt";
-    vmslt_vx{: vs2, rs1, vmask: vd_mask},
-      disasm: "vmslt.vx", "%vd_mask, %vs2, %rs1, %vmask",
+    vmslt_vx{: vs2, rs1, vmask: vd},
+      disasm: "vmslt.vx", "%vd, %vs2, %rs1, %vmask",
       semfunc: "&Vmslt";
-    vmsleu_vv{: vs2, vs1, vmask: vd_mask},
-      disasm: "vmsleu.vv", "%vd_mask, %vs2, %vs1, %vmask",
+    vmsleu_vv{: vs2, vs1, vmask: vd},
+      disasm: "vmsleu.vv", "%vd, %vs2, %vs1, %vmask",
       semfunc: "&Vmsleu";
-    vmsleu_vx{: vs2, rs1, vmask: vd_mask},
-      disasm: "vmsleu.vx", "%vd_mask, %vs2, %rs1, %vmask",
+    vmsleu_vx{: vs2, rs1, vmask: vd},
+      disasm: "vmsleu.vx", "%vd, %vs2, %rs1, %vmask",
       semfunc: "&Vmsleu";
-    vmsleu_vi{: vs2, simm5, vmask: vd_mask},
-      disasm: "vmsleu.vi", "%vd_mask, %vs2, %simm5, %vmask",
+    vmsleu_vi{: vs2, simm5, vmask: vd},
+      disasm: "vmsleu.vi", "%vd, %vs2, %simm5, %vmask",
       semfunc: "&Vmsleu";
-    vmsle_vv{: vs2, vs1, vmask: vd_mask},
-      disasm: "vmsle.vv", "%vd_mask, %vs2, %vs1, %vmask",
+    vmsle_vv{: vs2, vs1, vmask: vd},
+      disasm: "vmsle.vv", "%vd, %vs2, %vs1, %vmask",
       semfunc: "&Vmsle";
-    vmsle_vx{: vs2, rs1, vmask: vd_mask},
-      disasm: "vmsle.vx", "%vd_mask, %vs2, %rs1, %vmask",
+    vmsle_vx{: vs2, rs1, vmask: vd},
+      disasm: "vmsle.vx", "%vd, %vs2, %rs1, %vmask",
       semfunc: "&Vmsle";
-    vmsle_vi{: vs2, simm5, vmask: vd_mask},
-      disasm: "vmsle.vi", "%vd_mask, %vs2, %simm5, %vmask",
+    vmsle_vi{: vs2, simm5, vmask: vd},
+      disasm: "vmsle.vi", "%vd, %vs2, %simm5, %vmask",
       semfunc: "&Vmsle";
-    vmsgtu_vx{: vs2, rs1, vmask: vd_mask},
-      disasm: "vmsgtu.vx", "%vd_mask, %vs2, %rs1, %vmask",
+    vmsgtu_vx{: vs2, rs1, vmask: vd},
+      disasm: "vmsgtu.vx", "%vd, %vs2, %rs1, %vmask",
       semfunc: "&Vmsgtu";
-    vmsgtu_vi{: vs2, simm5, vmask: vd_mask},
-      disasm: "vmsgtu.vi", "%vd_mask, %vs2, %simm5, %vmask",
+    vmsgtu_vi{: vs2, simm5, vmask: vd},
+      disasm: "vmsgtu.vi", "%vd, %vs2, %simm5, %vmask",
       semfunc: "&Vmsgtu";
-    vmsgt_vx{: vs2, rs1, vmask: vd_mask},
-      disasm: "vmsgt.vx", "%vd_mask, %vs2, %rs1, %vmask",
+    vmsgt_vx{: vs2, rs1, vmask: vd},
+      disasm: "vmsgt.vx", "%vd, %vs2, %rs1, %vmask",
       semfunc: "&Vmsgt";
-    vmsgt_vi{: vs2, simm5, vmask: vd_mask},
-      disasm: "vmsgt.vi", "%vd_mask, %vs2, %simm5, %vmask",
+    vmsgt_vi{: vs2, simm5, vmask: vd},
+      disasm: "vmsgt.vi", "%vd, %vs2, %simm5, %vmask",
       semfunc: "&Vmsgt";
     vsaddu_vv{: vs2, vs1, vmask: vd},
       disasm: "vsaddu.vv", "%vd, %vs2, %vs1, %vmask",
@@ -1091,35 +1091,35 @@ slot riscv_vector {
     vfmerge_vf{: vs2, vs1, vmask : vd},
       disasm: "vfmerge.vf", "%vd, %vs2, %vs1, %vmask",
       semfunc: "&Vfmerge";
-    vmfeq_vv{: vs2, vs1, vmask : vd_mask},
-      disasm: "vmfeq.vv", "%vd_mask, %vs2, %vs1, %vmask",
+    vmfeq_vv{: vs2, vs1, vmask : vd},
+      disasm: "vmfeq.vv", "%vd, %vs2, %vs1, %vmask",
       semfunc: "&Vmfeq";
-    vmfeq_vf{: vs2, fs1, vmask : vd_mask},
-      disasm: "vmfeq.vf", "%vd_mask, %vs2, %fs1, %vmask",
+    vmfeq_vf{: vs2, fs1, vmask : vd},
+      disasm: "vmfeq.vf", "%vd, %vs2, %fs1, %vmask",
       semfunc: "&Vmfeq";
-    vmfle_vv{: vs2, vs1, vmask : vd_mask},
-      disasm: "vmfle.vv", "%vd_mask, %vs2, %vs1, %vmask",
+    vmfle_vv{: vs2, vs1, vmask : vd},
+      disasm: "vmfle.vv", "%vd, %vs2, %vs1, %vmask",
       semfunc: "&Vmfle";
-    vmfle_vf{: vs2, fs1, vmask : vd_mask},
-      disasm: "vmfle.vf", "%vd_mask, %vs2, %fs1, %vmask",
+    vmfle_vf{: vs2, fs1, vmask : vd},
+      disasm: "vmfle.vf", "%vd, %vs2, %fs1, %vmask",
       semfunc: "&Vmfle";
-    vmflt_vv{: vs2, vs1, vmask : vd_mask},
-      disasm: "vmflt.vv", "%vd_mask, %vs2, %vs1, %vmask",
+    vmflt_vv{: vs2, vs1, vmask : vd},
+      disasm: "vmflt.vv", "%vd, %vs2, %vs1, %vmask",
       semfunc: "&Vmflt";
-    vmflt_vf{: vs2, fs1, vmask : vd_mask},
-      disasm: "vmflt.vf", "%vd_mask, %vs2, %fs1, %vmask",
+    vmflt_vf{: vs2, fs1, vmask : vd},
+      disasm: "vmflt.vf", "%vd, %vs2, %fs1, %vmask",
       semfunc: "&Vmflt";
-    vmfne_vv{: vs2, vs1, vmask : vd_mask},
-      disasm: "vmfne.vv", "%vd_mask, %vs2, %vs1, %vmask",
+    vmfne_vv{: vs2, vs1, vmask : vd},
+      disasm: "vmfne.vv", "%vd, %vs2, %vs1, %vmask",
       semfunc: "&Vmfne";
-    vmfne_vf{: vs2, fs1, vmask : vd_mask},
-      disasm: "vmfne.vf", "%vd_mask, %vs2, %fs1, %vmask",
+    vmfne_vf{: vs2, fs1, vmask : vd},
+      disasm: "vmfne.vf", "%vd, %vs2, %fs1, %vmask",
       semfunc: "&Vmfne";
-    vmfgt_vf{: vs2, fs1, vmask : vd_mask},
-      disasm: "vmfgt.vf", "%vd_mask, %vs2, %fs1, %vmask",
+    vmfgt_vf{: vs2, fs1, vmask : vd},
+      disasm: "vmfgt.vf", "%vd, %vs2, %fs1, %vmask",
       semfunc: "&Vmfgt";
-    vmfge_vf{: vs2, fs1, vmask : vd_mask},
-      disasm: "vmfge.vf", "%vd_mask, %vs2, %fs1, %vmask",
+    vmfge_vf{: vs2, fs1, vmask : vd},
+      disasm: "vmfge.vf", "%vd, %vs2, %fs1, %vmask",
       semfunc: "&Vmfge";
     vfdiv_vv{: vs2, vs1, vmask : vd},
       disasm: "vfdiv.vv", "%vd, %vs2, %vs1, %vmask",
