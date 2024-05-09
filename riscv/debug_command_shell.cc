@@ -37,9 +37,8 @@ namespace sim {
 namespace riscv {
 
 // The constructor initializes all the regular expressions and the help string.
-DebugCommandShell::DebugCommandShell(std::vector<CoreAccess> core_access)
-    : core_access_(core_access),
-      quit_re_{R"(\s*quit\s*)"},
+DebugCommandShell::DebugCommandShell()
+    : quit_re_{R"(\s*quit\s*)"},
       core_re_{R"(\s*core\s+(\d+)\s*)"},
       run_re_{R"(\s*run\s*)"},
       run_free_re_{R"(\s*run\s+free\s*)"},
@@ -112,6 +111,16 @@ DebugCommandShell::DebugCommandShell(std::vector<CoreAccess> core_access)
     help                           - display this message.
 
 )raw";
+}
+
+void DebugCommandShell::AddCore(const CoreAccess &core_access) {
+  core_access_.push_back(core_access);
+}
+
+void DebugCommandShell::AddCores(const std::vector<CoreAccess> &core_access) {
+  for (auto &core : core_access) {
+    AddCore(core);
+  }
 }
 
 void DebugCommandShell::Run(std::istream &is, std::ostream &os) {

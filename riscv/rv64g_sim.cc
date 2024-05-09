@@ -290,7 +290,8 @@ int main(int argc, char **argv) {
   // Determine if this is being run interactively or as a batch job.
   bool interactive = absl::GetFlag(FLAGS_i) || absl::GetFlag(FLAGS_interactive);
   if (interactive) {
-    mpact::sim::riscv::DebugCommandShell cmd_shell({{&riscv_top, &elf_loader}});
+    mpact::sim::riscv::DebugCommandShell cmd_shell;
+    cmd_shell.AddCore({&riscv_top, &elf_loader});
     // Add custom command to interactive debug command shell.
     cmd_shell.AddCommand(
         "    reg info                       - print all scalar regs",
