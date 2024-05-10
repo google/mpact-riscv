@@ -19,13 +19,13 @@
 #include <ios>
 #include <vector>
 
-#include "googlemock/include/gmock/gmock.h"
 #include "absl/random/random.h"
 #include "absl/types/span.h"
-#include "riscv/riscv_register.h"
-#include "riscv/test/riscv_vector_instructions_test_base.h"
+#include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/type_helpers.h"
+#include "riscv/riscv_register.h"
+#include "riscv/test/riscv_vector_instructions_test_base.h"
 
 namespace {
 

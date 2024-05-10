@@ -17,13 +17,13 @@
 #include <string>
 #include <vector>
 
-#include "googlemock/include/gmock/gmock.h"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
 #include "absl/strings/string_view.h"
+#include "googlemock/include/gmock/gmock.h"
+#include "mpact/sim/generic/immediate_operand.h"
 #include "riscv/riscv_csr.h"
 #include "riscv/riscv_state.h"
-#include "mpact/sim/generic/immediate_operand.h"
 
 // This file contains tests for individual Zicsr instructions.
 

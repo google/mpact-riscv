@@ -20,10 +20,10 @@
 #include <vector>
 
 #include "googlemock/include/gmock/gmock.h"
-#include "riscv/riscv_register.h"
-#include "riscv/riscv_state.h"
 #include "mpact/sim/generic/immediate_operand.h"
 #include "mpact/sim/generic/instruction.h"
+#include "riscv/riscv_register.h"
+#include "riscv/riscv_state.h"
 
 namespace mpact {
 namespace sim {

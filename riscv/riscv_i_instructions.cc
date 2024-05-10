@@ -20,14 +20,14 @@
 #include <limits>
 #include <type_traits>
 
-#include "riscv/riscv_instruction_helpers.h"
-#include "riscv/riscv_register.h"
-#include "riscv/riscv_state.h"
 #include "mpact/sim/generic/arch_state.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/register.h"
 #include "mpact/sim/generic/type_helpers.h"
+#include "riscv/riscv_instruction_helpers.h"
+#include "riscv/riscv_register.h"
+#include "riscv/riscv_state.h"
 
 namespace mpact {
 namespace sim {

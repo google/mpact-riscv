@@ -35,11 +35,6 @@
 #include "absl/strings/string_view.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
-#include "riscv/debug_command_shell.h"
-#include "riscv/riscv32_htif_semihost.h"
-#include "riscv/riscv_arm_semihost.h"
-#include "riscv/riscv_state.h"
-#include "riscv/riscv_top.h"
 #include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/generic/counters.h"
 #include "mpact/sim/generic/instruction.h"
@@ -48,8 +43,13 @@
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "mpact/sim/util/memory/memory_watcher.h"
 #include "mpact/sim/util/program_loader/elf_program_loader.h"
-#include "src/google/protobuf/text_format.h"
 #include "re2/re2.h"
+#include "riscv/debug_command_shell.h"
+#include "riscv/riscv32_htif_semihost.h"
+#include "riscv/riscv_arm_semihost.h"
+#include "riscv/riscv_state.h"
+#include "riscv/riscv_top.h"
+#include "src/google/protobuf/text_format.h"
 
 using ::mpact::sim::generic::Instruction;
 using ::mpact::sim::proto::ComponentData;
@@ -376,8 +376,8 @@ int main(int argc, char **argv) {
   }
   std::fstream proto_file(proto_file_name.c_str(), std::ios_base::out);
   std::string serialized;
-  if (!proto_file.good() ||
-      !google::protobuf::TextFormat::PrintToString(*component_proto.get(), &serialized)) {
+  if (!proto_file.good() || !google::protobuf::TextFormat::PrintToString(
+                                *component_proto.get(), &serialized)) {
     LOG(ERROR) << "Failed to write proto to file";
   } else {
     proto_file << serialized;

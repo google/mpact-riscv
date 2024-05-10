@@ -16,8 +16,8 @@
 
 #include <ios>
 
-#include "googlemock/include/gmock/gmock.h"
 #include "absl/status/status.h"
+#include "googlemock/include/gmock/gmock.h"
 #include "riscv/riscv_state.h"
 
 namespace {

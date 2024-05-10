@@ -15,10 +15,10 @@
 #include "riscv/riscv_vector_fp_compare_instructions.h"
 
 #include "absl/log/log.h"
+#include "mpact/sim/generic/instruction.h"
 #include "riscv/riscv_state.h"
 #include "riscv/riscv_vector_instruction_helpers.h"
 #include "riscv/riscv_vector_state.h"
-#include "mpact/sim/generic/instruction.h"
 
 namespace mpact {
 namespace sim {

@@ -18,14 +18,14 @@
 #include <limits>
 #include <vector>
 
-#include "googlemock/include/gmock/gmock.h"
 #include "absl/functional/bind_front.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "googlemock/include/gmock/gmock.h"
+#include "mpact/sim/generic/instruction.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_vector_state.h"
 #include "riscv/test/riscv_vector_instructions_test_base.h"
-#include "mpact/sim/generic/instruction.h"
 
 // This file contains test cases for most of the RiscV OPIVV, IPIVX and OPIVI
 // instructions. The only instructions not covered by this file are the vector

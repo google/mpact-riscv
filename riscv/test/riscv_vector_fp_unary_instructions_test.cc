@@ -26,11 +26,14 @@
 #include <type_traits>
 #include <vector>
 
-#include "googlemock/include/gmock/gmock.h"
 #include "absl/random/random.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
+#include "googlemock/include/gmock/gmock.h"
+#include "mpact/sim/generic/instruction.h"
+#include "mpact/sim/generic/operand_interface.h"
+#include "mpact/sim/generic/type_helpers.h"
 #include "riscv/riscv_csr.h"
 #include "riscv/riscv_fp_host.h"
 #include "riscv/riscv_fp_info.h"
@@ -39,9 +42,6 @@
 #include "riscv/riscv_vector_state.h"
 #include "riscv/test/riscv_vector_fp_test_utilities.h"
 #include "riscv/test/riscv_vector_instructions_test_base.h"
-#include "mpact/sim/generic/instruction.h"
-#include "mpact/sim/generic/operand_interface.h"
-#include "mpact/sim/generic/type_helpers.h"
 
 namespace {
 
@@ -843,7 +843,8 @@ inline T Vrecip7vTestHelper(T vs2, RiscVFPState *rv_fp) {
       }
     }
   }
-  ScopedFPStatus status(rv_fp->host_fp_interface(), FPRoundingMode::kRoundTowardsZero);
+  ScopedFPStatus status(rv_fp->host_fp_interface(),
+                        FPRoundingMode::kRoundTowardsZero);
   T value = 1.0 / vs2;
   UInt uint_val = *reinterpret_cast<UInt *>(&value);
   UInt mask = FPTypeInfo<T>::kSigMask >> 7;
@@ -877,7 +878,8 @@ inline T Vfrsqrt7vTestHelper(T vs2, RiscVFPState *rv_fp) {
   if (std::isinf(vs2)) {
     return 0.0;
   }
-  ScopedFPStatus status(rv_fp->host_fp_interface(), FPRoundingMode::kRoundTowardsZero);
+  ScopedFPStatus status(rv_fp->host_fp_interface(),
+                        FPRoundingMode::kRoundTowardsZero);
   T value = 1.0 / sqrt(vs2);
   UInt uint_val = *reinterpret_cast<UInt *>(&value);
   UInt mask = FPTypeInfo<T>::kSigMask >> 7;

@@ -20,12 +20,12 @@
 
 #include "absl/log/log.h"
 #include "absl/types/span.h"
-#include "riscv/riscv32gv_bin_decoder.h"
-#include "riscv/riscv_register.h"
-#include "riscv/riscv_state.h"
 #include "mpact/sim/generic/immediate_operand.h"
 #include "mpact/sim/generic/literal_operand.h"
 #include "mpact/sim/generic/operand_interface.h"
+#include "riscv/riscv32gv_bin_decoder.h"
+#include "riscv/riscv_register.h"
+#include "riscv/riscv_state.h"
 
 namespace mpact {
 namespace sim {

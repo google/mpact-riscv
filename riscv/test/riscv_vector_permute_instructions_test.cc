@@ -14,12 +14,12 @@
 
 #include "riscv/riscv_vector_permute_instructions.h"
 
-#include "googlemock/include/gmock/gmock.h"
 #include "absl/random/random.h"
+#include "googlemock/include/gmock/gmock.h"
+#include "mpact/sim/generic/instruction.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_vector_state.h"
 #include "riscv/test/riscv_vector_instructions_test_base.h"
-#include "mpact/sim/generic/instruction.h"
 
 // This file contains tests for the RiscV vector permute instructions.
 

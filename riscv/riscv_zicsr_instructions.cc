@@ -18,12 +18,12 @@
 
 #include "absl/log/log.h"
 #include "absl/strings/str_cat.h"
-#include "riscv/riscv_csr.h"
-#include "riscv/riscv_register.h"
-#include "riscv/riscv_state.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/register.h"
 #include "mpact/sim/generic/type_helpers.h"
+#include "riscv/riscv_csr.h"
+#include "riscv/riscv_register.h"
+#include "riscv/riscv_state.h"
 
 namespace mpact {
 namespace sim {

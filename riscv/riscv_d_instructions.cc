@@ -20,9 +20,9 @@
 #include <tuple>
 #include <type_traits>
 
+#include "mpact/sim/generic/type_helpers.h"
 #include "riscv/riscv_fp_state.h"
 #include "riscv/riscv_instruction_helpers.h"
-#include "mpact/sim/generic/type_helpers.h"
 
 namespace mpact {
 namespace sim {

@@ -14,8 +14,8 @@
 
 #include "riscv/riscv_zfencei_instructions.h"
 
-#include "riscv/riscv_state.h"
 #include "mpact/sim/generic/instruction.h"
+#include "riscv/riscv_state.h"
 
 namespace mpact {
 namespace sim {

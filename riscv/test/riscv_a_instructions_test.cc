@@ -19,16 +19,16 @@
 #include <string>
 #include <vector>
 
-#include "googlemock/include/gmock/gmock.h"
 #include "absl/log/check.h"
-#include "riscv/riscv_i_instructions.h"
-#include "riscv/riscv_register.h"
-#include "riscv/riscv_state.h"
+#include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/util/memory/atomic_memory.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "mpact/sim/util/memory/memory_interface.h"
+#include "riscv/riscv_i_instructions.h"
+#include "riscv/riscv_register.h"
+#include "riscv/riscv_state.h"
 
 namespace {
 

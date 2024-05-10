@@ -28,9 +28,9 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
-#include "riscv/stoull_wrapper.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "re2/re2.h"
+#include "riscv/stoull_wrapper.h"
 
 namespace mpact {
 namespace sim {

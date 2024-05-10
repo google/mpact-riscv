@@ -16,16 +16,16 @@
 
 #include <string>
 
-#include "googlemock/include/gmock/gmock.h"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
 #include "elfio/elfio.hpp"
 #include "elfio/elfio_section.hpp"
 #include "elfio/elfio_symbols.hpp"
-#include "riscv/riscv_state.h"
+#include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "mpact/sim/util/program_loader/elf_program_loader.h"
+#include "riscv/riscv_state.h"
 
 namespace {
 

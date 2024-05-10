@@ -14,8 +14,8 @@
 
 #include "riscv/riscv_breakpoint.h"
 
-#include "googlemock/include/gmock/gmock.h"
 #include "absl/functional/bind_front.h"
+#include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/component.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"

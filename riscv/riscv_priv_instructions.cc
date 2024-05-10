@@ -18,13 +18,13 @@
 
 #include "absl/log/log.h"
 #include "absl/strings/str_cat.h"
+#include "mpact/sim/generic/data_buffer.h"
+#include "mpact/sim/generic/type_helpers.h"
 #include "riscv/riscv_csr.h"
 #include "riscv/riscv_misa.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
 #include "riscv/riscv_xstatus.h"
-#include "mpact/sim/generic/data_buffer.h"
-#include "mpact/sim/generic/type_helpers.h"
 
 namespace mpact {
 namespace sim {

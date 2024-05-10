@@ -21,10 +21,10 @@
 #include <type_traits>
 
 #include "absl/log/log.h"
+#include "mpact/sim/generic/type_helpers.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_vector_instruction_helpers.h"
 #include "riscv/riscv_vector_state.h"
-#include "mpact/sim/generic/type_helpers.h"
 
 namespace mpact {
 namespace sim {

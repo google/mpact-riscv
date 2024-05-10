@@ -23,14 +23,14 @@
 #include "absl/log/check.h"
 #include "absl/log/log.h"
 #include "absl/strings/str_cat.h"
+#include "mpact/sim/generic/type_helpers.h"
+#include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "riscv/riscv_csr.h"
 #include "riscv/riscv_misa.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_sim_csrs.h"
 #include "riscv/riscv_xip_xie.h"
 #include "riscv/riscv_xstatus.h"
-#include "mpact/sim/generic/type_helpers.h"
-#include "mpact/sim/util/memory/flat_demand_memory.h"
 
 namespace mpact {
 namespace sim {

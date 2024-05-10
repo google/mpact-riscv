@@ -45,7 +45,6 @@ cc_library(
         "@com_google_absl//absl/random",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:span",
-        "@com_google_mpact-sim//mpact/sim/generic:instruction",
         "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
     ],
 )
@@ -59,7 +58,6 @@ cc_library(
         "@com_google_absl//absl/random",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:span",
-        "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
         "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
@@ -117,7 +115,6 @@ cc_test(
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
         "@com_google_mpact-sim//mpact/sim/generic:core",
-        "@com_google_mpact-sim//mpact/sim/generic:instruction",
     ],
 )
 
@@ -179,11 +176,8 @@ cc_test(
     deps = [
         ":riscv_fp_test_base",
         "//riscv:riscv_g",
-        "//riscv:riscv_state",
         "@com_google_googletest//:gtest_main",
-        "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
-        "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )
 
@@ -201,9 +195,7 @@ cc_test(
         "//riscv:riscv_g",
         "//riscv:riscv_state",
         "@com_google_googletest//:gtest_main",
-        "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
-        "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )
 
@@ -215,7 +207,6 @@ cc_test(
     ],
     deps = [
         "//riscv:riscv32g_decoder",
-        "//riscv:riscv_g",
         "//riscv:riscv_state",
         "@com_google_googletest//:gtest_main",
     ],
@@ -230,7 +221,6 @@ cc_test(
     deps = [
         "//riscv:riscv64g_decoder",
         "//riscv:riscv64g_isa",
-        "//riscv:riscv_g",
         "//riscv:riscv_state",
         "@com_google_googletest//:gtest_main",
     ],
@@ -264,7 +254,6 @@ cc_test(
         "//riscv:riscv_state",
         "@com_google_absl//absl/log:check",
         "@com_google_googletest//:gtest_main",
-        "@com_google_mpact-sim//mpact/sim/generic:arch_state",
         "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
         "@com_google_mpact-sim//mpact/sim/util/memory",
@@ -297,16 +286,13 @@ cc_test(
         "testfiles/hello_world.elf",
     ],
     deps = [
-        "//riscv:riscv32g_bin_fmt",
         "//riscv:riscv32g_decoder",
-        "//riscv:riscv_g",
         "//riscv:riscv_state",
         "@com_github_serge1_elfio//:elfio",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
-        "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
         "@com_google_mpact-sim//mpact/sim/util/memory",
         "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
@@ -323,15 +309,12 @@ cc_test(
         "testfiles/hello_world_64.elf",
     ],
     deps = [
-        "//riscv:riscv64g_bin_fmt",
         "//riscv:riscv64g_decoder",
-        "//riscv:riscv_g",
         "//riscv:riscv_state",
         "@com_github_serge1_elfio//:elfio",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
         "@com_google_googletest//:gtest_main",
-        "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
         "@com_google_mpact-sim//mpact/sim/util/memory",
         "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
@@ -347,7 +330,6 @@ cc_test(
     deps = [
         "//riscv:riscv32gv_bin_fmt",
         "//riscv:riscv32gv_isa",
-        "@com_google_absl//absl/log",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -367,7 +349,6 @@ cc_test(
         "@com_google_googletest//:gtest_main",
         "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
-        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
         "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )
@@ -383,7 +364,6 @@ cc_test(
         "//riscv:riscv_state",
         "//riscv:riscv_v",
         "@com_google_absl//absl/functional:bind_front",
-        "@com_google_absl//absl/random",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
@@ -515,9 +495,7 @@ cc_test(
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:span",
         "@com_google_googletest//:gtest_main",
-        "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
-        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
     ],
 )
 
@@ -540,9 +518,7 @@ cc_test(
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:span",
         "@com_google_googletest//:gtest_main",
-        "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
-        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
     ],
 )
 
@@ -558,9 +534,7 @@ cc_test(
         "//riscv:riscv_v",
         "@com_google_absl//absl/random",
         "@com_google_googletest//:gtest_main",
-        "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
-        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
     ],
 )
 
@@ -577,18 +551,11 @@ cc_test(
     ],
     deps = [
         "//riscv:riscv32_htif_semihost",
-        "//riscv:riscv32g_bin_fmt",
         "//riscv:riscv_arm_semihost",
-        "//riscv:riscv_breakpoint",
-        "//riscv:riscv_debug_info",
-        "//riscv:riscv_g",
-        "//riscv:riscv_state",
         "//riscv:riscv_top",
-        "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/status",
         "@com_google_googletest//:gtest_main",
-        "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:core_debug_interface",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
         "@com_google_mpact-sim//mpact/sim/util/memory",
@@ -604,7 +571,6 @@ cc_test(
     ],
     deps = [
         "//riscv:riscv_state",
-        "@com_google_absl//absl/log:check",
         "@com_google_googletest//:gtest_main",
     ],
 )
