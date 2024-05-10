@@ -139,6 +139,7 @@ void Vcpop(Instruction *inst) {
 // Find first set of vector mask register. The value is written to a scalar
 // register.
 void Vfirst(Instruction *inst) {
+  auto *rv_state = static_cast<RiscVState *>(inst->state());
   auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
   if (rv_vector->vstart()) {
     rv_vector->set_vector_exception();
@@ -149,7 +150,8 @@ void Vfirst(Instruction *inst) {
   auto mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(1));
   auto mask_span = mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
   auto *dest_db = inst->Destination(0)->AllocateDataBuffer();
-  std::make_signed<RV32Register::ValueType>::type count = -1;
+  // Initialize the element index to -1.
+  uint64_t element_index = -1LL;
   int vlen = rv_vector->vector_length();
   for (int i = 0; i < vlen; i++) {
     int index = i >> 3;
@@ -157,11 +159,21 @@ void Vfirst(Instruction *inst) {
     int mask_value = (mask_span[index] >> offset);
     int src_value = (src_span[index] >> offset);
     if (mask_value & src_value & 0b1) {
-      count = i;
+      element_index = i;
       break;
     }
   }
-  dest_db->Set<std::make_signed<RV32Register::ValueType>::type>(0, count);
+  if (rv_state->xlen() == RiscVXlen::RV32) {
+    dest_db->Set<RV32Register::ValueType>(0, element_index);
+  } else if (rv_state->xlen() == RiscVXlen::RV64) {
+    dest_db->Set<RV64Register::ValueType>(0, element_index);
+  } else {
+    LOG(ERROR) << absl::StreamFormat("Illegal XLEN value (%d) for Vcpop",
+                                     rv_state->xlen());
+
+    rv_vector->set_vector_exception();
+    return;
+  }
   dest_db->Submit();
 }
 
