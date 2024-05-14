@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -613,6 +613,24 @@ cc_library(
     ],
     deps = [
         "@com_google_absl//absl/strings",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
+    ],
+)
+
+cc_library(
+    name = "riscv_clint",
+    srcs = [
+        "riscv_clint.cc",
+    ],
+    hdrs = [
+        "riscv_clint.h",
+    ],
+    deps = [
+        "//riscv:riscv_state",
+        "@com_google_absl//absl/log",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:counters",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
         "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )

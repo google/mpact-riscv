@@ -575,3 +575,19 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
+
+cc_test(
+    name = "riscv_clint_test",
+    size = "small",
+    srcs = [
+        "riscv_clint_test.cc",
+    ],
+    deps = [
+        "//riscv:riscv_clint",
+        "//riscv:riscv_state",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:counters",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+    ],
+)
