@@ -17,11 +17,14 @@
 
 #include <cstdint>
 
+#include "mpact/sim/generic/arch_state.h"
 #include "riscv/riscv_csr.h"
 
 namespace mpact {
 namespace sim {
 namespace riscv {
+
+using ::mpact::sim::generic::ArchState;
 
 // This file defines the RiscVMisa class which implements the misa csr as
 // a subclass or RiscVSimpleCsr<uint64_t>
@@ -32,8 +35,8 @@ class RiscVMIsa : public RiscVSimpleCsr<uint64_t> {
  public:
   // Disable default constructor.
   RiscVMIsa() = delete;
-  RiscVMIsa(uint32_t initial_value, RiscVState *state);
-  RiscVMIsa(uint64_t initial_value, RiscVState *state);
+  RiscVMIsa(uint32_t initial_value, ArchState *state);
+  RiscVMIsa(uint64_t initial_value, ArchState *state);
   ~RiscVMIsa() override = default;
 
   // RiscVSimpleCsr method overrides.

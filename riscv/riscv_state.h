@@ -15,8 +15,6 @@
 #ifndef MPACT_RISCV_RISCV_RISCV_STATE_H_
 #define MPACT_RISCV_RISCV_RISCV_STATE_H_
 
-#include <algorithm>
-#include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <string>
@@ -46,6 +44,8 @@
 namespace mpact {
 namespace sim {
 namespace riscv {
+
+using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 
 using ArchState = ::mpact::sim::generic::ArchState;
 using DataBuffer = ::mpact::sim::generic::DataBuffer;
@@ -296,7 +296,7 @@ class RiscVState : public ArchState {
   // This function is called after any event that may have caused an interrupt
   // to be registered as pending or enabled. If the interrupt can be taken
   // it registers it as available.
-  void CheckForInterrupt();
+  void CheckForInterrupt() override;
   // This function is called when the return pc for the available interrupt
   // is known. If there is no available interrupt, it just returns.
   void TakeAvailableInterrupt(uint64_t epc);

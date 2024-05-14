@@ -28,6 +28,7 @@ namespace sim {
 namespace riscv {
 
 class RiscVFPState;
+class RiscVState;
 class HostFloatingPointInterface;
 
 // Floating point CSR.

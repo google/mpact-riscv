@@ -15,6 +15,9 @@
 #ifndef MPACT_RISCV_RISCV_RISCV_XIP_XIE_H_
 #define MPACT_RISCV_RISCV_RISCV_XIP_XIE_H_
 
+#include <cstdint>
+
+#include "mpact/sim/generic/arch_state.h"
 #include "riscv/riscv_csr.h"
 
 // This file defines the classes for the interrupt pending and enable
@@ -25,11 +28,22 @@ namespace mpact {
 namespace sim {
 namespace riscv {
 
-class RiscVState;
+using ::mpact::sim::generic::ArchState;
+
+// Interface used to write values from an interrupt controller.
+class MipExternalWriteInterface {
+ public:
+  virtual ~MipExternalWriteInterface() = default;
+  virtual void set_meip(uint32_t value) = 0;
+  virtual void set_mtip(uint32_t value) = 0;
+  virtual void set_msip(uint32_t value) = 0;
+  virtual void set_ext_seip(uint32_t value) = 0;
+};
 
 // xip - x mode interrupt pending registers.
 
-class RiscVMIp : public RiscVSimpleCsr<uint32_t> {
+class RiscVMIp : public MipExternalWriteInterface,
+                 public RiscVSimpleCsr<uint32_t> {
  public:
   // Read and Write masks.
   static constexpr uint32_t kReadMask = 0b1011'1011'1011;
@@ -37,26 +51,29 @@ class RiscVMIp : public RiscVSimpleCsr<uint32_t> {
 
   // Disable default constructor.
   RiscVMIp() = delete;
-  RiscVMIp(uint32_t initial_value, RiscVState* state);
+  RiscVMIp(uint32_t initial_value, ArchState* state);
   ~RiscVMIp() override = default;
 
   // RiscVSimpleCsr method overrides.
   void Set(uint32_t) override;
   void Set(uint64_t) override;
+  uint32_t GetUint32() override;
+  uint64_t GetUint64() override;
 
   // X external interrupt pending.
   bool meip() { return GetterHelper<11, 0b1>(); }
-  bool seip() { return GetterHelper<9, 0b1>(); }
+  bool seip() { return (GetterHelper<9, 0b1>()) || (ext_seip_ != 0); }
   bool ueip() { return GetterHelper<8, 0b1>(); }
-  void set_meip(uint32_t value) { SetterHelper<11, 0b1>(value); }
+  void set_meip(uint32_t value) override { SetterHelper<11, 0b1>(value); }
   void set_seip(uint32_t value) { SetterHelper<9, 0b1>(value); }
+  void set_ext_seip(uint32_t value) override { ext_seip_ = (value != 0) << 9; }
   void set_ueip(uint32_t value) { SetterHelper<8, 0b1>(value); }
 
   // X timer interrupt pending.
   bool mtip() { return GetterHelper<7, 0b1>(); }
   bool stip() { return GetterHelper<5, 0b1>(); }
   bool utip() { return GetterHelper<4, 0b1>(); }
-  void set_mtip(uint32_t value) { SetterHelper<7, 0b1>(value); }
+  void set_mtip(uint32_t value) override { SetterHelper<7, 0b1>(value); }
   void set_stip(uint32_t value) { SetterHelper<5, 0b1>(value); }
   void set_utip(uint32_t value) { SetterHelper<4, 0b1>(value); }
 
@@ -64,7 +81,7 @@ class RiscVMIp : public RiscVSimpleCsr<uint32_t> {
   bool msip() { return GetterHelper<3, 0b1>(); }
   bool ssip() { return GetterHelper<1, 0b1>(); }
   bool usip() { return GetterHelper<0, 0b1>(); }
-  void set_msip(uint32_t value) { SetterHelper<3, 0b1>(value); }
+  void set_msip(uint32_t value) override { SetterHelper<3, 0b1>(value); }
   void set_ssip(uint32_t value) { SetterHelper<1, 0b1>(value); }
   void set_usip(uint32_t value) { SetterHelper<0, 0b1>(value); }
 
@@ -82,6 +99,7 @@ class RiscVMIp : public RiscVSimpleCsr<uint32_t> {
         (GetUint64() & ~(BitMask << Shift)) | (bit_value << Shift);
     Set(new_value);
   }
+  uint32_t ext_seip_ = 0;
 };
 
 // The supervisor mode sip is an interface to mip. The visibility of mip bits
@@ -98,7 +116,7 @@ class RiscVSIp : public RiscVSimpleCsr<uint32_t> {
 
   // Disable default constructor.
   RiscVSIp() = delete;
-  RiscVSIp(RiscVMIp* mip, RiscVCsrInterface* mideleg, RiscVState* state);
+  RiscVSIp(RiscVMIp* mip, RiscVCsrInterface* mideleg, ArchState* state);
   ~RiscVSIp() override = default;
 
   // RiscVSimpleCsr method overrides.
@@ -156,7 +174,7 @@ class RiscVMIe : public RiscVSimpleCsr<uint32_t> {
 
   // Disable default constructor.
   RiscVMIe() = delete;
-  RiscVMIe(uint32_t initial_value, RiscVState* state);
+  RiscVMIe(uint32_t initial_value, ArchState* state);
   ~RiscVMIe() override = default;
 
   // RiscVSimpleCsr method overrides.
@@ -212,7 +230,7 @@ class RiscVSIe : public RiscVSimpleCsr<uint32_t> {
 
   // Disable default constructor.
   RiscVSIe() = delete;
-  RiscVSIe(RiscVMIe* mie, RiscVCsrInterface* mideleg, RiscVState* state);
+  RiscVSIe(RiscVMIe* mie, RiscVCsrInterface* mideleg, ArchState* state);
   ~RiscVSIe() override = default;
 
   // RiscVSimpleCsr method overrides.

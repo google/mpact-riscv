@@ -15,15 +15,15 @@
 #ifndef MPACT_RISCV_RISCV_RISCV_SIM_CSRS_H_
 #define MPACT_RISCV_RISCV_RISCV_SIM_CSRS_H_
 
+#include <cstdint>
 #include <string>
 
 #include "riscv/riscv_csr.h"
+#include "riscv/riscv_state.h"
 
 namespace mpact {
 namespace sim {
 namespace riscv {
-
-class RiscVState;
 
 class RiscVSimModeCsr : public RiscVSimpleCsr<uint32_t> {
  public:

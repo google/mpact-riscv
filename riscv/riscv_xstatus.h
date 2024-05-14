@@ -15,6 +15,9 @@
 #ifndef MPACT_RISCV_RISCV_RISCV_XSTATUS_H_
 #define MPACT_RISCV_RISCV_RISCV_XSTATUS_H_
 
+#include <cstdint>
+
+#include "mpact/sim/generic/arch_state.h"
 #include "riscv/riscv_csr.h"
 #include "riscv/riscv_misa.h"
 
@@ -26,7 +29,7 @@ namespace mpact {
 namespace sim {
 namespace riscv {
 
-class RiscVState;
+using ::mpact::sim::generic::ArchState;
 
 class RiscVMStatus : public RiscVSimpleCsr<uint64_t> {
  public:
@@ -35,8 +38,9 @@ class RiscVMStatus : public RiscVSimpleCsr<uint64_t> {
   static constexpr uint64_t kWriteMask = 0x0000'0000'007f'f9bbULL;
   // Disable default constructor.
   RiscVMStatus() = delete;
-  RiscVMStatus(uint32_t initial_value, RiscVState *state);
-  RiscVMStatus(uint64_t initial_value, RiscVState *state);
+  RiscVMStatus(uint32_t initial_value, ArchState *state, RiscVMIsa *misa);
+  RiscVMStatus(uint64_t initial_value, ArchState *state, RiscVMIsa *misa);
+
   ~RiscVMStatus() override = default;
 
   // RiscVSimpleCsr<uint64_t> method overrides.
@@ -111,6 +115,9 @@ class RiscVMStatus : public RiscVSimpleCsr<uint64_t> {
   }
 
  private:
+  // Private constructor.
+  RiscVMStatus(uint64_t initial_value, ArchState *state, RiscVXlen xlen,
+               RiscVMIsa *misa);
   // Template function to help implement the getters.
   template <int Shift, uint64_t BitMask>
   inline int GetterHelper() {
@@ -123,6 +130,7 @@ class RiscVMStatus : public RiscVSimpleCsr<uint64_t> {
     buffer_mask_ |= BitMask << Shift;
   }
 
+  RiscVXlen xlen_;
   RiscVMIsa *misa_;
   uint64_t buffer_ = 0;
   uint64_t buffer_mask_ = 0;

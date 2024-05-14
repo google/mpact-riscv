@@ -40,10 +40,10 @@ static inline uint32_t CompressMisa64(uint64_t value) {
 }
 
 // Constructors.
-RiscVMIsa::RiscVMIsa(uint32_t initial_value, RiscVState *state)
+RiscVMIsa::RiscVMIsa(uint32_t initial_value, ArchState *state)
     : RiscVMIsa(StretchMisa32(initial_value), state) {}
 
-RiscVMIsa::RiscVMIsa(uint64_t initial_value, RiscVState *state)
+RiscVMIsa::RiscVMIsa(uint64_t initial_value, ArchState *state)
     : RiscVSimpleCsr<uint64_t>("misa", RiscVCsrEnum::kMIsa, initial_value,
                                /*read_mask*/ 0xc000'0000'03ff'ffffULL,
                                /*write_mask*/ 0, state) {

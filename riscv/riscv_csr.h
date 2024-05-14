@@ -27,6 +27,7 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
+#include "mpact/sim/generic/arch_state.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/operand_interface.h"
 
@@ -39,7 +40,7 @@ namespace mpact {
 namespace sim {
 namespace riscv {
 
-class RiscVState;
+using ::mpact::sim::generic::ArchState;
 
 enum class RiscVCsrEnum {
   // User trap setup.
@@ -140,7 +141,7 @@ enum class RiscVCsrEnum {
 // the index.
 class RiscVCsrBase {
  public:
-  RiscVCsrBase(std::string name, uint64_t index, RiscVState *state)
+  RiscVCsrBase(std::string name, uint64_t index, ArchState *state)
       : name_(name), index_(index), state_(state) {}
   RiscVCsrBase() = delete;
   virtual ~RiscVCsrBase() = default;
@@ -157,17 +158,17 @@ class RiscVCsrBase {
   // Three getters: name, index, and state
   const std::string &name() { return name_; }
   uint64_t index() const { return index_; }
-  RiscVState *state() { return state_; }
+  ArchState *state() { return state_; }
 
  private:
   std::string name_;
   uint64_t index_ = 0;
-  RiscVState *state_;
+  ArchState *state_;
 };
 
 class RiscVCsrInterface : public RiscVCsrBase {
  public:
-  RiscVCsrInterface(std::string name, uint64_t index, RiscVState *state)
+  RiscVCsrInterface(std::string name, uint64_t index, ArchState *state)
       : RiscVCsrBase(name, index, state) {}
   RiscVCsrInterface() = delete;
   ~RiscVCsrInterface() override = default;
@@ -232,25 +233,49 @@ class RiscVCsrSetBitsDb : public generic::DataBufferDestination {
 template <typename T>
 class RiscVSimpleCsr : public RiscVCsrInterface {
  public:
-  RiscVSimpleCsr(std::string name, RiscVCsrEnum index, RiscVState *state)
+  // Enum index.
+  RiscVSimpleCsr(std::string name, RiscVCsrEnum index, ArchState *state)
       : RiscVSimpleCsr(
             name, index, 0,
             std::numeric_limits<typename std::make_unsigned<T>::type>::max(),
             std::numeric_limits<typename std::make_unsigned<T>::type>::max(),
             state) {}
   RiscVSimpleCsr(std::string name, RiscVCsrEnum index, T initial_value,
-                 RiscVState *state)
+                 ArchState *state)
       : RiscVSimpleCsr(
             name, index, initial_value,
             std::numeric_limits<typename std::make_unsigned<T>::type>::max(),
             std::numeric_limits<typename std::make_unsigned<T>::type>::max(),
             state) {}
   RiscVSimpleCsr(std::string name, RiscVCsrEnum index, T read_mask,
-                 T write_mask, RiscVState *state)
+                 T write_mask, ArchState *state)
       : RiscVSimpleCsr(name, index, 0, read_mask, write_mask, state) {}
+  // Uint64_t valued index. These are useful for other RiscV architecture
+  // variants that add custom CSRs.
+  RiscVSimpleCsr(std::string name, uint64_t index, ArchState *state)
+      : RiscVSimpleCsr(
+            name, index, 0,
+            std::numeric_limits<typename std::make_unsigned<T>::type>::max(),
+            std::numeric_limits<typename std::make_unsigned<T>::type>::max(),
+            state) {}
+  RiscVSimpleCsr(std::string name, uint64_t index, T initial_value,
+                 ArchState *state)
+      : RiscVSimpleCsr(
+            name, index, initial_value,
+            std::numeric_limits<typename std::make_unsigned<T>::type>::max(),
+            std::numeric_limits<typename std::make_unsigned<T>::type>::max(),
+            state) {}
+  RiscVSimpleCsr(std::string name, uint64_t index, T read_mask, T write_mask,
+                 ArchState *state)
+      : RiscVSimpleCsr(name, index, 0, read_mask, write_mask, state) {}
+
   RiscVSimpleCsr(std::string name, RiscVCsrEnum index, T initial_value,
-                 T read_mask, T write_mask, RiscVState *state)
-      : RiscVCsrInterface(name, static_cast<uint64_t>(index), state),
+                 T read_mask, T write_mask, ArchState *state)
+      : RiscVSimpleCsr(name, static_cast<uint64_t>(index), initial_value,
+                       read_mask, write_mask, state) {}
+  RiscVSimpleCsr(std::string name, uint64_t index, T initial_value, T read_mask,
+                 T write_mask, ArchState *state)
+      : RiscVCsrInterface(name, index, state),
         value_(initial_value),
         read_mask_(read_mask),
         write_mask_(write_mask),

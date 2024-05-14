@@ -158,9 +158,9 @@ void CreateCsrs(RiscVState *state, std::vector<RiscVCsrInterface *> &csr_vec) {
   absl::Status result;
   // Create CSRs.
   // misa
-  CHECK_NE(CreateCsr(state, state->misa_, csr_vec,
-                     CsrInfo<T>::kMisaInitialValue, state),
-           nullptr);
+  auto *misa = CreateCsr(state, state->misa_, csr_vec,
+                         CsrInfo<T>::kMisaInitialValue, state);
+  CHECK_NE(misa, nullptr);
   // mtvec
   CHECK_NE(CreateCsr<RiscVSimpleCsr<T>>(state, state->mtvec_, csr_vec, "mtvec",
                                         RiscVCsrEnum::kMTvec, 0, state),
@@ -210,8 +210,9 @@ void CreateCsrs(RiscVState *state, std::vector<RiscVCsrInterface *> &csr_vec) {
   CHECK_NE(mideleg, nullptr);
 
   // mstatus
-  auto *mstatus = CreateCsr(state, state->mstatus_, csr_vec,
-                            CsrInfo<uint64_t>::kMstatusInitialValue, state);
+  auto *mstatus =
+      CreateCsr(state, state->mstatus_, csr_vec,
+                CsrInfo<uint64_t>::kMstatusInitialValue, state, misa);
   CHECK_NE(mstatus, nullptr);
   // mtval
   CHECK_NE(CreateCsr<RiscVSimpleCsr<T>>(state, csr_vec, "mtval",

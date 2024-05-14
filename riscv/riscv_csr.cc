@@ -23,7 +23,6 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "mpact/sim/generic/data_buffer.h"
-#include "riscv/riscv_state.h"
 
 namespace mpact {
 namespace sim {

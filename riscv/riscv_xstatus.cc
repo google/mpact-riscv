@@ -18,6 +18,7 @@
 
 #include "absl/log/log.h"
 #include "mpact/sim/generic/type_helpers.h"
+#include "riscv/riscv_csr.h"
 #include "riscv/riscv_misa.h"
 #include "riscv/riscv_state.h"
 
@@ -41,35 +42,25 @@ static inline uint32_t CompressMStatus64(uint64_t value) {
 
 // Constructors.
 
-RiscVMStatus::RiscVMStatus(uint32_t initial_value, RiscVState *state)
-    : RiscVMStatus(StretchMStatus32(initial_value), state) {}
+RiscVMStatus::RiscVMStatus(uint32_t initial_value, ArchState *state,
+                           RiscVMIsa *misa)
+    : RiscVMStatus(StretchMStatus32(initial_value), state, RiscVXlen::RV32,
+                   misa) {}
 
-RiscVMStatus::RiscVMStatus(uint64_t initial_value, RiscVState *state)
+RiscVMStatus::RiscVMStatus(uint64_t initial_value, ArchState *state,
+                           RiscVMIsa *misa)
+    : RiscVMStatus(initial_value, state, RiscVXlen::RV64, misa) {}
+
+RiscVMStatus::RiscVMStatus(uint64_t initial_value, ArchState *state,
+                           RiscVXlen xlen, RiscVMIsa *misa)
     : RiscVSimpleCsr<uint64_t>("mstatus", RiscVCsrEnum::kMStatus, initial_value,
-                               kReadMask, kWriteMask, state) {
+                               kReadMask, kWriteMask, state),
+      misa_(misa) {
   // All bits except for uxl and sxl, since that doesn't appear in the 32 bit
   // view.
   set_mask_from_32_ = 0xffff'fff0'ffff'ffffULL;
   // Set UXL and SXL be the current xlen.
-  auto xlen = state->xlen();
-  uint64_t xlen_val = 0;
-  switch (xlen) {
-    case RiscVXlen::RV32:
-      xlen_val = 0b01;
-      break;
-    case RiscVXlen::RV64:
-      xlen_val = 0b10;
-      break;
-    default:
-      LOG(ERROR) << "Unspecified xlen";
-      return;
-  }
-  auto result = state->csr_set()->GetCsr(*RiscVCsrEnum::kMIsa);
-  if (!result.ok()) {
-    LOG(ERROR) << "misa not created before mstatus.";
-    return;
-  }
-  misa_ = static_cast<RiscVMIsa *>(result.value());
+  uint64_t xlen_val = xlen == RiscVXlen::RV64 ? 0b10 : 0b01;
   // If misa doesn't show support for user or supervisor, clear corresponding
   // bits from values and read/write masks.
   if (misa_->HasSupervisorMode()) {
