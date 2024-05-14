@@ -831,11 +831,11 @@ slot riscv_vector {
     vasub_vx{: vs2, rs1, vmask: vd},
       disasm: "vasub.vx", "%vd, %vs2, %rs1, %vmask",
       semfunc: "&Vasub";
-    vslide1up_vx{: vs2, rs1 : vd},
-      disasm: "vslide1up.vx", "%vd, %vs2, %rs1",
+    vslide1up_vx{: vs2, rs1, vmask: vd},
+      disasm: "vslide1up.vx", "%vd, %vs2, %rs1, %vmask",
       semfunc: "&Vslide1up";
-    vslide1down_vx{: vs2, rs1 : vd},
-      disasm: "vslide1down.vx", "%vd, %vs2, %rs1",
+    vslide1down_vx{: vs2, rs1, vmask: vd},
+      disasm: "vslide1down.vx", "%vd, %vs2, %rs1, %vmask",
       semfunc: "&Vslide1down";
     vcompress_vv{: vs2, vmask : vd},
       disasm: "vcompress.vv", "%vd, %vs2, %vmask",
