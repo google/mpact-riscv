@@ -22,6 +22,7 @@
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/generic/instruction.h"
+#include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "mpact/sim/util/memory/memory_interface.h"
 #include "mpact/sim/util/memory/memory_watcher.h"
@@ -30,6 +31,8 @@
 #include "riscv/riscv_arm_semihost.h"
 
 namespace {
+
+using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 
 #ifndef EXPECT_OK
 #define EXPECT_OK(x) EXPECT_TRUE(x.ok())

@@ -31,6 +31,7 @@
 #include "mpact/sim/generic/decode_cache.h"
 #include "mpact/sim/generic/decoder_interface.h"
 #include "mpact/sim/generic/register.h"
+#include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/memory_interface.h"
 #include "mpact/sim/util/memory/memory_watcher.h"
 #include "riscv/riscv32g_enums.h"
@@ -42,6 +43,8 @@
 namespace mpact {
 namespace sim {
 namespace riscv {
+
+using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 
 // Top level class for the RiscV32G simulator. This is the main interface for
 // interacting and controlling execution of programs running on the simulator.

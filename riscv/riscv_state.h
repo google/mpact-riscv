@@ -30,7 +30,6 @@
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/operand_interface.h"
 #include "mpact/sim/generic/ref_count.h"
-#include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "mpact/sim/util/memory/memory_interface.h"
 #include "riscv/riscv_csr.h"
@@ -44,8 +43,6 @@
 namespace mpact {
 namespace sim {
 namespace riscv {
-
-using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 
 using ArchState = ::mpact::sim::generic::ArchState;
 using DataBuffer = ::mpact::sim::generic::DataBuffer;
