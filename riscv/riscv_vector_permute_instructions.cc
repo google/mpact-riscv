@@ -93,9 +93,6 @@ void VrgatherHelper(RiscVVectorState *rv_vector, Instruction *inst) {
           vs2 = generic::GetInstructionSource<Vs2>(inst, 0, vs1);
         }
         dest_span[i] = vs2;
-      } else {
-        dest_span[i] =
-            generic::GetInstructionSource<Vs2>(inst, 0, vector_index);
       }
       vector_index++;
     }

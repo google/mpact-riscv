@@ -114,7 +114,7 @@ void VrgatherVVHelper(RiscVVectorPermuteInstructionsTest *tester,
         EXPECT_EQ(src, dst);
       }
     } else {  // Inactive values are unchanged.
-      T src = tester->vreg()[kVs2 + value_reg_offset]->data_buffer()->Get<T>(
+      T src = tester->vreg()[kVd + value_reg_offset]->data_buffer()->Get<T>(
           value_elem_index);
       EXPECT_EQ(src, dst) << "index: " << i << " offset: " << value_reg_offset
                           << "  elem: " << value_elem_index;
@@ -171,7 +171,7 @@ void VrgatherVSHelper(RiscVVectorPermuteInstructionsTest *tester,
           EXPECT_EQ(src, dst);
         }
       } else {  // Inactive values are unchanged.
-        T src = tester->vreg()[kVs2 + value_reg_offset]->data_buffer()->Get<T>(
+        T src = tester->vreg()[kVd + value_reg_offset]->data_buffer()->Get<T>(
             value_elem_index);
         EXPECT_EQ(src, dst);
       }
