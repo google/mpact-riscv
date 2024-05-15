@@ -837,8 +837,8 @@ slot riscv_vector {
     vslide1down_vx{: vs2, rs1, vmask: vd},
       disasm: "vslide1down.vx", "%vd, %vs2, %rs1, %vmask",
       semfunc: "&Vslide1down";
-    vcompress_vv{: vs2, vmask : vd},
-      disasm: "vcompress.vv", "%vd, %vs2, %vmask",
+    vcompress_vv{: vs2, vs1: vd},
+      disasm: "vcompress.vv", "%vd, %vs2, %vs1",
       semfunc: "&Vcompress";
     vmandnot_vv{: vs2, vs1: vd},
       disasm: "vwmandnot.vv", "%vd, %vs2, %vs1",

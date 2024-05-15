@@ -428,19 +428,6 @@ void VCompressHelper(RiscVVectorState *rv_vector, Instruction *inst) {
       ++dest_index;
     }
   }
-  for (int i = dest_index; i < num_elements; i++) {
-    int reg = i / elements_per_vector;
-    if (prev_reg != reg) {
-      // Submit previous data buffer if needed.
-      if (dest_db != nullptr) dest_db->Submit();
-      // Allocate a data buffer.
-      dest_db = dest_op->CopyDataBuffer(reg);
-      dest_span = dest_db->Get<Vd>();
-      prev_reg = reg;
-    }
-    Vd src_value = generic::GetInstructionSource<Vd>(inst, 0, i);
-    dest_span[i % elements_per_vector] = src_value;
-  }
   if (dest_db != nullptr) dest_db->Submit();
   rv_vector->clear_vstart();
 }

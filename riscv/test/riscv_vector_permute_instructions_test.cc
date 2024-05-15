@@ -556,6 +556,8 @@ void CompressHelper(RiscVVectorPermuteInstructionsTest *tester,
   tester->ConfigureVectorUnit(vtype, 2048);
   int vlen = rv_vector->vector_length();
   int num_values_per_reg = kVectorLengthInBytes / sizeof(T);
+  auto vd_span = tester->vreg()[kVd]->data_buffer()->Get<T>();
+  std::vector<T> origin_vd_values(vd_span.begin(), vd_span.end());
   // Initialize vs2 to random values.
   for (int reg = kVs2; reg < kVs2 + 8; reg++) {
     auto span = tester->vreg()[reg]->data_buffer()->Get<T>();
@@ -588,8 +590,7 @@ void CompressHelper(RiscVVectorPermuteInstructionsTest *tester,
   for (int i = offset; i < vlen; i++) {
     int value_reg_index = i / num_values_per_reg;
     int value_elem_index = i % num_values_per_reg;
-    T src = tester->vreg()[kVs2 + value_reg_index]->data_buffer()->Get<T>(
-        value_elem_index);
+    T src = origin_vd_values[value_elem_index];
     T dst = tester->vreg()[kVd + value_reg_index]->data_buffer()->Get<T>(
         value_elem_index);
     EXPECT_EQ(src, dst) << "index: " << i;
