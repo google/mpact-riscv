@@ -549,12 +549,19 @@ void TestViota(RiscVVectorUnaryInstructionsTest *tester, Instruction *inst) {
   int num_reg =
       (vlen * byte_sew + kVectorLengthInBytes - 1) / kVectorLengthInBytes;
   int num_per_reg = kVectorLengthInBytes / byte_sew;
+  int num_values_per_reg = kVectorLengthInBytes / sizeof(T);
 
   // Set up instruction.
   tester->SetSemanticFunction(&Viota);
-  tester->AppendVectorRegisterOperands({kVmask}, {kVd});
+  tester->AppendVectorRegisterOperands({kVs2, kVmask}, {kVd});
   tester->SetVectorRegisterValues<uint8_t>({{kVmaskName, kE7Mask}});
   int count = vlen;
+  // Initialize vs2 to random values.
+  auto span = tester->vreg()[kVs2]->data_buffer()->Get<T>();
+  for (int i = 0; i < num_values_per_reg; i++) {
+    span[i] = tester->RandomValue<T>();
+  }
+
   for (int reg = kVd; reg < kVd + num_reg; reg++) {
     auto reg_span = tester->vreg()[reg]->data_buffer()->Get<T>();
     for (int i = 0; i < num_per_reg; i++) {
@@ -566,18 +573,22 @@ void TestViota(RiscVVectorUnaryInstructionsTest *tester, Instruction *inst) {
   inst->Execute();
 
   // Check results.
-  auto mask_span = tester->vreg()[kVmask]->data_buffer()->Get<T>();
+  const auto mask_span = tester->vreg()[kVmask]->data_buffer()->Get<uint8_t>();
   count = 0;
   for (int i = 0; i < vlen; i++) {
     int reg = kVd + i / num_per_reg;
     int reg_index = i % num_per_reg;
+    const auto rs2_span = tester->vreg()[kVs2]->data_buffer()->Get<uint8_t>();
     auto value = tester->vreg()[reg]->data_buffer()->Get<T>(reg_index);
     int mask_index = i >> 3;
     int mask_offset = i & 0b111;
     int mask_value = (mask_span[mask_index] >> mask_offset) & 0b1;
+    const bool rs2_bit = (rs2_span[mask_index] >> mask_offset) & 0b1;
     if (mask_value) {
       EXPECT_EQ(value, static_cast<T>(count)) << "active index: " << i;
-      count++;
+      if (rs2_bit) {
+        count++;
+      }
     } else {
       EXPECT_EQ(value, static_cast<T>(vlen - i)) << "inactive index: " << i;
     }

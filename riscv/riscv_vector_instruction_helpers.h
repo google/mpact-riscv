@@ -154,7 +154,7 @@ void RiscVBinaryVectorMaskOp(RiscVVectorState *rv_vector,
 template <typename Vd>
 void RiscVMaskNullaryVectorOp(RiscVVectorState *rv_vector,
                               const Instruction *inst,
-                              std::function<std::optional<Vd>(bool)> op) {
+                              std::function<Vd(bool)> op) {
   if (rv_vector->vector_exception()) return;
   int num_elements = rv_vector->vector_length();
   int elements_per_vector =
@@ -170,8 +170,17 @@ void RiscVMaskNullaryVectorOp(RiscVVectorState *rv_vector,
         dest_op->size(), ") than required by the operation (", max_regs, ")");
     return;
   }
-  // Get the vector mask.
-  auto *mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(0));
+  // There 2 types of instruction with different number of source operands.
+  // 1. inst vd, vs2, vmask (viota instruction)
+  // 2. inst vd, vmask (vid instruction)
+  RV32VectorSourceOperand *vs2_op = nullptr;
+  RV32VectorSourceOperand *mask_op = nullptr;
+  if (inst->SourcesSize() > 1) {
+    vs2_op = static_cast<RV32VectorSourceOperand *>(inst->Source(0));
+    mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(1));
+  } else {
+    mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(0));
+  }
   auto mask_span = mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
   // Get the vector start element index and compute where to start
   // the operation.
@@ -192,9 +201,19 @@ void RiscVMaskNullaryVectorOp(RiscVVectorState *rv_vector,
       int mask_index = vector_index >> 3;
       int mask_offset = vector_index & 0b111;
       bool mask_value = ((mask_span[mask_index] >> mask_offset) & 0b1) != 0;
-      auto value = op(mask_value);
-      if (value.has_value()) {
-        dest_span[i] = value.value();
+      bool operation_mask = mask_value;
+      // Instruction with rs2 operand checks vs2 bit value.
+      if (vs2_op != nullptr) {
+        const auto rs2_span =
+            vs2_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
+        const bool rs2_value = ((rs2_span[mask_index] >> mask_offset) & 0b1);
+        // If rs2 is set, then the operation is performed.
+        operation_mask &= rs2_value;
+      }
+
+      auto result = op(operation_mask);
+      if (mask_value) {
+        dest_span[i] = result;
       }
       vector_index++;
     }

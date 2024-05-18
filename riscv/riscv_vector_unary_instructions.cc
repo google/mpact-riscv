@@ -419,27 +419,27 @@ void Viota(Instruction *inst) {
   switch (sew) {
     case 1:
       return RiscVMaskNullaryVectorOp<uint8_t>(
-          rv_vector, inst, [&count](bool mask) -> std::optional<uint8_t> {
-            if (mask) return static_cast<uint8_t>(count++);
-            return std::nullopt;
+          rv_vector, inst, [&count](bool mask) -> uint8_t {
+            return mask ? static_cast<uint8_t>(count++)
+                        : static_cast<uint8_t>(count);
           });
     case 2:
       return RiscVMaskNullaryVectorOp<uint16_t>(
-          rv_vector, inst, [&count](bool mask) -> std::optional<uint16_t> {
-            if (mask) return static_cast<uint16_t>(count++);
-            return std::nullopt;
+          rv_vector, inst, [&count](bool mask) -> uint16_t {
+            return mask ? static_cast<uint16_t>(count++)
+                        : static_cast<uint16_t>(count);
           });
     case 4:
       return RiscVMaskNullaryVectorOp<uint32_t>(
-          rv_vector, inst, [&count](bool mask) -> std::optional<uint32_t> {
-            if (mask) return static_cast<uint32_t>(count++);
-            return std::nullopt;
+          rv_vector, inst, [&count](bool mask) -> uint32_t {
+            return mask ? static_cast<uint32_t>(count++)
+                        : static_cast<uint32_t>(count);
           });
     case 8:
       return RiscVMaskNullaryVectorOp<uint64_t>(
-          rv_vector, inst, [&count](bool mask) -> std::optional<uint64_t> {
-            if (mask) return static_cast<uint64_t>(count++);
-            return std::nullopt;
+          rv_vector, inst, [&count](bool mask) -> uint64_t {
+            return mask ? static_cast<uint64_t>(count++)
+                        : static_cast<uint64_t>(count);
           });
     default:
       rv_vector->set_vector_exception();
@@ -453,35 +453,31 @@ void Viota(Instruction *inst) {
 void Vid(Instruction *inst) {
   auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
-  int count = 0;
+  int index = 0;
   switch (sew) {
     case 1:
       return RiscVMaskNullaryVectorOp<uint8_t>(
-          rv_vector, inst, [&count](bool mask) -> std::optional<uint8_t> {
-            int ret = count++;
-            if (mask) return static_cast<uint8_t>(ret);
-            return std::nullopt;
+          rv_vector, inst, [&index](bool mask) -> uint8_t {
+            uint64_t ret = index++;
+            return static_cast<uint8_t>(ret);
           });
     case 2:
       return RiscVMaskNullaryVectorOp<uint16_t>(
-          rv_vector, inst, [&count](bool mask) -> std::optional<uint16_t> {
-            int ret = count++;
-            if (mask) return static_cast<uint16_t>(ret);
-            return std::nullopt;
+          rv_vector, inst, [&index](bool mask) -> uint16_t {
+            uint64_t ret = index++;
+            return static_cast<uint16_t>(ret);
           });
     case 4:
       return RiscVMaskNullaryVectorOp<uint32_t>(
-          rv_vector, inst, [&count](bool mask) -> std::optional<uint32_t> {
-            int ret = count++;
-            if (mask) return static_cast<uint32_t>(ret);
-            return std::nullopt;
+          rv_vector, inst, [&index](bool mask) -> uint32_t {
+            uint64_t ret = index++;
+            return static_cast<uint32_t>(ret);
           });
     case 8:
       return RiscVMaskNullaryVectorOp<uint64_t>(
-          rv_vector, inst, [&count](bool mask) -> std::optional<uint64_t> {
-            int ret = count++;
-            if (mask) return static_cast<uint64_t>(ret);
-            return std::nullopt;
+          rv_vector, inst, [&index](bool mask) -> uint64_t {
+            uint64_t ret = index++;
+            return static_cast<uint64_t>(ret);
           });
     default:
       rv_vector->set_vector_exception();
