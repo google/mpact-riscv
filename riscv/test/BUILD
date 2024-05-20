@@ -552,9 +552,11 @@ cc_test(
     deps = [
         "//riscv:riscv32_htif_semihost",
         "//riscv:riscv_arm_semihost",
+        "//riscv:riscv_state",
         "//riscv:riscv_top",
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
         "@com_google_mpact-sim//mpact/sim/generic:core_debug_interface",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",

@@ -17,11 +17,15 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <cstdint>
 #include <cstring>
 #include <utility>
 
 #include "absl/functional/bind_front.h"
 #include "absl/strings/str_cat.h"
+#include "mpact/sim/generic/data_buffer.h"
+#include "mpact/sim/util/memory/memory_interface.h"
+#include "mpact/sim/util/memory/memory_watcher.h"
 
 namespace mpact {
 namespace sim {

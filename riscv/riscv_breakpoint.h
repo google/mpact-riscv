@@ -20,46 +20,25 @@
 #include "absl/container/btree_map.h"
 #include "absl/functional/any_invocable.h"
 #include "absl/status/status.h"
-#include "mpact/sim/generic/data_buffer.h"
-#include "mpact/sim/util/memory/memory_interface.h"
+#include "mpact/sim/generic/core_debug_interface.h"
+#include "riscv/riscv_action_point.h"
 
 // This file defines a class for handling breakpoints for a RiscV32 core. It
-// doesn't interact with the core itself, but only with memory. Upon updating
-// memory with an ebreak instruction or writing the original instruction back,
-// the breakpoint handler calls the invalidate function. The intention is that
-// the invalidate function should result in an invalidation of any cached
-// decode of the modified instruction address.
+// uses the ActionPoint manager to add breakpoint functionality by having
+// actions that request software breakpoint halts.
 namespace mpact {
 namespace sim {
 namespace riscv {
 
-using ::mpact::sim::generic::DataBuffer;
-using ::mpact::sim::generic::DataBufferFactory;
-using ::mpact::sim::util::MemoryInterface;
+using HaltReason = ::mpact::sim::generic::CoreDebugInterface::HaltReason;
 
 class RiscVBreakpointManager {
  public:
-  // 32 bit and 16 bit software breakpoint instructions.
-  static constexpr uint32_t kEBreak32 = 0b000000000001'00000'000'00000'1110011;
-  static constexpr uint16_t kEBreak16 = 0b100'1'00000'00000'10;
+  // Define a function type to use for the breakpoint action to call for a halt.
+  using RequestHaltFunction = absl::AnyInvocable<void(HaltReason)>;
 
-  // Callback type for function to invalidate an instruction.
-  using InvalidateFcn = absl::AnyInvocable<void(uint64_t)>;
-  // Since RiscV can be customized to a great extent, it is possible that the
-  // instruction size may need to be determined in different ways for different
-  // implementations. Thus, require a function to return the instruction size in
-  // bytes. The function is called from SetBreakpoint with the 64 bit address
-  // and the 32 bit instruction word located at the desired breakpoint address.
-  // For now, the function must return either 2 (bytes), 4 (bytes), or 0 (for an
-  // unrecognized instruction).
-  using InstructionSizeFcn = absl::AnyInvocable<int(uint64_t, uint32_t)>;
-
-  RiscVBreakpointManager(MemoryInterface *memory, InvalidateFcn invalidate_fcn,
-                         InstructionSizeFcn instruction_size_fcn);
-  // This constructor will use an internal instruction size function that sets
-  // the instruction size based on base RiscV architecture instruction
-  // encodings.
-  RiscVBreakpointManager(MemoryInterface *memory, InvalidateFcn invalidate_fcn);
+  RiscVBreakpointManager(RiscVActionPointManager *action_point_manager,
+                         RequestHaltFunction req_halt_function);
   ~RiscVBreakpointManager();
 
   bool HasBreakpoint(uint64_t address);
@@ -78,30 +57,16 @@ class RiscVBreakpointManager {
  private:
   // Structure keeping track of breakpoint information.
   struct BreakpointInfo {
-    bool is_active;
-    // Address.
     uint64_t address;
-    // Byte size of the instruction word/breakpoint instruction.
-    int size;
-    // The original instruction at the breakpoint location.
-    uint32_t instruction_word;
-
-    BreakpointInfo(bool is_active_, uint64_t address_, int size_,
-                   uint32_t instruction_word_)
-        : is_active(is_active_),
-          address(address_),
-          size(size_),
-          instruction_word(instruction_word_) {}
+    int id;
+    bool is_active;
   };
 
-  // Returns the size of the instruction word in bytes.
-  int GetInstructionSize(uint64_t address, uint32_t instruction_word) const;
-  MemoryInterface *memory_;
-  InvalidateFcn invalidate_fcn_;
-  InstructionSizeFcn instruction_size_fcn_;
-  DataBuffer *db4_ = nullptr;
-  DataBuffer *db2_ = nullptr;
-  DataBufferFactory db_factory_;
+  // Function implementing the breakpoint 'action'.
+  RequestHaltFunction req_halt_function_;
+  void DoBreakpointAction(uint64_t, int);
+
+  RiscVActionPointManager *action_point_manager_;
   absl::btree_map<uint64_t, BreakpointInfo *> breakpoint_map_;
 };
 

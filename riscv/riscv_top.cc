@@ -37,6 +37,7 @@
 #include "riscv/riscv32g_enums.h"
 #include "riscv/riscv64_decoder.h"
 #include "riscv/riscv64g_enums.h"
+#include "riscv/riscv_action_point.h"
 #include "riscv/riscv_breakpoint.h"
 #include "riscv/riscv_csr.h"
 #include "riscv/riscv_fp_state.h"
@@ -140,7 +141,8 @@ RiscVTop::~RiscVTop() {
     run_halted_ = nullptr;
   }
 
-  delete rv_bp_manager_;
+  delete rv_action_point_manager_;
+  delete rv_breakpoint_manager_;
   delete rv_decode_cache_;
   delete rv_decoder_;
   delete state_;
@@ -180,14 +182,21 @@ void RiscVTop::Initialize() {
   // Register instruction counter.
   CHECK_OK(AddCounter(&counter_num_instructions_))
       << "Failed to register counter";
-  rv_bp_manager_ = new RiscVBreakpointManager(
+  rv_action_point_manager_ = new RiscVActionPointManager(
       inst_memory_,
       absl::bind_front(&generic::DecodeCache::Invalidate, rv_decode_cache_));
+  rv_breakpoint_manager_ = new RiscVBreakpointManager(
+      rv_action_point_manager_,
+      [this](HaltReason halt_reason) { RequestHalt(halt_reason, nullptr); });
 
-  // Set the software breakpoint callback.
+  // Set the ebreak handler callback.
   state_->AddEbreakHandler([this](const Instruction *inst) {
-    if (rv_bp_manager_->HasBreakpoint(inst->address())) {
-      RequestHalt(HaltReason::kSoftwareBreakpoint, inst);
+    if (rv_action_point_manager_->IsActionPointActive(inst->address())) {
+      // Need to request a halt so that the action point can be stepped past
+      // after executing the actions. However, an action may override the
+      // particular halt reason (e.g., breakpoints).
+      RequestHalt(HaltReason::kActionPoint, inst);
+      rv_action_point_manager_->PerformActions(inst->address());
       return true;
     }
     return false;
@@ -235,8 +244,8 @@ absl::Status RiscVTop::Halt() {
 absl::Status RiscVTop::StepPastBreakpoint() {
   uint64_t pc = state_->pc_operand()->AsUint64(0);
   uint64_t bpt_pc = pc;
-  // Disable the breakpoint. Status will show error if there is no breakpoint.
-  auto status = rv_bp_manager_->DisableBreakpoint(pc);
+  // Disable the breakpoint.
+  rv_action_point_manager_->WriteOriginalInstruction(pc);
   // Execute the real instruction.
   auto real_inst = rv_decode_cache_->GetDecodedInstruction(pc);
   real_inst->IncRef();
@@ -253,10 +262,7 @@ absl::Status RiscVTop::StepPastBreakpoint() {
   counter_num_instructions_.Increment(1);
   real_inst->DecRef();
   // Re-enable the breakpoint.
-  if (status.ok()) {
-    status = rv_bp_manager_->EnableBreakpoint(bpt_pc);
-    if (!status.ok()) return status;
-  }
+  rv_action_point_manager_->WriteBreakpointInstruction(bpt_pc);
   return absl::OkStatus();
 }
 
@@ -271,10 +277,11 @@ absl::StatusOr<int> RiscVTop::Step(int num) {
   run_status_ = RunStatus::kSingleStep;
   int count = 0;
   halted_ = false;
+  halt_reason_ = *HaltReason::kNone;
   // First check to see if the previous halt was due to a breakpoint. If so,
   // need to step over the breakpoint.
-  if (halt_reason_ == *HaltReason::kSoftwareBreakpoint) {
-    halt_reason_ = *HaltReason::kNone;
+  if (need_to_step_over_) {
+    need_to_step_over_ = false;
     auto status = StepPastBreakpoint();
     if (!status.ok()) return status;
     count++;
@@ -290,7 +297,7 @@ absl::StatusOr<int> RiscVTop::Step(int num) {
   // executed next. Post-loop it holds the address of the next instruction to
   // be executed.
   uint64_t next_pc = pc_operand->AsUint64(0);
-  while (!halted_ && (count < num)) {
+  while (count < num) {
     pc = next_pc;
     SetPc(pc);
     auto *inst = rv_decode_cache_->GetDecodedInstruction(pc);
@@ -314,6 +321,18 @@ absl::StatusOr<int> RiscVTop::Step(int num) {
     counter_num_instructions_.Increment(1);
     // Get the next pc value.
     next_pc = state_->pc_operand()->AsUint64(0);
+    if (!halted_) continue;
+    // If it's an action point, just step over and continue.
+    if (halt_reason_ == *HaltReason::kActionPoint) {
+      auto status = StepPastBreakpoint();
+      if (!status.ok()) return status;
+      // Reset the halt reason and continue;
+      halted_ = false;
+      halt_reason_ = *HaltReason::kNone;
+      need_to_step_over_ = false;
+      continue;
+    }
+    break;
   }
   // Update the pc register, now that it can be read.
   if (halt_reason_ == *HaltReason::kSoftwareBreakpoint) {
@@ -339,13 +358,14 @@ absl::Status RiscVTop::Run() {
   }
   // First check to see if the previous halt was due to a breakpoint. If so,
   // need to step over the breakpoint.
-  if (halt_reason_ == *HaltReason::kSoftwareBreakpoint) {
-    halt_reason_ = *HaltReason::kNone;
+  if (need_to_step_over_) {
+    need_to_step_over_ = false;
     auto status = StepPastBreakpoint();
     if (!status.ok()) return status;
   }
   run_status_ = RunStatus::kRunning;
   halted_ = false;
+  halt_reason_ = *HaltReason::kNone;
 
   // The simulator is now run in a separate thread so as to allow a user
   // interface to continue operating. Allocate a new run_halted_ Notification
@@ -361,7 +381,7 @@ absl::Status RiscVTop::Run() {
     // executed next. Post-loop it holds the address of the next instruction to
     // be executed.
     uint64_t next_pc = pc_operand->AsUint64(0);
-    while (!halted_) {
+    while (true) {
       pc = next_pc;
       auto *inst = rv_decode_cache_->GetDecodedInstruction(pc);
       // Set the PC destination operand to next_seq_pc. Any branch that is
@@ -385,6 +405,22 @@ absl::Status RiscVTop::Run() {
       counter_num_instructions_.Increment(1);
       // Get the next pc value.
       next_pc = pc_operand->AsUint64(0);
+      if (!halted_) continue;
+      // If it's an action point, just step over and continue executing, as
+      // this is not a full breakpoint.
+      if (halt_reason_ == *HaltReason::kActionPoint) {
+        auto status = StepPastBreakpoint();
+        if (!status.ok()) {
+          // If there is an error, signal a simulator error.
+          halt_reason_ = *HaltReason::kSimulatorError;
+          break;
+        };
+        // Reset the halt reason and continue;
+        halted_ = false;
+        halt_reason_ = *HaltReason::kNone;
+        continue;
+      }
+      break;
     }
     // Update the pc register, now that it can be read.
     if (halt_reason_ == *HaltReason::kSoftwareBreakpoint) {
@@ -579,7 +615,7 @@ absl::StatusOr<size_t> RiscVTop::WriteMemory(uint64_t address,
 }
 
 bool RiscVTop::HasBreakpoint(uint64_t address) {
-  return rv_bp_manager_->HasBreakpoint(address);
+  return rv_breakpoint_manager_->HasBreakpoint(address);
 }
 
 absl::Status RiscVTop::SetSwBreakpoint(uint64_t address) {
@@ -589,11 +625,11 @@ absl::Status RiscVTop::SetSwBreakpoint(uint64_t address) {
         "SetSwBreakpoint: Core must be halted");
   }
   // If there is no breakpoint manager, return an error.
-  if (rv_bp_manager_ == nullptr) {
+  if (rv_breakpoint_manager_ == nullptr) {
     return absl::InternalError("Breakpoints are not enabled");
   }
   // Try setting the breakpoint.
-  return rv_bp_manager_->SetBreakpoint(address);
+  return rv_breakpoint_manager_->SetBreakpoint(address);
 }
 
 absl::Status RiscVTop::ClearSwBreakpoint(uint64_t address) {
@@ -602,10 +638,10 @@ absl::Status RiscVTop::ClearSwBreakpoint(uint64_t address) {
     return absl::FailedPreconditionError(
         "ClearSwBreakpoing: Core must be halted");
   }
-  if (rv_bp_manager_ == nullptr) {
+  if (rv_breakpoint_manager_ == nullptr) {
     return absl::InternalError("Breakpoints are not enabled");
   }
-  return rv_bp_manager_->ClearBreakpoint(address);
+  return rv_breakpoint_manager_->ClearBreakpoint(address);
 }
 
 absl::Status RiscVTop::ClearAllSwBreakpoints() {
@@ -614,10 +650,10 @@ absl::Status RiscVTop::ClearAllSwBreakpoints() {
     return absl::FailedPreconditionError(
         "ClearAllSwBreakpoints: Core must be halted");
   }
-  if (rv_bp_manager_ == nullptr) {
+  if (rv_breakpoint_manager_ == nullptr) {
     return absl::InternalError("Breakpoints are not enabled");
   }
-  rv_bp_manager_->ClearAllBreakpoints();
+  rv_breakpoint_manager_->ClearAllBreakpoints();
   return absl::OkStatus();
 }
 
@@ -633,19 +669,16 @@ absl::StatusOr<std::string> RiscVTop::GetDisassembly(uint64_t address) {
   }
 
   Instruction *inst = nullptr;
-  // If requesting the disassembly for an instruction at a breakpoint, return
+  // If requesting the disassembly for an instruction at an action point, return
   // that of the original instruction instead.
-  if (rv_bp_manager_->IsBreakpoint(address)) {
-    auto bp_pc = address;
-    // Disable the breakpoint.
-    auto status = rv_bp_manager_->DisableBreakpoint(bp_pc);
-    if (!status.ok()) return status;
+  if (rv_action_point_manager_->IsActionPointActive(address)) {
+    // Write the original instruction back to memory.
+    rv_action_point_manager_->WriteOriginalInstruction(address);
     // Get the real instruction.
-    inst = rv_decode_cache_->GetDecodedInstruction(bp_pc);
+    inst = rv_decode_cache_->GetDecodedInstruction(address);
     auto disasm = inst != nullptr ? inst->AsString() : "Invalid instruction";
-    // Re-enable the breakpoint.
-    status = rv_bp_manager_->EnableBreakpoint(bp_pc);
-    if (!status.ok()) return status;
+    // Restore the breakpoint instruction.
+    rv_action_point_manager_->WriteBreakpointInstruction(address);
     return disasm;
   }
 
@@ -660,12 +693,16 @@ void RiscVTop::RequestHalt(HaltReasonValueType halt_reason,
   // First set the halt_reason_, then the halt flag.
   halt_reason_ = halt_reason;
   halted_ = true;
+  // If the halt reason is either sw breakpoint or action point, set
+  // need_to_step_over to true.
+  if ((halt_reason_ == *HaltReason::kSoftwareBreakpoint) ||
+      (halt_reason_ == *HaltReason::kActionPoint)) {
+    need_to_step_over_ = true;
+  }
 }
 
 void RiscVTop::RequestHalt(HaltReason halt_reason, const Instruction *inst) {
-  // First set the halt_reason_, then the halt flag.
-  halt_reason_ = *halt_reason;
-  halted_ = true;
+  RequestHalt(*halt_reason, inst);
 }
 
 void RiscVTop::SetPc(uint64_t value) {

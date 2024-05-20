@@ -15,8 +15,10 @@
 #ifndef MPACT_RISCV_RISCV_RISCV32_HTIF_SEMIHOST_H_
 #define MPACT_RISCV_RISCV_RISCV32_HTIF_SEMIHOST_H_
 
+#include <cstdint>
 #include <string>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/functional/any_invocable.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/util/memory/memory_interface.h"

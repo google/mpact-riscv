@@ -19,6 +19,7 @@
 
 #include "absl/log/check.h"
 #include "absl/status/status.h"
+#include "absl/strings/str_cat.h"
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/generic/instruction.h"
@@ -29,6 +30,7 @@
 #include "mpact/sim/util/program_loader/elf_program_loader.h"
 #include "riscv/riscv32_htif_semihost.h"
 #include "riscv/riscv_arm_semihost.h"
+#include "riscv/riscv_state.h"
 
 namespace {
 
@@ -162,7 +164,6 @@ class RiscVTopTest : public testing::Test {
 
   void LoadFile(const std::string file_name) {
     const std::string input_file_name =
-
         absl::StrCat(kDepotPath, "testfiles/", file_name);
     auto result = loader_->LoadProgram(input_file_name);
     CHECK_OK(result);

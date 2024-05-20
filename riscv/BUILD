@@ -462,6 +462,7 @@ cc_library(
     ],
     copts = ["-O3"],
     deps = [
+        "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/functional:any_invocable",
         "@com_google_absl//absl/functional:bind_front",
         "@com_google_absl//absl/strings",
@@ -473,9 +474,11 @@ cc_library(
 cc_library(
     name = "riscv_breakpoint",
     srcs = [
+        "riscv_action_point.cc",
         "riscv_breakpoint.cc",
     ],
     hdrs = [
+        "riscv_action_point.h",
         "riscv_breakpoint.h",
     ],
     copts = ["-O3"],
@@ -485,8 +488,10 @@ cc_library(
         "@com_google_absl//absl/functional:bind_front",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
         "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:core_debug_interface",
         "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )

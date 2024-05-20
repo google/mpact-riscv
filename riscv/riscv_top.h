@@ -36,6 +36,7 @@
 #include "mpact/sim/util/memory/memory_watcher.h"
 #include "riscv/riscv32g_enums.h"
 #include "riscv/riscv64g_enums.h"
+#include "riscv/riscv_action_point.h"
 #include "riscv/riscv_breakpoint.h"
 #include "riscv/riscv_fp_state.h"
 #include "riscv/riscv_state.h"
@@ -123,12 +124,16 @@ class RiscVTop : public generic::Component, public generic::CoreDebugInterface {
   HaltReasonValueType halt_reason_ = *HaltReason::kNone;
   // Halting flag. This is set to true when execution must halt.
   bool halted_ = false;
+  // Set to true if the next instruction requires a step-over.
+  bool need_to_step_over_ = false;
   absl::Notification *run_halted_ = nullptr;
   // The local RiscV32 state.
   RiscVState *state_;
   RiscVFPState *fp_state_;
+  // Action point manager.
+  RiscVActionPointManager *rv_action_point_manager_ = nullptr;
   // Breakpoint manager.
-  RiscVBreakpointManager *rv_bp_manager_ = nullptr;
+  RiscVBreakpointManager *rv_breakpoint_manager_ = nullptr;
   // The pc register instance.
   generic::RegisterBase *pc_;
   // RiscV32 decoder instance.
