@@ -1495,7 +1495,8 @@ TEST_F(RV32VInstructionsTest, VlRegister) {
   SetRegisterValues<uint32_t>({{kRs1Name, kDataLoadAddress}});
   // Test 1, 2, 4 and 8 register versions.
   for (int num_reg = 1; num_reg <= 8; num_reg *= 2) {
-    SetSemanticFunction(absl::bind_front(&VlRegister, num_reg));
+    SetSemanticFunction(
+        absl::bind_front(&VlRegister, num_reg, /*element_width*/ 1));
     // Execute instruction.
     instruction_->Execute();
     // Check values.

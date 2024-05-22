@@ -56,7 +56,7 @@ void VlIndexed(int index_width, const Instruction *inst);
 // load. This instruction takes 1 source and 1 destination operand. Source
 // operand 0 is a scalar base address. Destination operand 0 is assigned to the
 // child instruction and is a vector register (group).
-void VlRegister(int num_regs, const Instruction *inst);
+void VlRegister(int num_regs, int element_width_bytes, const Instruction *inst);
 // Child instruction semantic functions for non-segment loads responsible for
 // writing load data back to the target register(s). It takes a single
 // destination operand. Destination operand 0 is a vector register (group).

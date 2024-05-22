@@ -112,52 +112,52 @@ slot riscv_vector {
     // Vector register load
     vl1re8{(: rs1 :), (: : vd)},
       disasm: "vl1re8.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 1)", "&VlChild";
+      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 1, /*element_width*/ 1)", "&VlChild";
     vl1re16{(: rs1 :), (: : vd)},
       disasm: "vl1re16.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 1)", "&VlChild";
+      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 1, /*element_width*/ 2)", "&VlChild";
     vl1re32{(: rs1 :), (: : vd)},
       disasm: "vl1re32.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 1)", "&VlChild";
+      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 1, /*element_width*/ 4)", "&VlChild";
     vl1re64{(: rs1 :), (: : vd)},
       disasm: "vl1re64.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 1)", "&VlChild";
+      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 1, /*element_width*/ 8)", "&VlChild";
     vl2re8{(: rs1 :), (: : vd)},
       disasm: "vl2re8.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 2)", "&VlChild";
+      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 2, /*element_width*/ 1)", "&VlChild";
     vl2re16{(: rs1 :), (: : vd)},
       disasm: "vl2re16.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 2)", "&VlChild";
+      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 2, /*element_width*/ 2)", "&VlChild";
     vl2re32{(: rs1 :), (: : vd)},
       disasm: "vl2re32.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 2)", "&VlChild";
+      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 2, /*element_width*/ 4)", "&VlChild";
     vl2re64{(: rs1 :), (: : vd)},
       disasm: "vl2re64.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 2)", "&VlChild";
+      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 2, /*element_width*/ 8)", "&VlChild";
     vl4re8{(: rs1 :), (: : vd)},
       disasm: "vl4re8.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 4)", "&VlChild";
+      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 4, /*element_width*/ 1)", "&VlChild";
     vl4re16{(: rs1 :), (: : vd)},
       disasm: "vl4re16.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 4)", "&VlChild";
+      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 4, /*element_width*/ 2)", "&VlChild";
     vl4re32{(: rs1 :), (: : vd)},
       disasm: "vl4re32.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 4)", "&VlChild";
+      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 4, /*element_width*/ 4)", "&VlChild";
     vl4re64{(: rs1 :), (: : vd)},
       disasm: "vl4re64.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 4)", "&VlChild";
+      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 4, /*element_width*/ 8)", "&VlChild";
     vl8re8{(: rs1 :), (: : vd)},
       disasm: "vl8re8.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 8)", "&VlChild";
+      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 8, /*element_width*/ 1)", "&VlChild";
     vl8re16{(: rs1 :), (: : vd)},
       disasm: "vl8re16.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 8)", "&VlChild";
+      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 8, /*element_width*/ 2)", "&VlChild";
     vl8re32{(: rs1 :), (: : vd)},
       disasm: "vl8re32.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 8)", "&VlChild";
+      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 8, /*element_width*/ 4)", "&VlChild";
     vl8re64{(: rs1 :), (: : vd)},
       disasm: "vl8re64.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 8)", "&VlChild";
+      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 8, /*element_width*/ 8)", "&VlChild";
 
     // Vector load, indexed, unordered.
     vluxei8{(: rs1, vs2, vmask:), (: : vd)},

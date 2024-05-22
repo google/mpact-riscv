@@ -408,34 +408,40 @@ void VlIndexed(int index_width, const Instruction *inst) {
 // element sizes.
 // Source(0): base address.
 // Destination(0): vector destination register (for the child instruction).
-void VlRegister(int num_regs, const Instruction *inst) {
+void VlRegister(int num_regs, int element_width_bytes,
+                const Instruction *inst) {
   auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
   // Get base address.
   uint64_t base = GetInstructionSource<uint64_t>(inst, 0);
   int num_elements =
-      rv_vector->vector_register_byte_length() * num_regs / sizeof(uint64_t);
+      rv_vector->vector_register_byte_length() * num_regs / element_width_bytes;
   // Allocate data buffers.
   auto *db_factory = inst->state()->db_factory();
-  auto *data_db = db_factory->Allocate<uint64_t>(num_elements);
+  auto *data_db = db_factory->Allocate(num_elements * element_width_bytes);
   auto *address_db = db_factory->Allocate<uint64_t>(num_elements);
   auto *mask_db = db_factory->Allocate<bool>(num_elements);
   // Get spans for addresses and masks.
   auto addresses = address_db->Get<uint64_t>();
   auto masks = mask_db->Get<bool>();
+
   // Compute addresses and set masks to true.
-  int sew = rv_vector->selected_element_width();
+  // Note that the width of each load operation is `element_width_bytes`, not
+  // SEW (selected element width).
+  // The SEW is the width of vector element of the vector register, and the
+  // element width here is the width of the data being loaded, it may differ
+  // from SEW.
   for (int i = 0; i < num_elements; i++) {
-    addresses[i] = base + i * sew;
+    addresses[i] = base + i * element_width_bytes;
     masks[i] = true;
   }
 
   // Set up context and submit load.
-  auto *context = new VectorLoadContext(data_db, mask_db, sizeof(uint64_t), 0,
-                                        num_elements);
+  auto *context = new VectorLoadContext(data_db, mask_db, element_width_bytes,
+                                        0, num_elements);
   auto *rv32_state = static_cast<RiscVState *>(inst->state());
   data_db->set_latency(0);
-  rv32_state->LoadMemory(inst, address_db, mask_db, sizeof(uint64_t), data_db,
-                         inst->child(), context);
+  rv32_state->LoadMemory(inst, address_db, mask_db, element_width_bytes,
+                         data_db, inst->child(), context);
   // Release the context and address db.
   address_db->DecRef();
   context->DecRef();
