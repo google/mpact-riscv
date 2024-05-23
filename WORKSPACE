@@ -19,9 +19,9 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # MPACT-Sim repo
 http_archive(
     name = "com_google_mpact-sim",
-    sha256 = "8bad24dffe9996762a4db6e074e38ba454ec2ae113c3cb849aa7d8250827d37b",
-    strip_prefix = "mpact-sim-fc14a25478d2b8a15cc74451798471fe5d8ae5d2",
-    url = "https://github.com/google/mpact-sim/archive/fc14a25478d2b8a15cc74451798471fe5d8ae5d2.tar.gz"
+    sha256 = "384daa4f4bcacf0552cebdb5b3001b51af19dfed3dfa3367de5e3babcd65511d",
+    strip_prefix = "mpact-sim-a3dbb21f3f3d3193a8d0b6667f1d0807d1dc4dd4",
+    url = "https://github.com/google/mpact-sim/archive/a3dbb21f3f3d3193a8d0b6667f1d0807d1dc4dd4.tar.gz"
 )
 
 load("@com_google_mpact-sim//:repos.bzl", "mpact_sim_repos")
