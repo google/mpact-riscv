@@ -15,6 +15,7 @@
 #include "riscv/riscv_vector_memory_instructions.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <cstring>
 #include <functional>
 #include <ios>
@@ -62,6 +63,7 @@ using ::mpact::sim::riscv::VlSegmentChild;
 using ::mpact::sim::riscv::VlSegmentIndexed;
 using ::mpact::sim::riscv::VlSegmentStrided;
 using ::mpact::sim::riscv::VlStrided;
+using ::mpact::sim::riscv::VlUnitStrided;
 using ::mpact::sim::riscv::Vsetvl;
 using ::mpact::sim::riscv::VsIndexed;
 using ::mpact::sim::riscv::Vsm;
@@ -303,6 +305,57 @@ class RV32VInstructionsTest : public testing::Test {
   }
 
   template <typename T>
+  void VectorLoadUnitStridedHelper() {
+    // Set up instructions.
+    AppendRegisterOperands({kRs1Name}, {});
+    AppendVectorRegisterOperands({kVmask}, {});
+    SetSemanticFunction(absl::bind_front(&VlUnitStrided,
+                                         /*element_width*/ sizeof(T)));
+    // Add the child instruction that performs the register write-back.
+    SetChildInstruction();
+    SetChildSemanticFunction(&VlChild);
+    AppendVectorRegisterOperands(child_instruction_, {}, {kVd});
+    // Set up register values.
+    SetRegisterValues<uint32_t>({{kRs1Name, kDataLoadAddress}});
+    SetVectorRegisterValues<uint8_t>(
+        {{kVmaskName, Span<const uint8_t>(kA5Mask)}});
+    // Iterate over different lmul values.
+    for (int lmul_index = 0; lmul_index < 7; lmul_index++) {
+      uint32_t vtype =
+          (kSewSettingsByByteSize[sizeof(T)] << 3) | kLmulSettings[lmul_index];
+      int lmul8 = kLmul8Values[lmul_index];
+      int num_values = kVectorLengthInBytes * lmul8 / (sizeof(T) * 8);
+      ConfigureVectorUnit(vtype, /*vlen*/ 1024);
+      // Execute instruction.
+      instruction_->Execute(nullptr);
+
+      // Check register values.
+      int count = 0;
+      for (int reg = kVd; reg < kVd + 8; reg++) {
+        auto span = vreg_[reg]->data_buffer()->Get<T>();
+        for (int i = 0; i < kVectorLengthInBytes / sizeof(T); i++) {
+          int mask_index = count / 8;
+          int mask_offset = count % 8;
+          bool mask = (kA5Mask[mask_index] >> mask_offset) & 0x1;
+          if (mask && (count < num_values)) {
+            // First compute the expected value, then compare it.
+            T value = ComputeValue<T>(4096 + count * sizeof(T));
+            EXPECT_EQ(value, span[i])
+                << "element size " << sizeof(T) << " LMUL8 " << lmul8
+                << " Count " << count << " Reg " << reg << " value " << i;
+          } else {
+            // The remainder of the values should be zero.
+            EXPECT_EQ(0, span[i])
+                << "element size " << sizeof(T) << " LMUL8 " << lmul8
+                << " Count " << count << " Reg " << reg << " value " << i;
+          }
+          count++;
+        }
+      }
+    }
+  }
+
+  template <typename T>
   void VectorLoadStridedHelper() {
     const int strides[5] = {1, 4, 0, -1, -3};
     // Set up instructions.
@@ -343,7 +396,7 @@ class RV32VInstructionsTest : public testing::Test {
             bool mask = (kA5Mask[mask_index] >> mask_offset) & 0x1;
             if (mask && (count < num_values)) {
               // First compute the expected value, then compare it.
-              T value = ComputeValue<T>(4096 + count * stride * sizeof(T));
+              T value = ComputeValue<T>(4096 + count * stride);
               EXPECT_EQ(value, span[i])
                   << "element size " << sizeof(T) << " stride: " << stride
                   << " LMUL8 " << lmul8 << " Count " << count << " Reg " << reg
@@ -1459,6 +1512,20 @@ TEST_F(RV32VInstructionsTest, VsetvlZZ) {
 
 // This tests the semantic function for the VleN and VlseN instructions. VleN
 // is just a unit stride Vlse.
+TEST_F(RV32VInstructionsTest, Vle8) { VectorLoadUnitStridedHelper<uint8_t>(); }
+
+TEST_F(RV32VInstructionsTest, Vle16) {
+  VectorLoadUnitStridedHelper<uint16_t>();
+}
+
+TEST_F(RV32VInstructionsTest, Vse32) {
+  VectorLoadUnitStridedHelper<uint32_t>();
+}
+
+TEST_F(RV32VInstructionsTest, Vle64) {
+  VectorLoadUnitStridedHelper<uint64_t>();
+}
+
 TEST_F(RV32VInstructionsTest, Vlse8) { VectorLoadStridedHelper<uint8_t>(); }
 
 TEST_F(RV32VInstructionsTest, Vlse16) { VectorLoadStridedHelper<uint16_t>(); }

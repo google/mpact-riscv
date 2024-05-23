@@ -34,7 +34,12 @@ using Instruction = ::mpact::sim::generic::Instruction;
 void Vsetvl(bool rd_zero, bool rs1_zero, const Instruction *inst);
 
 // Vector load semantic functions.
-
+// Load with unit stride as element width. The instruction takes 2 source and 1
+// destination operands. Source operand 0 is a scalar base address, source
+// operand 1 is the vector mask (either a vector register, or a constant).
+// Destination operand 0 is assigned to the child instruction and is a vector
+// register (group).
+void VlUnitStrided(int element_width, const Instruction *inst);
 // Load with constant stride, the parameter specifies the width of the vector
 // elements. This instruction takes 3 source and 1 destination operands. Source
 // operand 0 is a scalar base address, source operand 1 is a scalar stride,
