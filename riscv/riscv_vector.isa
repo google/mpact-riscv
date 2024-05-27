@@ -687,10 +687,12 @@ slot riscv_vector {
     vsll_vi{: vs2, simm5, vmask: vd},
       disasm: "vsll.vi", "%vd, %simm5, %vmask",
       semfunc: "&Vsll";
-    vsmul_vv{},
-      disasm: "vsmul.vv"; // TODO
-    vsmul_vx{},
-      disasm: "vsmul.vx"; // TODO
+    vsmul_vv{: vs2, vs1, vmask : vd},
+      disasm: "vsmul.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vsmul";
+    vsmul_vx{: vs2, rs1, vmask : vd},
+      disasm: "vsmul.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vsmul";
     vmv1r_vi{: vs2 : vd},
       disasm: "vmv1r.vi", "%vd, %vs2",
       semfunc: "absl::bind_front(&Vmvr, 1)";
