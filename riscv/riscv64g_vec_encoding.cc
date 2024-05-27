@@ -14,11 +14,13 @@
 
 #include "riscv/riscv64g_vec_encoding.h"
 
+#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "absl/log/log.h"
+#include "absl/strings/str_cat.h"
 #include "mpact/sim/generic/immediate_operand.h"
 #include "mpact/sim/generic/literal_operand.h"
 #include "mpact/sim/generic/operand_interface.h"
@@ -691,6 +693,13 @@ void RiscV64GVecEncoding::InitializeVectorSourceOperandGetters() {
   Insert(source_op_getters_, SourceOpEnum::kConst1,
          []() -> SourceOperandInterface * {
            return new generic::ImmediateOperand<int32_t>(1);
+         });
+
+  Insert(source_op_getters_, SourceOpEnum::kNf,
+         [this]() -> SourceOperandInterface * {
+           auto num_fields = encoding64::v_mem::ExtractNf(inst_word_);
+           return new generic::ImmediateOperand<uint8_t>(
+               num_fields, absl::StrCat(num_fields + 1));
          });
 }
 
