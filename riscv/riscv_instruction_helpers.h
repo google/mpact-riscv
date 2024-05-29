@@ -81,6 +81,15 @@ inline void RiscVConvertFloatWithFflagsOp(const Instruction *instruction) {
 
   uint32_t flags = 0;
   uint32_t rm = generic::GetInstructionSource<uint32_t>(instruction, 1);
+  // Dynamic rounding mode will get rounding mode from the global state.
+  if (rm == *FPRoundingMode::kDynamic) {
+    auto *rv_fp = static_cast<RiscVState *>(instruction->state())->rv_fp();
+    if (!rv_fp->rounding_mode_valid()) {
+      LOG(ERROR) << "Invalid rounding mode";
+      return;
+    }
+    rm = *rv_fp->GetRoundingMode();
+  }
   To value = 0;
   if (FPTypeInfo<From>::IsNaN(lhs)) {
     value = std::numeric_limits<To>::max();
