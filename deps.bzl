@@ -15,8 +15,10 @@
 """Set up extra repositories with the dependencies"""
 
 load("@com_google_mpact-sim//:deps.bzl", "mpact_sim_deps")
+load("@com_google_mpact-sim//:repos.bzl", "mpact_sim_repos")
 
 def mpact_riscv_deps():
-    """ Extra dependencies to finish setting up Google repositories"""
+    """ Extra dependencies to finish setting up repositories"""
 
+    mpact_sim_repos()
     mpact_sim_deps()
