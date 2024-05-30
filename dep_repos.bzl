@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Set up extra repositories with the dependencies"""
+"""Call the first level dependent repos to load their dependencies."""
 
-load("@com_google_mpact-sim//:deps.bzl", "mpact_sim_deps")
+load("@com_google_mpact-sim//:repos.bzl", "mpact_sim_repos")
 
-def mpact_riscv_deps():
+def mpact_riscv_dep_repos():
     """ Extra dependencies to finish setting up repositories"""
 
-    mpact_sim_deps()
+    mpact_sim_repos()

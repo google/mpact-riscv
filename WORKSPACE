@@ -15,18 +15,17 @@
 workspace(name = "com_google_mpact-riscv")
 
 # First load the immediate repo dependencies (mpact-sim).
-load("@com_google_mpact-riscv//:repos.bzl", "mpact_riscv_repos");
+load("@com_google_mpact-riscv//:repos.bzl", "mpact_riscv_repos")
 
-mpact_riscv_repos();
+mpact_riscv_repos()
 
-# Now load the repos function from the repos.bzl file for each immediate
-# dependency. For now this is only mpact-sim.
-load("@com_google_mpact-sim//:repos.bzl", "mpact_sim_repos");
+# Next load in the transitive repo dependencies.
+load("@com_google_mpact-riscv//:dep_repos.bzl", "mpact_riscv_dep_repos")
 
-mpact_sim_repos();
+mpact_riscv_dep_repos()
 
-# Call the deps function. It will call the deps functions of dependencies.
+# Call the deps function. It will call any other dependent deps functions.
 load("@com_google_mpact-riscv//:deps.bzl", "mpact_riscv_deps");
 
-mpact_riscv_deps();
+mpact_riscv_deps()
 
