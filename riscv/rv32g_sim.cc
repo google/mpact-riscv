@@ -334,7 +334,7 @@ int main(int argc, char **argv) {
   bool interactive = absl::GetFlag(FLAGS_i) || absl::GetFlag(FLAGS_interactive);
   if (interactive) {
     mpact::sim::riscv::DebugCommandShell cmd_shell;
-    cmd_shell.AddCore({&riscv_top, &elf_loader});
+    cmd_shell.AddCore({&riscv_top, [&elf_loader]() { return &elf_loader; }});
     // Add custom command to interactive debug command shell.
     cmd_shell.AddCommand(
         "    reg info                       - print all scalar regs",

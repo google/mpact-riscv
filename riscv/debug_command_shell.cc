@@ -135,10 +135,12 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
     auto pc_result = core_access_[core].debug_interface->ReadRegister("pc");
     std::string prompt;
     if (pc_result.ok()) {
-      auto symbol_result =
-          core_access_[core].loader->GetFcnSymbolName(pc_result.value());
-      if (symbol_result.ok()) {
-        absl::StrAppend(&prompt, symbol_result.value(), ":\n");
+      auto *loader = core_access_[core].loader_getter();
+      if (loader != nullptr) {
+        auto symbol_result = loader->GetFcnSymbolName(pc_result.value());
+        if (symbol_result.ok()) {
+          absl::StrAppend(&prompt, symbol_result.value(), ":\n");
+        }
       }
       absl::StrAppend(&prompt,
                       absl::Hex(pc_result.value(), absl::PadSpec::kZeroPad8));
@@ -897,7 +899,9 @@ absl::StatusOr<uint64_t> DebugCommandShell::GetValueFromString(
     return convert_result.status();
   }
   // If all else fails, let's see if it's a symbol.
-  auto result = core_access_[core].loader->GetSymbol(str_value);
+  auto *loader = core_access_[core].loader_getter();
+  if (loader == nullptr) return absl::NotFoundError("No symbol table");
+  auto result = loader->GetSymbol(str_value);
   if (!result.ok()) return result.status();
   return result.value().first;
 }
