@@ -15,6 +15,7 @@
 #include "riscv/riscv_d_instructions.h"
 
 #include <cmath>
+#include <cstdint>
 #include <tuple>
 
 #include "googlemock/include/gmock/gmock.h"
@@ -25,7 +26,6 @@ namespace {
 
 using ::mpact::sim::riscv::FPExceptions;
 using ::mpact::sim::riscv::test::FPTypeInfo;
-using ::mpact::sim::riscv::test::OptimizationBarrier;
 using ::mpact::sim::riscv::test::RiscVFPInstructionTestBase;
 
 using ::mpact::sim::riscv::RiscVDAdd;
@@ -145,7 +145,7 @@ TEST_F(RV32DInstructionTest, RiscVDMadd) {
   TernaryOpFPTestHelper<double, double, double, double>(
       "dmadd", instruction_, {"d", "d", "d", "d"}, 64,
       [](double lhs, double mhs, double rhs) -> double {
-        return OptimizationBarrier(lhs * mhs) + rhs;
+        return fma(lhs, mhs, rhs);
       });
 }
 TEST_F(RV32DInstructionTest, RiscVDMsub) {
@@ -153,7 +153,7 @@ TEST_F(RV32DInstructionTest, RiscVDMsub) {
   TernaryOpFPTestHelper<double, double, double, double>(
       "dmsub", instruction_, {"d", "d", "d", "d"}, 64,
       [](double lhs, double mhs, double rhs) -> double {
-        return OptimizationBarrier(lhs * mhs) - rhs;
+        return fma(lhs, mhs, -rhs);
       });
 }
 TEST_F(RV32DInstructionTest, RiscVDNmadd) {
@@ -161,7 +161,7 @@ TEST_F(RV32DInstructionTest, RiscVDNmadd) {
   TernaryOpFPTestHelper<double, double, double, double>(
       "dnmadd", instruction_, {"d", "d", "d", "d"}, 64,
       [](double lhs, double mhs, double rhs) -> double {
-        return -OptimizationBarrier(lhs * mhs) - rhs;
+        return -fma(lhs, mhs, rhs);
       });
 }
 TEST_F(RV32DInstructionTest, RiscVDNmsub) {
@@ -169,7 +169,7 @@ TEST_F(RV32DInstructionTest, RiscVDNmsub) {
   TernaryOpFPTestHelper<double, double, double, double>(
       "dnmsub", instruction_, {"d", "d", "d", "d"}, 64,
       [](double lhs, double mhs, double rhs) -> double {
-        return -OptimizationBarrier(lhs * mhs) + rhs;
+        return -fma(lhs, mhs, -rhs);
       });
 }
 

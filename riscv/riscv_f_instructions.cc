@@ -22,7 +22,10 @@
 #include <tuple>
 #include <type_traits>
 
+#include "mpact/sim/generic/instruction.h"
+#include "mpact/sim/generic/register.h"
 #include "mpact/sim/generic/type_helpers.h"
+#include "riscv/riscv_fp_info.h"
 #include "riscv/riscv_instruction_helpers.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
@@ -266,7 +269,7 @@ void RiscVFMadd(const Instruction *instruction) {
           }
           return internal::CanonicalizeNaN(a * b);
         }
-        return internal::CanonicalizeNaN((a * b) + c);
+        return internal::CanonicalizeNaN(fma(a, b, c));
       });
 }
 
@@ -295,7 +298,7 @@ void RiscVFMsub(const Instruction *instruction) {
           }
           return internal::CanonicalizeNaN(a * b);
         }
-        return internal::CanonicalizeNaN((a * b) - c);
+        return internal::CanonicalizeNaN(fma(a, b, -c));
       });
 }
 
@@ -324,7 +327,7 @@ void RiscVFNmadd(const Instruction *instruction) {
           }
           return internal::CanonicalizeNaN(-a * b);
         }
-        return internal::CanonicalizeNaN(-((a * b) + c));
+        return internal::CanonicalizeNaN(-fma(a, b, c));
       });
 }
 
@@ -353,7 +356,7 @@ void RiscVFNmsub(const Instruction *instruction) {
           }
           return internal::CanonicalizeNaN(-a * b);
         }
-        return internal::CanonicalizeNaN(-((a * b) - c));
+        return internal::CanonicalizeNaN(-fma(a, b, -c));
       });
 }
 

@@ -15,20 +15,22 @@
 #include "riscv/riscv_d_instructions.h"
 
 #include <cmath>
-#include <cstdio>
-#include <limits>
-#include <tuple>
+#include <cstdint>
 #include <type_traits>
 
+#include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/type_helpers.h"
+#include "riscv/riscv_fp_info.h"
 #include "riscv/riscv_fp_state.h"
 #include "riscv/riscv_instruction_helpers.h"
+#include "riscv/riscv_register.h"
 
 namespace mpact {
 namespace sim {
 namespace riscv {
 
-using ::mpact::sim::generic::operator*;
+using ::mpact::sim::generic::Instruction;
+using ::mpact::sim::generic::operator*;  // NOLINT: is used below.
 
 // The following instruction semantic functions implement the double precision
 // floating point instructions in the RiscV architecture. They all utilize the
@@ -163,7 +165,7 @@ void RiscVDMadd(const Instruction *instruction) {
           }
           return internal::CanonicalizeNaN(a * b);
         }
-        return internal::CanonicalizeNaN((a * b) + c);
+        return internal::CanonicalizeNaN(fma(a, b, c));
       });
 }
 
@@ -192,7 +194,7 @@ void RiscVDMsub(const Instruction *instruction) {
           }
           return internal::CanonicalizeNaN(a * b);
         }
-        return internal::CanonicalizeNaN((a * b) - c);
+        return internal::CanonicalizeNaN(fma(a, b, -c));
       });
 }
 
@@ -221,7 +223,7 @@ void RiscVDNmadd(const Instruction *instruction) {
           }
           return internal::CanonicalizeNaN(-a * b);
         }
-        return internal::CanonicalizeNaN(-(a * b) - c);
+        return internal::CanonicalizeNaN(-fma(a, b, c));
       });
 }
 
@@ -252,7 +254,7 @@ void RiscVDNmsub(const Instruction *instruction) {
           }
           return internal::CanonicalizeNaN(-a * b);
         }
-        return internal::CanonicalizeNaN(-(a * b) + c);
+        return internal::CanonicalizeNaN(-fma(a, b, -c));
       });
 }
 
