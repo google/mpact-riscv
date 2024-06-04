@@ -587,7 +587,8 @@ absl::StatusOr<size_t> RiscVTop::ReadMemory(uint64_t address, void *buffer,
   if (address > state_->max_physical_address()) {
     return absl::InvalidArgumentError("Invalid memory address");
   }
-  length = std::min(length, state_->max_physical_address() - address + 1);
+  uint64_t length64 = static_cast<uint64_t>(length);
+  length = std::min(length64, state_->max_physical_address() - address + 1);
   auto *db = db_factory_.Allocate(length);
   // Load bypassing any watch points/semihosting.
   state_->memory()->Load(address, db, nullptr, nullptr);
@@ -605,7 +606,8 @@ absl::StatusOr<size_t> RiscVTop::WriteMemory(uint64_t address,
   if (address > state_->max_physical_address()) {
     return absl::InvalidArgumentError("Invalid memory address");
   }
-  length = std::min(length, state_->max_physical_address() - address + 1);
+  uint64_t length64 = static_cast<uint64_t>(length);
+  length = std::min(length64, state_->max_physical_address() - address + 1);
   auto *db = db_factory_.Allocate(length);
   std::memcpy(db->raw_ptr(), buffer, length);
   // Store bypassing any watch points/semihosting.

@@ -691,9 +691,9 @@ class RiscVFPInstructionTestBase : public testing::Test {
         auto reg_val = state_->GetRegister<DestRegisterType>(kRdName)
                            .first->data_buffer()
                            ->template Get<R>(0);
-        FPCompare<R>(
-            op_val, reg_val, delta_position,
-            absl::StrCat(name, "  ", i, ": ", lhs_span[i], "  ", rhs_span[i]));
+        FPCompare<R>(op_val, reg_val, delta_position,
+                     absl::StrCat(name, "  ", i, ": ", lhs_span[i], "  ",
+                                  mhs_span[i], " ", rhs_span[i]));
       }
     }
   }

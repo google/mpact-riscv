@@ -34,8 +34,12 @@ follow the appropriate instructions at [java.com](https://java.com).
 
 ### Build and Test
 
-To build the mpact-sim libraries, use the command `bazel build ...:all` from the
-top level directory. To run the tests, use the command `bazel test ...:all`
+To build the mpact-sim libraries for x86 based processors, use the command
+`bazel build ...:all` from the top level directory. To run the tests, use the
+command `bazel test ...:all`.
+
+For Apple computers with Arm64 M series chips, use `bazel build
+--cpu=darwin_arm64 ...:all` and `bazel test --cpu=darwin_arm64 ...:all`.
 
 The build targets `rv32g_sim` and `rv64g_sim` provide RiscV simulators for the
 32 bit and 64 bit variants of RiscV scalar architectures respectively. Decoding

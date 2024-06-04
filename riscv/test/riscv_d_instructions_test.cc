@@ -143,7 +143,8 @@ TEST_F(RV32DInstructionTest, RiscVDmax) {
 TEST_F(RV32DInstructionTest, RiscVDMadd) {
   SetSemanticFunction(&RiscVDMadd);
   TernaryOpFPTestHelper<double, double, double, double>(
-      "dmadd", instruction_, {"d", "d", "d", "d"}, 64,
+      "dmadd", instruction_, {"d", "d", "d", "d"},
+      FPTypeInfo<double>::kSigSize - 1,
       [](double lhs, double mhs, double rhs) -> double {
         return fma(lhs, mhs, rhs);
       });
@@ -151,7 +152,8 @@ TEST_F(RV32DInstructionTest, RiscVDMadd) {
 TEST_F(RV32DInstructionTest, RiscVDMsub) {
   SetSemanticFunction(&RiscVDMsub);
   TernaryOpFPTestHelper<double, double, double, double>(
-      "dmsub", instruction_, {"d", "d", "d", "d"}, 64,
+      "dmsub", instruction_, {"d", "d", "d", "d"},
+      FPTypeInfo<double>::kSigSize - 1,
       [](double lhs, double mhs, double rhs) -> double {
         return fma(lhs, mhs, -rhs);
       });
@@ -159,7 +161,8 @@ TEST_F(RV32DInstructionTest, RiscVDMsub) {
 TEST_F(RV32DInstructionTest, RiscVDNmadd) {
   SetSemanticFunction(&RiscVDNmadd);
   TernaryOpFPTestHelper<double, double, double, double>(
-      "dnmadd", instruction_, {"d", "d", "d", "d"}, 64,
+      "dnmadd", instruction_, {"d", "d", "d", "d"},
+      FPTypeInfo<double>::kSigSize - 1,
       [](double lhs, double mhs, double rhs) -> double {
         return -fma(lhs, mhs, rhs);
       });
@@ -167,7 +170,8 @@ TEST_F(RV32DInstructionTest, RiscVDNmadd) {
 TEST_F(RV32DInstructionTest, RiscVDNmsub) {
   SetSemanticFunction(&RiscVDNmsub);
   TernaryOpFPTestHelper<double, double, double, double>(
-      "dnmsub", instruction_, {"d", "d", "d", "d"}, 64,
+      "dnmsub", instruction_, {"d", "d", "d", "d"},
+      FPTypeInfo<double>::kSigSize - 1,
       [](double lhs, double mhs, double rhs) -> double {
         return -fma(lhs, mhs, -rhs);
       });

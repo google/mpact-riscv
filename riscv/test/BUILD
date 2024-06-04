@@ -16,6 +16,11 @@
 
 package(default_applicable_licenses = ["//:license"])
 
+config_setting(
+    name = "darwin_arm64_cpu",
+    values = {"cpu": "darwin_arm64"},
+)
+
 cc_library(
     name = "riscv_vector_instructions_test_base",
     testonly = True,
@@ -170,8 +175,10 @@ cc_test(
     srcs = ["riscv_d_instructions_test.cc"],
     copts = [
         "-ffp-model=strict",
-        "-fprotect-parens",
-    ],
+    ] + select({
+        "darwin_arm64_cpu": [],
+        "//conditions:default": ["-fprotect-parens"],
+    }),
     tags = ["not_run:arm"],
     deps = [
         ":riscv_fp_test_base",
@@ -187,8 +194,10 @@ cc_test(
     srcs = ["riscv_f_instructions_test.cc"],
     copts = [
         "-ffp-model=strict",
-        "-fprotect-parens",
-    ],
+    ] + select({
+        "darwin_arm64_cpu": [],
+        "//conditions:default": ["-fprotect-parens"],
+    }),
     tags = ["not_run:arm"],
     deps = [
         ":riscv_fp_test_base",
@@ -434,8 +443,10 @@ cc_test(
     ],
     copts = [
         "-ffp-model=strict",
-        "-fprotect-parens",
-    ],
+    ] + select({
+        "darwin_arm64_cpu": [],
+        "//conditions:default": ["-fprotect-parens"],
+    }),
     deps = [
         ":riscv_vector_fp_test_utilities",
         ":riscv_vector_instructions_test_base",
@@ -459,8 +470,10 @@ cc_test(
     ],
     copts = [
         "-ffp-model=strict",
-        "-fprotect-parens",
-    ],
+    ] + select({
+        "darwin_arm64_cpu": [],
+        "//conditions:default": ["-fprotect-parens"],
+    }),
     deps = [
         ":riscv_vector_fp_test_utilities",
         ":riscv_vector_instructions_test_base",
@@ -484,8 +497,10 @@ cc_test(
     ],
     copts = [
         "-ffp-model=strict",
-        "-fprotect-parens",
-    ],
+    ] + select({
+        "darwin_arm64_cpu": [],
+        "//conditions:default": ["-fprotect-parens"],
+    }),
     deps = [
         ":riscv_vector_fp_test_utilities",
         ":riscv_vector_instructions_test_base",
@@ -507,8 +522,10 @@ cc_test(
     ],
     copts = [
         "-ffp-model=strict",
-        "-fprotect-parens",
-    ],
+    ] + select({
+        "darwin_arm64_cpu": [],
+        "//conditions:default": ["-fprotect-parens"],
+    }),
     deps = [
         ":riscv_vector_fp_test_utilities",
         ":riscv_vector_instructions_test_base",

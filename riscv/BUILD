@@ -39,6 +39,11 @@ config_setting(
     values = {"cpu": "arm"},
 )
 
+config_setting(
+    name = "darwin_arm64_cpu",
+    values = {"cpu": "darwin_arm64"},
+)
+
 cc_library(
     name = "riscv_state",
     srcs = [
@@ -53,6 +58,7 @@ cc_library(
         "riscv_xstatus.cc",
     ] + select({
         "arm_cpu": ["riscv_fp_host_arm.cc"],
+        "darwin_arm64_cpu": ["riscv_fp_host_arm.cc"],
         "//conditions:default": ["riscv_fp_host_x86.cc"],
     }),
     hdrs = [
@@ -72,8 +78,10 @@ cc_library(
     copts = [
         "-O3",
         "-ffp-model=strict",
-        "-fprotect-parens",
-    ],
+    ] + select({
+        "darwin_arm64_cpu": [],
+        "//conditions:default": ["-fprotect-parens"],
+    }),
     deps = [
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/functional:any_invocable",
@@ -118,8 +126,10 @@ cc_library(
     copts = [
         "-O3",
         "-ffp-model=strict",
-        "-fprotect-parens",
-    ],
+    ] + select({
+        "darwin_arm64_cpu": [],
+        "//conditions:default": ["-fprotect-parens"],
+    }),
     deps = [
         ":riscv_state",
         "@com_google_absl//absl/base",
@@ -167,8 +177,10 @@ cc_library(
     copts = [
         "-O3",
         "-ffp-model=strict",
-        "-fprotect-parens",
-    ],
+    ] + select({
+        "darwin_arm64_cpu": [],
+        "//conditions:default": ["-fprotect-parens"],
+    }),
     deps = [
         ":riscv_g",
         ":riscv_state",

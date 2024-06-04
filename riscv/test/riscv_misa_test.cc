@@ -26,7 +26,7 @@ using ::mpact::sim::riscv::RiscVMIsa;
 // using the Write method.
 
 TEST(RiscVMisaTest, WriteTest) {
-  RiscVMIsa riscv_misa(0UL, nullptr);
+  RiscVMIsa riscv_misa(0U, nullptr);
   // Initial value is 0.
   EXPECT_EQ(riscv_misa.GetUint32(), 0);
   EXPECT_EQ(riscv_misa.AsUint32(), 0);
@@ -43,7 +43,7 @@ TEST(RiscVMisaTest, WriteTest) {
   EXPECT_EQ(riscv_misa.GetUint64(), 0xdeadbeef);
   EXPECT_EQ(riscv_misa.AsUint32(), 0xdeadbeef & riscv_misa.read_mask());
   // Reset the value.
-  riscv_misa.Set(0UL);
+  riscv_misa.Set(0U);
   EXPECT_EQ(riscv_misa.GetUint32(), 0);
   EXPECT_EQ(riscv_misa.AsUint32(), 0);
   // 64 bit Set shouldn't change anything.

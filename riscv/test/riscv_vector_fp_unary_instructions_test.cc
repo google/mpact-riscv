@@ -347,7 +347,7 @@ class RiscVFPUnaryInstructionsTest
             ClearVectorRegisterGroup(kVd, 8);
             // Set rounding mode and clear flags.
             rv_fp_->SetRoundingMode(static_cast<FPRoundingMode>(rm));
-            rv_fp_->fflags()->Write(0UL);
+            rv_fp_->fflags()->Write(0U);
 
             inst->Execute();
 
@@ -372,7 +372,7 @@ class RiscVFPUnaryInstructionsTest
             EXPECT_EQ(rv_vector_->vstart(), 0);
             int count = 0;
             // Clear flags for the test execution.
-            rv_fp_->fflags()->Write(0UL);
+            rv_fp_->fflags()->Write(0U);
             uint32_t fflags_test = 0;
             for (int reg = kVd; reg < kVd + 8; reg++) {
               for (int i = 0; i < kVectorLengthInBytes / sizeof(Vd); i++) {
