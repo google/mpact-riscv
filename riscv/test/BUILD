@@ -46,6 +46,7 @@ cc_library(
     hdrs = ["riscv_vector_fp_test_utilities.h"],
     deps = [
         ":riscv_vector_instructions_test_base",
+        "//riscv:riscv_fp_state",
         "//riscv:riscv_state",
         "@com_google_absl//absl/random",
         "@com_google_absl//absl/strings",
@@ -59,6 +60,7 @@ cc_library(
     testonly = True,
     hdrs = ["riscv_fp_test_base.h"],
     deps = [
+        "//riscv:riscv_fp_state",
         "//riscv:riscv_state",
         "@com_google_absl//absl/random",
         "@com_google_absl//absl/strings",
@@ -450,6 +452,7 @@ cc_test(
     deps = [
         ":riscv_vector_fp_test_utilities",
         ":riscv_vector_instructions_test_base",
+        "//riscv:riscv_fp_state",
         "//riscv:riscv_state",
         "//riscv:riscv_v",
         "@com_google_absl//absl/random",
@@ -477,6 +480,7 @@ cc_test(
     deps = [
         ":riscv_vector_fp_test_utilities",
         ":riscv_vector_instructions_test_base",
+        "//riscv:riscv_fp_state",
         "//riscv:riscv_state",
         "//riscv:riscv_v",
         "@com_google_absl//absl/log",
@@ -504,6 +508,7 @@ cc_test(
     deps = [
         ":riscv_vector_fp_test_utilities",
         ":riscv_vector_instructions_test_base",
+        "//riscv:riscv_fp_state",
         "//riscv:riscv_state",
         "//riscv:riscv_v",
         "@com_google_absl//absl/random",
@@ -529,6 +534,7 @@ cc_test(
     deps = [
         ":riscv_vector_fp_test_utilities",
         ":riscv_vector_instructions_test_base",
+        "//riscv:riscv_fp_state",
         "//riscv:riscv_state",
         "//riscv:riscv_v",
         "@com_google_absl//absl/random",

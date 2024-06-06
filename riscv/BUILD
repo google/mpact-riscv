@@ -48,7 +48,6 @@ cc_library(
     name = "riscv_state",
     srcs = [
         "riscv_csr.cc",
-        "riscv_fp_state.cc",
         "riscv_misa.cc",
         "riscv_register.cc",
         "riscv_sim_csrs.cc",
@@ -56,16 +55,9 @@ cc_library(
         "riscv_vector_state.cc",
         "riscv_xip_xie.cc",
         "riscv_xstatus.cc",
-    ] + select({
-        "arm_cpu": ["riscv_fp_host_arm.cc"],
-        "darwin_arm64_cpu": ["riscv_fp_host_arm.cc"],
-        "//conditions:default": ["riscv_fp_host_x86.cc"],
-    }),
+    ],
     hdrs = [
         "riscv_csr.h",
-        "riscv_fp_host.h",
-        "riscv_fp_info.h",
-        "riscv_fp_state.h",
         "riscv_misa.h",
         "riscv_register.h",
         "riscv_register_aliases.h",
@@ -77,11 +69,7 @@ cc_library(
     ],
     copts = [
         "-O3",
-        "-ffp-model=strict",
-    ] + select({
-        "darwin_arm64_cpu": [],
-        "//conditions:default": ["-fprotect-parens"],
-    }),
+    ],
     deps = [
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/functional:any_invocable",
@@ -95,6 +83,34 @@ cc_library(
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
         "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
         "@com_google_mpact-sim//mpact/sim/util/memory",
+    ],
+)
+
+cc_library(
+    name = "riscv_fp_state",
+    srcs = [
+        "riscv_fp_state.cc",
+    ] + select({
+        "arm_cpu": ["riscv_fp_host_arm.cc"],
+        "darwin_arm64_cpu": ["riscv_fp_host_arm.cc"],
+        "//conditions:default": ["riscv_fp_host_x86.cc"],
+    }),
+    hdrs = [
+        "riscv_fp_host.h",
+        "riscv_fp_info.h",
+        "riscv_fp_state.h",
+    ],
+    copts = [
+        "-O3",
+        "-ffp-model=strict",
+    ] + select({
+        "darwin_arm64_cpu": [],
+        "//conditions:default": ["-fprotect-parens"],
+    }),
+    deps = [
+        ":riscv_state",
+        "@com_google_absl//absl/log",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
     ],
 )
 
@@ -131,6 +147,7 @@ cc_library(
         "//conditions:default": ["-fprotect-parens"],
     }),
     deps = [
+        ":riscv_fp_state",
         ":riscv_state",
         "@com_google_absl//absl/base",
         "@com_google_absl//absl/log",
@@ -182,6 +199,7 @@ cc_library(
         "//conditions:default": ["-fprotect-parens"],
     }),
     deps = [
+        ":riscv_fp_state",
         ":riscv_g",
         ":riscv_state",
         "@com_google_absl//absl/log",
@@ -428,6 +446,7 @@ cc_library(
         ":riscv64g_decoder",
         ":riscv64g_isa",
         ":riscv_breakpoint",
+        ":riscv_fp_state",
         ":riscv_state",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/functional:bind_front",

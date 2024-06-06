@@ -33,7 +33,6 @@
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "mpact/sim/util/memory/memory_interface.h"
 #include "riscv/riscv_csr.h"
-#include "riscv/riscv_fp_state.h"
 #include "riscv/riscv_misa.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_vector_state.h"
@@ -183,6 +182,8 @@ enum class RiscVXlen : uint64_t {
 // Forward declare a template function defined in the .cc file.
 template <typename T>
 void CreateCsrs(RiscVState *, std::vector<RiscVCsrInterface *> &);
+
+class RiscVFPState;
 
 // Class that extends ArchState with RiscV specific methods. These methods
 // implement RiscV specific memory operations, memory/IO fencing, system
