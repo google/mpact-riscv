@@ -61,8 +61,8 @@ DebugCommandShell::DebugCommandShell()
                   R"((?:\s+(?:([oduxX])(8|16|32|64))?)?)?\s*)"},
       wr_vreg_re_{R"(\s*vreg\s+set\s+(\$?\w+)\s*\:(\d+))"
                   R"(\s+([oduxX])(8|16|32|64)\s+(\w+)\s*)"},
-      read_mem_re_{R"(\s*mem\s+get\s+(\w+)(?:\s+([foduxX]\d+)?)?\s*)"},
-      read_mem2_re_{R"(\s*mem\s+(\w+)(?:\s+([foduxX]\d+)?)?\s*)"},
+      read_mem_re_{R"(\s*mem\s+get\s+(\w+)(?:\s+([foduxX]\d+|i)?)?\s*)"},
+      read_mem2_re_{R"(\s*mem\s+(\w+)(?:\s+([foduxX]\d+|i)?)?\s*)"},
       write_mem_re_{R"(\s*mem\s+set\s+(\w+)\s+([oduxX]\d+)?\s+(\w+)\s*)"},
       set_break_re_{R"(\s*break\s+set\s+(\$?\w+)\s*)"},
       set_break2_re_{R"(\s*break\s+(\$?\w+)\s*)"},
@@ -217,6 +217,10 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
     if (pc_result.ok()) {
       auto *loader = core_access_[current_core_].loader_getter();
       if (loader != nullptr) {
+        auto fcn_result = loader->GetFunctionName(pc_result.value());
+        if (fcn_result.ok()) {
+          absl::StrAppend(&prompt, "[", fcn_result.value(), "]:\n");
+        }
         auto symbol_result = loader->GetFcnSymbolName(pc_result.value());
         if (symbol_result.ok()) {
           absl::StrAppend(&prompt, symbol_result.value(), ":\n");
@@ -1208,19 +1212,23 @@ std::string DebugCommandShell::ReadMemory(int core,
   int bit_width = 32;
 
   if (!format.empty()) {
-    // Check the format specification.
-    auto pos = format.find_first_not_of(' ');
-    format_char = format[pos];
-    auto status = internal::stoull(format.substr(pos + 1));
-    bit_width = 0;
-    if (!status.ok()) {
-      return absl::StrCat("Error '", format.substr(pos + 1),
-                          "': ", status.status().message());
-    }
-    bit_width = status.value();
-    if ((bit_width != 8) && (bit_width != 16) && (bit_width != 32) &&
-        (bit_width != 64)) {
-      return absl::StrCat("Illegal bit width specification: ", bit_width);
+    if (format[0] == 'i') {
+      format_char = 'i';
+    } else {
+      // Check the format specification.
+      auto pos = format.find_first_not_of(' ');
+      format_char = format[pos];
+      auto status = internal::stoull(format.substr(pos + 1));
+      bit_width = 0;
+      if (!status.ok()) {
+        return absl::StrCat("Error '", format.substr(pos + 1),
+                            "': ", status.status().message());
+      }
+      bit_width = status.value();
+      if ((bit_width != 8) && (bit_width != 16) && (bit_width != 32) &&
+          (bit_width != 64)) {
+        return absl::StrCat("Illegal bit width specification: ", bit_width);
+      }
     }
   }
 
@@ -1230,6 +1238,17 @@ std::string DebugCommandShell::ReadMemory(int core,
     return absl::StrCat("Error: '", str_value, "' ", result.status().message());
   }
   auto address = result.value();
+
+  // If format is 'i', then we are getting a disassembled instruction. Ignore
+  // bitwidth.
+  if (format_char == 'i') {
+    auto disasm_result =
+        core_access_[current_core_].debug_interface->GetDisassembly(address);
+    if (!disasm_result.ok()) {
+      return absl::StrCat("Error: ", disasm_result.status().message());
+    }
+    return absl::StrCat("    ", disasm_result.value());
+  }
 
   // Perform the memory access.
   size = bit_width / 8;
