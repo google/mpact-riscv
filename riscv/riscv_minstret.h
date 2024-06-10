@@ -58,6 +58,7 @@ class RiscVMInstret : public RiscVSimpleCsr<uint32_t> {
 
  private:
   inline uint32_t GetCounterValue() const {
+    if (counter_ == nullptr) return 0;
     return static_cast<uint32_t>(counter_->GetValue() & 0xffff'ffffULL);
   };
 
@@ -83,6 +84,7 @@ class RiscVMInstreth : public RiscVSimpleCsr<uint32_t> {
 
  private:
   inline uint32_t GetCounterValue() const {
+    if (counter_ == nullptr) return 0;
     return static_cast<uint32_t>(counter_->GetValue() >> 32);
   };
 
