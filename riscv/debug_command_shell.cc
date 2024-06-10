@@ -16,105 +16,155 @@
 
 #include <cstdint>
 #include <cstring>
+#include <fstream>
 #include <istream>
 #include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "absl/functional/any_invocable.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/generic/data_buffer.h"
+#include "mpact/sim/generic/type_helpers.h"
 #include "re2/re2.h"
+#include "riscv/riscv_debug_interface.h"
 #include "riscv/stoull_wrapper.h"
 
 namespace mpact {
 namespace sim {
 namespace riscv {
 
+using HaltReason = ::mpact::sim::generic::CoreDebugInterface::HaltReason;
+using ::mpact::sim::generic::operator*;  // NOLINT: used below (clang error).
+
 // The constructor initializes all the regular expressions and the help string.
 DebugCommandShell::DebugCommandShell()
     : quit_re_{R"(\s*quit\s*)"},
       core_re_{R"(\s*core\s+(\d+)\s*)"},
-      run_re_{R"(\s*run\s*)"},
+      run_re_{R"(\s*(?:run|c)\s*)"},
       run_free_re_{R"(\s*run\s+free\s*)"},
       wait_re_{R"(\s*wait\s*)"},
       step_1_re_{R"(\s*step\s*)"},
       step_n_re_{R"(\s*step\s+(\d+)\s*)"},
       halt_re_{R"(\s*halt\s*)"},
-      read_reg_re_{R"(\s*reg\s+get\s+(\$?\w+)(\s+[foduxX]\d+)?\s*)"},
-      read_reg2_re_{R"(\s*reg\s+(\$?\w+)(\s+[foduxX]\d+)?\s*)"},
+      read_reg_re_{R"(\s*reg\s+get\s+(\$?(\w|\.)+)(\s+[foduxX]\d+)?\s*)"},
+      read_reg2_re_{R"(\s*reg\s+(\$?(\w|\.)+)(\s+[foduxX]\d+)?\s*)"},
       write_reg_re_{R"(\s*reg\s+set\s+(\$?\w+)\s+(\w+)\s*)"},
       rd_vreg_re_{R"(\s*vreg(?:\s+get)?\s+(\$?\w+)(?:(?:\s*\:(\d+))?)"
                   R"((?:\s+(?:([oduxX])(8|16|32|64))?)?)?\s*)"},
       wr_vreg_re_{R"(\s*vreg\s+set\s+(\$?\w+)\s*\:(\d+))"
                   R"(\s+([oduxX])(8|16|32|64)\s+(\w+)\s*)"},
-      read_mem_re_{R"(\s*mem\s+get\s+(\w+)\s+([foduxX]\d+)?\s*)"},
-      read_mem2_re_{R"(\s*mem\s+(\w+)\s+([foduxX]\d+)?\s*)"},
+      read_mem_re_{R"(\s*mem\s+get\s+(\w+)(?:\s+([foduxX]\d+)?)?\s*)"},
+      read_mem2_re_{R"(\s*mem\s+(\w+)(?:\s+([foduxX]\d+)?)?\s*)"},
       write_mem_re_{R"(\s*mem\s+set\s+(\w+)\s+([oduxX]\d+)?\s+(\w+)\s*)"},
-      set_break_re_{R"(\s*break\s+set\s+(\w+)\s*)"},
-      set_break2_re_{R"(\s*break\s+(\w+)\s*)"},
-      clear_break_re_{R"(\s*break\s+clear\s+(\w+)\s*)"},
+      set_break_re_{R"(\s*break\s+set\s+(\$?\w+)\s*)"},
+      set_break2_re_{R"(\s*break\s+(\$?\w+)\s*)"},
+      set_break_n_re_{R"(\s*break\s+(set\s+)?\#(\d+)\s*)"},
+      list_break_re_{R"(\s*break\s*)"},
+      clear_break_n_re_{R"(\s*break\s+clear\s+\#(\d+)\s*)"},
+      clear_break_re_{R"(\s*break\s+clear\s+(\$?\w+)\s*)"},
       clear_all_break_re_{R"(\s*break\s+clear-all\s*)"},
+      set_watch_re_{R"(\s*watch\s+set\s+(\w+)\s+(\w+)(\s+r|\s+w|\s+rw)?\s*)"},
+      set_watch2_re_{R"(\s*watch\s+(\w+)\s+(\w+)(\s+r|\s+w|\s+rw)?\s*)"},
+      set_watch_n_re_{R"(\s*watch\s+(set\s+)?\#(\d+)\s*)"},
+      list_watch_re_{R"(\s*watch\s*)"},
+      clear_watch_re_{R"(\s*watch\s+clear\s+(\w+)(\s+r|\s+w|\s+rw)?\s*)"},
+      clear_watch_n_re_{R"(\s*watch\s+clear\s+\#(\d+)\s*)"},
+      clear_all_watch_re_{R"(\s*watch\s+clear-all\s*)"},
+      list_action_re_{R"(\s*action\s*)"},
+      enable_action_n_re_{R"(\s*action\s+enable\s+\*(\d+)\s*)"},
+      disable_action_n_re_{R"(\s*action\s+disable\s+\*(\d+)\s*)"},
+      clear_action_n_re_{R"(\s*action\s+clear\s+\*(\d+)\s*)"},
+      clear_all_action_re_{R"(\s*action\s+clear-all\s*)"},
+      exec_re_{R"(\s*exec\s+(.+)\s*)"},
+      empty_re_{R"(\s*(?:\#.*)?)"},
       help_re_{R"(\s*help\s*)"} {
-  help_message_ =
-      R"raw(    quit                           - exit command shell.
-    core [N]                       - direct subsequent commands to core N
+  help_message_ = R"raw(  quit                             - exit command shell.
+  core [N]                         - direct subsequent commands to core N
                                      (default: 0).
-    run                            - run program from current pc until a
+  run                              - run program from current pc until a
                                      breakpoint or exit. Wait until halted.
-    run free                       - run program in background from current pc
+  run free                         - run program in background from current pc
                                      until breakpoint or exit.
-    wait                           - wait for any free run to complete.
-    step [N]                       - step [N] instructions (default: 1).
-    halt                           - halt a running program.
-    reg get NAME [FORMAT]          - get the value or register NAME.
-    reg NAME [FORMAT]              - get the value of register NAME.
-    reg set NAME VALUE             - set register NAME to VALUE.
-    reg set NAME SYMBOL            - set register NAME to value of SYMBOL.
-    vreg get NAME[:INDEX] [FORMAT] - get the value of register NAME as a vector
+  wait                             - wait for any free run to complete.
+  step [N]                         - step [N] instructions (default: 1).
+  halt                             - halt a running program.
+  reg get NAME [FORMAT]            - get the value or register NAME.
+  reg NAME [FORMAT]                - get the value of register NAME.
+  reg set NAME VALUE               - set register NAME to VALUE.
+  reg set NAME SYMBOL              - set register NAME to value of SYMBOL.
+  vreg get NAME[:INDEX] [FORMAT]   - get the value of register NAME as a vector
                                      of elements according to FORMAT. The format
                                      is a letter (o, d u x, or X) followed by
                                      width (8, 16, 32, 64). The default format
                                      is x32. INDEX may be specified as a number
                                      to select a specific vector element.
-    vreg set NAME[:INDEX] [FORMAT] - set the value of vector register NAME to
+  vreg set NAME[:INDEX] [FORMAT]   - set the value of vector register NAME to
       VALUE                          the given value. If INDEX is specified,
                                      only the given element is updated. If INDEX
                                      is omitted, the value will be written to
                                      the 0th element in the vector (according)
                                      to FORMAT, and the rest of the vector is
                                      cleared.
-    mem get VALUE [FORMAT]         - get memory from location VALUE according to
+  mem get VALUE [FORMAT]           - get memory from location VALUE according to
                                      format. The format is a letter (o, d, u, x,
                                      or X) followed by width (8, 16, 32, 64).
                                      The default format is x32.
-    mem get SYMBOL [FORMAT]        - get memory from location SYMBOL and format
+  mem get SYMBOL [FORMAT]          - get memory from location SYMBOL and format
                                      according to FORMAT (see above).
-    mem SYMBOL [FORMAT]            - get memory from location SYMBOL and format
+  mem SYMBOL [FORMAT]              - get memory from location SYMBOL and format
                                      according to FORMAT (see above).
-    mem set VALUE [FORMAT] VALUE   - set memory at location VALUE(1) to VALUE(2)
+  mem set VALUE [FORMAT] VALUE     - set memory at location VALUE(1) to VALUE(2)
                                      according to FORMAT. Default format is x32.
-    mem set SYMBOL [FORMAT] VALUE  - set memory at location SYMBOL to VALUE
+  mem set SYMBOL [FORMAT] VALUE    - set memory at location SYMBOL to VALUE
                                      according to FORMAT. Default format is x32.
-    break set VALUE                - set breakpoint at address VALUE.
-    break set SYMBOL               - set breakpoint at value of SYMBOL.
-    break VALUE                    - set breakpoint at address VALUE.
-    break SYMBOL                   - set breakpoint at value of SYMBOL.
-    break clear VALUE              - clear breakpoint at address VALUE.
-    break clear SYMBOL             - clear breakpoint at value of SYMBOL.
-    break clear-all                - remove all breakpoints.
-    help                           - display this message.
+  break [set] VALUE                - set breakpoint at address VALUE.
+  break [set] SYMBOL               - set breakpoint at value of SYMBOL.
+  break set #<N>                   - reactivate breakpoint index N.
+  break #<N>                       - reactivate breakpoint index N.
+  break clear VALUE                - clear breakpoint at address VALUE.
+  break clear SYMBOL               - clear breakpoint at value of SYMBOL.
+  break clear #<N>                 - clear breakpoint index N.
+  break clear-all                  - remove all breakpoints.
+  break                            - list breakpoints.
+  watch [set] VALUE len [r|w|rw]   - set watchpoint at value (read, write, or
+                                     readwrite) - default is write.
+  watch [set] SYMBOL len [r|w|rw]  - set watchpoint at value (read, write, or
+                                     readwrite) - default is write.
+  watch set #<N>                   - reactivate watchpoint index N.
+  watch clear VALUE [r|w|rw]       - clear watchpoint at value (read, write, or
+                                     readwrite) - default is write.
+  watch clear SYMBOL [r|w|rw]      - clear watchpoint at symbol (read, write or
+                                     readwrite) - default is write.
+  watch clear #<N>                 - clear watchpoint index N.
+  watch clear-all                  - remove all watchpoints.
+  watch                            - list watchpoints.
+  action enable #<N>               - enable action point with index N.
+  action disable #<N>              - disable action point with index N.
+  action clear #<N>                - clear action point with index N.
+  action clear-all                 - clear all action points.
+  action                           - list action points.
+  exec    NAME                     - load commands from file 'NAME' and execute
+                                     each line as a command. Lines starting with
+                                     a '#' are treated as comments.
+  help                             - display this message.
 
+  Special register names:
+  $all                             - core set of registers (e.g., reg $all).
 )raw";
 }
 
 void DebugCommandShell::AddCore(const CoreAccess &core_access) {
   core_access_.push_back(core_access);
+  core_action_point_id_.push_back(0);
+  core_action_point_info_.emplace_back();
 }
 
 void DebugCommandShell::AddCores(const std::vector<CoreAccess> &core_access) {
@@ -122,20 +172,50 @@ void DebugCommandShell::AddCores(const std::vector<CoreAccess> &core_access) {
     AddCore(core);
   }
 }
-
+// NOLINTBEGIN(readability/fn_size)
 void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
   // Assumes the max linesize is 512.
+  command_streams_.push_back(&is);
   constexpr int kLineSize = 512;
   char line[kLineSize];
   std::string previous_line;
-  int core = 0;
+  current_core_ = 0;
   absl::string_view line_view;
+  bool halt_reason = false;
   while (true) {
     // Prompt and read in the next command.
-    auto pc_result = core_access_[core].debug_interface->ReadRegister("pc");
+    auto pc_result =
+        core_access_[current_core_].debug_interface->ReadRegister("pc");
     std::string prompt;
+    if (halt_reason) {
+      halt_reason = false;
+      auto result =
+          core_access_[current_core_].debug_interface->GetLastHaltReason();
+      if (result.ok()) {
+        switch (result.value()) {
+          case *HaltReason::kSoftwareBreakpoint:
+            absl::StrAppend(&prompt, "Stopped at software breakpoint\n");
+            break;
+          case *HaltReason::kUserRequest:
+            absl::StrAppend(&prompt, "Stopped at user request\n");
+            break;
+          case *HaltReason::kDataWatchPoint:
+            absl::StrAppend(&prompt, "Stopped at data watchpoint\n");
+            break;
+          case *HaltReason::kProgramDone:
+            absl::StrAppend(&prompt, "Program done\n");
+            break;
+          default:
+            if ((result.value() >= *HaltReason::kUserSpecifiedMin) &&
+                (result.value() <= *HaltReason::kUserSpecifiedMax)) {
+              absl::StrAppend(&prompt, "Stopped for custom halt reason\n");
+            }
+            break;
+        }
+      }
+    }
     if (pc_result.ok()) {
-      auto *loader = core_access_[core].loader_getter();
+      auto *loader = core_access_[current_core_].loader_getter();
       if (loader != nullptr) {
         auto symbol_result = loader->GetFcnSymbolName(pc_result.value());
         if (symbol_result.ok()) {
@@ -145,18 +225,45 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
       absl::StrAppend(&prompt,
                       absl::Hex(pc_result.value(), absl::PadSpec::kZeroPad8));
       auto disasm_result =
-          core_access_[core].debug_interface->GetDisassembly(pc_result.value());
+          core_access_[current_core_].debug_interface->GetDisassembly(
+              pc_result.value());
       if (disasm_result.ok()) {
         absl::StrAppend(&prompt, "   ", disasm_result.value());
       }
       absl::StrAppend(&prompt, "\n");
     }
-    absl::StrAppend(&prompt, "[", core, "] > ");
-    os << prompt;
-    is.getline(line, kLineSize);
+    absl::StrAppend(&prompt, "[", current_core_, "] > ");
+    while (!command_streams_.empty()) {
+      auto &current_is = *command_streams_.back();
+      // Ignore comments or empty lines.
+      bool is_file = command_streams_.size() > 1;
+      // Read a command from the input stream. If it's from a file, then ignore
+      // empty lines and comments.
+      do {
+        if (command_streams_.size() == 1) os << prompt;
+        current_is.getline(line, kLineSize);
+      } while ((is_file && RE2::FullMatch(line, *empty_re_)) &&
+               !current_is.bad() && !current_is.eof());
 
-    // If the file is at eof or gone bad, return.
-    if (is.bad() || is.eof()) {
+      if (command_streams_.empty()) return;
+
+      // If the current is at eof or gone bad, pop the stream and try the next.
+      if (current_is.bad() || current_is.eof()) {
+        // If it's not the only stream, delete the stream since it was allocated
+        // for an exec command.
+        if (is_file) {
+          delete command_streams_.back();
+        }
+        command_streams_.pop_back();
+        previous_line = previous_commands_.back();
+        previous_commands_.pop_back();
+        continue;
+      }
+      // We have a valid command.
+      break;
+    }
+
+    if (command_streams_.empty()) {
       os << "Error: input end of file or bad stream state\n" << std::endl;
       os.flush();
       return;
@@ -173,7 +280,7 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
     bool executed = false;
     for (auto &fcn : command_functions_) {
       std::string output;
-      executed = fcn(line_view, core_access_[core], output);
+      executed = fcn(line_view, core_access_[current_core_], output);
       if (executed) {
         os << output << std::endl;
         break;
@@ -194,18 +301,18 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
         os.flush();
         continue;
       }
-      core = new_core;
+      current_core_ = new_core;
       continue;
     }
 
     // run
     if (RE2::FullMatch(line_view, *run_re_)) {
-      auto run_result = core_access_[core].debug_interface->Run();
+      auto run_result = core_access_[current_core_].debug_interface->Run();
       if (!run_result.ok()) {
         os << "Error: " << run_result.message() << std::endl;
         os.flush();
       }
-      auto wait_result = core_access_[core].debug_interface->Wait();
+      auto wait_result = core_access_[current_core_].debug_interface->Wait();
       if (!wait_result.ok()) {
         os << "Error: " << wait_result.message() << std::endl;
         os.flush();
@@ -215,7 +322,7 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
 
     // run free
     if (RE2::FullMatch(line_view, *run_free_re_)) {
-      auto result = core_access_[core].debug_interface->Run();
+      auto result = core_access_[current_core_].debug_interface->Run();
       if (!result.ok()) {
         os << "Error: " << result.message() << std::endl;
         os.flush();
@@ -225,7 +332,7 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
 
     // wait
     if (RE2::FullMatch(line_view, *wait_re_)) {
-      auto result = core_access_[core].debug_interface->Wait();
+      auto result = core_access_[current_core_].debug_interface->Wait();
       if (!result.ok()) {
         os << "Error: " << result.message() << std::endl;
         os.flush();
@@ -235,7 +342,7 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
 
     // step
     if (RE2::FullMatch(line_view, *step_1_re_)) {
-      auto result = core_access_[core].debug_interface->Step(1);
+      auto result = core_access_[current_core_].debug_interface->Step(1);
       if (!result.status().ok()) {
         os << "Error: " << result.status().message() << std::endl;
         os.flush();
@@ -250,7 +357,7 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
     // step N
     if (int count;
         RE2::FullMatch(line_view, *step_n_re_, RE2::CRadix(&count))) {
-      auto result = core_access_[core].debug_interface->Step(count);
+      auto result = core_access_[current_core_].debug_interface->Step(count);
       if (!result.status().ok()) {
         os << "Error: " << result.status().message() << std::endl;
         os.flush();
@@ -264,7 +371,7 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
 
     // halt
     if (RE2::FullMatch(line_view, *halt_re_)) {
-      auto result = core_access_[core].debug_interface->Halt();
+      auto result = core_access_[current_core_].debug_interface->Halt();
       if (!result.ok()) {
         os << "Error: " << result.message() << std::endl;
         os.flush();
@@ -275,7 +382,8 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
     // reg read NAME
     if (std::string name, format;
         RE2::FullMatch(line_view, *read_reg_re_, &name, &format)) {
-      auto result = core_access_[core].debug_interface->ReadRegister(name);
+      auto result =
+          core_access_[current_core_].debug_interface->ReadRegister(name);
       if (result.ok()) {
         os << absl::StrCat(name, " = ", absl::Hex(result.value())) << std::endl;
       } else {
@@ -288,15 +396,16 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
     // reg write NAME = VALUE
     if (std::string name, value;
         RE2::FullMatch(line_view, *write_reg_re_, &name, &value)) {
-      auto result = GetValueFromString(core, value, /*radix=*/0);
+      auto result = GetValueFromString(current_core_, value, /*radix=*/0);
       if (!result.ok()) {
         os << absl::StrCat("Error: '", value, "' ", result.status().message())
            << std::endl;
         os.flush();
         continue;
       }
-      auto write_result = core_access_[core].debug_interface->WriteRegister(
-          name, result.value());
+      auto write_result =
+          core_access_[current_core_].debug_interface->WriteRegister(
+              name, result.value());
       if (!write_result.ok()) {
         os << "Error: " << write_result.message() << std::endl;
         os.flush();
@@ -317,7 +426,8 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
       }
       // Get the data buffer.
       auto result =
-          core_access_[core].debug_interface->GetRegisterDataBuffer(name);
+          core_access_[current_core_].debug_interface->GetRegisterDataBuffer(
+              name);
       // Check for error when accessing register.
       if (!result.ok()) {
         os << "Error: " << result.status().message() << std::endl;
@@ -363,7 +473,8 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
       }
       // Get the data buffer.
       auto result =
-          core_access_[core].debug_interface->GetRegisterDataBuffer(name);
+          core_access_[current_core_].debug_interface->GetRegisterDataBuffer(
+              name);
       // Check for error when accessing register.
       if (!result.ok()) {
         os << "Error: " << result.status().message() << std::endl;
@@ -394,20 +505,21 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
 
     if (std::string str_value, format;
         RE2::FullMatch(line_view, *read_mem_re_, &str_value, &format)) {
-      os << ReadMemory(core, str_value, format) << std::endl;
+      os << ReadMemory(current_core_, str_value, format) << std::endl;
       continue;
     }
 
     if (std::string str_value1, format, str_value2; RE2::FullMatch(
             line_view, *write_mem_re_, &str_value1, &format, &str_value2)) {
-      os << WriteMemory(core, str_value1, format, str_value2) << std::endl;
+      os << WriteMemory(current_core_, str_value1, format, str_value2)
+         << std::endl;
       continue;
     }
 
     // break set VALUE | SYMBOL
     if (std::string str_value;
         RE2::FullMatch(line_view, *set_break_re_, &str_value)) {
-      auto result = GetValueFromString(core, str_value, /*radix=*/0);
+      auto result = GetValueFromString(current_core_, str_value, /*radix=*/0);
       if (!result.ok()) {
         os << absl::StrCat("Error: '", str_value, "' ",
                            result.status().message())
@@ -416,7 +528,8 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
         continue;
       }
       auto cmd_result =
-          core_access_[core].debug_interface->SetSwBreakpoint(result.value());
+          core_access_[current_core_].debug_interface->SetSwBreakpoint(
+              result.value());
       if (!cmd_result.ok()) {
         os << "Error:  " << cmd_result.message() << std::endl;
         os.flush();
@@ -428,9 +541,65 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
       continue;
     }
 
+    // break set #<N>
+    if (std::string str_value, num_value;
+        RE2::FullMatch(line_view, *set_break_n_re_, &str_value, &num_value)) {
+      int index;
+      if (!absl::SimpleAtoi(num_value, &index)) {
+        os << absl::StrCat("Error: cannot parse '", str_value,
+                           "' as a breakpoint index\n");
+        continue;
+      }
+      auto iter = core_access_[current_core_].breakpoint_map.find(index);
+      if (iter == core_access_[current_core_].breakpoint_map.end()) {
+        os << absl::StrCat("Error: no breakpoint with index ", index, "\n");
+        continue;
+      }
+      uint64_t address = iter->second;
+      if (!core_access_[current_core_].debug_interface->HasBreakpoint(
+              address)) {
+        auto status =
+            core_access_[current_core_].debug_interface->SetSwBreakpoint(
+                address);
+        if (!status.ok()) {
+          os << absl::StrCat("Error: ", status.message(), "\n");
+        }
+      } else {
+        os << "Breakpoint already active\n";
+      }
+      continue;
+    }
+
+    // break clear #<N>
+    if (std::string str_value;
+        RE2::FullMatch(line_view, *clear_break_n_re_, &str_value)) {
+      int index;
+      if (!absl::SimpleAtoi(str_value, &index)) {
+        os << absl::StrCat("Error: cannot parse '", str_value,
+                           "' as a breakpoint index\n");
+        continue;
+      }
+      auto iter = core_access_[current_core_].breakpoint_map.find(index);
+      if (iter == core_access_[current_core_].breakpoint_map.end()) {
+        os << absl::StrCat("Error: no breakpoint with index ", index, "\n");
+        continue;
+      }
+      uint64_t address = iter->second;
+      if (core_access_[current_core_].debug_interface->HasBreakpoint(address)) {
+        auto status =
+            core_access_[current_core_].debug_interface->ClearSwBreakpoint(
+                address);
+        if (!status.ok()) {
+          os << absl::StrCat("Error: ", status.message(), "\n");
+        }
+      }
+      continue;
+    }
+
     // break clear-all
     if (RE2::FullMatch(line_view, *clear_all_break_re_)) {
-      auto result = core_access_[core].debug_interface->ClearAllSwBreakpoints();
+      auto result =
+          core_access_[current_core_].debug_interface->ClearAllSwBreakpoints();
       if (!result.ok()) {
         os << absl::StrCat("Error: ", result.message()) << std::endl;
         os.flush();
@@ -443,7 +612,7 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
     // break clear VALUE | SYMBOL
     if (std::string str_value;
         RE2::FullMatch(line_view, *clear_break_re_, &str_value)) {
-      auto result = GetValueFromString(core, str_value, /*radix=*/0);
+      auto result = GetValueFromString(current_core_, str_value, /*radix=*/0);
       if (!result.ok()) {
         os << absl::StrCat("Error: '", str_value, "' ",
                            result.status().message())
@@ -452,7 +621,8 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
         continue;
       }
       auto cmd_result =
-          core_access_[core].debug_interface->ClearSwBreakpoint(result.value());
+          core_access_[current_core_].debug_interface->ClearSwBreakpoint(
+              result.value());
       if (!cmd_result.ok()) {
         os << "Error:  " << cmd_result.message() << std::endl;
         os.flush();
@@ -461,6 +631,27 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
       os << absl::StrCat("Breakpoint removed from 0x",
                          absl::Hex(result.value(), absl::PadSpec::kZeroPad8))
          << std::endl;
+      continue;
+    }
+
+    // break list
+    if (RE2::FullMatch(line_view, *list_break_re_)) {
+      std::string bp_list;
+      for (auto [index, address] : core_access_[current_core_].breakpoint_map) {
+        bool active =
+            core_access_[current_core_].debug_interface->HasBreakpoint(address);
+        std::string symbol;
+        auto *loader = core_access_[current_core_].loader_getter();
+        if (loader != nullptr) {
+          auto res = loader->GetFcnSymbolName(address);
+          if (res.ok()) symbol = std::move(res.value());
+        }
+        absl::StrAppend(&bp_list,
+                        absl::StrFormat("  %3d   %-8s   0x%08x   %s\n", index,
+                                        active ? "active" : "inactive", address,
+                                        symbol.empty() ? "-" : symbol));
+      }
+      os << absl::StrCat("Breakpoints:\n", bp_list, "\n");
       continue;
     }
 
@@ -477,7 +668,8 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
     // reg NAME
     if (std::string name, format;
         RE2::FullMatch(line_view, *read_reg2_re_, &name, &format)) {
-      auto result = core_access_[core].debug_interface->ReadRegister(name);
+      auto result =
+          core_access_[current_core_].debug_interface->ReadRegister(name);
       if (result.ok()) {
         os << absl::StrCat(name, " = ", absl::Hex(result.value())) << std::endl;
       } else {
@@ -490,7 +682,7 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
     // break SYMBOL | VALUE
     if (std::string str_value;
         RE2::FullMatch(line_view, *set_break2_re_, &str_value)) {
-      auto result = GetValueFromString(core, str_value, /*radix=*/0);
+      auto result = GetValueFromString(current_core_, str_value, /*radix=*/0);
       if (!result.ok()) {
         os << absl::StrCat("Error: '", str_value, "' ",
                            result.status().message())
@@ -499,15 +691,276 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
         continue;
       }
       auto cmd_result =
-          core_access_[core].debug_interface->SetSwBreakpoint(result.value());
+          core_access_[current_core_].debug_interface->SetSwBreakpoint(
+              result.value());
       if (!cmd_result.ok()) {
         os << "Error:  " << cmd_result.message() << std::endl;
         os.flush();
         continue;
       }
+      core_access_[current_core_]
+          .breakpoint_map[core_access_[current_core_].breakpoint_index++] =
+          result.value();
       os << absl::StrCat("Breakpoint set at 0x",
                          absl::Hex(result.value(), absl::PadSpec::kZeroPad8))
          << std::endl;
+      continue;
+    }
+
+    // watch set SYMBOL | VALUE  <length> [r|w|rw]
+    if (std::string str_value, length_value, rw_value; RE2::FullMatch(
+            line_view, *set_watch_re_, &str_value, &length_value, &rw_value)) {
+      auto result = GetValueFromString(current_core_, str_value, /*radix=*/0);
+      if (!result.ok()) {
+        os << absl::StrCat("Error: '", str_value, "' ",
+                           result.status().message())
+           << std::endl;
+        os.flush();
+        continue;
+      }
+      if (!rw_value.empty()) {
+        rw_value = rw_value.substr(rw_value.find_first_not_of(' '));
+      }
+      AccessType access_type = AccessType::kStore;
+      if (rw_value == "r") {
+        access_type = AccessType::kLoad;
+      } else if (rw_value == "rw") {
+        access_type = AccessType::kStore;
+      }
+
+      uint64_t address = result.value();
+      result = GetValueFromString(current_core_, length_value, /*radix=*/0);
+      if (!result.ok()) {
+        os << absl::StrCat("Error: cannot parse '", length_value,
+                           "' as a length\n");
+        os.flush();
+        continue;
+      }
+      size_t length = result.value();
+      auto *riscv_interface = reinterpret_cast<RiscVDebugInterface *>(
+          core_access_[current_core_].debug_interface);
+      auto cmd_result =
+          riscv_interface->SetDataWatchpoint(address, length, access_type);
+      if (!cmd_result.ok()) {
+        os << "Error:  " << cmd_result.message() << std::endl;
+        os.flush();
+        continue;
+      }
+      core_access_[current_core_]
+          .watchpoint_map[core_access_[current_core_].watchpoint_index++] = {
+          address, length, access_type, /*active=*/true};
+      os << absl::StrCat("Watchpoint set at 0x",
+                         absl::Hex(address, absl::PadSpec::kZeroPad8))
+         << std::endl;
+      continue;
+    }
+
+    // watch set #<N>
+    if (std::string str_value, num_value;
+        RE2::FullMatch(line_view, *set_watch_n_re_, &str_value, &num_value)) {
+      int index;
+      if (!absl::SimpleAtoi(num_value, &index)) {
+        os << absl::StrCat("Error: cannot parse '", str_value,
+                           "' as a watchpoint index\n");
+        continue;
+      }
+      auto iter = core_access_[current_core_].watchpoint_map.find(index);
+      if (iter == core_access_[current_core_].watchpoint_map.end()) {
+        os << absl::StrCat("Error: no watchpoint with index ", index, "\n");
+        continue;
+      }
+      if (iter->second.active) {
+        os << "Watchpoint already active\n";
+        continue;
+      }
+      uint64_t address = iter->second.address;
+      size_t length = iter->second.length;
+      AccessType access_type = iter->second.access_type;
+      auto *riscv_interface = reinterpret_cast<RiscVDebugInterface *>(
+          core_access_[current_core_].debug_interface);
+      auto status =
+          riscv_interface->SetDataWatchpoint(address, length, access_type);
+      if (!status.ok()) {
+        os << absl::StrCat("Error: ", status.message(), "\n");
+        continue;
+      }
+      iter->second.active = true;
+      continue;
+    }
+
+    // watch clear #<N>
+    if (std::string str_value;
+        RE2::FullMatch(line_view, *clear_watch_n_re_, &str_value)) {
+      int index;
+      if (!absl::SimpleAtoi(str_value, &index)) {
+        os << absl::StrCat("Error: cannot parse '", str_value,
+                           "' as a watchpoint index\n");
+        continue;
+      }
+      auto iter = core_access_[current_core_].watchpoint_map.find(index);
+      if (iter == core_access_[current_core_].watchpoint_map.end()) {
+        os << absl::StrCat("Error: no watchpoint with index ", index, "\n");
+        continue;
+      }
+      if (!iter->second.active) continue;
+      uint64_t address = iter->second.address;
+      auto access_type = iter->second.access_type;
+      auto *riscv_interface = reinterpret_cast<RiscVDebugInterface *>(
+          core_access_[current_core_].debug_interface);
+      auto status = riscv_interface->ClearDataWatchpoint(address, access_type);
+      if (!status.ok()) {
+        os << absl::StrCat("Error: ", status.message(), "\n");
+        continue;
+      }
+      iter->second.active = false;
+      continue;
+    }
+
+    // watch clear-all
+    if (RE2::FullMatch(line_view, *clear_all_watch_re_)) {
+      for (auto &[index, info] : core_access_[current_core_].watchpoint_map) {
+        if (!info.active) continue;
+
+        uint64_t address = info.address;
+        auto access_type = info.access_type;
+        auto *riscv_interface = reinterpret_cast<RiscVDebugInterface *>(
+            core_access_[current_core_].debug_interface);
+        auto status =
+            riscv_interface->ClearDataWatchpoint(address, access_type);
+        if (!status.ok()) {
+          os << absl::StrCat("Error: ", status.message(), "\n");
+          continue;
+        }
+        info.active = false;
+      }
+      os << "All watchpoints removed" << std::endl;
+      continue;
+    }
+
+    // watch clear VALUE | SYMBOL [r|w|rw]
+    if (std::string str_value, rw_value;
+        RE2::FullMatch(line_view, *clear_watch_re_, &str_value, &rw_value)) {
+      auto result = GetValueFromString(current_core_, str_value, /*radix=*/0);
+      if (!result.ok()) {
+        os << absl::StrCat("Error: '", str_value, "' ",
+                           result.status().message())
+           << std::endl;
+        os.flush();
+        continue;
+      }
+      if (!rw_value.empty()) {
+        rw_value = rw_value.substr(rw_value.find_first_not_of(' '));
+      }
+      auto access_type = AccessType::kStore;
+      if (rw_value == "r") {
+        access_type = AccessType::kLoad;
+      } else if (rw_value == "rw") {
+        access_type = AccessType::kLoadStore;
+      }
+      bool done = false;
+      for (auto &[index, info] : core_access_[current_core_].watchpoint_map) {
+        if ((info.address == result.value()) &&
+            (info.access_type == access_type)) {
+          auto *riscv_interface = reinterpret_cast<RiscVDebugInterface *>(
+              core_access_[current_core_].debug_interface);
+          auto cmd_result =
+              riscv_interface->ClearDataWatchpoint(result.value(), access_type);
+          if (!cmd_result.ok()) {
+            os << "Error:  " << cmd_result.message() << std::endl;
+            os.flush();
+            break;
+          }
+          info.active = false;
+          done = true;
+          break;
+        }
+      }
+      if (!done) {
+        continue;
+      }
+      os << absl::StrCat("Watchpoint removed from 0x",
+                         absl::Hex(result.value(), absl::PadSpec::kZeroPad8))
+         << std::endl;
+      continue;
+    }
+
+    // watch SYMBOL | VALUE [r|w|rw]
+    if (std::string str_value, length_value, rw_value; RE2::FullMatch(
+            line_view, *set_watch2_re_, &str_value, &length_value, &rw_value)) {
+      auto result = GetValueFromString(current_core_, str_value, /*radix=*/0);
+      if (!result.ok()) {
+        os << absl::StrCat("Error: '", str_value, "' ",
+                           result.status().message())
+           << std::endl;
+        os.flush();
+        continue;
+      }
+      AccessType access_type = AccessType::kStore;
+      if (!rw_value.empty()) {
+        rw_value = rw_value.substr(rw_value.find_first_not_of(' '));
+      }
+      if (rw_value == "r") {
+        access_type = AccessType::kLoad;
+      } else if (rw_value == "rw") {
+        access_type = AccessType::kLoadStore;
+      }
+      uint64_t address = result.value();
+      result = GetValueFromString(current_core_, length_value, /*radix=*/0);
+      if (!result.ok()) {
+        os << absl::StrCat("Error: cannot parse '", length_value,
+                           "' as a length\n");
+        os.flush();
+        continue;
+      }
+      size_t length = result.value();
+      auto *riscv_interface = reinterpret_cast<RiscVDebugInterface *>(
+          core_access_[current_core_].debug_interface);
+      auto cmd_result =
+          riscv_interface->SetDataWatchpoint(address, length, access_type);
+      if (!cmd_result.ok()) {
+        os << "Error:  " << cmd_result.message() << std::endl;
+        os.flush();
+        continue;
+      }
+      core_access_[current_core_]
+          .watchpoint_map[core_access_[current_core_].watchpoint_index++] = {
+          address, length, access_type, /*active=*/true};
+      os << absl::StrCat("Watchpoint set at 0x",
+                         absl::Hex(address, absl::PadSpec::kZeroPad8))
+         << std::endl;
+      continue;
+    }
+
+    // watch list
+    if (RE2::FullMatch(line_view, *list_watch_re_)) {
+      std::string bp_list;
+      for (auto const &[index, info] :
+           core_access_[current_core_].watchpoint_map) {
+        std::string symbol;
+        auto *loader = core_access_[current_core_].loader_getter();
+        if (loader != nullptr) {
+          auto res = loader->GetFcnSymbolName(info.address);
+          if (res.ok()) symbol = std::move(res.value());
+        }
+        std::string access_type;
+        switch (info.access_type) {
+          case AccessType::kStore:
+            access_type = "w";
+            break;
+          case AccessType::kLoad:
+            access_type = "r";
+            break;
+          case AccessType::kLoadStore:
+            access_type = "rw";
+        }
+        absl::StrAppend(
+            &bp_list,
+            absl::StrFormat("  %3d   %-8s   0x%08x   %3d   %2s   %s\n", index,
+                            info.active ? "active" : "inactive", info.address,
+                            info.length, access_type,
+                            symbol.empty() ? "-" : symbol));
+      }
+      os << absl::StrCat("Watchpoints:\n", bp_list, "\n");
       continue;
     }
 
@@ -515,7 +968,44 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
 
     if (std::string str_value, format;
         RE2::FullMatch(line_view, *read_mem2_re_, &str_value, &format)) {
-      os << ReadMemory(core, str_value, format) << std::endl;
+      os << ReadMemory(current_core_, str_value, format) << std::endl;
+      continue;
+    }
+    // Action points.
+    if (RE2::FullMatch(line_view, *list_action_re_)) {
+      os << ListActionPoints();
+      continue;
+    }
+    if (std::string str_value;
+        RE2::FullMatch(line_view, *enable_action_n_re_, &str_value)) {
+      os << EnableActionPointN(str_value);
+      continue;
+    }
+    if (std::string str_value;
+        RE2::FullMatch(line_view, *disable_action_n_re_, &str_value)) {
+      os << DisableActionPointN(str_value);
+      continue;
+    }
+    if (std::string str_value;
+        RE2::FullMatch(line_view, *clear_action_n_re_, &str_value)) {
+      os << ClearActionPointN(str_value);
+      continue;
+    }
+    if (RE2::FullMatch(line_view, *clear_all_action_re_)) {
+      os << ClearAllActionPoints();
+      continue;
+    }
+
+    if (std::string file_name;
+        RE2::FullMatch(line_view, *exec_re_, &file_name)) {
+      auto *ifile = new std::ifstream(file_name);
+      if (!ifile->is_open() || !ifile->good()) {
+        os << "Error: unable to open '" << file_name << "'\n";
+        os.flush();
+        continue;
+      }
+      previous_commands_.push_back(previous_line);
+      command_streams_.push_back(ifile);
       continue;
     }
 
@@ -525,6 +1015,7 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
     os.flush();
   }
 }
+// NOLINTEND(readability/fn_size)
 
 void DebugCommandShell::AddCommand(absl::string_view usage,
                                    CommandFunction command_function) {
@@ -743,7 +1234,7 @@ std::string DebugCommandShell::ReadMemory(int core,
   // Perform the memory access.
   size = bit_width / 8;
   if (size > kMemBufferSize) size = kMemBufferSize;
-  auto mem_result = core_access_[core].debug_interface->ReadMemory(
+  auto mem_result = core_access_[current_core_].debug_interface->ReadMemory(
       address, mem_buffer_, size);
   if (!mem_result.ok()) {
     return absl::StrCat("Error: ", mem_result.status().message());
@@ -876,7 +1367,7 @@ std::string DebugCommandShell::WriteMemory(int core,
   size = bit_width / 8;
   if (size > kMemBufferSize) size = kMemBufferSize;
   std::memcpy(mem_buffer_, &mem_value, size);
-  auto mem_result = core_access_[core].debug_interface->WriteMemory(
+  auto mem_result = core_access_[current_core_].debug_interface->WriteMemory(
       address, mem_buffer_, size);
   if (!mem_result.ok()) {
     return absl::StrCat("Error: ", mem_result.status().message());
@@ -899,11 +1390,149 @@ absl::StatusOr<uint64_t> DebugCommandShell::GetValueFromString(
     return convert_result.status();
   }
   // If all else fails, let's see if it's a symbol.
-  auto *loader = core_access_[core].loader_getter();
+  auto *loader = core_access_[current_core_].loader_getter();
   if (loader == nullptr) return absl::NotFoundError("No symbol table");
   auto result = loader->GetSymbol(str_value);
   if (!result.ok()) return result.status();
   return result.value().first;
+}
+
+std::string DebugCommandShell::FormatRegister(
+    int core, const std::string &reg_name) const {
+  std::string output;
+  auto result =
+      core_access_[current_core_].debug_interface->ReadRegister(reg_name);
+  if (result.ok()) {
+    absl::StrAppend(&output, reg_name, " = ", absl::Hex(result.value()));
+  } else {
+    absl::StrAppend(&output, "Error reading '", reg_name,
+                    "': ", result.status().message());
+  }
+  return output;
+}
+
+std::string DebugCommandShell::FormatAllRegisters(int core) const {
+  std::string output;
+  for (auto const &reg_name : reg_vector_) {
+    absl::StrAppend(&output, FormatRegister(current_core_, reg_name), "\n");
+  }
+  return output;
+}
+
+// Action point methods.
+std::string DebugCommandShell::ListActionPoints() {
+  std::string output;
+  auto &action_map = core_action_point_info_[current_core_];
+  for (auto const &[local_id, info] : action_map) {
+    absl::StrAppend(
+        &output,
+        absl::StrFormat("%02d  [0x%08lx] %8s  %s\n", local_id, info.address,
+                        info.is_enabled ? "enabled" : "disabled", info.name));
+  }
+  return output;
+}
+
+std::string DebugCommandShell::EnableActionPointN(
+    const std::string &index_str) {
+  auto res = riscv::internal::stoull(index_str, nullptr, 10);
+  if (!res.ok()) {
+    return std::string(res.status().message());
+  }
+  auto &action_map = core_action_point_info_[current_core_];
+  int index = res.value();
+  auto it = action_map.find(index);
+  if (it == action_map.end()) {
+    return absl::StrCat("Action point ", index, " not found");
+  }
+  auto &info = it->second;
+  if (info.is_enabled) {
+    return absl::StrCat("Action point ", index, " is already enabled");
+  }
+  info.is_enabled = true;
+  auto *dbg_if = core_access_[current_core_].debug_interface;
+  auto *riscv_dbg_if = static_cast<RiscVDebugInterface *>(dbg_if);
+  auto status = riscv_dbg_if->EnableAction(info.address, info.id);
+  if (!status.ok()) {
+    return absl::StrCat("Error: ", status.message());
+  }
+  return "";
+}
+
+std::string DebugCommandShell::DisableActionPointN(
+    const std::string &index_str) {
+  auto res = riscv::internal::stoull(index_str, nullptr, 10);
+  if (!res.ok()) {
+    return std::string(res.status().message());
+  }
+  auto &action_map = core_action_point_info_[current_core_];
+  int index = res.value();
+  auto it = action_map.find(index);
+  if (it == action_map.end()) {
+    return absl::StrCat("Action point ", index, " not found");
+  }
+  auto &info = it->second;
+  if (!info.is_enabled) {
+    return absl::StrCat("Action point ", index, " is already disabled");
+  }
+  info.is_enabled = false;
+  auto *dbg_if = core_access_[current_core_].debug_interface;
+  auto *riscv_dbg_if = static_cast<RiscVDebugInterface *>(dbg_if);
+  auto status = riscv_dbg_if->DisableAction(info.address, info.id);
+  if (!status.ok()) {
+    return absl::StrCat("Error: ", status.message());
+  }
+  return "";
+}
+
+std::string DebugCommandShell::ClearActionPointN(const std::string &index_str) {
+  auto res = riscv::internal::stoull(index_str, nullptr, 10);
+  if (!res.ok()) {
+    return std::string(res.status().message());
+  }
+  auto &action_map = core_action_point_info_[current_core_];
+  int index = res.value();
+  auto it = action_map.find(index);
+  if (it == action_map.end()) {
+    return absl::StrCat("Action point ", index, " not found");
+  }
+  auto &info = it->second;
+  auto *dbg_if = core_access_[current_core_].debug_interface;
+  auto *riscv_dbg_if = static_cast<RiscVDebugInterface *>(dbg_if);
+  auto status = riscv_dbg_if->ClearActionPoint(info.address, info.id);
+  if (!status.ok()) {
+    return absl::StrCat("Error: ", status.message());
+  }
+  action_map.erase(it);
+  return "";
+}
+
+std::string DebugCommandShell::ClearAllActionPoints() {
+  std::string output;
+  auto *dbg_if = core_access_[current_core_].debug_interface;
+  auto *riscv_dbg_if = static_cast<RiscVDebugInterface *>(dbg_if);
+  for (auto &[local_id, info] : core_action_point_info_[current_core_]) {
+    auto status = riscv_dbg_if->ClearActionPoint(info.address, info.id);
+    if (!status.ok()) {
+      absl::StrAppend(&output, "Error: ", status.message());
+    }
+  }
+  return output;
+}
+
+absl::Status DebugCommandShell::SetActionPoint(
+    uint64_t address, std::string name,
+    absl::AnyInvocable<void(uint64_t, int)> function) {
+  auto *dbg_if = core_access_[current_core_].debug_interface;
+  auto *riscv_dbg_if = static_cast<RiscVDebugInterface *>(dbg_if);
+  auto result = riscv_dbg_if->SetActionPoint(address, std::move(function));
+  if (!result.ok()) {
+    return absl::InternalError(result.status().message());
+  }
+  int id = result.value();
+  int local_id = core_action_point_id_[current_core_]++;
+  auto &action_map = core_action_point_info_[current_core_];
+  action_map.emplace(local_id, ActionPointInfo{address, id, name, true});
+  return absl::OkStatus();
 }
 
 }  // namespace riscv

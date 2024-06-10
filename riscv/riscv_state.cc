@@ -14,6 +14,7 @@
 
 #include "riscv/riscv_state.h"
 
+#include <algorithm>
 #include <cstdint>
 #include <iostream>
 #include <limits>
@@ -23,9 +24,13 @@
 #include "absl/log/check.h"
 #include "absl/log/log.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
+#include "mpact/sim/generic/arch_state.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
+#include "mpact/sim/util/memory/memory_interface.h"
 #include "riscv/riscv_csr.h"
+#include "riscv/riscv_minstret.h"
 #include "riscv/riscv_misa.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_sim_csrs.h"
@@ -218,6 +223,13 @@ void CreateCsrs(RiscVState *state, std::vector<RiscVCsrInterface *> &csr_vec) {
   CHECK_NE(CreateCsr<RiscVSimpleCsr<T>>(state, csr_vec, "mtval",
                                         RiscVCsrEnum::kMTval, 0, state),
            nullptr);
+
+  // minstret/minstreth
+  CHECK_NE(CreateCsr<RiscVMInstret>(state, csr_vec, "minstret", state),
+           nullptr);
+  CHECK_NE(CreateCsr<RiscVMInstreth>(state, csr_vec, "minstreth", state),
+           nullptr);
+
   // Supervisor level CSRs
 
   // sstatus

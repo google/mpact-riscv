@@ -15,6 +15,7 @@
 #ifndef MPACT_RISCV_RISCV_RISCV_DEBUG_INFO_H_
 #define MPACT_RISCV_RISCV_RISCV_DEBUG_INFO_H_
 
+#include <cstdint>
 #include <string>
 
 #include "absl/container/flat_hash_map.h"

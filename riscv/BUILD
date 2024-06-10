@@ -48,6 +48,7 @@ cc_library(
     name = "riscv_state",
     srcs = [
         "riscv_csr.cc",
+        "riscv_minstret.cc",
         "riscv_misa.cc",
         "riscv_register.cc",
         "riscv_sim_csrs.cc",
@@ -58,6 +59,7 @@ cc_library(
     ],
     hdrs = [
         "riscv_csr.h",
+        "riscv_minstret.h",
         "riscv_misa.h",
         "riscv_register.h",
         "riscv_register_aliases.h",
@@ -80,6 +82,7 @@ cc_library(
         "@com_google_absl//absl/strings",
         "@com_google_mpact-sim//mpact/sim/generic:arch_state",
         "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:counters",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
         "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
         "@com_google_mpact-sim//mpact/sim/util/memory",
@@ -446,14 +449,17 @@ cc_library(
         ":riscv64g_decoder",
         ":riscv64g_isa",
         ":riscv_breakpoint",
+        ":riscv_debug_interface",
         ":riscv_fp_state",
         ":riscv_state",
         "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/functional:any_invocable",
         "@com_google_absl//absl/functional:bind_front",
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/synchronization",
         "@com_google_mpact-sim//mpact/sim/generic:arch_state",
         "@com_google_mpact-sim//mpact/sim/generic:component",
@@ -529,6 +535,19 @@ cc_library(
 )
 
 cc_library(
+    name = "riscv_debug_interface",
+    hdrs = [
+        "riscv_debug_interface.h",
+    ],
+    deps = [
+        "@com_google_absl//absl/functional:any_invocable",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_mpact-sim//mpact/sim/generic:core_debug_interface",
+    ],
+)
+
+cc_library(
     name = "debug_command_shell",
     srcs = [
         "debug_command_shell.cc",
@@ -538,7 +557,10 @@ cc_library(
     ],
     copts = ["-O3"],
     deps = [
+        ":riscv_debug_interface",
         ":stoull_wrapper",
+        "@com_google_absl//absl/container:btree",
+        "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/functional:any_invocable",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
@@ -547,6 +569,7 @@ cc_library(
         "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:core_debug_interface",
         "@com_google_mpact-sim//mpact/sim/generic:debug_command_shell_interface",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
         "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
         "@com_googlesource_code_re2//:re2",
     ],
@@ -710,5 +733,142 @@ cc_binary(
         "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
         "@com_google_mpact-sim//mpact/sim/util/memory",
         "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
+    ],
+)
+
+cc_library(
+    name = "instrumentation",
+    srcs = [
+        "riscv_instrumentation_control.cc",
+    ],
+    hdrs = [
+        "riscv_instrumentation_control.h",
+    ],
+    deps = [
+        ":debug_command_shell",
+        ":riscv_top",
+        ":stoull_wrapper",
+        "@com_google_absl//absl/functional:any_invocable",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:string_view",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
+        "@com_googlesource_code_re2//:re2",
+    ],
+)
+
+cc_library(
+    name = "riscv_renode",
+    srcs = [
+        "riscv_cli_forwarder.cc",
+        "riscv_renode.cc",
+        "riscv_renode_cli_top.cc",
+        "riscv_renode_register_info.cc",
+    ],
+    hdrs = [
+        "riscv_cli_forwarder.h",
+        "riscv_renode.h",
+        "riscv_renode_cli_top.h",
+        "riscv_renode_register_info.h",
+    ],
+    deps = [
+        ":debug_command_shell",
+        ":instrumentation",
+        ":riscv_debug_info",
+        ":riscv_debug_interface",
+        ":riscv_top",
+        "//riscv:riscv_arm_semihost",
+        "//riscv:riscv_clint",
+        "//riscv:riscv_state",
+        "//riscv:stoull_wrapper",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/functional:any_invocable",
+        "@com_google_absl//absl/functional:bind_front",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/log:check",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:core_debug_interface",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
+        "@com_google_mpact-sim//mpact/sim/proto:component_data_cc_proto",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/util/other:instruction_profiler",
+        "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
+        "@com_google_mpact-sim//mpact/sim/util/renode",
+        "@com_google_mpact-sim//mpact/sim/util/renode:renode_debug_interface",
+        "@com_google_mpact-sim//mpact/sim/util/renode:socket_cli",
+        "@com_google_protobuf//:protobuf",
+    ],
+)
+
+cc_binary(
+    name = "renode_mpact_riscv32",
+    srcs = [
+        "riscv32_renode.cc",
+        "riscv32_renode.h",
+    ],
+    # List the symbols for the functions called by renode as undefined.
+    linkopts = [
+        "-u construct",
+        "-u construct_with_sysbus",
+        "-u connect",
+        "-u connect_with_sysbus",
+        "-u destruct",
+        "-u get_reg_info_size",
+        "-u get_reg_info",
+        "-u load_elf",
+        "-u read_register",
+        "-u write_register",
+        "-u read_memory",
+        "-u write_memory",
+        "-u reset",
+        "-u step",
+        "-u set_config",
+        "-u set_irq_value",
+    ],
+    linkshared = True,
+    linkstatic = True,
+    deps = [
+        ":riscv_renode",
+        ":riscv_state",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/util/renode:renode_debug_interface",
+    ],
+)
+
+cc_binary(
+    name = "renode_mpact_riscv64",
+    srcs = [
+        "riscv64_renode.cc",
+        "riscv64_renode.h",
+    ],
+    # List the symbols for the functions called by renode as undefined.
+    linkopts = [
+        "-u construct",
+        "-u construct_with_sysbus",
+        "-u connect",
+        "-u connect_with_sysbus",
+        "-u destruct",
+        "-u get_reg_info_size",
+        "-u get_reg_info",
+        "-u load_elf",
+        "-u read_register",
+        "-u write_register",
+        "-u read_memory",
+        "-u write_memory",
+        "-u reset",
+        "-u step",
+        "-u set_config",
+        "-u set_irq_value",
+    ],
+    linkshared = True,
+    linkstatic = True,
+    deps = [
+        ":riscv_renode",
+        ":riscv_state",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/util/renode:renode_debug_interface",
     ],
 )

@@ -616,3 +616,31 @@ cc_test(
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
     ],
 )
+
+cc_test(
+    name = "librenode_mpact_riscv32.so_test",
+    size = "small",
+    srcs = ["librenode_mpact_riscv32_so_test.cc"],
+    data = [
+        "//riscv:renode_mpact_riscv32",
+    ],
+    deps = [
+        "@com_google_absl//absl/debugging:leak_check",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "librenode_mpact_riscv64.so_test",
+    size = "small",
+    srcs = ["librenode_mpact_riscv64_so_test.cc"],
+    data = [
+        "//riscv:renode_mpact_riscv64",
+    ],
+    deps = [
+        "@com_google_absl//absl/debugging:leak_check",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest_main",
+    ],
+)

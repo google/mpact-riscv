@@ -18,14 +18,19 @@
 #include <sys/stat.h>
 #include <time.h>
 
+#include <cerrno>
+#include <cstdint>
+#include <cstdio>
 #include <limits>
 #include <string>
 #include <utility>
 
 #include "absl/functional/bind_front.h"
+#include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "mpact/sim/generic/register.h"
+#include "mpact/sim/util/memory/memory_interface.h"
 
 namespace mpact {
 namespace sim {

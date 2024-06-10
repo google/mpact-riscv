@@ -17,14 +17,16 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
-#include <ios>
 #include <string>
 #include <thread>
+#include <utility>
 
+#include "absl/functional/any_invocable.h"
 #include "absl/functional/bind_front.h"
 #include "absl/log/check.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/synchronization/notification.h"
 #include "mpact/sim/generic/component.h"
 #include "mpact/sim/generic/core_debug_interface.h"
@@ -33,6 +35,7 @@
 #include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "mpact/sim/util/memory/memory_interface.h"
+#include "mpact/sim/util/memory/memory_watcher.h"
 #include "riscv/riscv32_decoder.h"
 #include "riscv/riscv32g_enums.h"
 #include "riscv/riscv64_decoder.h"
@@ -40,6 +43,7 @@
 #include "riscv/riscv_action_point.h"
 #include "riscv/riscv_breakpoint.h"
 #include "riscv/riscv_csr.h"
+#include "riscv/riscv_debug_interface.h"
 #include "riscv/riscv_fp_state.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_register_aliases.h"
@@ -147,7 +151,8 @@ RiscVTop::~RiscVTop() {
   delete rv_decoder_;
   delete state_;
   delete fp_state_;
-  delete watcher_;
+  delete memory_watcher_;
+  delete atomic_watcher_;
   if (owns_memory_) delete inst_memory_;
 }
 
@@ -283,7 +288,10 @@ absl::StatusOr<int> RiscVTop::Step(int num) {
   if (need_to_step_over_) {
     need_to_step_over_ = false;
     auto status = StepPastBreakpoint();
-    if (!status.ok()) return status;
+    if (!status.ok()) {
+      run_status_ = RunStatus::kHalted;
+      return status;
+    }
     count++;
   }
 
@@ -325,7 +333,10 @@ absl::StatusOr<int> RiscVTop::Step(int num) {
     // If it's an action point, just step over and continue.
     if (halt_reason_ == *HaltReason::kActionPoint) {
       auto status = StepPastBreakpoint();
-      if (!status.ok()) return status;
+      if (!status.ok()) {
+        run_status_ = RunStatus::kHalted;
+        return status;
+      }
       // Reset the halt reason and continue;
       halted_ = false;
       halt_reason_ = *HaltReason::kNone;
@@ -463,11 +474,6 @@ absl::StatusOr<RiscVTop::HaltReasonValueType> RiscVTop::GetLastHaltReason() {
 }
 
 absl::StatusOr<uint64_t> RiscVTop::ReadRegister(const std::string &name) {
-  // The registers aren't protected by a mutex, so let's not read them while
-  // the simulator is running.
-  if (run_status_ != RunStatus::kHalted) {
-    return absl::FailedPreconditionError("ReadRegister: Core must be halted");
-  }
   auto iter = state_->registers()->find(name);
 
   // Was the register found? If not try CSRs.
@@ -659,6 +665,123 @@ absl::Status RiscVTop::ClearAllSwBreakpoints() {
   return absl::OkStatus();
 }
 
+absl::StatusOr<int> RiscVTop::SetActionPoint(
+    uint64_t address, absl::AnyInvocable<void(uint64_t, int)> action) {
+  if (rv_action_point_manager_ == nullptr) {
+    return absl::InternalError("Action points are not enabled");
+  }
+  auto res = rv_action_point_manager_->SetAction(address, std::move(action));
+  if (!res.ok()) return res;
+  return res.value();
+}
+
+absl::Status RiscVTop::ClearActionPoint(uint64_t address, int id) {
+  if (rv_action_point_manager_ == nullptr) {
+    return absl::InternalError("Action points are not enabled");
+  }
+  return rv_action_point_manager_->ClearAction(address, id);
+}
+
+absl::Status RiscVTop::EnableAction(uint64_t address, int id) {
+  if (rv_action_point_manager_ == nullptr) {
+    return absl::InternalError("Action points are not enabled");
+  }
+  return rv_action_point_manager_->EnableAction(address, id);
+}
+
+absl::Status RiscVTop::DisableAction(uint64_t address, int id) {
+  if (rv_action_point_manager_ == nullptr) {
+    return absl::InternalError("Action points are not enabled");
+  }
+  return rv_action_point_manager_->DisableAction(address, id);
+}
+
+// Watch points.
+absl::Status RiscVTop::SetDataWatchpoint(uint64_t address, size_t length,
+                                         AccessType access_type) {
+  if ((access_type == AccessType::kLoad) ||
+      (access_type == AccessType::kLoadStore)) {
+    auto rd_memory_status = memory_watcher_->SetLoadWatchCallback(
+        util::MemoryWatcher::AddressRange(address, address + length - 1),
+        [this](uint64_t address, int size) {
+          set_halt_string(absl::StrFormat(
+              "Watchpoint triggered due to load from %08x", address));
+          RequestHalt(*HaltReason::kDataWatchPoint, nullptr);
+        });
+    if (!rd_memory_status.ok()) return rd_memory_status;
+
+    auto rd_atomic_status = atomic_watcher_->SetLoadWatchCallback(
+        util::MemoryWatcher::AddressRange(address, address + length - 1),
+        [this](uint64_t address, int size) {
+          set_halt_string(absl::StrFormat(
+              "Watchpoint triggered due to load from %08x", address));
+          RequestHalt(*HaltReason::kDataWatchPoint, nullptr);
+        });
+    if (!rd_atomic_status.ok()) {
+      // Error recovery - ignore return value.
+      (void)memory_watcher_->ClearLoadWatchCallback(address);
+      return rd_atomic_status;
+    }
+  }
+  if ((access_type == AccessType::kStore) ||
+      (access_type == AccessType::kLoadStore)) {
+    auto wr_memory_status = memory_watcher_->SetStoreWatchCallback(
+        util::MemoryWatcher::AddressRange(address, address + length - 1),
+        [this](uint64_t address, int size) {
+          set_halt_string(absl::StrFormat(
+              "Watchpoint triggered due to store to %08x", address));
+          RequestHalt(*HaltReason::kDataWatchPoint, nullptr);
+        });
+    if (!wr_memory_status.ok()) {
+      if (access_type == AccessType::kLoadStore) {
+        // Error recovery - ignore return value.
+        (void)memory_watcher_->ClearLoadWatchCallback(address);
+        (void)atomic_watcher_->ClearLoadWatchCallback(address);
+      }
+      return wr_memory_status;
+    }
+
+    auto wr_atomic_status = atomic_watcher_->SetStoreWatchCallback(
+        util::MemoryWatcher::AddressRange(address, address + length - 1),
+        [this](uint64_t address, int size) {
+          set_halt_string(absl::StrFormat(
+              "Watchpoint triggered due to store to %08x", address));
+          RequestHalt(*HaltReason::kDataWatchPoint, nullptr);
+        });
+    if (!wr_atomic_status.ok()) {
+      // Error recovery - ignore return value.
+      (void)memory_watcher_->ClearStoreWatchCallback(address);
+      if (access_type == AccessType::kLoadStore) {
+        (void)memory_watcher_->ClearLoadWatchCallback(address);
+        (void)atomic_watcher_->ClearLoadWatchCallback(address);
+      }
+      return wr_atomic_status;
+    }
+  }
+  return absl::OkStatus();
+}
+
+absl::Status RiscVTop::ClearDataWatchpoint(uint64_t address,
+                                           AccessType access_type) {
+  if ((access_type == AccessType::kLoad) ||
+      (access_type == AccessType::kLoadStore)) {
+    auto rd_memory_status = memory_watcher_->ClearLoadWatchCallback(address);
+    if (!rd_memory_status.ok()) return rd_memory_status;
+
+    auto rd_atomic_status = atomic_watcher_->ClearLoadWatchCallback(address);
+    if (!rd_atomic_status.ok()) return rd_atomic_status;
+  }
+  if ((access_type == AccessType::kStore) ||
+      (access_type == AccessType::kLoadStore)) {
+    auto wr_memory_status = memory_watcher_->ClearStoreWatchCallback(address);
+    if (!wr_memory_status.ok()) return wr_memory_status;
+
+    auto wr_atomic_status = atomic_watcher_->ClearStoreWatchCallback(address);
+    if (!wr_atomic_status.ok()) return wr_atomic_status;
+  }
+  return absl::OkStatus();
+}
+
 absl::StatusOr<Instruction *> RiscVTop::GetInstruction(uint64_t address) {
   auto inst = rv_decode_cache_->GetDecodedInstruction(address);
   return inst;
@@ -712,6 +835,20 @@ void RiscVTop::SetPc(uint64_t value) {
     pc_->data_buffer()->Set<uint32_t>(0, static_cast<uint32_t>(value));
   } else {
     pc_->data_buffer()->Set<uint64_t>(0, value);
+  }
+}
+
+void RiscVTop::EnableStatistics() {
+  for (auto &[unused, counter_ptr] : counter_map()) {
+    if (counter_ptr->GetName() == "pc") continue;
+    counter_ptr->SetIsEnabled(true);
+  }
+}
+
+void RiscVTop::DisableStatistics() {
+  for (auto &[unused, counter_ptr] : counter_map()) {
+    if (counter_ptr->GetName() == "pc") continue;
+    counter_ptr->SetIsEnabled(false);
   }
 }
 
