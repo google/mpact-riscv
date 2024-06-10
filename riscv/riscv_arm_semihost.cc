@@ -339,10 +339,14 @@ absl::Status RiscVArmSemihost::SysOpen(uint64_t parameter, uint64_t *ret_val) {
                                : static_cast<int>(db3_->Get<uint64_t>(2));
   // Allocate a data buffer for the file name string, load it, and initialize
   // a string variable with it.
-  auto *db_c = db_factory_.Allocate<uint8_t>(file_name_len);
-  d_memory_if_->Load(string_address, db_c, nullptr, nullptr);
-  std::string file_name(static_cast<char *>(db_c->raw_ptr()), file_name_len);
-  db_c->DecRef();
+  std::string file_name;
+  if (file_name_len > 0) {
+    auto *db_c = db_factory_.Allocate<uint8_t>(file_name_len);
+    d_memory_if_->Load(string_address, db_c, nullptr, nullptr);
+    file_name =
+        std::string(static_cast<char *>(db_c->raw_ptr()), file_name_len);
+    db_c->DecRef();
+  }
   // If the name is ":tt" then it's either cin or cout depending on the mode.
   // In this case just dup the corresponding host fd's.
   int host_fd;

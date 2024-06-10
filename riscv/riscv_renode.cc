@@ -126,9 +126,10 @@ RiscVRenode::RiscVRenode(std::string name, MemoryInterface *renode_sysbus,
   CHECK_OK(renode_router_->AddDefaultTarget<MemoryInterface>(memory_));
 
   // Set up semihosting.
-  semihost_ = new RiscVArmSemihost(RiscVArmSemihost::BitWidth::kWord32,
-                                   riscv_top_->inst_memory(),
-                                   riscv_top_->data_memory());
+  semihost_ = new RiscVArmSemihost(
+      xlen == RiscVXlen::RV32 ? RiscVArmSemihost::BitWidth::kWord32
+                              : RiscVArmSemihost::BitWidth::kWord64,
+      riscv_top_->inst_memory(), riscv_top_->data_memory());
   // Set up special handlers (ebreak, wfi, ecall).
   riscv_top_->state()->AddEbreakHandler([this](const Instruction *inst) {
     if (this->semihost_->IsSemihostingCall(inst)) {
@@ -167,7 +168,7 @@ RiscVRenode::~RiscVRenode() {
   }
   if (mem_profiler_ != nullptr) {
     std::string mem_profile_file_name =
-        absl::StrCat("./mpact_cheriot_", name_, "_mem_profile.csv");
+        absl::StrCat("./mpact_riscv_", name_, "_mem_profile.csv");
     std::fstream mem_profile_file(mem_profile_file_name.c_str(),
                                   std::ios_base::out);
     if (!mem_profile_file.good()) {
