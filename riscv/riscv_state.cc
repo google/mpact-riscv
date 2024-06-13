@@ -27,7 +27,6 @@
 #include "absl/strings/string_view.h"
 #include "mpact/sim/generic/arch_state.h"
 #include "mpact/sim/generic/type_helpers.h"
-#include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "mpact/sim/util/memory/memory_interface.h"
 #include "riscv/riscv_csr.h"
 #include "riscv/riscv_minstret.h"
@@ -305,10 +304,6 @@ RiscVState::RiscVState(absl::string_view id, RiscVXlen xlen,
       memory_(memory),
       atomic_memory_(atomic_memory),
       csr_set_(new RiscVCsrSet()) {
-  if (memory_ == nullptr) {
-    memory_ = owned_memory_ = new util::FlatDemandMemory(0);
-  }
-
   DataBuffer *db = nullptr;
   switch (xlen_) {
     case RiscVXlen::RV32: {
@@ -365,7 +360,6 @@ RiscVState::RiscVState(absl::string_view id, RiscVXlen xlen,
 RiscVState::~RiscVState() {
   delete pc_src_operand_;
   delete pc_dst_operand_;
-  delete owned_memory_;
   delete csr_set_;
   for (auto *csr : csr_vec_) {
     delete csr;

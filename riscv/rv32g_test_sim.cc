@@ -26,12 +26,17 @@
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
 #include "absl/log/log.h"
+#include "absl/strings/str_cat.h"
 #include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/atomic_memory.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "mpact/sim/util/memory/memory_watcher.h"
 #include "mpact/sim/util/program_loader/elf_program_loader.h"
+#include "riscv/riscv32_decoder.h"
+#include "riscv/riscv_fp_state.h"
+#include "riscv/riscv_register.h"
+#include "riscv/riscv_register_aliases.h"
 #include "riscv/riscv_state.h"
 #include "riscv/riscv_top.h"
 
@@ -41,8 +46,13 @@
 using HaltReason = ::mpact::sim::generic::CoreDebugInterface::HaltReason;
 using AddressRange = ::mpact::sim::util::MemoryWatcher::AddressRange;
 using ::mpact::sim::generic::operator*;  // NOLINT: clang-tidy false positive.
+using ::mpact::sim::riscv::RiscV32Decoder;
+using ::mpact::sim::riscv::RiscVFPState;
+using ::mpact::sim::riscv::RiscVState;
 using ::mpact::sim::riscv::RiscVTop;
 using ::mpact::sim::riscv::RiscVXlen;
+using ::mpact::sim::riscv::RV32Register;
+using ::mpact::sim::riscv::RVFpRegister;
 
 constexpr char kBeginSignature[] = "begin_signature";
 constexpr char kEndSignature[] = "end_signature";
@@ -74,7 +84,31 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  RiscVTop riscv_top("RV32", watcher, RiscVXlen::RV32, atomic_memory);
+  // Set up architectural state and decoder.
+  RiscVState rv_state("RiscV32", RiscVXlen::RV32, watcher, atomic_memory);
+  // For floating point support add the fp state.
+  RiscVFPState rv_fp_state(&rv_state);
+  rv_state.set_rv_fp(&rv_fp_state);
+  // Create the instruction decoder.
+  RiscV32Decoder rv_decoder(&rv_state, watcher);
+
+  // Make sure the architectural and abi register aliases are added.
+  std::string reg_name;
+  for (int i = 0; i < 32; i++) {
+    reg_name = absl::StrCat(RiscVState::kXregPrefix, i);
+    (void)rv_state.AddRegister<RV32Register>(reg_name);
+    (void)rv_state.AddRegisterAlias<RV32Register>(
+        reg_name, ::mpact::sim::riscv::kXRegisterAliases[i]);
+  }
+  for (int i = 0; i < 32; i++) {
+    reg_name = absl::StrCat(RiscVState::kFregPrefix, i);
+    (void)rv_state.AddRegister<RVFpRegister>(reg_name);
+    (void)rv_state.AddRegisterAlias<RVFpRegister>(
+        reg_name, ::mpact::sim::riscv::kFRegisterAliases[i]);
+  }
+
+  RiscVTop riscv_top("RiscV32TestSim", &rv_state, &rv_decoder);
+
   // Initialize the PC to the entry point.
   uint32_t entry_point = load_result.value();
   auto pc_write = riscv_top.WriteRegister("pc", entry_point);

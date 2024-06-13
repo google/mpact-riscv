@@ -14,11 +14,13 @@
 
 #include "riscv/riscv32_decoder.h"
 
+#include <cstdint>
 #include <string>
 
 #include "absl/log/check.h"
 #include "absl/log/log.h"
 #include "absl/strings/str_cat.h"
+#include "elfio/elf_types.hpp"
 #include "elfio/elfio.hpp"
 #include "elfio/elfio_section.hpp"
 #include "elfio/elfio_symbols.hpp"
@@ -42,8 +44,7 @@ using SymbolAccessor = ELFIO::symbol_section_accessor_template<ELFIO::section>;
 class RiscV32DecoderTest : public testing::Test {
  protected:
   RiscV32DecoderTest()
-      : state_("riscv32_test", RiscVXlen::RV32),
-        memory_(0),
+      : state_("riscv32_test", RiscVXlen::RV32, &memory_),
         loader_(&memory_),
         decoder_(&state_, &memory_) {
     const std::string input_file =
@@ -59,8 +60,8 @@ class RiscV32DecoderTest : public testing::Test {
   ~RiscV32DecoderTest() override { delete symbol_accessor_; }
 
   ELFIO::elfio elf_reader_;
-  mpact::sim::riscv::RiscVState state_;
   mpact::sim::util::FlatDemandMemory memory_;
+  mpact::sim::riscv::RiscVState state_;
   mpact::sim::util::ElfProgramLoader loader_;
   mpact::sim::riscv::RiscV32Decoder decoder_;
   SymbolAccessor *symbol_accessor_;

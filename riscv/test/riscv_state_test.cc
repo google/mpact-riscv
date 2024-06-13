@@ -15,9 +15,13 @@
 #include "riscv/riscv_state.h"
 
 #include <cstdint>
+#include <iostream>
+#include <ostream>
+#include <string>
 
 #include "absl/log/check.h"
 #include "googlemock/include/gmock/gmock.h"
+#include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "riscv/riscv_register.h"
 
 namespace {
@@ -25,6 +29,7 @@ namespace {
 using ::mpact::sim::riscv::RiscVState;
 using ::mpact::sim::riscv::RiscVXlen;
 using ::mpact::sim::riscv::RV32Register;
+using ::mpact::sim::util::FlatDemandMemory;
 
 constexpr int kPcValue = 0x1000;
 constexpr int kMemAddr = 0x1200;
@@ -34,7 +39,8 @@ constexpr uint32_t kMemValue = 0xdeadbeef;
 // additional functionality over the ArchState class.
 
 TEST(RiscVStateTest, Basic) {
-  auto *state = new RiscVState("test", RiscVXlen::RV32);
+  FlatDemandMemory memory;
+  auto *state = new RiscVState("test", RiscVXlen::RV32, &memory);
   // Make sure pc has been created.
   auto iter = state->registers()->find("pc");
   auto *ptr = (iter != state->registers()->end()) ? iter->second : nullptr;
@@ -48,7 +54,8 @@ TEST(RiscVStateTest, Basic) {
 }
 
 TEST(RiscVStateTest, Memory) {
-  auto *state = new RiscVState("test", RiscVXlen::RV32);
+  FlatDemandMemory memory;
+  auto *state = new RiscVState("test", RiscVXlen::RV32, &memory);
   auto *db = state->db_factory()->Allocate<uint32_t>(1);
   state->LoadMemory(nullptr, kMemAddr, db, nullptr, nullptr);
   EXPECT_EQ(db->Get<uint32_t>(0), 0);
@@ -62,7 +69,8 @@ TEST(RiscVStateTest, Memory) {
 }
 
 TEST(RiscVStateTest, OutOfBoundLoad) {
-  auto *state = new RiscVState("test", RiscVXlen::RV32);
+  FlatDemandMemory memory;
+  auto *state = new RiscVState("test", RiscVXlen::RV32, &memory);
   state->set_max_physical_address(kMemAddr - 4);
   state->set_on_trap([](bool is_interrupt, uint64_t trap_value,
                         uint64_t exception_code, uint64_t epc,

@@ -25,6 +25,7 @@
 #include "absl/status/statusor.h"
 #include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/generic/data_buffer.h"
+#include "mpact/sim/generic/decoder_interface.h"
 #include "mpact/sim/util/memory/atomic_memory.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "mpact/sim/util/memory/memory_interface.h"
@@ -133,6 +134,9 @@ class RiscVRenode : public util::renode::RenodeDebugInterface {
  private:
   std::string name_;
   MemoryInterface *renode_sysbus_ = nullptr;
+  RiscVState *rv_state_ = nullptr;
+  RiscVFPState *rv_fp_state_ = nullptr;
+  generic::DecoderInterface *rv_decoder_ = nullptr;
   RiscVTop *riscv_top_ = nullptr;
   RiscVArmSemihost *semihost_ = nullptr;
   SingleInitiatorRouter *router_ = nullptr;

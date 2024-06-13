@@ -14,15 +14,19 @@
 
 #include "riscv/riscv_zicsr_instructions.h"
 
+#include <cstdint>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "absl/log/check.h"
-#include "absl/log/log.h"
 #include "absl/strings/string_view.h"
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/immediate_operand.h"
+#include "mpact/sim/generic/instruction.h"
+#include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "riscv/riscv_csr.h"
+#include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
 
 // This file contains tests for individual Zicsr instructions.
@@ -36,6 +40,7 @@ using ::mpact::sim::riscv::RiscVCsrEnum;
 using ::mpact::sim::riscv::RiscVState;
 using ::mpact::sim::riscv::RiscVXlen;
 using ::mpact::sim::riscv::RV32Register;
+using ::mpact::sim::util::FlatDemandMemory;
 
 constexpr uint32_t kInstAddress = 0x2468;
 
@@ -51,7 +56,7 @@ constexpr uint32_t kUScratchValue =
 class ZicsrInstructionsTest : public testing::Test {
  protected:
   ZicsrInstructionsTest() {
-    state_ = new RiscVState("test", RiscVXlen::RV32);
+    state_ = new RiscVState("test", RiscVXlen::RV32, &memory_);
     csr_ = new RiscV32SimpleCsr("uscratch", RiscVCsrEnum::kUScratch, 0, state_);
     CHECK_OK(state_->csr_set()->AddCsr(csr_));
     instruction_ = new Instruction(kInstAddress, state_);
@@ -114,6 +119,7 @@ class ZicsrInstructionsTest : public testing::Test {
     return reg->data_buffer()->Get<T>(0);
   }
 
+  FlatDemandMemory memory_;
   RiscV32SimpleCsr *csr_;
   RiscVState *state_;
   Instruction *instruction_;

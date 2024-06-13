@@ -14,10 +14,12 @@
 
 #include "riscv/riscv_csr.h"
 
+#include <cstdint>
 #include <ios>
 
 #include "absl/status/status.h"
 #include "googlemock/include/gmock/gmock.h"
+#include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "riscv/riscv_state.h"
 
 namespace {
@@ -30,6 +32,7 @@ using ::mpact::sim::riscv::RiscV32SimpleCsr;
 using ::mpact::sim::riscv::RiscVCsrEnum;
 using ::mpact::sim::riscv::RiscVState;
 using ::mpact::sim::riscv::RiscVXlen;
+using ::mpact::sim::util::FlatDemandMemory;
 
 constexpr char kCsrName0[] = "csr0";
 constexpr char kCsrName1[] = "csr1";
@@ -42,9 +45,12 @@ constexpr uint32_t kWriteMask = 0x000f'f000;
 // Test fixture class.
 class RiscV32CsrTest : public testing::Test {
  protected:
-  RiscV32CsrTest() { state_ = new RiscVState("test", RiscVXlen::RV32); }
+  RiscV32CsrTest() {
+    state_ = new RiscVState("test", RiscVXlen::RV32, &memory_);
+  }
   ~RiscV32CsrTest() override { delete state_; }
 
+  FlatDemandMemory memory_;
   RiscVState *state_;
 };
 

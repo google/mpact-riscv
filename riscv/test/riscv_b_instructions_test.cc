@@ -17,11 +17,14 @@
 #include <cstdint>
 #include <memory>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/immediate_operand.h"
 #include "mpact/sim/generic/instruction.h"
+#include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
 
@@ -32,6 +35,7 @@ namespace {
 
 using ::mpact::sim::generic::ImmediateOperand;
 using ::mpact::sim::generic::Instruction;
+using ::mpact::sim::util::FlatDemandMemory;
 
 constexpr uint32_t kInstAddress = 0x2468;
 
@@ -46,7 +50,7 @@ constexpr uint64_t kUVal2 = 0x5555666677778888ULL;
 class RV64BInstructionTest : public testing::Test {
  public:
   RV64BInstructionTest() {
-    state_ = std::make_unique<RiscVState>("test", RiscVXlen::RV64);
+    state_ = std::make_unique<RiscVState>("test", RiscVXlen::RV64, &memory_);
     instruction_ = std::make_unique<Instruction>(kInstAddress, state_.get());
     instruction_->set_size(4);
   }
@@ -107,6 +111,7 @@ class RV64BInstructionTest : public testing::Test {
     return reg->data_buffer()->Get<T>(0);
   }
 
+  FlatDemandMemory memory_;
   std::unique_ptr<RiscVState> state_;
   std::unique_ptr<Instruction> instruction_;
 };

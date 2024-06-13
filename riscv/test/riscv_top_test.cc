@@ -22,14 +22,19 @@
 #include "absl/strings/str_cat.h"
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/core_debug_interface.h"
+#include "mpact/sim/generic/decoder_interface.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "mpact/sim/util/memory/memory_interface.h"
 #include "mpact/sim/util/memory/memory_watcher.h"
 #include "mpact/sim/util/program_loader/elf_program_loader.h"
+#include "riscv/riscv32_decoder.h"
 #include "riscv/riscv32_htif_semihost.h"
+#include "riscv/riscv64_decoder.h"
 #include "riscv/riscv_arm_semihost.h"
+#include "riscv/riscv_register.h"
+#include "riscv/riscv_register_aliases.h"
 #include "riscv/riscv_state.h"
 
 namespace {
@@ -40,10 +45,18 @@ using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 #define EXPECT_OK(x) EXPECT_TRUE(x.ok())
 #endif
 
+using ::mpact::sim::generic::DecoderInterface;
 using ::mpact::sim::generic::Instruction;
+using ::mpact::sim::riscv::RiscV32Decoder;
+using ::mpact::sim::riscv::RiscV64Decoder;
 using ::mpact::sim::riscv::RiscVArmSemihost;
+using ::mpact::sim::riscv::RiscVFPState;
+using ::mpact::sim::riscv::RiscVState;
 using ::mpact::sim::riscv::RiscVTop;
 using ::mpact::sim::riscv::RiscVXlen;
+using ::mpact::sim::riscv::RV32Register;
+using ::mpact::sim::riscv::RV64Register;
+using ::mpact::sim::riscv::RVFpRegister;
 using ::mpact::sim::util::FlatDemandMemory;
 
 using HaltReason = ::mpact::sim::generic::CoreDebugInterface::HaltReason;
@@ -151,13 +164,36 @@ class RiscVTopTest : public testing::Test {
  protected:
   RiscVTopTest() {
     memory_ = new FlatDemandMemory();
-    riscv_top_ = new RiscVTop("RV32", memory_, RiscVXlen::RV32);
+    state_ = new RiscVState("RV32", RiscVXlen::RV32, memory_);
+    fp_state_ = new RiscVFPState(state_);
+    state_->set_rv_fp(fp_state_);
+    decoder_ = new RiscV32Decoder(state_, memory_);
+
+    // Make sure the architectural and abi register aliases are added.
+    std::string reg_name;
+    for (int i = 0; i < 32; i++) {
+      reg_name = absl::StrCat(RiscVState::kXregPrefix, i);
+      (void)state_->AddRegister<RV32Register>(reg_name);
+      (void)state_->AddRegisterAlias<RV32Register>(
+          reg_name, ::mpact::sim::riscv::kXRegisterAliases[i]);
+    }
+    for (int i = 0; i < 32; i++) {
+      reg_name = absl::StrCat(RiscVState::kFregPrefix, i);
+      (void)state_->AddRegister<RVFpRegister>(reg_name);
+      (void)state_->AddRegisterAlias<RVFpRegister>(
+          reg_name, ::mpact::sim::riscv::kFRegisterAliases[i]);
+    }
+
+    riscv_top_ = new RiscVTop("RV32", state_, decoder_);
     // Set up the elf loader.
-    loader_ = new mpact::sim::util::ElfProgramLoader(riscv_top_->inst_memory());
+    loader_ = new mpact::sim::util::ElfProgramLoader(memory_);
   }
 
   ~RiscVTopTest() override {
     delete loader_;
+    delete decoder_;
+    delete fp_state_;
+    delete state_;
     delete riscv_top_;
     delete memory_;
   }
@@ -174,6 +210,9 @@ class RiscVTopTest : public testing::Test {
   RiscVTop *riscv_top_ = nullptr;
   mpact::sim::util::ElfProgramLoader *loader_ = nullptr;
   FlatDemandMemory *memory_ = nullptr;
+  RiscVState *state_ = nullptr;
+  RiscVFPState *fp_state_ = nullptr;
+  DecoderInterface *decoder_ = nullptr;
 };
 
 // Runs the program from beginning to end using HTIF semihosting.
@@ -483,11 +522,32 @@ TEST_F(RiscVTopTest, ReadWriteOutOfBoundMemory) {
 TEST_F(RiscVTopTest, RiscV64) {
   delete riscv_top_;
   delete loader_;
+  delete decoder_;
+  delete state_;
 
   // New top with 64 bit registers.
-  riscv_top_ = new RiscVTop("RV64", memory_, RiscVXlen::RV64);
+  state_ = new RiscVState("RV64", RiscVXlen::RV64, memory_);
+  state_->set_rv_fp(fp_state_);
+  decoder_ = new RiscV64Decoder(state_, memory_);
+
+  // Make sure the architectural and abi register aliases are added.
+  std::string reg_name;
+  for (int i = 0; i < 32; i++) {
+    reg_name = absl::StrCat(RiscVState::kXregPrefix, i);
+    (void)state_->AddRegister<RV64Register>(reg_name);
+    (void)state_->AddRegisterAlias<RV64Register>(
+        reg_name, ::mpact::sim::riscv::kXRegisterAliases[i]);
+  }
+  for (int i = 0; i < 32; i++) {
+    reg_name = absl::StrCat(RiscVState::kFregPrefix, i);
+    (void)state_->AddRegister<RVFpRegister>(reg_name);
+    (void)state_->AddRegisterAlias<RVFpRegister>(
+        reg_name, ::mpact::sim::riscv::kFRegisterAliases[i]);
+  }
+
+  riscv_top_ = new RiscVTop("RV64", state_, decoder_);
   // Set up the elf loader.
-  loader_ = new mpact::sim::util::ElfProgramLoader(riscv_top_->inst_memory());
+  loader_ = new mpact::sim::util::ElfProgramLoader(memory_);
 
   LoadFile(kArm64FileName);
   ArmSemihostSetup arm_semihost(riscv_top_, memory_);

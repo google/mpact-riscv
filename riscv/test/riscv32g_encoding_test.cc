@@ -14,7 +14,11 @@
 
 #include "riscv/riscv32g_encoding.h"
 
+#include <cstdint>
+
 #include "googlemock/include/gmock/gmock.h"
+#include "mpact/sim/util/memory/flat_demand_memory.h"
+#include "riscv/riscv32g_enums.h"
 #include "riscv/riscv_state.h"
 
 namespace {
@@ -22,6 +26,7 @@ namespace {
 using mpact::sim::riscv::RiscVState;
 using mpact::sim::riscv::RiscVXlen;
 using mpact::sim::riscv::isa32::RiscV32GEncoding;
+using mpact::sim::util::FlatDemandMemory;
 using SlotEnum = mpact::sim::riscv::isa32::SlotEnum;
 using OpcodeEnum = mpact::sim::riscv::isa32::OpcodeEnum;
 
@@ -200,7 +205,7 @@ constexpr uint32_t kSfenceVmaNn = 0b000'1001'00001'00001'000'00000'111'0011;
 class RiscV32GEncodingTest : public testing::Test {
  protected:
   RiscV32GEncodingTest() {
-    state_ = new RiscVState("test", RiscVXlen::RV32);
+    state_ = new RiscVState("test", RiscVXlen::RV32, &memory_);
     enc_ = new RiscV32GEncoding(state_);
   }
   ~RiscV32GEncodingTest() override {
@@ -208,6 +213,7 @@ class RiscV32GEncodingTest : public testing::Test {
     delete state_;
   }
 
+  FlatDemandMemory memory_;
   RiscVState *state_;
   RiscV32GEncoding *enc_;
 };

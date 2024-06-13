@@ -45,15 +45,24 @@
 #include "mpact/sim/util/program_loader/elf_program_loader.h"
 #include "re2/re2.h"
 #include "riscv/debug_command_shell.h"
+#include "riscv/riscv64_decoder.h"
 #include "riscv/riscv_arm_semihost.h"
+#include "riscv/riscv_fp_state.h"
+#include "riscv/riscv_register.h"
+#include "riscv/riscv_register_aliases.h"
 #include "riscv/riscv_state.h"
 #include "riscv/riscv_top.h"
 #include "src/google/protobuf/text_format.h"
 
 using ::mpact::sim::generic::Instruction;
 using ::mpact::sim::proto::ComponentData;
+using ::mpact::sim::riscv::RiscV64Decoder;
 using ::mpact::sim::riscv::RiscVArmSemihost;
+using ::mpact::sim::riscv::RiscVFPState;
+using ::mpact::sim::riscv::RiscVState;
 using ::mpact::sim::riscv::RiscVXlen;
+using ::mpact::sim::riscv::RV64Register;
+using ::mpact::sim::riscv::RVFpRegister;
 using AddressRange = mpact::sim::util::MemoryWatcher::AddressRange;
 
 // Flags for specifying interactive mode.
@@ -194,7 +203,30 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  RiscVTop riscv_top("RV64", memory, RiscVXlen::RV64, atomic_memory);
+  // Set up architectural state and decoder.
+  RiscVState rv_state("RiscV64", RiscVXlen::RV64, memory, atomic_memory);
+  // For floating point support add the fp state.
+  RiscVFPState rv_fp_state(&rv_state);
+  rv_state.set_rv_fp(&rv_fp_state);
+  // Create the instruction decoder.
+  RiscV64Decoder rv_decoder(&rv_state, memory);
+
+  // Make sure the architectural and abi register aliases are added.
+  std::string reg_name;
+  for (int i = 0; i < 32; i++) {
+    reg_name = absl::StrCat(RiscVState::kXregPrefix, i);
+    (void)rv_state.AddRegister<RV64Register>(reg_name);
+    (void)rv_state.AddRegisterAlias<RV64Register>(
+        reg_name, ::mpact::sim::riscv::kXRegisterAliases[i]);
+  }
+  for (int i = 0; i < 32; i++) {
+    reg_name = absl::StrCat(RiscVState::kFregPrefix, i);
+    (void)rv_state.AddRegister<RVFpRegister>(reg_name);
+    (void)rv_state.AddRegisterAlias<RVFpRegister>(
+        reg_name, ::mpact::sim::riscv::kFRegisterAliases[i]);
+  }
+
+  RiscVTop riscv_top("RiscV32Sim", &rv_state, &rv_decoder);
 
   // Initialize the PC to the entry point.
   uint64_t entry_point = load_result.value();

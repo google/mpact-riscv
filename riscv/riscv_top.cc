@@ -30,24 +30,22 @@
 #include "absl/synchronization/notification.h"
 #include "mpact/sim/generic/component.h"
 #include "mpact/sim/generic/core_debug_interface.h"
+#include "mpact/sim/generic/counters.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/decode_cache.h"
-#include "mpact/sim/generic/type_helpers.h"
-#include "mpact/sim/util/memory/flat_demand_memory.h"
-#include "mpact/sim/util/memory/memory_interface.h"
-#include "mpact/sim/util/memory/memory_watcher.h"
-#include "riscv/riscv32_decoder.h"
-#include "riscv/riscv32g_enums.h"
-#include "riscv/riscv64_decoder.h"
-#include "riscv/riscv64g_enums.h"
+#include "mpact/sim/generic/decoder_interface.h"
 #include "riscv/riscv_action_point.h"
 #include "riscv/riscv_breakpoint.h"
 #include "riscv/riscv_csr.h"
 #include "riscv/riscv_debug_interface.h"
 #include "riscv/riscv_fp_state.h"
 #include "riscv/riscv_register.h"
-#include "riscv/riscv_register_aliases.h"
 #include "riscv/riscv_state.h"
+// Uncomment if using resource checks below.
+// #include "mpact/sim/generic/resource_operand_interface.h"
+#include "mpact/sim/generic/type_helpers.h"
+#include "mpact/sim/util/memory/memory_interface.h"
+#include "mpact/sim/util/memory/memory_watcher.h"
 
 namespace mpact {
 namespace sim {
@@ -57,6 +55,10 @@ constexpr char kRiscVName[] = "RiscV";
 
 // Local helper function used to execute instructions.
 static inline bool ExecuteInstruction(Instruction *inst) {
+  // The following code can be used to model stalls due to latency of operand
+  // writes that are used by subsequent instructions. Instruction latencies
+  // are defined in the .isa file.
+  /*
   for (auto *resource : inst->ResourceHold()) {
     if (!resource->IsFree()) {
       return false;
@@ -65,6 +67,7 @@ static inline bool ExecuteInstruction(Instruction *inst) {
   for (auto *resource : inst->ResourceAcquire()) {
     resource->Acquire();
   }
+  */
   inst->Execute(nullptr);
   // Comment out instruction logging during execution.
   // LOG(INFO) << "[" << std::hex << inst->address() << "] " <<
@@ -72,67 +75,13 @@ static inline bool ExecuteInstruction(Instruction *inst) {
   return true;
 }
 
-RiscVTop::RiscVTop(std::string name, RiscVXlen xlen)
+RiscVTop::RiscVTop(std::string name, RiscVState *state,
+                   generic::DecoderInterface *decoder)
     : Component(name),
-      owns_memory_(true),
+      state_(state),
+      rv_decoder_(decoder),
       counter_num_instructions_("num_instructions", 0),
-      counter_num_cycles_("num_cycles", 0),
-      xlen_(xlen) {
-  inst_memory_ = new util::FlatDemandMemory();
-  data_memory_ = inst_memory_;
-  Initialize();
-}
-
-RiscVTop::RiscVTop(std::string name, util::MemoryInterface *memory,
-                   RiscVXlen xlen)
-    : Component(name),
-      inst_memory_(memory),
-      data_memory_(memory),
-      atomic_memory_(nullptr),
-      owns_memory_(false),
-      counter_num_instructions_("num_instructions", 0),
-      counter_num_cycles_("num_cycles", 0),
-      xlen_(xlen) {
-  Initialize();
-}
-
-RiscVTop::RiscVTop(std::string name, util::MemoryInterface *inst_memory,
-                   util::MemoryInterface *data_memory, RiscVXlen xlen)
-    : Component(name),
-      inst_memory_(inst_memory),
-      data_memory_(data_memory),
-      atomic_memory_(nullptr),
-      owns_memory_(false),
-      counter_num_instructions_("num_instructions", 0),
-      counter_num_cycles_("num_cycles", 0),
-      xlen_(xlen) {
-  Initialize();
-}
-
-RiscVTop::RiscVTop(std::string name, util::MemoryInterface *memory,
-                   RiscVXlen xlen, util::AtomicMemoryOpInterface *atomic_memory)
-    : Component(name),
-      inst_memory_(memory),
-      data_memory_(memory),
-      atomic_memory_(atomic_memory),
-      owns_memory_(false),
-      counter_num_instructions_("num_instructions", 0),
-      counter_num_cycles_("num_cycles", 0),
-      xlen_(xlen) {
-  Initialize();
-}
-
-RiscVTop::RiscVTop(std::string name, util::MemoryInterface *inst_memory,
-                   util::MemoryInterface *data_memory, RiscVXlen xlen,
-                   util::AtomicMemoryOpInterface *atomic_memory)
-    : Component(name),
-      inst_memory_(inst_memory),
-      data_memory_(data_memory),
-      atomic_memory_(atomic_memory),
-      owns_memory_(false),
-      counter_num_instructions_("num_instructions", 0),
-      counter_num_cycles_("num_cycles", 0),
-      xlen_(xlen) {
+      counter_num_cycles_("num_cycles", 0) {
   Initialize();
 }
 
@@ -148,47 +97,36 @@ RiscVTop::~RiscVTop() {
   delete rv_action_point_manager_;
   delete rv_breakpoint_manager_;
   delete rv_decode_cache_;
-  delete rv_decoder_;
-  delete state_;
-  delete fp_state_;
   delete memory_watcher_;
-  delete atomic_watcher_;
-  if (owns_memory_) delete inst_memory_;
 }
 
 void RiscVTop::Initialize() {
-  // Create the simulation state.
-  state_ = new RiscVState(kRiscVName, xlen_, data_memory_, atomic_memory_);
-  fp_state_ = new RiscVFPState(state_);
-  state_->set_rv_fp(fp_state_);
   pc_ = state_->registers()->at(RiscVState::kPcName);
-  // Set up the decoder and decode cache.
-  if (xlen_ == RiscVXlen::RV32) {
-    rv_decoder_ = new RiscV32Decoder(state_, inst_memory_);
-    // Register instruction opcode counters.
-    for (int i = 0; i < static_cast<int>(isa32::OpcodeEnum::kPastMaxValue);
-         i++) {
-      counter_opcode_[i].Initialize(
-          absl::StrCat("num_", isa32::kOpcodeNames[i]), 0);
-      CHECK_OK(AddCounter(&counter_opcode_[i]));
-    }
-  } else {
-    rv_decoder_ =
-        new RiscV64Decoder(state_, inst_memory_, /*use_abi_names*/ false);
-    // Register instruction opcode counters.
-    for (int i = 0; i < static_cast<int>(isa64::OpcodeEnum::kPastMaxValue);
-         i++) {
-      counter_opcode_[i].Initialize(
-          absl::StrCat("num_", isa64::kOpcodeNames[i]), 0);
-      CHECK_OK(AddCounter(&counter_opcode_[i]));
-    }
-  }
   rv_decode_cache_ = generic::DecodeCache::Create({16 * 1024, 2}, rv_decoder_);
-  // Register instruction counter.
+
+  // Replace the memory with the memory watcher.
+  memory_watcher_ = new util::MemoryWatcher(state_->memory());
+  state_->set_memory(memory_watcher_);
+
+  // Register instruction and cycle counters.
   CHECK_OK(AddCounter(&counter_num_instructions_))
-      << "Failed to register counter";
+      << "Failed to register instruction counter";
+  CHECK_OK(AddCounter(&counter_num_cycles_))
+      << "Failed to register cycle counter";
+  // Register opcode counters.
+  int num_opcodes = rv_decoder_->GetNumOpcodes();
+  counter_opcode_.resize(num_opcodes);
+  for (int i = 0; i < num_opcodes; i++) {
+    counter_opcode_.push_back(generic::SimpleCounter<uint64_t>());
+    counter_opcode_[i].Initialize(
+        absl::StrCat("num_", rv_decoder_->GetOpcodeName(i)), 0);
+    CHECK_OK(AddCounter(&counter_opcode_[i]))
+        << "Failed to register opcode counter";
+  }
+
+  // Set up break and action points.
   rv_action_point_manager_ = new RiscVActionPointManager(
-      inst_memory_,
+      state_->memory(),
       absl::bind_front(&generic::DecodeCache::Invalidate, rv_decode_cache_));
   rv_breakpoint_manager_ = new RiscVBreakpointManager(
       rv_action_point_manager_,
@@ -206,30 +144,6 @@ void RiscVTop::Initialize() {
     }
     return false;
   });
-
-  // Make sure the architectural and abi register aliases are added.
-  std::string reg_name;
-  if (xlen_ == RiscVXlen::RV32) {
-    for (int i = 0; i < 32; i++) {
-      reg_name = absl::StrCat(RiscVState::kXregPrefix, i);
-      (void)state_->AddRegister<RV32Register>(reg_name);
-      (void)state_->AddRegisterAlias<RV32Register>(reg_name,
-                                                   kXRegisterAliases[i]);
-    }
-  } else {
-    for (int i = 0; i < 32; i++) {
-      reg_name = absl::StrCat(RiscVState::kXregPrefix, i);
-      (void)state_->AddRegister<RV64Register>(reg_name);
-      (void)state_->AddRegisterAlias<RV64Register>(reg_name,
-                                                   kXRegisterAliases[i]);
-    }
-  }
-  for (int i = 0; i < 32; i++) {
-    reg_name = absl::StrCat(RiscVState::kFregPrefix, i);
-    (void)state_->AddRegister<RVFpRegister>(reg_name);
-    (void)state_->AddRegisterAlias<RVFpRegister>(reg_name,
-                                                 kFRegisterAliases[i]);
-  }
 }
 
 absl::Status RiscVTop::Halt() {
@@ -709,19 +623,6 @@ absl::Status RiscVTop::SetDataWatchpoint(uint64_t address, size_t length,
           RequestHalt(*HaltReason::kDataWatchPoint, nullptr);
         });
     if (!rd_memory_status.ok()) return rd_memory_status;
-
-    auto rd_atomic_status = atomic_watcher_->SetLoadWatchCallback(
-        util::MemoryWatcher::AddressRange(address, address + length - 1),
-        [this](uint64_t address, int size) {
-          set_halt_string(absl::StrFormat(
-              "Watchpoint triggered due to load from %08x", address));
-          RequestHalt(*HaltReason::kDataWatchPoint, nullptr);
-        });
-    if (!rd_atomic_status.ok()) {
-      // Error recovery - ignore return value.
-      (void)memory_watcher_->ClearLoadWatchCallback(address);
-      return rd_atomic_status;
-    }
   }
   if ((access_type == AccessType::kStore) ||
       (access_type == AccessType::kLoadStore)) {
@@ -736,26 +637,8 @@ absl::Status RiscVTop::SetDataWatchpoint(uint64_t address, size_t length,
       if (access_type == AccessType::kLoadStore) {
         // Error recovery - ignore return value.
         (void)memory_watcher_->ClearLoadWatchCallback(address);
-        (void)atomic_watcher_->ClearLoadWatchCallback(address);
       }
       return wr_memory_status;
-    }
-
-    auto wr_atomic_status = atomic_watcher_->SetStoreWatchCallback(
-        util::MemoryWatcher::AddressRange(address, address + length - 1),
-        [this](uint64_t address, int size) {
-          set_halt_string(absl::StrFormat(
-              "Watchpoint triggered due to store to %08x", address));
-          RequestHalt(*HaltReason::kDataWatchPoint, nullptr);
-        });
-    if (!wr_atomic_status.ok()) {
-      // Error recovery - ignore return value.
-      (void)memory_watcher_->ClearStoreWatchCallback(address);
-      if (access_type == AccessType::kLoadStore) {
-        (void)memory_watcher_->ClearLoadWatchCallback(address);
-        (void)atomic_watcher_->ClearLoadWatchCallback(address);
-      }
-      return wr_atomic_status;
     }
   }
   return absl::OkStatus();
@@ -767,17 +650,11 @@ absl::Status RiscVTop::ClearDataWatchpoint(uint64_t address,
       (access_type == AccessType::kLoadStore)) {
     auto rd_memory_status = memory_watcher_->ClearLoadWatchCallback(address);
     if (!rd_memory_status.ok()) return rd_memory_status;
-
-    auto rd_atomic_status = atomic_watcher_->ClearLoadWatchCallback(address);
-    if (!rd_atomic_status.ok()) return rd_atomic_status;
   }
   if ((access_type == AccessType::kStore) ||
       (access_type == AccessType::kLoadStore)) {
     auto wr_memory_status = memory_watcher_->ClearStoreWatchCallback(address);
     if (!wr_memory_status.ok()) return wr_memory_status;
-
-    auto wr_atomic_status = atomic_watcher_->ClearStoreWatchCallback(address);
-    if (!wr_atomic_status.ok()) return wr_atomic_status;
   }
   return absl::OkStatus();
 }

@@ -208,8 +208,6 @@ class RiscVState : public ArchState {
   RiscVState(absl::string_view id, RiscVXlen xlen,
              util::MemoryInterface *memory)
       : RiscVState(id, xlen, memory, nullptr) {}
-  RiscVState(absl::string_view id, RiscVXlen xlen)
-      : RiscVState(id, xlen, nullptr, nullptr) {}
   ~RiscVState() override;
 
   // Deleted Constructors and operators.
@@ -314,8 +312,11 @@ class RiscVState : public ArchState {
   util::AtomicMemoryOpInterface *atomic_memory() const {
     return atomic_memory_;
   }
+  void set_atomic_memory(util::AtomicMemoryOpInterface *atomic_memory) {
+    atomic_memory_ = atomic_memory;
+  }
 
-  void set_max_physical_address(const uint64_t max_physical_address);
+  void set_max_physical_address(uint64_t max_physical_address);
   uint64_t max_physical_address() const { return max_physical_address_; }
 
   // Setters for handlers for ecall, and trap. The handler returns true
@@ -399,7 +400,6 @@ class RiscVState : public ArchState {
   generic::DestinationOperandInterface *pc_dst_operand_ = nullptr;
   int vector_register_width_ = 0;
   int flen_ = 0;
-  util::FlatDemandMemory *owned_memory_ = nullptr;
   util::MemoryInterface *memory_ = nullptr;
   util::AtomicMemoryOpInterface *atomic_memory_ = nullptr;
   RiscVCsrSet *csr_set_ = nullptr;

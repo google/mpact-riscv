@@ -15,21 +15,25 @@
 #ifndef MPACT_RISCV_RISCV_RISCV32_DECODER_H_
 #define MPACT_RISCV_RISCV_RISCV32_DECODER_H_
 
+#include <cstdint>
 #include <memory>
 
-#include "absl/memory/memory.h"
-#include "mpact/sim/generic/arch_state.h"
+#include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/decoder_interface.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/program_error.h"
+#include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/memory_interface.h"
 #include "riscv/riscv32g_decoder.h"
 #include "riscv/riscv32g_encoding.h"
+#include "riscv/riscv32g_enums.h"
 #include "riscv/riscv_state.h"
 
 namespace mpact {
 namespace sim {
 namespace riscv {
+
+using ::mpact::sim::generic::operator*;  // NOLINT: clang-tidy false positive.
 
 // This is the factory class needed by the generated decoder. It is responsible
 // for creating the decoder for each slot instance. Since the riscv architecture
@@ -57,6 +61,12 @@ class RiscV32Decoder : public generic::DecoderInterface {
   // case of a decode error, the semantic function in the instruction object
   // instance will raise an internal simulator error when executed.
   generic::Instruction *DecodeInstruction(uint64_t address) override;
+  // Return the number of opcodes supported by this decoder.
+  int GetNumOpcodes() const override { return *OpcodeEnum::kPastMaxValue; }
+  // Return the name of the opcode at the given index.
+  const char *GetOpcodeName(int index) const override {
+    return isa32::kOpcodeNames[index];
+  }
 
   // Getter.
   isa32::RiscV32GEncoding *riscv_encoding() const { return riscv_encoding_; }

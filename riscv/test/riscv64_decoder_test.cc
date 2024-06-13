@@ -14,10 +14,13 @@
 
 #include "riscv/riscv64_decoder.h"
 
+#include <cstdint>
 #include <string>
 
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "absl/strings/str_cat.h"
+#include "elfio/elf_types.hpp"
 #include "elfio/elfio.hpp"
 #include "elfio/elfio_section.hpp"
 #include "elfio/elfio_symbols.hpp"
@@ -41,8 +44,7 @@ using SymbolAccessor = ELFIO::symbol_section_accessor_template<ELFIO::section>;
 class RiscV64DecoderTest : public testing::Test {
  protected:
   RiscV64DecoderTest()
-      : state_("riscv64_test", RiscVXlen::RV64),
-        memory_(0),
+      : state_("riscv64_test", RiscVXlen::RV64, &memory_),
         loader_(&memory_),
         decoder_(&state_, &memory_) {
     const std::string input_file =

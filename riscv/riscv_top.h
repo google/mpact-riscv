@@ -15,16 +15,19 @@
 #ifndef MPACT_RISCV_RISCV_RISCV_TOP_H_
 #define MPACT_RISCV_RISCV_RISCV_TOP_H_
 
-#include <algorithm>
+// #include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <vector>
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/functional/any_invocable.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/synchronization/notification.h"
+// #include "riscv/riscv32g_enums.h"
+// #include "riscv/riscv64g_enums.h"
 #include "mpact/sim/generic/component.h"
 #include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/generic/counters.h"
@@ -33,10 +36,7 @@
 #include "mpact/sim/generic/decoder_interface.h"
 #include "mpact/sim/generic/register.h"
 #include "mpact/sim/generic/type_helpers.h"
-#include "mpact/sim/util/memory/memory_interface.h"
 #include "mpact/sim/util/memory/memory_watcher.h"
-#include "riscv/riscv32g_enums.h"
-#include "riscv/riscv64g_enums.h"
 #include "riscv/riscv_action_point.h"
 #include "riscv/riscv_breakpoint.h"
 #include "riscv/riscv_debug_interface.h"
@@ -57,21 +57,11 @@ class RiscVTop : public generic::Component, public RiscVDebugInterface {
   using RunStatus = generic::CoreDebugInterface::RunStatus;
   using HaltReason = generic::CoreDebugInterface::HaltReason;
 
-  // Simple constructor, the memories are created and owned by the RiscVTop
-  // instance.
-  RiscVTop(std::string name, RiscVXlen xlen);
-  // Constructors without the atomic memory interface. Either one (unified),
-  // or two (inst and data) interfaces are passed in.
-  RiscVTop(std::string name, util::MemoryInterface *memory, RiscVXlen xlen);
-  RiscVTop(std::string name, util::MemoryInterface *inst_memory,
-           util::MemoryInterface *data_memory, RiscVXlen xlen);
-  // Constructors with the atomic memory interface. Either one (unified),
-  // or two (inst and data) interfaces are passed in.
-  RiscVTop(std::string name, util::MemoryInterface *memory, RiscVXlen xlen,
-           util::AtomicMemoryOpInterface *atomic_memory);
-  RiscVTop(std::string name, util::MemoryInterface *inst_memory,
-           util::MemoryInterface *data_memory, RiscVXlen xlen,
-           util::AtomicMemoryOpInterface *atomic_memory);
+  RiscVTop(std::string name, RiscVState *state,
+           generic::DecoderInterface *decoder);
+  RiscVTop() = delete;
+  RiscVTop(const RiscVTop &) = delete;
+  RiscVTop &operator=(const RiscVTop &) = delete;
   ~RiscVTop() override;
 
   // Methods inherited from CoreDebugInterface.
@@ -128,8 +118,6 @@ class RiscVTop : public generic::Component, public RiscVDebugInterface {
 
   // Accessors.
   RiscVState *state() const { return state_; }
-  util::MemoryInterface *data_memory() const { return data_memory_; }
-  util::MemoryInterface *inst_memory() const { return inst_memory_; }
 
   // The following are not const as callers may need to call non-const methods
   // of the counter.
@@ -142,7 +130,6 @@ class RiscVTop : public generic::Component, public RiscVDebugInterface {
   generic::SimpleCounter<uint64_t> *counter_pc() { return &counter_pc_; }
   // Memory watchers used for data watch points.
   util::MemoryWatcher *memory_watcher() { return memory_watcher_; }
-  util::MemoryWatcher *atomic_watcher() { return atomic_watcher_; }
 
   const std::string &halt_string() const { return halt_string_; }
   void set_halt_string(std::string halt_string) { halt_string_ = halt_string; }
@@ -167,7 +154,6 @@ class RiscVTop : public generic::Component, public RiscVDebugInterface {
   absl::Notification *run_halted_ = nullptr;
   // The local RiscV32 state.
   RiscVState *state_;
-  RiscVFPState *fp_state_;
   // Action point manager.
   RiscVActionPointManager *rv_action_point_manager_ = nullptr;
   // Breakpoint manager.
@@ -180,16 +166,9 @@ class RiscVTop : public generic::Component, public RiscVDebugInterface {
   generic::DecoderInterface *rv_decoder_ = nullptr;
   // Decode cache, memory and memory watcher.
   generic::DecodeCache *rv_decode_cache_ = nullptr;
-  util::MemoryInterface *inst_memory_ = nullptr;
-  util::MemoryInterface *data_memory_ = nullptr;
-  util::AtomicMemoryOpInterface *atomic_memory_ = nullptr;
-  bool owns_memory_ = false;
-  util::MemoryWatcher *atomic_watcher_ = nullptr;
   util::MemoryWatcher *memory_watcher_ = nullptr;
   // Counter for the number of instructions simulated.
-  generic::SimpleCounter<uint64_t> counter_opcode_[std::max(
-      static_cast<int>(isa32::OpcodeEnum::kPastMaxValue),
-      static_cast<int>(isa64::OpcodeEnum::kPastMaxValue))];
+  std::vector<generic::SimpleCounter<uint64_t>> counter_opcode_;
   generic::SimpleCounter<uint64_t> counter_num_instructions_;
   generic::SimpleCounter<uint64_t> counter_num_cycles_;
   // Counter used for profiling by connecting it to a profiler. This allows
@@ -197,7 +176,6 @@ class RiscVTop : public generic::Component, public RiscVDebugInterface {
   // disabled with the other counters.
   generic::SimpleCounter<uint64_t> counter_pc_;
   absl::flat_hash_map<uint32_t, std::string> register_id_map_;
-  RiscVXlen xlen_ = RiscVXlen::RV32;
 };
 
 }  // namespace riscv

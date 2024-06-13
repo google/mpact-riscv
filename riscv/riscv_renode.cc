@@ -41,6 +41,8 @@
 #include "mpact/sim/util/memory/single_initiator_router.h"
 #include "mpact/sim/util/other/instruction_profiler.h"
 #include "riscv/debug_command_shell.h"
+#include "riscv/riscv32_decoder.h"
+#include "riscv/riscv64_decoder.h"
 #include "riscv/riscv_arm_semihost.h"
 #include "riscv/riscv_cli_forwarder.h"
 #include "riscv/riscv_clint.h"
@@ -48,6 +50,8 @@
 #include "riscv/riscv_debug_interface.h"
 #include "riscv/riscv_instrumentation_control.h"
 #include "riscv/riscv_minstret.h"
+#include "riscv/riscv_register.h"
+#include "riscv/riscv_register_aliases.h"
 #include "riscv/riscv_renode_cli_top.h"
 #include "riscv/riscv_renode_register_info.h"
 #include "riscv/riscv_state.h"
@@ -92,18 +96,47 @@ RiscVRenode::RiscVRenode(std::string name, MemoryInterface *renode_sysbus,
   // Instantiate memory profiler, but disable it until the config information
   // has been received.
   mem_profiler_ = new MemoryUseProfiler(data_memory);
-  data_memory = mem_profiler_;
   mem_profiler_->set_is_enabled(false);
-  // Instantiate riscv_top.
-  riscv_top_ =
-      new RiscVTop(name, static_cast<MemoryInterface *>(router_), data_memory,
-                   xlen, static_cast<AtomicMemoryOpInterface *>(router_));
+  // Set up state, decoder, and top.
+  rv_state_ = new RiscVState("RiscVRenode", xlen, mem_profiler_,
+                             static_cast<AtomicMemoryOpInterface *>(router_));
+  rv_fp_state_ = new RiscVFPState(rv_state_);
+  rv_state_->set_rv_fp(rv_fp_state_);
+  std::string reg_name;
+  if (xlen == RiscVXlen::RV32) {
+    rv_decoder_ = new RiscV32Decoder(rv_state_, data_memory);
+    // Make sure the architectural and abi register aliases are added.
+    for (int i = 0; i < 32; i++) {
+      reg_name = absl::StrCat(RiscVState::kXregPrefix, i);
+      (void)rv_state_->AddRegister<RV32Register>(reg_name);
+      (void)rv_state_->AddRegisterAlias<RV32Register>(
+          reg_name, ::mpact::sim::riscv::kXRegisterAliases[i]);
+    }
+  } else {
+    rv_decoder_ = new RiscV64Decoder(rv_state_, data_memory);
+    for (int i = 0; i < 32; i++) {
+      reg_name = absl::StrCat(RiscVState::kXregPrefix, i);
+      (void)rv_state_->AddRegister<RV64Register>(reg_name);
+      (void)rv_state_->AddRegisterAlias<RV64Register>(
+          reg_name, ::mpact::sim::riscv::kXRegisterAliases[i]);
+    }
+  }
+
+  for (int i = 0; i < 32; i++) {
+    reg_name = absl::StrCat(RiscVState::kFregPrefix, i);
+    (void)rv_state_->AddRegister<RVFpRegister>(reg_name);
+    (void)rv_state_->AddRegisterAlias<RVFpRegister>(
+        reg_name, ::mpact::sim::riscv::kFRegisterAliases[i]);
+  }
+
+  riscv_top_ = new RiscVTop(name, rv_state_, rv_decoder_);
+
   // Initialize minstret/minstreth. Bind the instruction counter to those
   // registers.
   auto minstret_res = riscv_top_->state()->csr_set()->GetCsr("minstret");
   auto minstreth_res = riscv_top_->state()->csr_set()->GetCsr("minstreth");
   if (!minstret_res.ok() || !minstreth_res.ok()) {
-    LOG(ERROR) << name << ":Error while initializing minstret/minstreth\n";
+    LOG(ERROR) << name << ": Error while initializing minstret/minstreth\n";
   }
   auto *minstret = static_cast<RiscVMInstret *>(minstret_res.value());
   auto *minstreth = static_cast<RiscVMInstreth *>(minstreth_res.value());
@@ -126,10 +159,10 @@ RiscVRenode::RiscVRenode(std::string name, MemoryInterface *renode_sysbus,
   CHECK_OK(renode_router_->AddDefaultTarget<MemoryInterface>(memory_));
 
   // Set up semihosting.
-  semihost_ = new RiscVArmSemihost(
-      xlen == RiscVXlen::RV32 ? RiscVArmSemihost::BitWidth::kWord32
-                              : RiscVArmSemihost::BitWidth::kWord64,
-      riscv_top_->inst_memory(), riscv_top_->data_memory());
+  semihost_ = new RiscVArmSemihost(xlen == RiscVXlen::RV32
+                                       ? RiscVArmSemihost::BitWidth::kWord32
+                                       : RiscVArmSemihost::BitWidth::kWord64,
+                                   data_memory, data_memory);
   // Set up special handlers (ebreak, wfi, ecall).
   riscv_top_->state()->AddEbreakHandler([this](const Instruction *inst) {
     if (this->semihost_->IsSemihostingCall(inst)) {
@@ -202,6 +235,9 @@ RiscVRenode::~RiscVRenode() {
   delete socket_cli_;
   delete riscv_renode_cli_top_;
   delete riscv_cli_forwarder_;
+  delete rv_decoder_;
+  delete rv_fp_state_;
+  delete rv_state_;
   delete riscv_top_;
   delete semihost_;
   delete router_;
@@ -364,7 +400,7 @@ static absl::StatusOr<uint64_t> ParseNumber(const std::string &number) {
   } else if (number[0] == '0') {
     res = riscv::internal::stoull(number.substr(1), nullptr, 8);
   } else {
-    res = riscv::internal::stoull(number.substr(2), nullptr, 16);
+    res = riscv::internal::stoull(number, nullptr, 10);
   }
   if (!res.ok()) {
     LOG(ERROR) << "Invalid number: " << number;

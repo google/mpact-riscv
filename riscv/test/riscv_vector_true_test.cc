@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <cstdint>
+
 #include "googlemock/include/gmock/gmock.h"
+#include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
 #include "riscv/riscv_vector_state.h"
@@ -23,13 +26,14 @@ using ::mpact::sim::riscv::RiscVState;
 using ::mpact::sim::riscv::RiscVVectorState;
 using ::mpact::sim::riscv::RiscVXlen;
 using ::mpact::sim::riscv::RV32VectorTrueOperand;
+using ::mpact::sim::util::FlatDemandMemory;
 
 constexpr int kVLengthInBytes = 64;
 // Test fixture.
 class RV32VectorTrueTest : public testing::Test {
  protected:
   RV32VectorTrueTest() {
-    state_ = new RiscVState("test", RiscVXlen::RV64);
+    state_ = new RiscVState("test", RiscVXlen::RV64, &memory_);
     vstate_ = new RiscVVectorState(state_, kVLengthInBytes);
   }
   ~RV32VectorTrueTest() override {
@@ -37,6 +41,7 @@ class RV32VectorTrueTest : public testing::Test {
     delete vstate_;
   }
 
+  FlatDemandMemory memory_;
   RiscVState *state_;
   RiscVVectorState *vstate_;
 };

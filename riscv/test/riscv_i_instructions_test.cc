@@ -14,7 +14,9 @@
 
 #include "riscv/riscv_i_instructions.h"
 
+#include <cstdint>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "absl/strings/string_view.h"
@@ -22,6 +24,7 @@
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/immediate_operand.h"
 #include "mpact/sim/generic/instruction.h"
+#include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
 
@@ -34,6 +37,7 @@ using ::mpact::sim::generic::Instruction;
 using ::mpact::sim::riscv::RiscVState;
 using ::mpact::sim::riscv::RiscVXlen;
 using ::mpact::sim::riscv::RV32Register;
+using ::mpact::sim::util::FlatDemandMemory;
 
 constexpr char kX1[] = "x1";
 constexpr char kX2[] = "x2";
@@ -54,11 +58,13 @@ constexpr uint32_t kShift = 6;
 class RV32IInstructionTest : public testing::Test {
  public:
   RV32IInstructionTest() {
-    state_ = new RiscVState("test", RiscVXlen::RV32);
+    memory_ = new FlatDemandMemory();
+    state_ = new RiscVState("test", RiscVXlen::RV32, memory_);
     instruction_ = new Instruction(kInstAddress, state_);
     instruction_->set_size(4);
   }
   ~RV32IInstructionTest() override {
+    delete memory_;
     delete state_;
     delete instruction_;
   }
@@ -117,6 +123,7 @@ class RV32IInstructionTest : public testing::Test {
     return reg->data_buffer()->Get<T>(0);
   }
 
+  FlatDemandMemory *memory_;
   RiscVState *state_;
   Instruction *instruction_;
 };

@@ -35,6 +35,8 @@
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "mpact/sim/util/memory/memory_watcher.h"
 #include "mpact/sim/util/program_loader/elf_program_loader.h"
+#include "riscv/riscv64_decoder.h"
+#include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
 #include "riscv/riscv_test_mem_watcher.h"
 #include "riscv/riscv_top.h"
@@ -47,8 +49,13 @@ using HaltReasonValueType =
     ::mpact::sim::generic::CoreDebugInterface::HaltReasonValueType;
 using AddressRange = ::mpact::sim::util::MemoryWatcher::AddressRange;
 using ::mpact::sim::generic::operator*;  // NOLINT: clang-tidy false positive.
+using ::mpact::sim::riscv::RiscV64Decoder;
+using ::mpact::sim::riscv::RiscVFPState;
+using ::mpact::sim::riscv::RiscVState;
 using ::mpact::sim::riscv::RiscVTop;
 using ::mpact::sim::riscv::RiscVXlen;
+using ::mpact::sim::riscv::RV64Register;
+using ::mpact::sim::riscv::RVFpRegister;
 
 constexpr char kBeginSignature[] = "begin_signature";
 constexpr char kEndSignature[] = "end_signature";
@@ -82,9 +89,16 @@ int main(int argc, char **argv) {
               << "': " << load_result.status().message();
     return -1;
   }
+  // Set up architectural state and decoder.
+  RiscVState rv_state("RiscV64", RiscVXlen::RV64, test_watcher, atomic_memory);
+  // For floating point support add the fp state.
+  RiscVFPState rv_fp_state(&rv_state);
+  rv_state.set_rv_fp(&rv_fp_state);
+  // Create the instruction decoder.
+  RiscV64Decoder rv_decoder(&rv_state, watcher);
 
-  RiscVTop riscv_top("RV64", watcher, test_watcher, RiscVXlen::RV64,
-                     atomic_memory);
+  RiscVTop riscv_top("RiscV64Sim", &rv_state, &rv_decoder);
+
   // Initialize the PC to the entry point.
   uint64_t entry_point = load_result.value();
   auto pc_write = riscv_top.WriteRegister("pc", entry_point);

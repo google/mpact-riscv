@@ -6,6 +6,7 @@
 #include "mpact/sim/generic/counters.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/instruction.h"
+#include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "riscv/riscv_state.h"
 
 // This file contains unit tests for RiscVClint.
@@ -22,12 +23,13 @@ using ::mpact::sim::generic::SimpleCounter;
 using ::mpact::sim::riscv::RiscVClint;
 using ::mpact::sim::riscv::RiscVState;
 using ::mpact::sim::riscv::RiscVXlen;
+using ::mpact::sim::util::FlatDemandMemory;
 
 // Test fixture for CherioClint tests.
 class RiscVClintTest : public ::testing::Test {
  public:
   RiscVClintTest() {
-    state_ = new RiscVState("test", RiscVXlen::RV32);
+    state_ = new RiscVState("test", RiscVXlen::RV32, &memory_);
     state_->set_on_trap([this](bool is_interrupt, uint64_t trap_value,
                                uint64_t exception_code, uint64_t epc,
                                const Instruction *inst) {
@@ -43,6 +45,7 @@ class RiscVClintTest : public ::testing::Test {
                    uint64_t exception_code, uint64_t epc,
                    const Instruction *inst);
 
+  FlatDemandMemory memory_;
   // Counter.
   SimpleCounter<uint64_t> cycle_counter_;
   // CherIoT state.

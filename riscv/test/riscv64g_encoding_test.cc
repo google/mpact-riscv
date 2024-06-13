@@ -17,6 +17,7 @@
 #include <cstdint>
 
 #include "googlemock/include/gmock/gmock.h"
+#include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "riscv/riscv64g_enums.h"
 #include "riscv/riscv_state.h"
 
@@ -25,6 +26,7 @@ namespace {
 using mpact::sim::riscv::RiscVState;
 using mpact::sim::riscv::RiscVXlen;
 using mpact::sim::riscv::isa64::RiscV64GEncoding;
+using mpact::sim::util::FlatDemandMemory;
 using SlotEnum = mpact::sim::riscv::isa64::SlotEnum;
 using OpcodeEnum = mpact::sim::riscv::isa64::OpcodeEnum;
 
@@ -217,7 +219,7 @@ constexpr uint32_t kSfenceVmaNn = 0b000'1001'00001'00001'000'00000'111'0011;
 class RiscV64GEncodingTest : public testing::Test {
  protected:
   RiscV64GEncodingTest() {
-    state_ = new RiscVState("test", RiscVXlen::RV64);
+    state_ = new RiscVState("test", RiscVXlen::RV64, &memory_);
     enc_ = new RiscV64GEncoding(state_);
   }
   ~RiscV64GEncodingTest() override {
@@ -225,6 +227,7 @@ class RiscV64GEncodingTest : public testing::Test {
     delete state_;
   }
 
+  FlatDemandMemory memory_;
   RiscVState *state_;
   RiscV64GEncoding *enc_;
 };
