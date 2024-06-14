@@ -444,7 +444,7 @@ cc_library(
     ],
     copts = ["-O3"],
     deps = [
-        ":riscv_breakpoint",
+        ":riscv_action_point_memory_interface",
         ":riscv_debug_interface",
         ":riscv_fp_state",
         ":riscv_state",
@@ -457,6 +457,7 @@ cc_library(
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/synchronization",
+        "@com_google_mpact-sim//mpact/sim/generic:action_points",
         "@com_google_mpact-sim//mpact/sim/generic:arch_state",
         "@com_google_mpact-sim//mpact/sim/generic:component",
         "@com_google_mpact-sim//mpact/sim/generic:core",
@@ -506,26 +507,21 @@ cc_library(
 )
 
 cc_library(
-    name = "riscv_breakpoint",
+    name = "riscv_action_point_memory_interface",
     srcs = [
-        "riscv_action_point.cc",
-        "riscv_breakpoint.cc",
+        "riscv_action_point_memory_interface.cc",
     ],
     hdrs = [
-        "riscv_action_point.h",
-        "riscv_breakpoint.h",
+        "riscv_action_point_memory_interface.h",
     ],
     copts = ["-O3"],
     deps = [
-        "@com_google_absl//absl/container:btree",
+        "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/functional:any_invocable",
-        "@com_google_absl//absl/functional:bind_front",
-        "@com_google_absl//absl/log",
         "@com_google_absl//absl/status",
-        "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
+        "@com_google_mpact-sim//mpact/sim/generic:action_points",
         "@com_google_mpact-sim//mpact/sim/generic:core",
-        "@com_google_mpact-sim//mpact/sim/generic:core_debug_interface",
         "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )

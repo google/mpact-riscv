@@ -290,9 +290,10 @@ cc_test(
         "riscv_breakpoint_test.cc",
     ],
     deps = [
-        "//riscv:riscv_breakpoint",
+        "//riscv:riscv_action_point_memory_interface",
         "@com_google_absl//absl/functional:bind_front",
         "@com_google_googletest//:gtest_main",
+        "@com_google_mpact-sim//mpact/sim/generic:action_points",
         "@com_google_mpact-sim//mpact/sim/generic:component",
         "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/util/memory",

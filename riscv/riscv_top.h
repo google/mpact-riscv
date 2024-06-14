@@ -26,8 +26,8 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/synchronization/notification.h"
-// #include "riscv/riscv32g_enums.h"
-// #include "riscv/riscv64g_enums.h"
+#include "mpact/sim/generic/action_point_manager_base.h"
+#include "mpact/sim/generic/breakpoint_manager.h"
 #include "mpact/sim/generic/component.h"
 #include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/generic/counters.h"
@@ -37,8 +37,7 @@
 #include "mpact/sim/generic/register.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/memory_watcher.h"
-#include "riscv/riscv_action_point.h"
-#include "riscv/riscv_breakpoint.h"
+#include "riscv/riscv_action_point_memory_interface.h"
 #include "riscv/riscv_debug_interface.h"
 #include "riscv/riscv_fp_state.h"
 #include "riscv/riscv_state.h"
@@ -48,6 +47,8 @@ namespace sim {
 namespace riscv {
 
 using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
+using ::mpact::sim::generic::ActionPointManagerBase;
+using ::mpact::sim::generic::BreakpointManager;
 
 // Top level class for the RiscV32G simulator. This is the main interface for
 // interacting and controlling execution of programs running on the simulator.
@@ -154,10 +155,12 @@ class RiscVTop : public generic::Component, public RiscVDebugInterface {
   absl::Notification *run_halted_ = nullptr;
   // The local RiscV32 state.
   RiscVState *state_;
+  // Memory interface used by action point manager.
+  RiscVActionPointMemoryInterface *rv_action_point_memory_interface_ = nullptr;
   // Action point manager.
-  RiscVActionPointManager *rv_action_point_manager_ = nullptr;
+  ActionPointManagerBase *rv_action_point_manager_ = nullptr;
   // Breakpoint manager.
-  RiscVBreakpointManager *rv_breakpoint_manager_ = nullptr;
+  BreakpointManager *rv_breakpoint_manager_ = nullptr;
   // Textual description of halt reason.
   std::string halt_string_;
   // The pc register instance.

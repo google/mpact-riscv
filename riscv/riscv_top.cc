@@ -28,14 +28,15 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/synchronization/notification.h"
+#include "mpact/sim/generic/action_point_manager_base.h"
+#include "mpact/sim/generic/breakpoint_manager.h"
 #include "mpact/sim/generic/component.h"
 #include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/generic/counters.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/decode_cache.h"
 #include "mpact/sim/generic/decoder_interface.h"
-#include "riscv/riscv_action_point.h"
-#include "riscv/riscv_breakpoint.h"
+#include "riscv/riscv_action_point_memory_interface.h"
 #include "riscv/riscv_csr.h"
 #include "riscv/riscv_debug_interface.h"
 #include "riscv/riscv_fp_state.h"
@@ -50,6 +51,9 @@
 namespace mpact {
 namespace sim {
 namespace riscv {
+
+using ::mpact::sim::generic::ActionPointManagerBase;
+using ::mpact::sim::generic::BreakpointManager;
 
 constexpr char kRiscVName[] = "RiscV";
 
@@ -94,8 +98,9 @@ RiscVTop::~RiscVTop() {
     run_halted_ = nullptr;
   }
 
-  delete rv_action_point_manager_;
   delete rv_breakpoint_manager_;
+  delete rv_action_point_manager_;
+  delete rv_action_point_memory_interface_;
   delete rv_decode_cache_;
   delete memory_watcher_;
 }
@@ -125,12 +130,14 @@ void RiscVTop::Initialize() {
   }
 
   // Set up break and action points.
-  rv_action_point_manager_ = new RiscVActionPointManager(
+  rv_action_point_memory_interface_ = new RiscVActionPointMemoryInterface(
       state_->memory(),
       absl::bind_front(&generic::DecodeCache::Invalidate, rv_decode_cache_));
-  rv_breakpoint_manager_ = new RiscVBreakpointManager(
+  rv_action_point_manager_ =
+      new ActionPointManagerBase(rv_action_point_memory_interface_);
+  rv_breakpoint_manager_ = new BreakpointManager(
       rv_action_point_manager_,
-      [this](HaltReason halt_reason) { RequestHalt(halt_reason, nullptr); });
+      [this]() { RequestHalt(HaltReason::kSoftwareBreakpoint, nullptr); });
 
   // Set the ebreak handler callback.
   state_->AddEbreakHandler([this](const Instruction *inst) {
@@ -164,7 +171,8 @@ absl::Status RiscVTop::StepPastBreakpoint() {
   uint64_t pc = state_->pc_operand()->AsUint64(0);
   uint64_t bpt_pc = pc;
   // Disable the breakpoint.
-  rv_action_point_manager_->WriteOriginalInstruction(pc);
+  (void)rv_action_point_manager_->ap_memory_interface()
+      ->WriteOriginalInstruction(pc);
   // Execute the real instruction.
   auto real_inst = rv_decode_cache_->GetDecodedInstruction(pc);
   real_inst->IncRef();
@@ -181,7 +189,8 @@ absl::Status RiscVTop::StepPastBreakpoint() {
   counter_num_instructions_.Increment(1);
   real_inst->DecRef();
   // Re-enable the breakpoint.
-  rv_action_point_manager_->WriteBreakpointInstruction(bpt_pc);
+  (void)rv_action_point_manager_->ap_memory_interface()
+      ->WriteBreakpointInstruction(bpt_pc);
   return absl::OkStatus();
 }
 
@@ -675,12 +684,14 @@ absl::StatusOr<std::string> RiscVTop::GetDisassembly(uint64_t address) {
   // that of the original instruction instead.
   if (rv_action_point_manager_->IsActionPointActive(address)) {
     // Write the original instruction back to memory.
-    rv_action_point_manager_->WriteOriginalInstruction(address);
+    (void)rv_action_point_manager_->ap_memory_interface()
+        ->WriteOriginalInstruction(address);
     // Get the real instruction.
     inst = rv_decode_cache_->GetDecodedInstruction(address);
     auto disasm = inst != nullptr ? inst->AsString() : "Invalid instruction";
     // Restore the breakpoint instruction.
-    rv_action_point_manager_->WriteBreakpointInstruction(address);
+    (void)rv_action_point_manager_->ap_memory_interface()
+        ->WriteBreakpointInstruction(address);
     return disasm;
   }
 
