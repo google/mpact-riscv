@@ -63,9 +63,9 @@ static inline void RVFCvtWs(const Instruction *instruction) {
 }
 
 // Convert float to unsigned 32 bit integer.
-template <typename XInt>
+template <typename XUint>
 static inline void RVFCvtWus(const Instruction *instruction) {
-  RiscVConvertFloatWithFflagsOp<XInt, float, uint32_t>(instruction);
+  RiscVConvertFloatWithFflagsOp<XUint, float, uint32_t>(instruction);
 }
 
 // Convert float to signed 64 bit integer.
@@ -443,7 +443,7 @@ void RiscVFCvtWs(const Instruction *instruction) {
 
 // Convert float to unsigned 32 bit integer.
 void RiscVFCvtWus(const Instruction *instruction) {
-  internal::RVFCvtWus<XInt>(instruction);
+  internal::RVFCvtWus<XUint>(instruction);
 }
 
 // Single precision move instruction to integer register file, with
@@ -504,7 +504,7 @@ void RiscVFCvtWs(const Instruction *instruction) {
 
 // Convert float to unsigned 32 bit integer in a 64 bit register.
 void RiscVFCvtWus(const Instruction *instruction) {
-  internal::RVFCvtWus<XInt>(instruction);
+  internal::RVFCvtWus<XUint>(instruction);
 }
 
 // Convert float to signed 64 bit integer.
