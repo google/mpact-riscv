@@ -183,24 +183,10 @@ TEST_F(RV32DInstructionTest, RiscVDCvtWd) {
   SetSemanticFunction(&RiscVDCvtWd);
   UnaryOpWithFflagsFPTestHelper<int32_t, double>(
       "dcvt.w.d", instruction_, {"d", "x"}, 64,
-      [&](double lhs) -> std::tuple<int32_t, uint32_t> {
-        if (std::isnan(lhs))
-          return std::make_tuple(
-              0x7fff'ffff, static_cast<uint32_t>(FPExceptions::kInvalidOp));
-        if (std::isinf(lhs))
-          return std::make_tuple(
-              lhs < 0 ? 0x8000'0000 : 0x7fff'ffff,
-              static_cast<uint32_t>(FPExceptions::kInvalidOp));
-        if (abs(lhs) > 0x7fff'ffff)
-          return std::make_tuple(
-              lhs < 0 ? 0x8000'0000 : 0x7fff'ffff,
-              static_cast<uint32_t>(FPExceptions::kInvalidOp));
+      [&](double lhs, uint32_t rm) -> std::tuple<int32_t, uint32_t> {
         uint32_t flag = 0;
-        if (ceil(lhs) != lhs) {
-          flag = static_cast<uint32_t>(FPExceptions::kInexact);
-          lhs = RoundToInteger(lhs);
-        }
-        return std::make_tuple(static_cast<int32_t>(lhs), flag);
+        const int32_t val = RoundToInteger<double, int32_t>(lhs, rm, flag);
+        return std::make_tuple(val, flag);
       });
 }
 
@@ -217,27 +203,10 @@ TEST_F(RV32DInstructionTest, RiscVDCvtWud) {
   SetSemanticFunction(&RiscVDCvtWud);
   UnaryOpWithFflagsFPTestHelper<uint32_t, double>(
       "dcvt.wu.d", instruction_, {"d", "x"}, 64,
-      [&](double lhs) -> std::tuple<uint32_t, uint32_t> {
-        if (std::isnan(lhs))
-          return std::make_tuple(
-              0xffff'ffff, static_cast<uint32_t>(FPExceptions::kInvalidOp));
-        if (lhs < 0) {
-          if ((lhs > -1.0) && (static_cast<int32_t>(lhs) == 0.0)) {
-            return std::make_tuple(
-                0, static_cast<uint32_t>(FPExceptions::kInexact));
-          }
-          return std::make_tuple(
-              0, static_cast<uint32_t>(FPExceptions::kInvalidOp));
-        }
-        if (std::isinf(lhs) || lhs > 0xffff'ffff)
-          return std::make_tuple(
-              0xffff'ffff, static_cast<uint32_t>(FPExceptions::kInvalidOp));
+      [&](double lhs, uint32_t rm) -> std::tuple<uint32_t, uint32_t> {
         uint32_t flag = 0;
-        if (ceil(lhs) != lhs) {
-          flag = static_cast<uint32_t>(FPExceptions::kInexact);
-          lhs = RoundToInteger(lhs);
-        }
-        return std::make_tuple(static_cast<uint32_t>(lhs), flag);
+        const uint32_t val = RoundToInteger<double, uint32_t>(lhs, rm, flag);
+        return std::make_tuple(val, flag);
       });
 }
 

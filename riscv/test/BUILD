@@ -62,6 +62,7 @@ cc_library(
     deps = [
         "//riscv:riscv_fp_state",
         "//riscv:riscv_state",
+        "@com_google_absl//absl/log",
         "@com_google_absl//absl/random",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:span",

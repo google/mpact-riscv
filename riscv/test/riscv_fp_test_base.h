@@ -25,6 +25,7 @@
 #include <type_traits>
 #include <vector>
 
+#include "absl/log/log.h"
 #include "absl/random/random.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
@@ -44,6 +45,7 @@ namespace riscv {
 namespace test {
 
 using ::mpact::sim::generic::Instruction;
+using ::mpact::sim::riscv::FPRoundingMode;
 using ::mpact::sim::util::FlatDemandMemory;
 
 constexpr int kTestValueLength = 256;
@@ -452,7 +454,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
   void UnaryOpWithFflagsFPTestHelper(
       absl::string_view name, Instruction *inst,
       absl::Span<const absl::string_view> reg_prefixes, int delta_position,
-      std::function<std::tuple<R, uint32_t>(LHS)> operation) {
+      std::function<std::tuple<R, uint32_t>(LHS, uint32_t)> operation) {
     using LhsRegisterType = RVFpRegister;
     using DestRegisterType = RVFpRegister;
     using LhsInt = typename FPTypeInfo<LHS>::IntType;
@@ -491,7 +493,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
         uint32_t flag;
         {
           ScopedFPRoundingMode scoped_rm(rv_fp_->host_fp_interface(), rm);
-          std::tie(op_val, flag) = operation(lhs_span[i]);
+          std::tie(op_val, flag) = operation(lhs_span[i], rm);
         }
 
         auto reg_val = state_->GetRegister<DestRegisterType>(kRdName)
@@ -712,36 +714,169 @@ class RiscVFPInstructionTestBase : public testing::Test {
   absl::BitGen &bitgen() { return bitgen_; }
   Instruction *instruction() { return instruction_; }
 
-  template <typename T>
-  T RoundToInteger(T val) {
-    using FromUint = typename FPTypeInfo<T>::IntType;
-    auto constexpr kBias = FPTypeInfo<T>::kExpBias;
-    auto constexpr kExpMask = FPTypeInfo<T>::kExpMask;
-    auto constexpr kSigSize = FPTypeInfo<T>::kSigSize;
-    auto constexpr kSigMask = FPTypeInfo<T>::kSigMask;
-    FromUint val_u = *reinterpret_cast<FromUint *>(&val);
-    FromUint exp = kExpMask & val_u;
-    FromUint sign = val_u & (1ULL << (FPTypeInfo<T>::kBitSize - 1));
-    int exp_value = exp >> kSigSize;
-    FromUint sig = kSigMask & val_u;
-    // Turn the value into a denormal.
-    constexpr FromUint hidden = 1ULL << (kSigSize - 1);
-    FromUint tmp_u = sign | ((exp != 0) ? hidden : 0ULL) | (sig >> 1);
-    T tmp = *reinterpret_cast<T *>(&tmp_u);
-    if ((exp_value >= kBias) && (exp_value - kBias + 1 < kSigSize)) {
-      // Divide so that only the bits we care about are left in the significand.
-      int shift = kBias + kSigSize - exp_value - 1;
-      FromUint div_exp = shift + kBias;
-      FromUint div_u = div_exp << kSigSize;
-      T div = *reinterpret_cast<T *>(&div_u);
-      tmp /= div;
-      // Convert back to normalized number, by using the original sign
-      // and exponent, and the normalized and significand from the division.
-      tmp_u = *reinterpret_cast<FromUint *>(&tmp);
-      val_u = sign | exp | ((tmp_u << (shift + 1)) & kSigMask);
-      val = *reinterpret_cast<T *>(&val_u);
+  template <typename From, typename To>
+  To RoundToInteger(From val, uint32_t rm, uint32_t &flags) {
+    constexpr To kMax = std::numeric_limits<To>::max();
+    constexpr To kMin = std::numeric_limits<To>::min();
+    To value = 0;
+    if (FPTypeInfo<From>::IsNaN(val)) {
+      value = std::numeric_limits<To>::max();
+      flags = (uint32_t)FPExceptions::kInvalidOp;
+    } else if (val == 0.0) {
+      value = 0;
+    } else {
+      using FromUint = typename FPTypeInfo<From>::IntType;
+      auto constexpr kBias = FPTypeInfo<From>::kExpBias;
+      auto constexpr kExpMask = FPTypeInfo<From>::kExpMask;
+      auto constexpr kSigSize = FPTypeInfo<From>::kSigSize;
+      auto constexpr kSigMask = FPTypeInfo<From>::kSigMask;
+      auto constexpr kBitSize = FPTypeInfo<From>::kBitSize;
+      FromUint val_u = *reinterpret_cast<FromUint *>(&val);
+      FromUint exp = kExpMask & val_u;
+      const bool sign = (val_u & (1ULL << (kBitSize - 1))) != 0;
+      int exp_value = exp >> kSigSize;
+      int unbiased_exp = exp_value - kBias;
+      FromUint sig = kSigMask & val_u;
+      // Turn the value into a denormal.
+
+      int right_shift = exp ? kSigSize - 1 - unbiased_exp : 1;
+      uint64_t base = sig;
+      bool rightshift_compressed = 0;
+      if (exp == 0) {
+        // Denormalized value.
+        // Format: (-1)^sign * 2 ^(exp - bias + 1) * 0.{sig}
+        // fraction part is too small keep it as 1 bits if not zero.
+        rightshift_compressed = base != 0;
+        base = 0;
+        flags = (uint32_t)FPExceptions::kInexact;
+      } else {
+        // Normalized value.
+        // Format: (-1)^sign * 2 ^(exp - bias) * 1.{sig
+        // base = 1.{sig} (total (1 + `kSigSize`) bits)
+        base |= 1ULL << kSigSize;
+
+        // Right shift all base part out.
+        if (right_shift > (kBitSize - 1)) {
+          rightshift_compressed = base != 0;
+          flags = (uint32_t)FPExceptions::kInexact;
+          base = 0;
+        } else if (right_shift > 0) {
+          // Right shift to leave only 1 bit in the fraction part, compressed
+          // the right-shift eliminated number.
+          right_shift = std::min(right_shift, kBitSize);
+          uint64_t right_shifted_sig_mask = (1ULL << right_shift) - 1;
+          rightshift_compressed = (base & right_shifted_sig_mask) != 0;
+          base >>= right_shift;
+        }
+      }
+
+      // Handle fraction part rounding.
+      if (right_shift >= 0) {
+        switch ((FPRoundingMode)rm) {
+          case FPRoundingMode::kRoundToNearest:
+            // 0.5, tie condition
+            if (rightshift_compressed == 0 && base & 0b1) {
+              // <odd>.5 -> <odd>.5 + 0.5 = even
+              if ((base & 0b11) == 0b11) {
+                base += 0b01;
+                flags = (uint32_t)FPExceptions::kInexact;
+              }
+            } else if (base & 0b1 || rightshift_compressed) {
+              // not tie condition, round to nearest integer, it equals to add
+              // 0.5(=base + 0b01) and eliminate the fraction part.
+              base += 0b01;
+            }
+            break;
+          case FPRoundingMode::kRoundTowardsZero:
+            // Round towards zero will eliminate the fraction part.
+            // Do nothing on fraction part.
+            // 1.2 -> 1.0, -1.5 -> -1.0, -0.7 -> 0.0
+            break;
+          case FPRoundingMode::kRoundDown:
+            // Positive float will eliminate the fraction part.
+            // Negative float with fraction part will subtract 1(= base + 0b10),
+            // and eliminate the fraction part.
+            // e.g., 1.2 -> 1.0, -1.5 -> -2.0, -0.7 -> -1.0
+            if (sign && (base & 0b1 || rightshift_compressed)) {
+              base += 0b10;
+            }
+            break;
+          case FPRoundingMode::kRoundUp:
+            // Positive float will add 1(= base + 0b10), and eliminate the
+            // fraction part.
+            // Negative float will eliminate the fraction part.
+            // e.g., 1.2 -> 2.0, -1.5 -> -1.0, -0.7 -> 0.0
+            if (!sign && (base & 0b1 || rightshift_compressed)) {
+              base += 0b10;
+            }
+            break;
+          case FPRoundingMode::kRoundToNearestTiesToMax:
+            // Round to nearest integer that is far from zero.
+            // e.g., 1.2 -> 2.0, -1.5 -> -2.0, -0.7 -> -1.0
+            if (base & 0b1 || rightshift_compressed) {
+              base += 0b1;
+            }
+            break;
+          default:
+            LOG(ERROR) << "Invalid rounding mode";
+            return;
+        }
+      }
+      uint64_t unsigned_value;
+      // Handle base with fraction part and store it to `unsigned_value`.
+      if (right_shift >= 0) {
+        // Set inexact flag if floating value has fraction part.
+        if (base & 0b1 || rightshift_compressed) {
+          flags = (uint32_t)FPExceptions::kInexact;
+        }
+        unsigned_value = base >> 1;
+      } else {
+        // Handle base without fraction part but need to left shift.
+        int left_shift = -right_shift - 1;
+        auto prev = unsigned_value = base;
+        while (left_shift) {
+          unsigned_value <<= 1;
+          // Check if overflow happened and set the flag.
+          if (prev > unsigned_value) {
+            flags = (uint32_t)FPExceptions::kInvalidOp;
+            unsigned_value = sign ? kMin : kMax;
+            break;
+          }
+          prev = unsigned_value;
+          --left_shift;
+        }
+      }
+
+      // Handle the case that value is out of range, and final convert to value
+      // with sign.
+      if (std::is_signed<To>::value) {
+        // Positive value but exceeds the max value.
+        if (!sign && unsigned_value > kMax) {
+          flags = (uint32_t)FPExceptions::kInvalidOp;
+          value = kMax;
+        } else if (sign && (unsigned_value > 0 && -unsigned_value < kMin)) {
+          // Negative value but exceeds the min value.
+          flags = (uint32_t)FPExceptions::kInvalidOp;
+          value = kMin;
+        } else {
+          value = sign ? -((To)unsigned_value) : unsigned_value;
+        }
+      } else {
+        // Positive value but exceeds the max value.
+        if (unsigned_value > kMax) {
+          flags = (uint32_t)FPExceptions::kInvalidOp;
+          value = sign ? kMin : kMax;
+        } else if (sign && unsigned_value != 0) {
+          // float is negative value this is out of range of valid unsigned
+          // value.
+          flags = (uint32_t)FPExceptions::kInvalidOp;
+          value = kMin;
+        } else {
+          value = sign ? -((To)unsigned_value) : unsigned_value;
+        }
+      }
     }
-    return val;
+    return value;
   }
 
  protected:
