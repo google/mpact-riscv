@@ -819,7 +819,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
             break;
           default:
             LOG(ERROR) << "Invalid rounding mode";
-            return;
+            return To();
         }
       }
       uint64_t unsigned_value;
