@@ -430,7 +430,8 @@ instruction group RiscVVInst32[32] : Inst32Format {
   vfsgnjx_vf : VArith : func6 == 0b001'010, func3 == 0b101, opcode == 0b101'0111;
   vfslide1up_vf :   VArith : func6 == 0b001'110, func3 == 0b101, opcode == 0b101'0111;
   vfslide1down_vf : VArith : func6 == 0b001'111, func3 == 0b101, opcode == 0b101'0111;
-  vfmerge_vf : VArith : func6 == 0b010'111, func3 == 0b101, opcode == 0b101'0111;
+  vfmv_vf : VArith : func6 == 0b010'111, vm == 1, vs2 == 0, func3 == 0b101, opcode == 0b101'0111;
+  vfmerge_vf : VArith : func6 == 0b010'111, vm == 0, func3 == 0b101, opcode == 0b101'0111;
   vmfeq_vv : VArith : func6 == 0b011'000, func3 == 0b001, opcode == 0b101'0111;
   vmfeq_vf : VArith : func6 == 0b011'000, func3 == 0b101, opcode == 0b101'0111;
   vmfle_vv : VArith : func6 == 0b011'001, func3 == 0b001, opcode == 0b101'0111;

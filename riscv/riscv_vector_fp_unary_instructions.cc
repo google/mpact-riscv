@@ -60,7 +60,41 @@ static const int kRecipMantissaTable[128] = {
     12,  12,  11,  11,  10,  9,   9,   8,   8,   7,   7,   6,   5,   5,   4,
     4,   3,   3,   2,   2,   1,   1,   0};
 
-// Move float from vector to scalar fp register.
+// Move float from scalar fp register to vector register(all elements).
+void Vfmvvf(const Instruction *inst) {
+  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+  const int vl = rv_vector->vector_length();
+  if (rv_vector->vstart() > 0) return;
+  if (vl == 0) return;
+
+  const int sew = rv_vector->selected_element_width();
+  auto dest_op =
+      static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+  auto dest_db = dest_op->CopyDataBuffer();
+  switch (sew) {
+    case 4:
+      for (int i = 0; i < vl; ++i) {
+        dest_db->Set<uint32_t>(
+            i, generic::GetInstructionSource<uint32_t>(inst, 0, 0));
+      }
+      break;
+    case 8:
+      for (int i = 0; i < vl; ++i) {
+        dest_db->Set<uint64_t>(
+            i, generic::GetInstructionSource<uint64_t>(inst, 0, 0));
+      }
+      break;
+    default:
+      dest_db->DecRef();
+      LOG(ERROR) << "Vfmv.s.f: Illegal sew (" << sew << ")";
+      rv_vector->set_vector_exception();
+      return;
+  }
+  dest_db->Submit();
+  rv_vector->clear_vstart();
+}
+
+// Move float from vector to scalar fp register(first element).
 void Vfmvsf(const Instruction *inst) {
   auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
   if (rv_vector->vstart() > 0) return;

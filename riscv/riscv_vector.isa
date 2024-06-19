@@ -1090,6 +1090,9 @@ slot riscv_vector {
     vfslide1down_vf{: vs2, fs1, vmask : vd},
       disasm: "vfslide1down.vf", "%vd, %vs2, %fs1, %vmask",
       semfunc: "&Vfslide1down";
+    vfmv_vf{: fs1, vmask : vd},
+      disasm: "vfmv.vf", "%vd, %fs1, %vmask",
+      semfunc: "&Vfmvvf";
     vfmerge_vf{: vs2, vs1, vmask : vd},
       disasm: "vfmerge.vf", "%vd, %vs2, %vs1, %vmask",
       semfunc: "&Vfmerge";

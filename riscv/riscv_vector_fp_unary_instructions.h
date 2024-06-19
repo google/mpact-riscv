@@ -26,6 +26,8 @@ namespace riscv {
 
 using Instruction = ::mpact::sim::generic::Instruction;
 
+// Move a single floating point value from vector[0] to vector[vl-1].
+void Vfmvvf(const Instruction *inst);
 // Move a single floating point value from vector[0] to scalar fp register.
 void Vfmvsf(const Instruction *inst);
 // Move single floating point value from scalar fp register to vector[0].
