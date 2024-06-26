@@ -15,6 +15,7 @@
 #include "riscv/riscv_vector_fp_instructions.h"
 
 #include <algorithm>
+#include <cmath>
 #include <cstdint>
 #include <cstring>
 #include <functional>
@@ -756,14 +757,14 @@ TEST_F(RiscVFPInstructionsTest, Vfmadd) {
   TernaryOpFPTestHelperVV<float, float, float>(
       "Vfmadd_vv32", /*sew*/ 32, instruction_, /*delta_position*/ 32,
       [](float vs2, float vs1, float vd) -> float {
-        return OptimizationBarrier(vs1 * vd) + vs2;
+        return std::fma(vs1, vd, vs2);
       });
   ResetInstruction();
   SetSemanticFunction(&Vfmadd);
   TernaryOpFPTestHelperVV<double, double, double>(
       "Vfmadd_vv64", /*sew*/ 64, instruction_, /*delta_position*/ 64,
       [](double vs2, double vs1, double vd) -> double {
-        return OptimizationBarrier(vs1 * vd) + vs2;
+        return std::fma(vs1, vd, vs2);
       });
   // Vector-scalar.
   ResetInstruction();
@@ -771,14 +772,14 @@ TEST_F(RiscVFPInstructionsTest, Vfmadd) {
   TernaryOpFPTestHelperVX<float, float, float>(
       "Vfmadd_vx32", /*sew*/ 32, instruction_, /*delta_position*/ 32,
       [](float vs2, float vs1, float vd) -> float {
-        return OptimizationBarrier(vs1 * vd) + vs2;
+        return std::fma(vs1, vd, vs2);
       });
   ResetInstruction();
   SetSemanticFunction(&Vfmadd);
   TernaryOpFPTestHelperVX<double, double, double>(
       "Vfmadd_vx64", /*sew*/ 64, instruction_, /*delta_position*/ 64,
       [](double vs2, double vs1, double vd) -> double {
-        return OptimizationBarrier(vs1 * vd) + vs2;
+        return std::fma(vs1, vd, vs2);
       });
 }
 

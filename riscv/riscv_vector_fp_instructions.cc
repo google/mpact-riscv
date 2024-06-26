@@ -14,6 +14,7 @@
 
 #include "riscv/riscv_vector_fp_instructions.h"
 
+#include <cmath>
 #include <cstdint>
 #include <functional>
 #include <tuple>
@@ -338,12 +339,12 @@ void Vfmadd(const Instruction *inst) {
     case 4:
       return RiscVTernaryVectorOp<float, float, float>(
           rv_vector, inst, [](float vs2, float vs1, float vd) -> float {
-            return (vs1 * vd) + vs2;
+            return std::fma(vs1, vd, vs2);
           });
     case 8:
       return RiscVTernaryVectorOp<double, double, double>(
           rv_vector, inst, [](double vs2, double vs1, double vd) -> double {
-            return (vs1 * vd) + vs2;
+            return std::fma(vs1, vd, vs2);
           });
     default:
       LOG(ERROR) << "Vfmadd: Illegal sew (" << sew << ")";
