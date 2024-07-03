@@ -670,3 +670,14 @@ cc_test(
         "@com_google_mpact-sim//mpact/sim/util/renode:renode_debug_interface",
     ],
 )
+
+cc_test(
+    name = "riscv_fp_host_test",
+    size = "small",
+    srcs = ["riscv_fp_host_test.cc"],
+    deps = [
+        "//riscv:riscv_fp_state",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+    ],
+)
