@@ -678,21 +678,13 @@ void Vfncvtrtzxfw(const Instruction *inst) {
 
 // Templated helper function to compute square root.
 template <typename T>
-inline T SqrtHelper(T vs2) {
-  if (FPTypeInfo<T>::IsNaN(vs2)) {
-    auto value = FPTypeInfo<T>::kCanonicalNaN;
-    return *reinterpret_cast<T *>(&value);
-  }
-  if (vs2 == 0.0) {
-    auto value =
-        std::signbit(vs2) ? FPTypeInfo<T>::kNegInf : FPTypeInfo<T>::kPosInf;
-    return *reinterpret_cast<T *>(&value);
-  }
-  if (vs2 < 0.0) {
-    auto value = FPTypeInfo<T>::kCanonicalNaN;
-    return *reinterpret_cast<T *>(&value);
-  }
-  return sqrt(vs2);
+inline std::tuple<T, uint32_t> SqrtHelper(T vs2) {
+  T res = sqrt(vs2);
+  if (std::isnan(res))
+    return std::make_tuple(
+        *reinterpret_cast<const float *>(&FPTypeInfo<float>::kCanonicalNaN),
+        (uint32_t)FPExceptions::kInvalidOp);
+  return std::make_tuple(res, 0);
 }
 
 // Square root.
@@ -705,15 +697,19 @@ void Vfsqrtv(const Instruction *inst) {
     return;
   }
   int sew = rv_vector->selected_element_width();
-  ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface());
   switch (sew) {
     case 4:
-      return RiscVUnaryVectorOp<float, float>(
-          rv_vector, inst, [](float vs2) -> float { return SqrtHelper(vs2); });
+      return RiscVUnaryVectorOpWithFflags<float, float>(
+          rv_vector, inst, [rv_fp](float vs2) -> std::tuple<float, uint32_t> {
+            ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface());
+            return SqrtHelper(vs2);
+          });
     case 8:
-      return RiscVUnaryVectorOp<double, double>(
-          rv_vector, inst,
-          [](double vs2) -> double { return SqrtHelper(vs2); });
+      return RiscVUnaryVectorOpWithFflags<double, double>(
+          rv_vector, inst, [rv_fp](double vs2) -> std::tuple<double, uint32_t> {
+            ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface());
+            return SqrtHelper(vs2);
+          });
     default:
       LOG(ERROR) << "Vffcvt.f.xuv: Illegal sew (" << sew << ")";
       rv_vector->set_vector_exception();

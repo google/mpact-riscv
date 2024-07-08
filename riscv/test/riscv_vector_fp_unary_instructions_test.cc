@@ -906,36 +906,32 @@ TEST_F(RiscVFPUnaryInstructionsTest, Vfrsqrt7v) {
 
 // Helper function for testing square root instruction.
 template <typename T>
-T VfsqrtvTestHelper(T vs2) {
-  if (std::isnan(vs2)) {
-    auto nan_value = FPTypeInfo<T>::kCanonicalNaN;
-    return *reinterpret_cast<T *>(&nan_value);
+inline std::tuple<T, uint32_t> VfsqrtvTestHelper(T vs2) {
+  T res = sqrt(vs2);
+  if (std::isnan(res)) {
+    return std::make_tuple(
+        *reinterpret_cast<const float *>(&FPTypeInfo<float>::kCanonicalNaN),
+        (uint32_t)FPExceptions::kInvalidOp);
   }
-  if (vs2 == 0) {
-    return std::signbit(vs2) ? -std::numeric_limits<T>::infinity()
-                             : std::numeric_limits<T>::infinity();
-  }
-  if (vs2 < 0) {
-    auto nan_value = FPTypeInfo<T>::kCanonicalNaN;
-    return *reinterpret_cast<T *>(&nan_value);
-  }
-  return std::sqrt(vs2);
+
+  return std::make_tuple(res, 0);
 }
 
 // Test square root instruction.
 TEST_F(RiscVFPUnaryInstructionsTest, Vfsqrtv) {
   SetSemanticFunction(&Vfsqrtv);
-  UnaryOpFPTestHelperV<float, float>("Vfsqrt.v_32", /*sew*/ 32, instruction_,
-                                     /*delta_position*/ 32,
-                                     [](float vs2) -> float {
-                                       auto val = VfsqrtvTestHelper(vs2);
-                                       return val;
-                                     });
+  UnaryOpWithFflagsFPTestHelperV<float, float>(
+      "Vfsqrt.v_32", /*sew*/ 32, instruction_,
+      /*delta_position*/ 32, [](float vs2) -> std::tuple<float, uint32_t> {
+        return VfsqrtvTestHelper(vs2);
+      });
   ResetInstruction();
   SetSemanticFunction(&Vfsqrtv);
-  UnaryOpFPTestHelperV<double, double>(
+  UnaryOpWithFflagsFPTestHelperV<double, double>(
       "Vfsqrt.v_64", /*sew*/ 64, instruction_, /*delta_position*/ 64,
-      [](double vs2) -> double { return VfsqrtvTestHelper(vs2); });
+      [](double vs2) -> std::tuple<double, uint32_t> {
+        return VfsqrtvTestHelper(vs2);
+      });
 }
 
 // Test widening convert fp to fp.

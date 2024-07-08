@@ -1357,7 +1357,7 @@ slot riscv_vector {
       disasm: "vfncvt.rtz.x.f.w", "%vd, %vs2, %vmask",
       semfunc: "&Vfncvtrtzxfw";
     // VFUNARY1
-    vfsqrt_v{: vs2, vmask: vd},
+    vfsqrt_v{: vs2, vmask: vd, fflags},
       disasm: "vfsqrt.v", "%vd, %vs2, %vmask",
       semfunc: "&Vfsqrtv";
     vfrsqrt7_v{: vs2, vmask: vd},
