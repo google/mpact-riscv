@@ -248,26 +248,10 @@ void RiscVFMadd(const Instruction *instruction) {
   RiscVTernaryFloatNaNBoxOp<FPRegister::ValueType, T, T>(
       instruction, [instruction](T a, T b, T c) -> T {
         // Propagate any NaNs.
-        if (FPTypeInfo<T>::IsNaN(a)) return internal::CanonicalizeNaN(a);
-        if (FPTypeInfo<T>::IsNaN(b)) return internal::CanonicalizeNaN(b);
         if ((std::isinf(a) && (b == 0.0)) || ((std::isinf(b) && (a == 0.0)))) {
           auto *flag_db = instruction->Destination(1)->AllocateDataBuffer();
           flag_db->Set<uint32_t>(0, *FPExceptions::kInvalidOp);
           flag_db->Submit();
-        }
-        if (FPTypeInfo<T>::IsNaN(c)) return internal::CanonicalizeNaN(c);
-        if (std::isinf(c) && !std::isinf(a) && !std::isinf(b)) return c;
-        if (c == 0.0) {
-          if ((a == 0.0 && !std::isinf(b)) || (b == 0.0 && !std::isinf(a))) {
-            FPUInt c_sign = *reinterpret_cast<FPUInt *>(&c) >>
-                            (FPTypeInfo<T>::kBitSize - 1);
-            FPUInt ua = *reinterpret_cast<FPUInt *>(&a);
-            FPUInt ub = *reinterpret_cast<FPUInt *>(&b);
-            FPUInt prod_sign = (ua ^ ub) >> (FPTypeInfo<T>::kBitSize - 1);
-            if (prod_sign != c_sign) return 0.0;
-            return c;
-          }
-          return internal::CanonicalizeNaN(a * b);
         }
         return internal::CanonicalizeNaN(fma(a, b, c));
       });
@@ -277,26 +261,10 @@ void RiscVFMsub(const Instruction *instruction) {
   using T = float;
   RiscVTernaryFloatNaNBoxOp<FPRegister::ValueType, T, T>(
       instruction, [instruction](T a, T b, T c) -> T {
-        if (FPTypeInfo<T>::IsNaN(a)) return internal::CanonicalizeNaN(a);
-        if (FPTypeInfo<T>::IsNaN(b)) return internal::CanonicalizeNaN(b);
         if ((std::isinf(a) && (b == 0.0)) || ((std::isinf(b) && (a == 0.0)))) {
           auto *flag_db = instruction->Destination(1)->AllocateDataBuffer();
           flag_db->Set<uint32_t>(0, *FPExceptions::kInvalidOp);
           flag_db->Submit();
-        }
-        if (FPTypeInfo<T>::IsNaN(c)) return internal::CanonicalizeNaN(c);
-        if (std::isinf(c) && !std::isinf(a) && !std::isinf(b)) return -c;
-        if (c == 0.0) {
-          if ((a == 0.0 && !std::isinf(b)) || (b == 0.0 && !std::isinf(a))) {
-            FPUInt c_sign = -*reinterpret_cast<FPUInt *>(&c) >>
-                            (FPTypeInfo<T>::kBitSize - 1);
-            FPUInt ua = *reinterpret_cast<FPUInt *>(&a);
-            FPUInt ub = *reinterpret_cast<FPUInt *>(&b);
-            FPUInt prod_sign = (ua ^ ub) >> (FPTypeInfo<T>::kBitSize - 1);
-            if (prod_sign == c_sign) return 0.0;
-            return -c;
-          }
-          return internal::CanonicalizeNaN(a * b);
         }
         return internal::CanonicalizeNaN(fma(a, b, -c));
       });
@@ -306,28 +274,12 @@ void RiscVFNmadd(const Instruction *instruction) {
   using T = float;
   RiscVTernaryFloatNaNBoxOp<FPRegister::ValueType, T, T>(
       instruction, [instruction](T a, T b, T c) -> T {
-        if (FPTypeInfo<T>::IsNaN(a)) return internal::CanonicalizeNaN(a);
-        if (FPTypeInfo<T>::IsNaN(b)) return internal::CanonicalizeNaN(b);
         if ((std::isinf(a) && (b == 0.0)) || ((std::isinf(b) && (a == 0.0)))) {
           auto *flag_db = instruction->Destination(1)->AllocateDataBuffer();
           flag_db->Set<uint32_t>(0, *FPExceptions::kInvalidOp);
           flag_db->Submit();
         }
-        if (FPTypeInfo<T>::IsNaN(c)) return internal::CanonicalizeNaN(c);
-        if (std::isinf(c) && !std::isinf(a) && !std::isinf(b)) return -c;
-        if (c == 0.0) {
-          if ((a == 0.0 && !std::isinf(b)) || (b == 0.0 && !std::isinf(a))) {
-            FPUInt c_sign = *reinterpret_cast<FPUInt *>(&c) >>
-                            (FPTypeInfo<T>::kBitSize - 1);
-            FPUInt ua = *reinterpret_cast<FPUInt *>(&a);
-            FPUInt ub = *reinterpret_cast<FPUInt *>(&b);
-            FPUInt prod_sign = (ua ^ ub) >> (FPTypeInfo<T>::kBitSize - 1);
-            if (prod_sign != c_sign) return 0.0;
-            return -c;
-          }
-          return internal::CanonicalizeNaN(-a * b);
-        }
-        return internal::CanonicalizeNaN(-fma(a, b, c));
+        return internal::CanonicalizeNaN(fma(-a, b, -c));
       });
 }
 
@@ -335,28 +287,12 @@ void RiscVFNmsub(const Instruction *instruction) {
   using T = float;
   RiscVTernaryFloatNaNBoxOp<FPRegister::ValueType, T, T>(
       instruction, [instruction](T a, T b, T c) -> T {
-        if (FPTypeInfo<T>::IsNaN(a)) return internal::CanonicalizeNaN(a);
-        if (FPTypeInfo<T>::IsNaN(b)) return internal::CanonicalizeNaN(b);
         if ((std::isinf(a) && (b == 0.0)) || ((std::isinf(b) && (a == 0.0)))) {
           auto *flag_db = instruction->Destination(1)->AllocateDataBuffer();
           flag_db->Set<uint32_t>(0, *FPExceptions::kInvalidOp);
           flag_db->Submit();
         }
-        if (FPTypeInfo<T>::IsNaN(c)) return internal::CanonicalizeNaN(c);
-        if (std::isinf(c) && !std::isinf(a) && !std::isinf(b)) return c;
-        if (c == 0.0) {
-          if ((a == 0.0 && !std::isinf(b)) || (b == 0.0 && !std::isinf(a))) {
-            FPUInt c_sign = -*reinterpret_cast<FPUInt *>(&c) >>
-                            (FPTypeInfo<T>::kBitSize - 1);
-            FPUInt ua = *reinterpret_cast<FPUInt *>(&a);
-            FPUInt ub = *reinterpret_cast<FPUInt *>(&b);
-            FPUInt prod_sign = (ua ^ ub) >> (FPTypeInfo<T>::kBitSize - 1);
-            if (prod_sign != c_sign) return 0.0;
-            return c;
-          }
-          return internal::CanonicalizeNaN(-a * b);
-        }
-        return internal::CanonicalizeNaN(-fma(a, b, -c));
+        return internal::CanonicalizeNaN(fma(-a, b, c));
       });
 }
 

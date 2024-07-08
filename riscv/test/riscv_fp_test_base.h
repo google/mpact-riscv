@@ -700,6 +700,77 @@ class RiscVFPInstructionTestBase : public testing::Test {
     }
   }
 
+  template <typename R, typename LHS, typename MHS, typename RHS>
+  void TernaryOpWithFflagsFPTestHelper(
+      absl::string_view name, Instruction *inst,
+      absl::Span<const absl::string_view> reg_prefixes, int delta_position,
+      std::function<R(LHS, MHS, RHS)> operation) {
+    using LhsRegisterType = RVFpRegister;
+    using MhsRegisterType = RVFpRegister;
+    using RhsRegisterType = RVFpRegister;
+    using DestRegisterType = RVFpRegister;
+    LHS lhs_values[kTestValueLength];
+    MHS mhs_values[kTestValueLength];
+    RHS rhs_values[kTestValueLength];
+    auto lhs_span = absl::Span<LHS>(lhs_values);
+    auto mhs_span = absl::Span<MHS>(mhs_values);
+    auto rhs_span = absl::Span<RHS>(rhs_values);
+    const std::string kR1Name = absl::StrCat(reg_prefixes[0], 1);
+    const std::string kR2Name = absl::StrCat(reg_prefixes[1], 2);
+    const std::string kR3Name = absl::StrCat(reg_prefixes[2], 3);
+    const std::string kRdName = absl::StrCat(reg_prefixes[3], 5);
+    // This is used for the rounding mode operand.
+    const std::string kRmName = absl::StrCat("x", 10);
+    AppendRegisterOperands({kR1Name, kR2Name, kR3Name, kRmName}, {kRdName});
+    auto *flag_op = rv_fp_->fflags()->CreateSetDestinationOperand(0, "fflags");
+    instruction_->AppendDestination(flag_op);
+    FillArrayWithRandomFPValues<LHS>(lhs_span);
+    FillArrayWithRandomFPValues<MHS>(mhs_span);
+    FillArrayWithRandomFPValues<RHS>(rhs_span);
+    using LhsInt = typename FPTypeInfo<LHS>::IntType;
+    *reinterpret_cast<LhsInt *>(&lhs_span[0]) = FPTypeInfo<LHS>::kQNaN;
+    *reinterpret_cast<LhsInt *>(&lhs_span[1]) = FPTypeInfo<LHS>::kSNaN;
+    *reinterpret_cast<LhsInt *>(&lhs_span[2]) = FPTypeInfo<LHS>::kPosInf;
+    *reinterpret_cast<LhsInt *>(&lhs_span[3]) = FPTypeInfo<LHS>::kNegInf;
+    *reinterpret_cast<LhsInt *>(&lhs_span[4]) = FPTypeInfo<LHS>::kPosZero;
+    *reinterpret_cast<LhsInt *>(&lhs_span[5]) = FPTypeInfo<LHS>::kNegZero;
+    *reinterpret_cast<LhsInt *>(&lhs_span[6]) = FPTypeInfo<LHS>::kPosDenorm;
+    *reinterpret_cast<LhsInt *>(&lhs_span[7]) = FPTypeInfo<LHS>::kNegDenorm;
+    for (int i = 0; i < kTestValueLength; i++) {
+      SetRegisterValues<LHS, LhsRegisterType>({{kR1Name, lhs_span[i]}});
+      SetRegisterValues<MHS, MhsRegisterType>({{kR2Name, mhs_span[i]}});
+      SetRegisterValues<RHS, RhsRegisterType>({{kR3Name, rhs_span[i]}});
+
+      for (int rm : {0, 1, 2, 3, 4}) {
+        rv_fp_->SetRoundingMode(static_cast<FPRoundingMode>(rm));
+        rv_fp_->fflags()->Write(static_cast<uint32_t>(0));
+        SetRegisterValues<int, RV32Register>({{kRmName, rm}});
+        SetRegisterValues<R, DestRegisterType>({{kRdName, 0}});
+
+        inst->Execute(nullptr);
+        // Get the fflags for the instruction execution.
+        auto fflags = rv_fp_->fflags()->GetUint32();
+        rv_fp_->fflags()->Write(static_cast<uint32_t>(0));
+        R op_val;
+        {
+          ScopedFPStatus set_fpstatus(rv_fp_->host_fp_interface());
+          op_val = operation(lhs_span[i], mhs_span[i], rhs_span[i]);
+        }
+        auto reg_val = state_->GetRegister<DestRegisterType>(kRdName)
+                           .first->data_buffer()
+                           ->template Get<R>(0);
+        FPCompare<R>(op_val, reg_val, delta_position,
+                     absl::StrCat(name, "  ", i, ": ", lhs_span[i], "  ",
+                                  mhs_span[i], " ", rhs_span[i]));
+
+        auto flag = rv_fp_->fflags()->GetUint32();
+        EXPECT_EQ(flag, fflags)
+            << absl::StrCat(name, "  ", i, ": ", lhs_span[i], "  ", mhs_span[i],
+                            " ", rhs_span[i]);
+      }
+    }
+  }
+
   absl::Span<RV32Register *> xreg() {
     return absl::Span<RV32Register *>(xreg_);
   }

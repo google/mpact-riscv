@@ -139,7 +139,7 @@ TEST_F(RV32FInstructionTest, RiscVFmax) {
 // Test MAC versions.
 TEST_F(RV32FInstructionTest, RiscVFMadd) {
   SetSemanticFunction(&RiscVFMadd);
-  TernaryOpFPTestHelper<float, float, float, float>(
+  TernaryOpWithFflagsFPTestHelper<float, float, float, float>(
       "fmadd", instruction_, {"f", "f", "f", "f"}, 32,
       [](float lhs, float mhs, float rhs) -> float {
         return fma(lhs, mhs, rhs);
@@ -147,7 +147,7 @@ TEST_F(RV32FInstructionTest, RiscVFMadd) {
 }
 TEST_F(RV32FInstructionTest, RiscVFMsub) {
   SetSemanticFunction(&RiscVFMsub);
-  TernaryOpFPTestHelper<float, float, float, float>(
+  TernaryOpWithFflagsFPTestHelper<float, float, float, float>(
       "fmsub", instruction_, {"f", "f", "f", "f"}, 32,
       [](float lhs, float mhs, float rhs) -> float {
         return fma(lhs, mhs, -rhs);
@@ -155,18 +155,18 @@ TEST_F(RV32FInstructionTest, RiscVFMsub) {
 }
 TEST_F(RV32FInstructionTest, RiscVFNmadd) {
   SetSemanticFunction(&RiscVFNmadd);
-  TernaryOpFPTestHelper<float, float, float, float>(
+  TernaryOpWithFflagsFPTestHelper<float, float, float, float>(
       "fnmadd", instruction_, {"f", "f", "f", "f"}, 32,
       [](float lhs, float mhs, float rhs) -> float {
-        return -fma(lhs, mhs, rhs);
+        return fma(-lhs, mhs, -rhs);
       });
 }
 TEST_F(RV32FInstructionTest, RiscVFNmsub) {
   SetSemanticFunction(&RiscVFNmsub);
-  TernaryOpFPTestHelper<float, float, float, float>(
+  TernaryOpWithFflagsFPTestHelper<float, float, float, float>(
       "fnmsub", instruction_, {"f", "f", "f", "f"}, 32,
       [](float lhs, float mhs, float rhs) -> float {
-        return -fma(lhs, mhs, -rhs);
+        return fma(-lhs, mhs, rhs);
       });
 }
 
