@@ -864,42 +864,47 @@ TEST_F(RiscVFPUnaryInstructionsTest, Vfrec7v) {
 
 // Helper function for testing approximate reciprocal square root instruction.
 template <typename T>
-inline T Vfrsqrt7vTestHelper(T vs2, RiscVFPState *rv_fp) {
+inline std::tuple<T, uint32_t> Vfrsqrt7vTestHelper(T vs2, RiscVFPState *rv_fp) {
   using UInt = typename FPTypeInfo<T>::IntType;
+  T return_value;
+  uint32_t fflags = 0;
   if (FPTypeInfo<T>::IsNaN(vs2) || (vs2 < 0.0)) {
     auto nan_value = FPTypeInfo<T>::kCanonicalNaN;
-    return *reinterpret_cast<T *>(&nan_value);
-  }
-  if (vs2 == 0.0) {
+    return_value = *reinterpret_cast<T *>(&nan_value);
+    fflags = static_cast<uint32_t>(FPExceptions::kInvalidOp);
+  } else if (vs2 == 0.0) {
     UInt value =
         std::signbit(vs2) ? FPTypeInfo<T>::kNegInf : FPTypeInfo<T>::kPosInf;
-    return *reinterpret_cast<T *>(&value);
+    return_value = *reinterpret_cast<T *>(&value);
+    fflags = static_cast<uint32_t>(FPExceptions::kDivByZero);
+  } else if (std::isinf(vs2)) {
+    return_value = 0.0;
+    fflags = static_cast<uint32_t>(FPExceptions::kInvalidOp);
+  } else {
+    ScopedFPStatus status(rv_fp->host_fp_interface(),
+                          FPRoundingMode::kRoundTowardsZero);
+    T value = 1.0 / sqrt(vs2);
+    UInt uint_val = *reinterpret_cast<UInt *>(&value);
+    UInt mask = FPTypeInfo<T>::kSigMask >> 7;
+    uint_val = uint_val & ~mask;
+    return_value = *reinterpret_cast<T *>(&uint_val);
   }
-  if (std::isinf(vs2)) {
-    return 0.0;
-  }
-  ScopedFPStatus status(rv_fp->host_fp_interface(),
-                        FPRoundingMode::kRoundTowardsZero);
-  T value = 1.0 / sqrt(vs2);
-  UInt uint_val = *reinterpret_cast<UInt *>(&value);
-  UInt mask = FPTypeInfo<T>::kSigMask >> 7;
-  uint_val = uint_val & ~mask;
-  return *reinterpret_cast<T *>(&uint_val);
+  return std::make_tuple(return_value, fflags);
 }
 
 // Test approximate reciprocal square root.
 TEST_F(RiscVFPUnaryInstructionsTest, Vfrsqrt7v) {
   SetSemanticFunction(&Vfrsqrt7v);
-  UnaryOpFPTestHelperV<float, float>(
-      "Vfrsqrt7.v_32", /*sew*/ 32, instruction_, /*delta_position*/ 7,
-      [this](float vs2) -> float {
+  UnaryOpWithFflagsFPTestHelperV<float, float>(
+      "Vfrsqrt7.v_32", /*sew*/ 32, instruction_,
+      /*delta_position*/ 7, [this](float vs2) -> std::tuple<float, uint32_t> {
         return Vfrsqrt7vTestHelper(vs2, this->rv_fp_);
       });
   ResetInstruction();
   SetSemanticFunction(&Vfrsqrt7v);
-  UnaryOpFPTestHelperV<double, double>(
-      "Vfrsqrt7.v_64", /*sew*/ 64, instruction_, /*delta_position*/ 7,
-      [this](double vs2) -> double {
+  UnaryOpWithFflagsFPTestHelperV<double, double>(
+      "Vfsqrt.v_64", /*sew*/ 64, instruction_, /*delta_position*/ 7,
+      [this](double vs2) -> std::tuple<double, uint32_t> {
         return Vfrsqrt7vTestHelper(vs2, this->rv_fp_);
       });
 }

@@ -752,26 +752,40 @@ inline T RecipSqrt7(T value) {
 // Templated helper function to compute the Reciprocal Square Root
 // approximation for all values.
 template <typename T>
-inline T RecipSqrt7Helper(T value) {
+inline std::tuple<T, uint32_t> RecipSqrt7Helper(T value) {
   auto fp_class = std::fpclassify(value);
+  T return_value = std::numeric_limits<T>::quiet_NaN();
+  uint32_t fflags = 0;
   switch (fp_class) {
     case FP_INFINITE:
-      // TODO: raise exception.
-      return std::signbit(value) ? std::numeric_limits<T>::quiet_NaN() : 0.0;
+      return_value =
+          std::signbit(value) ? std::numeric_limits<T>::quiet_NaN() : 0.0;
+      fflags = (uint32_t)FPExceptions::kInvalidOp;
+      break;
     case FP_NAN:
       // Just propagate the NaN.
-      return std::numeric_limits<T>::quiet_NaN();
+      return_value = std::numeric_limits<T>::quiet_NaN();
+      fflags = (uint32_t)FPExceptions::kInvalidOp;
+      break;
     case FP_ZERO:
-      return std::signbit(value) ? -std::numeric_limits<T>::infinity()
-                                 : std::numeric_limits<T>::infinity();
+      return_value = std::signbit(value) ? -std::numeric_limits<T>::infinity()
+                                         : std::numeric_limits<T>::infinity();
+      fflags = (uint32_t)FPExceptions::kDivByZero;
+      break;
     case FP_SUBNORMAL:
     case FP_NORMAL:
-      // TODO: raise exception if negative.
-      if (std::signbit(value)) return std::numeric_limits<T>::quiet_NaN();
-      return RecipSqrt7(value);
+      if (std::signbit(value)) {
+        return_value = std::numeric_limits<T>::quiet_NaN();
+        fflags = (uint32_t)FPExceptions::kInvalidOp;
+      } else {
+        return_value = RecipSqrt7(value);
+      }
+      break;
+    default:
+      LOG(ERROR) << "RecipSqrt7Helper: Illegal fp_class (" << fp_class << ")";
       break;
   }
-  return std::numeric_limits<T>::quiet_NaN();
+  return std::make_tuple(return_value, fflags);
 }
 
 // Approximation of reciprocal square root to 7 bits mantissa.
@@ -779,16 +793,19 @@ void Vfrsqrt7v(const Instruction *inst) {
   auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
   auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
-  ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface());
   switch (sew) {
     case 4:
-      return RiscVUnaryVectorOp<float, float>(
-          rv_vector, inst,
-          [](float vs2) -> float { return RecipSqrt7Helper(vs2); });
+      return RiscVUnaryVectorOpWithFflags<float, float>(
+          rv_vector, inst, [rv_fp](float vs2) -> std::tuple<float, uint32_t> {
+            ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface());
+            return RecipSqrt7Helper(vs2);
+          });
     case 8:
-      return RiscVUnaryVectorOp<double, double>(
-          rv_vector, inst,
-          [](double vs2) -> double { return RecipSqrt7Helper(vs2); });
+      return RiscVUnaryVectorOpWithFflags<double, double>(
+          rv_vector, inst, [rv_fp](double vs2) -> std::tuple<double, uint32_t> {
+            ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface());
+            return RecipSqrt7Helper(vs2);
+          });
     default:
       LOG(ERROR) << "vfrsqrt7.v: Illegal sew (" << sew << ")";
       rv_vector->set_vector_exception();
