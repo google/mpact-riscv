@@ -790,14 +790,14 @@ TEST_F(RiscVFPInstructionsTest, Vfnmadd) {
   TernaryOpFPTestHelperVV<float, float, float>(
       "Vfnmadd_vv32", /*sew*/ 32, instruction_, /*delta_position*/ 32,
       [](float vs2, float vs1, float vd) -> float {
-        return -(OptimizationBarrier(vd * vs1)) - vs2;
+        return OptimizationBarrier(std::fma(-vs1, vd, -vs2));
       });
   ResetInstruction();
   SetSemanticFunction(&Vfnmadd);
   TernaryOpFPTestHelperVV<double, double, double>(
       "Vfnmadd_vv64", /*sew*/ 64, instruction_, /*delta_position*/ 64,
       [](double vs2, double vs1, double vd) -> double {
-        return -(OptimizationBarrier(vd * vs1)) - vs2;
+        return OptimizationBarrier(std::fma(-vs1, vd, -vs2));
       });
   // Vector-scalar.
   ResetInstruction();
@@ -805,14 +805,14 @@ TEST_F(RiscVFPInstructionsTest, Vfnmadd) {
   TernaryOpFPTestHelperVX<float, float, float>(
       "Vfnmadd_vx32", /*sew*/ 32, instruction_, /*delta_position*/ 32,
       [](float vs2, float vs1, float vd) -> float {
-        return -OptimizationBarrier(vd * vs1) - vs2;
+        return OptimizationBarrier(std::fma(-vs1, vd, -vs2));
       });
   ResetInstruction();
   SetSemanticFunction(&Vfnmadd);
   TernaryOpFPTestHelperVX<double, double, double>(
       "Vfnmadd_vx64", /*sew*/ 64, instruction_, /*delta_position*/ 64,
       [](double vs2, double vs1, double vd) -> double {
-        return -OptimizationBarrier(vd * vs1) - vs2;
+        return OptimizationBarrier(std::fma(-vs1, vd, -vs2));
       });
 }
 
