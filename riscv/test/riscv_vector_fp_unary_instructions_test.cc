@@ -914,9 +914,13 @@ template <typename T>
 inline std::tuple<T, uint32_t> VfsqrtvTestHelper(T vs2) {
   if (vs2 == 0.0) return std::make_tuple(vs2, 0);
   if (std::isnan(vs2) || (vs2 < 0.0)) {
-    return std::make_tuple(
-        *reinterpret_cast<const float *>(&FPTypeInfo<float>::kCanonicalNaN),
-        (uint32_t)FPExceptions::kInvalidOp);
+    auto val = FPTypeInfo<T>::kCanonicalNaN;
+    uint32_t flags = 0;
+    if (!mpact::sim::generic::FPTypeInfo<T>::IsQNaN(vs2)) {
+      flags = (uint32_t)FPExceptions::kInvalidOp;
+    }
+    return std::make_tuple(*reinterpret_cast<const T *>(&val),
+                           (uint32_t)FPExceptions::kInvalidOp);
   }
   T res = sqrt(vs2);
 

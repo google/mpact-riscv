@@ -128,8 +128,8 @@ TEST_F(RV32DInstructionTest, RiscVDsqrt) {
         if (!FPTypeInfo<double>::IsQNaN(lhs)) {
           flags = *FPExceptions::kInvalidOp;
         }
-        res = *reinterpret_cast<const double *>(
-            &FPTypeInfo<double>::kCanonicalNaN);
+        uint64_t val = FPTypeInfo<double>::kCanonicalNaN;
+        res = *reinterpret_cast<const double *>(&val);
         return std::tie(res, flags);
       });
 }
