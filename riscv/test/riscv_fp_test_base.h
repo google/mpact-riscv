@@ -93,6 +93,9 @@ struct FPTypeInfo<float> {
       (1ULL << (kBitSize - 1)) | (1ULL << (kSigSize - 2));
   static const IntType kCanonicalNaN = 0x7fc0'0000ULL;
   static bool IsNaN(T value) { return std::isnan(value); }
+  static bool IsQNaN(T value) {
+    return *reinterpret_cast<IntType *>(&value) == kQNaN;
+  }
 };
 
 template <>
@@ -116,6 +119,9 @@ struct FPTypeInfo<double> {
       (1ULL << (kBitSize - 1)) | (1ULL << (kSigSize - 2));
   static const IntType kCanonicalNaN = 0x7ff8'0000'0000'0000ULL;
   static bool IsNaN(T value) { return std::isnan(value); }
+  static bool IsQNaN(T value) {
+    return *reinterpret_cast<IntType *>(&value) == kQNaN;
+  }
 };
 
 // Templated helper function for classifying fp numbers.

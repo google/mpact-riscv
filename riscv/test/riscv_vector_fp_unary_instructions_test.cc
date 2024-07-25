@@ -912,12 +912,13 @@ TEST_F(RiscVFPUnaryInstructionsTest, Vfrsqrt7v) {
 // Helper function for testing square root instruction.
 template <typename T>
 inline std::tuple<T, uint32_t> VfsqrtvTestHelper(T vs2) {
-  T res = sqrt(vs2);
-  if (std::isnan(res)) {
+  if (vs2 == 0.0) return std::make_tuple(vs2, 0);
+  if (std::isnan(vs2) || (vs2 < 0.0)) {
     return std::make_tuple(
         *reinterpret_cast<const float *>(&FPTypeInfo<float>::kCanonicalNaN),
         (uint32_t)FPExceptions::kInvalidOp);
   }
+  T res = sqrt(vs2);
 
   return std::make_tuple(res, 0);
 }

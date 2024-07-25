@@ -18,12 +18,15 @@
 #include <cstdint>
 #include <type_traits>
 
+#include "absl/log/log.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/type_helpers.h"
+#include "riscv/riscv_fp_host.h"
 #include "riscv/riscv_fp_info.h"
 #include "riscv/riscv_fp_state.h"
 #include "riscv/riscv_instruction_helpers.h"
 #include "riscv/riscv_register.h"
+#include "riscv/riscv_state.h"
 
 namespace mpact {
 namespace sim {
@@ -79,11 +82,41 @@ void RiscVDDiv(const Instruction *instruction) {
 
 // Square root uses the library square root.
 void RiscVDSqrt(const Instruction *instruction) {
-  RiscVUnaryFloatOp<double, double>(instruction, [](double a) -> double {
-    double res = sqrt(a);
-    if (std::isnan(res))
+  RiscVUnaryNaNBoxOp<FPRegister::ValueType, FPRegister::ValueType, double,
+                     double>(instruction, [instruction](double a) -> double {
+    // If the input value is NaN or less than zero, set the invalid op flag.
+    if (FPTypeInfo<double>::IsNaN(a) || (a < 0.0)) {
+      if (!FPTypeInfo<double>::IsQNaN(a)) {
+        auto *flag_db = instruction->Destination(1)->AllocateDataBuffer();
+        flag_db->Set<uint32_t>(0, *FPExceptions::kInvalidOp);
+        flag_db->Submit();
+      }
       return *reinterpret_cast<const double *>(
           &FPTypeInfo<double>::kCanonicalNaN);
+    }
+
+    // Square root of 0 returns 0, and of -0.0 returns -0.0.
+    if (a == 0.0) return a;
+
+    // For all other cases use the library sqrt.
+    // Get the rounding mode.
+    int rm_value = generic::GetInstructionSource<int>(instruction, 1);
+
+    auto *rv_fp = static_cast<RiscVState *>(instruction->state())->rv_fp();
+    // If the rounding mode is dynamic, read it from the current state.
+    if (rm_value == *FPRoundingMode::kDynamic) {
+      if (!rv_fp->rounding_mode_valid()) {
+        LOG(ERROR) << "Invalid rounding mode";
+        return *reinterpret_cast<const double *>(
+            &FPTypeInfo<double>::kCanonicalNaN);
+      }
+      rm_value = *rv_fp->GetRoundingMode();
+    }
+    double res;
+    {
+      ScopedFPStatus set_fp_status(rv_fp->host_fp_interface(), rm_value);
+      res = sqrt(a);
+    }
     return res;
   });
 }
@@ -127,7 +160,7 @@ void RiscVDMax(const Instruction *instruction) {
           }
           return b;
         }
-        if (FPTypeInfo<float>::IsNaN(b)) return a;
+        if (FPTypeInfo<double>::IsNaN(b)) return a;
         // If both are zero, return the negative zero if there is one.
         if ((a == 0.0) && (b == 0.0)) return (std::signbit(a)) ? b : a;
         return (a < b) ? b : a;

@@ -487,7 +487,7 @@ slot riscv32f {
       resources: ThreeOp,
       semfunc: "&RiscVFDiv",
       disasm: "fdiv", "%frd, %frs1, %frs2";
-    fsqrt_s{: frs1, rm : frd},
+    fsqrt_s{: frs1, rm : frd, fflags},
       resources: TwoOp,
       semfunc: "&RiscVFSqrt",
       disasm: "fsqrt", "%frd, %frs1";
@@ -602,7 +602,7 @@ slot riscv32d {
       resources: {next_pc, drs1, drs2 : drd[0..]},
       semfunc: "&RiscVDDiv",
       disasm: "fdiv.d", "%drd, %drs1, %drs2";
-    fsqrt_d{: drs1, rm : drd},
+    fsqrt_d{: drs1, rm : drd, fflags},
       resources: {next_pc, drs1 : drd[0..]},
       semfunc: "&RiscVDSqrt",
       disasm: "fsqrt.d", "%drd, %drs1";

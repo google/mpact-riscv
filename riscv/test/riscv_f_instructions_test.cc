@@ -20,6 +20,7 @@
 
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/instruction.h"
+#include "mpact/sim/generic/type_helpers.h"
 #include "riscv/test/riscv_fp_test_base.h"
 
 namespace {
@@ -27,6 +28,7 @@ namespace {
 using ::mpact::sim::riscv::FPExceptions;
 using ::mpact::sim::riscv::test::FPTypeInfo;
 using ::mpact::sim::riscv::test::RiscVFPInstructionTestBase;
+using ::mpact::sim::generic::operator*;  // NOLINT: is used below.
 
 using ::mpact::sim::riscv::RiscVFAdd;
 using ::mpact::sim::riscv::RiscVFCvtSw;
@@ -89,7 +91,30 @@ TEST_F(RV32FInstructionTest, RiscVFdiv) {
 }
 
 // Test square root.
-TEST_F(RV32FInstructionTest, RiscVFsqrt) { SetSemanticFunction(&RiscVFSqrt); }
+TEST_F(RV32FInstructionTest, RiscVFsqrt) {
+  SetSemanticFunction(&RiscVFSqrt);
+  UnaryOpWithFflagsFPTestHelper<float, float>(
+      "fsqrt", instruction_, {"f", "f"}, 32,
+      [](float lhs, int rm) -> std::tuple<float, uint32_t> {
+        uint32_t flags = 0;
+        if (lhs == 0) return std::tie(lhs, flags);
+        float res;
+        if (lhs > 0) {
+          res = sqrt(lhs);
+          double dres = sqrt(static_cast<double>(lhs));
+          if (static_cast<double>(res) != dres) {
+            flags = *FPExceptions::kInexact;
+          }
+          return std::tie(res, flags);
+        }
+        if (!FPTypeInfo<float>::IsQNaN(lhs)) {
+          flags = *FPExceptions::kInvalidOp;
+        }
+        res =
+            *reinterpret_cast<const float *>(&FPTypeInfo<float>::kCanonicalNaN);
+        return std::tie(res, flags);
+      });
+}
 
 // Test Min/Max.
 TEST_F(RV32FInstructionTest, RiscVFmin) {

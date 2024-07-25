@@ -679,12 +679,17 @@ void Vfncvtrtzxfw(const Instruction *inst) {
 // Templated helper function to compute square root.
 template <typename T>
 inline std::tuple<T, uint32_t> SqrtHelper(T vs2) {
-  T res = sqrt(vs2);
-  if (std::isnan(res))
-    return std::make_tuple(
-        *reinterpret_cast<const float *>(&FPTypeInfo<float>::kCanonicalNaN),
-        (uint32_t)FPExceptions::kInvalidOp);
-  return std::make_tuple(res, 0);
+  uint32_t flags = 0;
+  T res;
+  if (FPTypeInfo<T>::IsNaN(vs2) || vs2 < 0.0) {
+    auto value = FPTypeInfo<T>::kCanonicalNaN;
+    res = *reinterpret_cast<T *>(&value);
+    flags = *FPExceptions::kInvalidOp;
+    return std::tie(res, flags);
+  }
+  if (vs2 == 0.0) return std::tie(vs2, flags);
+  res = sqrt(vs2);
+  return std::tie(res, flags);
 }
 
 // Square root.
@@ -697,24 +702,34 @@ void Vfsqrtv(const Instruction *inst) {
     return;
   }
   int sew = rv_vector->selected_element_width();
-  switch (sew) {
-    case 4:
-      return RiscVUnaryVectorOpWithFflags<float, float>(
-          rv_vector, inst, [rv_fp](float vs2) -> std::tuple<float, uint32_t> {
-            ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface());
-            return SqrtHelper(vs2);
-          });
-    case 8:
-      return RiscVUnaryVectorOpWithFflags<double, double>(
-          rv_vector, inst, [rv_fp](double vs2) -> std::tuple<double, uint32_t> {
-            ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface());
-            return SqrtHelper(vs2);
-          });
-    default:
-      LOG(ERROR) << "Vffcvt.f.xuv: Illegal sew (" << sew << ")";
-      rv_vector->set_vector_exception();
-      return;
+  uint32_t flags = 0;
+  {
+    ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface());
+    switch (sew) {
+      case 4:
+        RiscVUnaryVectorOp<float, float>(rv_vector, inst,
+                                         [&flags](float vs2) -> float {
+                                           auto [res, f] = SqrtHelper(vs2);
+                                           flags |= f;
+                                           return res;
+                                         });
+        break;
+      case 8:
+        RiscVUnaryVectorOp<double, double>(rv_vector, inst,
+                                           [&flags](double vs2) -> double {
+                                             auto [res, f] = SqrtHelper(vs2);
+                                             flags |= f;
+                                             return res;
+                                           });
+        break;
+      default:
+        LOG(ERROR) << "Vffcvt.f.xuv: Illegal sew (" << sew << ")";
+        rv_vector->set_vector_exception();
+        return;
+    }
   }
+  auto *fflags = rv_fp->fflags();
+  fflags->Write(flags | fflags->AsUint32());
 }
 
 // Templated helper function to compute the Reciprocal Square Root

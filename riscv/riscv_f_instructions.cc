@@ -17,14 +17,14 @@
 #include <cmath>
 #include <cstdint>
 #include <functional>
-#include <iostream>
 #include <limits>
-#include <tuple>
 #include <type_traits>
 
+#include "absl/log/log.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/register.h"
 #include "mpact/sim/generic/type_helpers.h"
+#include "riscv/riscv_fp_host.h"
 #include "riscv/riscv_fp_info.h"
 #include "riscv/riscv_instruction_helpers.h"
 #include "riscv/riscv_register.h"
@@ -177,14 +177,44 @@ void RiscVFDiv(const Instruction *instruction) {
       instruction, [](float a, float b) { return a / b; });
 }
 
-// Square root uses the library square root.
+// Square root uses the library square root, but check for special conditions
+// to set flags that may not be set correctly with the library version.
 void RiscVFSqrt(const Instruction *instruction) {
-  RiscVUnaryFloatNaNBoxOp<FPRegister::ValueType, FPRegister::ValueType, float,
-                          float>(instruction, [](float a) -> float {
-    float res = sqrt(a);
-    if (std::isnan(res))
+  RiscVUnaryNaNBoxOp<FPRegister::ValueType, FPRegister::ValueType, float,
+                     float>(instruction, [instruction](float a) -> float {
+    // If the input value is NaN or less than zero, set the invalid op flag.
+    if (FPTypeInfo<float>::IsNaN(a) || (a < 0.0)) {
+      if (!FPTypeInfo<float>::IsQNaN(a)) {
+        auto *flag_db = instruction->Destination(1)->AllocateDataBuffer();
+        flag_db->Set<uint32_t>(0, *FPExceptions::kInvalidOp);
+        flag_db->Submit();
+      }
       return *reinterpret_cast<const float *>(
           &FPTypeInfo<float>::kCanonicalNaN);
+    }
+
+    // Square root of 0 returns 0, and of -0.0 returns -0.0.
+    if (a == 0.0) return a;
+
+    // For all other cases use the library sqrt.
+    // Get the rounding mode.
+    int rm_value = generic::GetInstructionSource<int>(instruction, 1);
+
+    auto *rv_fp = static_cast<RiscVState *>(instruction->state())->rv_fp();
+    // If the rounding mode is dynamic, read it from the current state.
+    if (rm_value == *FPRoundingMode::kDynamic) {
+      if (!rv_fp->rounding_mode_valid()) {
+        LOG(ERROR) << "Invalid rounding mode";
+        return *reinterpret_cast<const float *>(
+            &FPTypeInfo<float>::kCanonicalNaN);
+      }
+      rm_value = *rv_fp->GetRoundingMode();
+    }
+    float res;
+    {
+      ScopedFPStatus set_fp_status(rv_fp->host_fp_interface(), rm_value);
+      res = sqrt(a);
+    }
     return res;
   });
 }

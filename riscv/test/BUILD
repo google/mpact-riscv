@@ -197,6 +197,7 @@ cc_test(
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
     ],
 )
 
@@ -217,6 +218,7 @@ cc_test(
         "//riscv:riscv_state",
         "@com_google_googletest//:gtest_main",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
     ],
 )
 

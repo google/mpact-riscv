@@ -20,6 +20,7 @@
 
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/instruction.h"
+#include "mpact/sim/generic/type_helpers.h"
 #include "riscv/test/riscv_fp_test_base.h"
 
 namespace {
@@ -27,6 +28,7 @@ namespace {
 using ::mpact::sim::riscv::FPExceptions;
 using ::mpact::sim::riscv::test::FPTypeInfo;
 using ::mpact::sim::riscv::test::RiscVFPInstructionTestBase;
+using ::mpact::sim::generic::operator*;  // NOLINT: is used below.
 
 using ::mpact::sim::riscv::RiscVDAdd;
 using ::mpact::sim::riscv::RiscVDCvtDs;
@@ -92,7 +94,45 @@ TEST_F(RV32DInstructionTest, RiscVDdiv) {
 }
 
 // Test square root.
-TEST_F(RV32DInstructionTest, RiscVDsqrt) { SetSemanticFunction(&RiscVDSqrt); }
+TEST_F(RV32DInstructionTest, RiscVDsqrt) {
+  SetSemanticFunction(&RiscVDSqrt);
+  UnaryOpWithFflagsFPTestHelper<double, double>(
+      "dsqrt", instruction_, {"d", "d"}, 64,
+      [](double lhs, int rm) -> std::tuple<double, uint32_t> {
+        uint32_t flags = 0;
+        if (lhs == 0) return std::tie(lhs, flags);
+        double res;
+        if (lhs > 0) {
+          res = sqrt(lhs);
+          uint64_t dhls = *reinterpret_cast<uint64_t *>(&lhs);
+          // Get exponent of source value.
+          int exp = (dhls & FPTypeInfo<double>::kExpMask) >>
+                    FPTypeInfo<double>::kSigSize;
+          exp -= FPTypeInfo<double>::kExpBias;
+          // Get significand of result.
+          uint64_t dres = *reinterpret_cast<uint64_t *>(&res);
+          uint64_t sig = dres & FPTypeInfo<double>::kSigMask;
+          bool is_square;
+          // Slightly different test based on whether the exponent of the source
+          // is even or odd.
+          if (exp & 0x1) {
+            is_square = ((sig & 0x1ff'ffff) == 0) && (res * res == lhs);
+          } else {
+            is_square = (sig & 0x3ff'ffff) == 0;
+          }
+          if (!is_square) {
+            flags = *FPExceptions::kInexact;
+          }
+          return std::tie(res, flags);
+        }
+        if (!FPTypeInfo<double>::IsQNaN(lhs)) {
+          flags = *FPExceptions::kInvalidOp;
+        }
+        res = *reinterpret_cast<const double *>(
+            &FPTypeInfo<double>::kCanonicalNaN);
+        return std::tie(res, flags);
+      });
+}
 
 // Test Min/Max.
 TEST_F(RV32DInstructionTest, RiscVDmin) {
