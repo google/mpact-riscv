@@ -94,7 +94,8 @@ struct FPTypeInfo<float> {
   static const IntType kCanonicalNaN = 0x7fc0'0000ULL;
   static bool IsNaN(T value) { return std::isnan(value); }
   static bool IsQNaN(T value) {
-    return *reinterpret_cast<IntType *>(&value) == kQNaN;
+    IntType uint_val = *reinterpret_cast<IntType *>(&value);
+    return IsNaN(value) && (((1ULL << (kSigSize - 1)) & uint_val) != 0);
   }
 };
 
@@ -120,7 +121,8 @@ struct FPTypeInfo<double> {
   static const IntType kCanonicalNaN = 0x7ff8'0000'0000'0000ULL;
   static bool IsNaN(T value) { return std::isnan(value); }
   static bool IsQNaN(T value) {
-    return *reinterpret_cast<IntType *>(&value) == kQNaN;
+    IntType uint_val = *reinterpret_cast<IntType *>(&value);
+    return IsNaN(value) && (((1ULL << (kSigSize - 1)) & uint_val) != 0);
   }
 };
 
