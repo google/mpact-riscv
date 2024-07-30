@@ -30,7 +30,6 @@
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/operand_interface.h"
 #include "mpact/sim/generic/ref_count.h"
-#include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "mpact/sim/util/memory/memory_interface.h"
 #include "riscv/riscv_csr.h"
 #include "riscv/riscv_misa.h"

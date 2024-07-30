@@ -683,3 +683,15 @@ cc_test(
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
     ],
 )
+
+cc_test(
+    name = "riscv_pmp_test",
+    size = "small",
+    srcs = ["riscv_pmp_test.cc"],
+    deps = [
+        "//riscv:riscv_state",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
+    ],
+)

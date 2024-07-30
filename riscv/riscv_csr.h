@@ -112,6 +112,28 @@ enum class RiscVCsrEnum {
   kMTval = 0x343,     // Machine bad address or instruction.
   kMIp = 0x344,       // Machine interrupt pending.
 
+  // PMP registers.
+  kPmpCfg0 = 0x3a0,    // PMP configuration register 0.
+  kPmpCfg1 = 0x3a1,    // PMP configuration register 1 (only for RV32).
+  kPmpCfg2 = 0x3a2,    // PMP configuration register 2.
+  kPmpCfg3 = 0x3a3,    // PMP configuration register 3 (only for RV32).
+  kPmpAddr0 = 0x3b0,   // PMP address register 0.
+  kPmpAddr1 = 0x3b1,   // PMP address register 1.
+  kPmpAddr2 = 0x3b2,   // PMP address register 2.
+  kPmpAddr3 = 0x3b3,   // PMP address register 3.
+  kPmpAddr4 = 0x3b4,   // PMP address register 4.
+  kPmpAddr5 = 0x3b5,   // PMP address register 5.
+  kPmpAddr6 = 0x3b6,   // PMP address register 6.
+  kPmpAddr7 = 0x3b7,   // PMP address register 7.
+  kPmpAddr8 = 0x3b8,   // PMP address register 8.
+  kPmpAddr9 = 0x3b9,   // PMP address register 9.
+  kPmpAddr10 = 0x3ba,  // PMP address register 10.
+  kPmpAddr11 = 0x3bb,  // PMP address register 11.
+  kPmpAddr12 = 0x3bc,  // PMP address register 12.
+  kPmpAddr13 = 0x3bd,  // PMP address register 13.
+  kPmpAddr14 = 0x3be,  // PMP address register 14.
+  kPmpAddr15 = 0x3bf,  // PMP address register 15.
+
   // Ignoring machine memory protection for now.
 
   kMCycle = 0xb00,    // Machine cycle counter.
