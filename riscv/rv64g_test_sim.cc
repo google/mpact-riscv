@@ -147,6 +147,7 @@ int main(int argc, char **argv) {
     halt_reason = halt_status.value();
     ok = true;
     if (commit_trace) {
+      // This IncRef's the inst instance. Need to DecRef it when we are done.
       auto *inst = riscv_top.GetInstruction(pc).value();
       std::string trace_str;
       absl::StrAppend(
@@ -204,6 +205,7 @@ int main(int argc, char **argv) {
       trace_str.append(test_watcher->trace_str());
       test_watcher->clear_trace_str();
       std::cerr << trace_str << std::endl;
+      inst->DecRef();
     }
     pc = riscv_top.ReadRegister("pc").value();
   } while (halt_reason == *HaltReason::kNone);

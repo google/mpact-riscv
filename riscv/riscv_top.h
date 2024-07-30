@@ -103,6 +103,9 @@ class RiscVTop : public generic::Component, public RiscVDebugInterface {
   absl::Status ClearDataWatchpoint(uint64_t address,
                                    AccessType access_type) override;
 
+  // If successful, returns a pointer to the instruction at the given address.
+  // The instruction object is IncRef'ed, and the caller must DecRef the object
+  // when it is done with it.
   absl::StatusOr<Instruction *> GetInstruction(uint64_t address) override;
   absl::StatusOr<std::string> GetDisassembly(uint64_t address) override;
 

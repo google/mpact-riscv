@@ -669,7 +669,21 @@ absl::Status RiscVTop::ClearDataWatchpoint(uint64_t address,
 }
 
 absl::StatusOr<Instruction *> RiscVTop::GetInstruction(uint64_t address) {
-  auto inst = rv_decode_cache_->GetDecodedInstruction(address);
+  // If requesting the instruction at an action point, we need to write the
+  // original instruction back to memory before getting the disassembly.
+  bool inst_swap = rv_action_point_manager_->IsActionPointActive(address);
+  if (inst_swap) {
+    (void)rv_action_point_manager_->ap_memory_interface()
+        ->WriteOriginalInstruction(address);
+  }
+  // Get the decoded instruction.
+  Instruction *inst = rv_decode_cache_->GetDecodedInstruction(address);
+  inst->IncRef();
+  // Swap back if required.
+  if (inst_swap) {
+    (void)rv_action_point_manager_->ap_memory_interface()
+        ->WriteBreakpointInstruction(address);
+  }
   return inst;
 }
 
@@ -679,25 +693,11 @@ absl::StatusOr<std::string> RiscVTop::GetDisassembly(uint64_t address) {
     return absl::FailedPreconditionError("GetDissasembly: Core must be halted");
   }
 
-  Instruction *inst = nullptr;
-  // If requesting the disassembly for an instruction at an action point, return
-  // that of the original instruction instead.
-  if (rv_action_point_manager_->IsActionPointActive(address)) {
-    // Write the original instruction back to memory.
-    (void)rv_action_point_manager_->ap_memory_interface()
-        ->WriteOriginalInstruction(address);
-    // Get the real instruction.
-    inst = rv_decode_cache_->GetDecodedInstruction(address);
-    auto disasm = inst != nullptr ? inst->AsString() : "Invalid instruction";
-    // Restore the breakpoint instruction.
-    (void)rv_action_point_manager_->ap_memory_interface()
-        ->WriteBreakpointInstruction(address);
-    return disasm;
-  }
-
-  // If not at the breakpoint, or requesting a different instruction,
-  inst = rv_decode_cache_->GetDecodedInstruction(address);
+  auto res = GetInstruction(address);
+  if (!res.ok()) return res.status();
+  Instruction *inst = res.value();
   auto disasm = inst != nullptr ? inst->AsString() : "Invalid instruction";
+  inst->DecRef();
   return disasm;
 }
 
