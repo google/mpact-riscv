@@ -19,6 +19,7 @@
 
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "absl/log/log_sink_registry.h"
 #include "absl/strings/str_cat.h"
 #include "elfio/elf_types.hpp"
 #include "elfio/elfio.hpp"
@@ -27,12 +28,16 @@
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
+#include "mpact/sim/util/other/log_sink.h"
 #include "mpact/sim/util/program_loader/elf_program_loader.h"
 #include "riscv/riscv_state.h"
 
 namespace {
 
+using ::mpact::sim::riscv::RiscV64Decoder;
+using ::mpact::sim::riscv::RiscVState;
 using ::mpact::sim::riscv::RiscVXlen;
+using ::mpact::sim::util::LogSink;
 
 constexpr char kFileName[] = "hello_world_64.elf";
 
@@ -60,12 +65,22 @@ class RiscV64DecoderTest : public testing::Test {
   ~RiscV64DecoderTest() override { delete symbol_accessor_; }
 
   ELFIO::elfio elf_reader_;
-  mpact::sim::riscv::RiscVState state_;
+  RiscVState state_;
   mpact::sim::util::FlatDemandMemory memory_;
   mpact::sim::util::ElfProgramLoader loader_;
-  mpact::sim::riscv::RiscV64Decoder decoder_;
+  RiscV64Decoder decoder_;
   SymbolAccessor *symbol_accessor_;
 };
+
+TEST_F(RiscV64DecoderTest, Getters) {
+  RiscV64Decoder *decoder = nullptr;
+  LogSink log_sink;
+  absl::AddLogSink(&log_sink);
+  decoder = new RiscV64Decoder(&state_, &memory_);
+  EXPECT_EQ(log_sink.num_error(), 0);
+  absl::RemoveLogSink(&log_sink);
+  delete decoder;
+}
 
 // This test is really pretty simple. It decodes the instructions in "main".
 // The goal of this test is not so much to ensure that the decoder is accurate,

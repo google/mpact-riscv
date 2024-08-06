@@ -16,9 +16,11 @@
 #define MPACT_RISCV_RISCV_RISCV_REGISTER_H_
 
 #include <any>
+#include <cstdint>
 #include <string>
 #include <vector>
 
+#include "absl/types/span.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/operand_interface.h"
 #include "mpact/sim/generic/register.h"

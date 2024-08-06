@@ -21,11 +21,15 @@
 
 #include "absl/log/log.h"
 #include "absl/strings/str_cat.h"
+#include "absl/types/span.h"
 #include "mpact/sim/generic/immediate_operand.h"
 #include "mpact/sim/generic/literal_operand.h"
-#include "mpact/sim/generic/operand_interface.h"
+#include "mpact/sim/generic/register.h"
+#include "mpact/sim/generic/simple_resource.h"
 #include "mpact/sim/generic/simple_resource_operand.h"
+#include "mpact/sim/generic/type_helpers.h"
 #include "riscv/riscv64gv_bin_decoder.h"
+#include "riscv/riscv64gv_decoder.h"
 #include "riscv/riscv64gv_enums.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
@@ -37,6 +41,7 @@ namespace isa64v {
 namespace {
 
 using generic::SimpleResourceOperand;
+using ::mpact::sim::generic::operator*;  // NOLINT: is used below.
 
 constexpr int kNumRegTable[8] = {8, 1, 2, 1, 4, 1, 2, 1};
 
@@ -176,6 +181,16 @@ RiscV64GVecEncoding::RiscV64GVecEncoding(RiscVState *state, bool use_abi_names)
   resource_pool_ = new generic::SimpleResourcePool("RiscV64GV", 128);
   resource_delay_line_ =
       state_->CreateAndAddDelayLine<generic::SimpleResourceDelayLine>(8);
+  for (int i = *SourceOpEnum::kNone; i < *SourceOpEnum::kPastMaxValue; ++i) {
+    if (source_op_getters_.find(i) == source_op_getters_.end()) {
+      LOG(ERROR) << "No getter for source op enum value " << i;
+    }
+  }
+  for (int i = *DestOpEnum::kNone; i < *DestOpEnum::kPastMaxValue; ++i) {
+    if (dest_op_getters_.find(i) == dest_op_getters_.end()) {
+      LOG(ERROR) << "No getter for destination op enum value " << i;
+    }
+  }
 }
 
 RiscV64GVecEncoding::~RiscV64GVecEncoding() { delete resource_pool_; }

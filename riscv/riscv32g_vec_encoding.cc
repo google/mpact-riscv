@@ -14,16 +14,20 @@
 
 #include "riscv/riscv32g_vec_encoding.h"
 
+#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "absl/log/log.h"
+#include "absl/strings/str_cat.h"
 #include "absl/types/span.h"
 #include "mpact/sim/generic/immediate_operand.h"
 #include "mpact/sim/generic/literal_operand.h"
-#include "mpact/sim/generic/operand_interface.h"
+#include "mpact/sim/generic/register.h"
 #include "riscv/riscv32gv_bin_decoder.h"
+#include "riscv/riscv32gv_decoder.h"
+#include "riscv/riscv32gv_enums.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
 

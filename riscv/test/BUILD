@@ -341,10 +341,12 @@ cc_test(
         "@com_github_serge1_elfio//:elfio",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
+        "@com_google_absl//absl/log:log_sink_registry",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
         "@com_google_mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/util/other:log_sink",
         "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
     ],
 )

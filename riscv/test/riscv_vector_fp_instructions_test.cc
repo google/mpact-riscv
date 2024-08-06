@@ -17,16 +17,10 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
-#include <cstring>
 #include <functional>
-#include <ios>
-#include <limits>
-#include <string>
 #include <tuple>
-#include <type_traits>
 #include <vector>
 
-#include "absl/log/log.h"
 #include "absl/random/random.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
@@ -38,14 +32,13 @@
 #include "riscv/riscv_fp_info.h"
 #include "riscv/riscv_fp_state.h"
 #include "riscv/riscv_register.h"
-#include "riscv/riscv_vector_state.h"
 #include "riscv/test/riscv_vector_fp_test_utilities.h"
 #include "riscv/test/riscv_vector_instructions_test_base.h"
 
 namespace {
 
 using Instruction = ::mpact::sim::generic::Instruction;
-using ::mpact::sim::generic::operator*;
+using ::mpact::sim::generic::operator*;  // NOLINT: used below.
 
 // Functions to test.
 using ::mpact::sim::riscv::Vfadd;

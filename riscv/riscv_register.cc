@@ -14,12 +14,15 @@
 
 #include "riscv/riscv_register.h"
 
-#include <algorithm>
 #include <any>
+#include <cstdint>
 #include <limits>
 #include <string>
 #include <vector>
 
+#include "absl/types/span.h"
+#include "mpact/sim/generic/data_buffer.h"
+#include "mpact/sim/generic/register.h"
 #include "riscv/riscv_state.h"
 
 namespace mpact {
