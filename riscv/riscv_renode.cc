@@ -100,7 +100,7 @@ RiscVRenode::RiscVRenode(std::string name, MemoryInterface *renode_sysbus,
   // Set up state, decoder, and top.
   rv_state_ = new RiscVState("RiscVRenode", xlen, mem_profiler_,
                              static_cast<AtomicMemoryOpInterface *>(router_));
-  rv_fp_state_ = new RiscVFPState(rv_state_);
+  rv_fp_state_ = new RiscVFPState(rv_state_->csr_set(), rv_state_);
   rv_state_->set_rv_fp(rv_fp_state_);
   std::string reg_name;
   if (xlen == RiscVXlen::RV32) {

@@ -50,15 +50,16 @@ static inline void LogIfError(absl::Status status) {
   LOG(ERROR) << status.message();
 }
 
-RiscVFPState::RiscVFPState(RiscVState *rv_state) : rv_state_(rv_state) {
+RiscVFPState::RiscVFPState(RiscVCsrSet *csr_set, ArchState *rv_state)
+    : rv_state_(rv_state) {
   fcsr_ = new RiscVFcsr(this);
   frm_ = new RiscVFrm(this);
   fflags_ = new RiscVFflags(this);
   host_fp_interface_ = GetHostFloatingPointInterface();
 
-  LogIfError(rv_state_->csr_set()->AddCsr(fcsr_));
-  LogIfError(rv_state_->csr_set()->AddCsr(frm_));
-  LogIfError(rv_state_->csr_set()->AddCsr(fflags_));
+  LogIfError(csr_set->AddCsr(fcsr_));
+  LogIfError(csr_set->AddCsr(frm_));
+  LogIfError(csr_set->AddCsr(fflags_));
 }
 
 RiscVFPState::~RiscVFPState() {

@@ -290,7 +290,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
   RiscVFPInstructionTestBase() {
     memory_ = new FlatDemandMemory(0);
     state_ = new RiscVState("test", RiscVXlen::RV32, memory_);
-    rv_fp_ = new mpact::sim::riscv::RiscVFPState(state_);
+    rv_fp_ = new mpact::sim::riscv::RiscVFPState(state_->csr_set(), state_);
     state_->set_rv_fp(rv_fp_);
     instruction_ = new Instruction(kInstAddress, state_);
     instruction_->set_size(4);

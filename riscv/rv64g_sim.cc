@@ -206,7 +206,7 @@ int main(int argc, char **argv) {
   // Set up architectural state and decoder.
   RiscVState rv_state("RiscV64", RiscVXlen::RV64, memory, atomic_memory);
   // For floating point support add the fp state.
-  RiscVFPState rv_fp_state(&rv_state);
+  RiscVFPState rv_fp_state(rv_state.csr_set(), &rv_state);
   rv_state.set_rv_fp(&rv_fp_state);
   // Create the instruction decoder.
   RiscV64Decoder rv_decoder(&rv_state, memory);

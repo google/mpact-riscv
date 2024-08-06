@@ -165,7 +165,7 @@ class RiscVTopTest : public testing::Test {
   RiscVTopTest() {
     memory_ = new FlatDemandMemory();
     state_ = new RiscVState("RV32", RiscVXlen::RV32, memory_);
-    fp_state_ = new RiscVFPState(state_);
+    fp_state_ = new RiscVFPState(state_->csr_set(), state_);
     state_->set_rv_fp(fp_state_);
     decoder_ = new RiscV32Decoder(state_, memory_);
 

@@ -94,7 +94,7 @@ class RiscVFPState {
  public:
   RiscVFPState() = delete;
   RiscVFPState(const RiscVFPState &) = delete;
-  explicit RiscVFPState(RiscVState *rv_state);
+  explicit RiscVFPState(RiscVCsrSet *csr_set, ArchState *rv_state);
   ~RiscVFPState();
 
   FPRoundingMode GetRoundingMode() const;
@@ -108,14 +108,14 @@ class RiscVFPState {
   RiscVFrm *frm() const { return frm_; }
   RiscVFflags *fflags() const { return fflags_; }
   // Parent state.
-  RiscVState *rv_state() const { return rv_state_; }
+  ArchState *rv_state() const { return rv_state_; }
   // Host interface.
   HostFloatingPointInterface *host_fp_interface() const {
     return host_fp_interface_;
   }
 
  private:
-  RiscVState *rv_state_;
+  ArchState *rv_state_;
   RiscVFcsr *fcsr_ = nullptr;
   RiscVFrm *frm_ = nullptr;
   RiscVFflags *fflags_ = nullptr;

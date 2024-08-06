@@ -108,7 +108,7 @@ class RiscVFPUnaryInstructionsTest
     : public ::mpact::sim::riscv::test::RiscVVectorInstructionsTestBase {
  public:
   RiscVFPUnaryInstructionsTest() {
-    rv_fp_ = new mpact::sim::riscv::RiscVFPState(state_);
+    rv_fp_ = new mpact::sim::riscv::RiscVFPState(state_->csr_set(), state_);
     state_->set_rv_fp(rv_fp_);
   }
   ~RiscVFPUnaryInstructionsTest() override {
