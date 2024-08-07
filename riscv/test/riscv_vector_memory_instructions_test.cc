@@ -812,7 +812,7 @@ class RV32VInstructionsTest : public testing::Test {
     for (int lmul_index = 0; lmul_index < 7; lmul_index++) {
       // Try different strides.
       for (int s = 0; s < 5; s++) {
-        int32_t stride = strides[s] * sizeof(T);
+        int32_t stride = strides[s];
         SetRegisterValues<int32_t>({{kRs2Name, stride}});
         // Configure vector unit.
         uint32_t vtype = (kSewSettingsByByteSize[sizeof(T)] << 3) |
@@ -840,7 +840,7 @@ class RV32VInstructionsTest : public testing::Test {
           } else {
             EXPECT_EQ(data_db->template Get<T>(0), 0) << "index: " << i;
           }
-          base += stride;
+          base += stride * sizeof(T);
           value++;
         }
         data_db->DecRef();

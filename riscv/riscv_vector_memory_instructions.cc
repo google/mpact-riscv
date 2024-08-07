@@ -805,7 +805,7 @@ void StoreVectorStrided(int vector_length, int vstart, int emul,
   for (int i = vstart; i < num_elements; i++) {
     int mask_index = i >> 3;
     int mask_offset = i & 0b111;
-    addresses[i - vstart] = base + i * stride;
+    addresses[i - vstart] = base + i * stride * sizeof(T);
     masks[i - vstart] = ((src_masks[mask_index] >> mask_offset) & 0b1) != 0;
     store_data[i - vstart] = GetInstructionSource<T>(inst, 0, i);
   }
