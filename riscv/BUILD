@@ -50,7 +50,6 @@ cc_library(
         "riscv_csr.cc",
         "riscv_minstret.cc",
         "riscv_misa.cc",
-        "riscv_pmp.cc",
         "riscv_register.cc",
         "riscv_sim_csrs.cc",
         "riscv_state.cc",

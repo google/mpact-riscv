@@ -16,7 +16,6 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <iostream>
 #include <limits>
 #include <string>
 #include <vector>
@@ -31,6 +30,7 @@
 #include "riscv/riscv_csr.h"
 #include "riscv/riscv_minstret.h"
 #include "riscv/riscv_misa.h"
+#include "riscv/riscv_pmp.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_sim_csrs.h"
 #include "riscv/riscv_xip_xie.h"
@@ -283,6 +283,10 @@ void CreateCsrs(RiscVState *state, std::vector<RiscVCsrInterface *> &csr_vec) {
                CsrInfo<T>::kUstatusRMask, CsrInfo<T>::kUstatusWMask, state),
            nullptr);
 
+  // PMP CSRs
+  state->pmp_ = new RiscVPmp(state);
+  state->pmp_->CreatePmpCsrs<T, RiscVCsrEnum>(state->csr_set());
+
   // Simulator CSRs
 
   // Access current privilege mode.
@@ -361,6 +365,7 @@ RiscVState::~RiscVState() {
   delete pc_src_operand_;
   delete pc_dst_operand_;
   delete csr_set_;
+  delete pmp_;
   for (auto *csr : csr_vec_) {
     delete csr;
   }

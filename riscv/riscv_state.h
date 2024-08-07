@@ -183,6 +183,7 @@ template <typename T>
 void CreateCsrs(RiscVState *, std::vector<RiscVCsrInterface *> &);
 
 class RiscVFPState;
+class RiscVPmp;
 
 // Class that extends ArchState with RiscV specific methods. These methods
 // implement RiscV specific memory operations, memory/IO fencing, system
@@ -421,6 +422,7 @@ class RiscVState : public ArchState {
   RiscVMIsa *misa_ = nullptr;
   RiscVMIp *mip_ = nullptr;
   RiscVMIe *mie_ = nullptr;
+  RiscVPmp *pmp_ = nullptr;
   RiscVCsrInterface *mtvec_ = nullptr;
   RiscVCsrInterface *mepc_ = nullptr;
   RiscVCsrInterface *mcause_ = nullptr;

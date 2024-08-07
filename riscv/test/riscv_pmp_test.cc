@@ -1,5 +1,7 @@
 #include "riscv/riscv_pmp.h"
 
+#include <cstdint>
+
 #include "absl/strings/str_cat.h"
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/type_helpers.h"
@@ -18,6 +20,7 @@ using ::mpact::sim::generic::operator*;  // NOLINT: used below (clang error).
 TEST(RiscVPmpTest, CreatePmpCsrs32) {
   RiscVState state("test", RiscVXlen::RV32, nullptr, nullptr);
   RiscVPmp pmp(&state);
+  pmp.CreatePmpCsrs<uint32_t, RiscVCsrEnum>(state.csr_set());
   for (int i = 0; i < 4; ++i) {
     EXPECT_TRUE(
         state.csr_set()->GetCsr(absl::StrCat("pmpcfg", i)).status().ok());
@@ -36,6 +39,7 @@ TEST(RiscVPmpTest, CreatePmpCsrs32) {
 TEST(RiscVPmpTest, CreatePmpCsrs64) {
   RiscVState state("test", RiscVXlen::RV64, nullptr, nullptr);
   RiscVPmp pmp(&state);
+  pmp.CreatePmpCsrs<uint64_t, RiscVCsrEnum>(state.csr_set());
   for (int i = 0; i < 4; ++i) {
     // For RV64, only the even numbered PMP configuration registers are created.
     if (i & 0x1) {
