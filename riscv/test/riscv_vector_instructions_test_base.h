@@ -23,7 +23,6 @@
 #include <limits>
 #include <string>
 #include <tuple>
-#include <type_traits>
 #include <vector>
 
 #include "absl/functional/bind_front.h"
@@ -38,7 +37,6 @@
 #include "mpact/sim/generic/register.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
-#include "mpact/sim/util/memory/memory_interface.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
 #include "riscv/riscv_vector_memory_instructions.h"

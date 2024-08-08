@@ -381,6 +381,8 @@ class RiscVFPInstructionsTest
         int vlen = 1024;
         // Try different vector lengths (updated at the bottom of the loop).
         for (int vlen_count = 0; vlen_count < 4; vlen_count++) {
+          // Clear vd_span.
+          for (auto &vd_val : vd_span) vd_val = 0;
           ASSERT_TRUE(vlen > vstart);
           int num_values = std::min(num_reg_values, vlen);
           ConfigureVectorUnit(vtype, vlen);
