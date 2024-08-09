@@ -10,6 +10,7 @@
 // use with ReNode.
 
 extern ::mpact::sim::util::renode::RenodeDebugInterface *CreateMpactSim(
-    std::string name, ::mpact::sim::util::MemoryInterface *renode_sysbus);
+    std::string name, std::string cpu_type,
+    ::mpact::sim::util::MemoryInterface *renode_sysbus);
 
 #endif  // THIRD_PARTY_MPACT_RISCV_RISCV64_RENODE_H_

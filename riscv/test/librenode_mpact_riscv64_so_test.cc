@@ -95,7 +95,7 @@ TEST_F(LibRenodeMpactRiscV64SoTest, SetIrqValue) {
   EXPECT_NE(dlsym(lib_, "set_irq_value"), nullptr);
 }
 
-using ConstructType = int32_t (*)(int32_t);
+using ConstructType = int32_t (*)(char *, int32_t);
 using StepType = uint64_t (*)(int32_t, uint64_t, int32_t *);
 using SetConfigType = int32_t (*)(int32_t, const char *[], const char *[],
                                   int32_t);
@@ -127,7 +127,8 @@ TEST_F(LibRenodeMpactRiscV64SoTest, RunProgram) {
   CHECK_NE(get_reg_info_size, nullptr);
   CHECK_NE(get_reg_info, nullptr);
   // Construct a simulator instance.
-  int32_t id = construct(256);
+  char cpu_type[] = "Mpact.RiscV64";
+  int32_t id = construct(cpu_type, 256);
   CHECK_GE(id, 0);
   // Load the program.
   int32_t status = 0;
