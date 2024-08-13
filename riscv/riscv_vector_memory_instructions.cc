@@ -20,6 +20,7 @@
 
 #include "absl/log/log.h"
 #include "absl/status/status.h"
+#include "absl/strings/str_cat.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/register.h"
 #include "riscv/riscv_register.h"
@@ -208,66 +209,6 @@ void Vsetvl(bool rd_zero, bool rs1_zero, const Instruction *inst) {
 
 // Vector load - models both strided and unit stride. Strides can be positive,
 // zero, or negative.
-
-// Source(0): base address.
-// Source(1): vector mask register, vector constant {1..} if not masked.
-// Destination(0): vector destination register.
-void VlUnitStrided(int element_width, const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
-  int start = rv_vector->vstart();
-  uint64_t base = GetInstructionSource<uint64_t>(inst, 0);
-  int emul = element_width * rv_vector->vector_length_multiplier() /
-             rv_vector->selected_element_width();
-  if ((emul > 64) || (emul == 0)) {
-    // TODO: signal vector error.
-    LOG(WARNING) << "EMUL (" << emul << ") out of range";
-    return;
-  }
-
-  // Compute total number of elements to be loaded.
-  int num_elements = rv_vector->vector_length();
-  int num_elements_loaded = num_elements - start;
-
-  // Allocate address data buffer.
-  auto *db_factory = inst->state()->db_factory();
-  auto *address_db = db_factory->Allocate<uint64_t>(num_elements_loaded);
-
-  // Allocate the value data buffer that the loaded data is returned in.
-  auto *value_db = db_factory->Allocate(num_elements_loaded * element_width);
-
-  // Get the source mask (stored in a single vector register).
-  auto *src_mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(1));
-  auto src_masks = src_mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
-
-  // Allocate a byte mask data buffer for the load.
-  auto *mask_db = db_factory->Allocate<bool>(num_elements_loaded);
-
-  // Get the spans for addresses and masks.
-  auto addresses = address_db->Get<uint64_t>();
-  auto masks = mask_db->Get<bool>();
-
-  // The vector mask in the vector register is a bit mask. The mask used in
-  // the LoadMemory call is a bool mask so convert the bit masks to bool masks
-  // and compute the element addresses.
-  for (int i = start; i < num_elements; i++) {
-    int index = i >> 3;
-    int offset = i & 0b111;
-    addresses[i - start] = base + i * element_width;
-    masks[i - start] = ((src_masks[index] >> offset) & 0b1) != 0;
-  }
-
-  // Set up the context, and submit the load.
-  auto *context = new VectorLoadContext(value_db, mask_db, element_width, start,
-                                        rv_vector->vector_length());
-  auto *rv32_state = static_cast<RiscVState *>(inst->state());
-  value_db->set_latency(0);
-  rv32_state->LoadMemory(inst, address_db, mask_db, element_width, value_db,
-                         inst->child(), context);
-  // Release the context and address_db. The others will be released elsewhere.
-  context->DecRef();
-  address_db->DecRef();
-  rv_vector->clear_vstart();
-}
 
 // Source(0): base address.
 // Source(1): stride size bytes.
@@ -805,7 +746,7 @@ void StoreVectorStrided(int vector_length, int vstart, int emul,
   for (int i = vstart; i < num_elements; i++) {
     int mask_index = i >> 3;
     int mask_offset = i & 0b111;
-    addresses[i - vstart] = base + i * stride * sizeof(T);
+    addresses[i - vstart] = base + i * stride;
     masks[i - vstart] = ((src_masks[mask_index] >> mask_offset) & 0b1) != 0;
     store_data[i - vstart] = GetInstructionSource<T>(inst, 0, i);
   }

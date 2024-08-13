@@ -24,13 +24,13 @@
 
 #include "absl/functional/bind_front.h"
 #include "absl/numeric/bits.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/immediate_operand.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
-#include "mpact/sim/util/memory/memory_interface.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
 
@@ -63,7 +63,6 @@ using ::mpact::sim::riscv::VlSegmentChild;
 using ::mpact::sim::riscv::VlSegmentIndexed;
 using ::mpact::sim::riscv::VlSegmentStrided;
 using ::mpact::sim::riscv::VlStrided;
-using ::mpact::sim::riscv::VlUnitStrided;
 using ::mpact::sim::riscv::Vsetvl;
 using ::mpact::sim::riscv::VsIndexed;
 using ::mpact::sim::riscv::Vsm;
@@ -307,9 +306,9 @@ class RV32VInstructionsTest : public testing::Test {
   template <typename T>
   void VectorLoadUnitStridedHelper() {
     // Set up instructions.
-    AppendRegisterOperands({kRs1Name}, {});
+    AppendRegisterOperands({kRs1Name, kRs2Name}, {});
     AppendVectorRegisterOperands({kVmask}, {});
-    SetSemanticFunction(absl::bind_front(&VlUnitStrided,
+    SetSemanticFunction(absl::bind_front(&VlStrided,
                                          /*element_width*/ sizeof(T)));
     // Add the child instruction that performs the register write-back.
     SetChildInstruction();
@@ -321,6 +320,7 @@ class RV32VInstructionsTest : public testing::Test {
         {{kVmaskName, Span<const uint8_t>(kA5Mask)}});
     // Iterate over different lmul values.
     for (int lmul_index = 0; lmul_index < 7; lmul_index++) {
+      SetRegisterValues<int32_t>({{kRs2Name, sizeof(T)}});
       uint32_t vtype =
           (kSewSettingsByByteSize[sizeof(T)] << 3) | kLmulSettings[lmul_index];
       int lmul8 = kLmul8Values[lmul_index];
@@ -812,7 +812,7 @@ class RV32VInstructionsTest : public testing::Test {
     for (int lmul_index = 0; lmul_index < 7; lmul_index++) {
       // Try different strides.
       for (int s = 0; s < 5; s++) {
-        int32_t stride = strides[s];
+        int32_t stride = strides[s] * sizeof(T);
         SetRegisterValues<int32_t>({{kRs2Name, stride}});
         // Configure vector unit.
         uint32_t vtype = (kSewSettingsByByteSize[sizeof(T)] << 3) |
@@ -840,7 +840,7 @@ class RV32VInstructionsTest : public testing::Test {
           } else {
             EXPECT_EQ(data_db->template Get<T>(0), 0) << "index: " << i;
           }
-          base += stride * sizeof(T);
+          base += stride;
           value++;
         }
         data_db->DecRef();
@@ -1518,7 +1518,7 @@ TEST_F(RV32VInstructionsTest, Vle16) {
   VectorLoadUnitStridedHelper<uint16_t>();
 }
 
-TEST_F(RV32VInstructionsTest, Vse32) {
+TEST_F(RV32VInstructionsTest, Vle32) {
   VectorLoadUnitStridedHelper<uint32_t>();
 }
 

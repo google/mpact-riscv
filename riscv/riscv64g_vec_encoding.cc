@@ -710,6 +710,21 @@ void RiscV64GVecEncoding::InitializeVectorSourceOperandGetters() {
            return new generic::ImmediateOperand<int32_t>(1);
          });
 
+  Insert(source_op_getters_, SourceOpEnum::kConst2,
+         []() -> SourceOperandInterface * {
+           return new generic::ImmediateOperand<int32_t>(2);
+         });
+
+  Insert(source_op_getters_, SourceOpEnum::kConst4,
+         []() -> SourceOperandInterface * {
+           return new generic::ImmediateOperand<int32_t>(4);
+         });
+
+  Insert(source_op_getters_, SourceOpEnum::kConst8,
+         []() -> SourceOperandInterface * {
+           return new generic::ImmediateOperand<int32_t>(8);
+         });
+
   Insert(source_op_getters_, SourceOpEnum::kNf,
          [this]() -> SourceOperandInterface * {
            auto num_fields = encoding64::v_mem::ExtractNf(inst_word_);

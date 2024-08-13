@@ -49,32 +49,32 @@ slot riscv_vector {
     // VECTOR LOADS
 
     // Unit stride loads, masked (vm=0)
-    vle8{(: rs1, vmask :), (: : vd )},
+    vle8{(: rs1, const1, vmask :), (: : vd )},
       disasm: "vle8.v", "%vd, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&VlUnitStrided, /*element_width*/ 1)", "&VlChild";
-    vle16{(: rs1, vmask :), (: : vd )},
+      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 1)", "&VlChild";
+    vle16{(: rs1, const2, vmask :), (: : vd )},
       disasm: "vle16.v", "%vd, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&VlUnitStrided, /*element_width*/ 2)", "&VlChild";
-    vle32{(: rs1, vmask :), ( : : vd) },
+      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 2)", "&VlChild";
+    vle32{(: rs1, const4, vmask :), ( : : vd) },
       disasm: "vle32.v", "%vd, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&VlUnitStrided, /*element_width*/ 4)", "&VlChild";
-    vle64{(: rs1, vmask :), ( : : vd) },
+      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 4)", "&VlChild";
+    vle64{(: rs1, const8, vmask :), ( : : vd) },
       disasm: "vle64.v", "%vd, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&VlUnitStrided, /*element_width*/ 8)", "&VlChild";
+      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 8)", "&VlChild";
 
     // Unit stride loads, unmasked (vm=1)
-    vle8_vm1{(: rs1, vmask_true :), (: : vd )},
+    vle8_vm1{(: rs1, const1, vmask_true :), (: : vd )},
       disasm: "vle8.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlUnitStrided, /*element_width*/ 1)", "&VlChild";
-    vle16_vm1{(: rs1, vmask_true :), (: : vd )},
+      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 1)", "&VlChild";
+    vle16_vm1{(: rs1, const2, vmask_true :), (: : vd )},
       disasm: "vle16.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlUnitStrided, /*element_width*/ 2)", "&VlChild";
-    vle32_vm1{(: rs1, vmask_true :), ( : : vd) },
+      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 2)", "&VlChild";
+    vle32_vm1{(: rs1, const4, vmask_true :), ( : : vd) },
       disasm: "vle32.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlUnitStrided, /*element_width*/ 4)", "&VlChild";
-    vle64_vm1{(: rs1, vmask_true :), ( : : vd) },
+      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 4)", "&VlChild";
+    vle64_vm1{(: rs1, const8, vmask_true :), ( : : vd) },
       disasm: "vle64.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlUnitStrided, /*element_width*/ 8)", "&VlChild";
+      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 8)", "&VlChild";
 
     // Vector strided loads
     vlse8{(: rs1, rs2, vmask :), (: : vd)},
@@ -96,18 +96,18 @@ slot riscv_vector {
       semfunc: "&Vlm", "&VlChild";
 
     // Unit stride vector load, fault first
-    vle8ff{(: rs1, vmask:), (: : vd)},
+    vle8ff{(: rs1, const1, vmask:), (: : vd)},
       disasm: "vle8ff.v", "%vd, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&VlUnitStrided, /*element_width*/ 1)", "&VlChild";
-    vle16ff{(: rs1, vmask:), (: : vd)},
+      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 1)", "&VlChild";
+    vle16ff{(: rs1, const2, vmask:), (: : vd)},
       disasm: "vle16ff.v", "%vd, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&VlUnitStrided, /*element_width*/ 2)", "&VlChild";
-    vle32ff{(: rs1, vmask:), (: : vd)},
+      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 2)", "&VlChild";
+    vle32ff{(: rs1, const4, vmask:), (: : vd)},
       disasm: "vle32ff.v", "%vd, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&VlUnitStrided, /*element_width*/ 4)", "&VlChild";
-    vle64ff{(: rs1, vmask:), (: : vd)},
+      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 4)", "&VlChild";
+    vle64ff{(: rs1, const8, vmask:), (: : vd)},
       disasm: "vle64ff.v", "%vd, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&VlUnitStrided, /*element_width*/ 8)", "&VlChild";
+      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 8)", "&VlChild";
 
     // Vector register load
     vl1re8{(: rs1 :), (: : vd)},
@@ -266,13 +266,13 @@ slot riscv_vector {
     vse8{: vs3, rs1, const1, vmask : },
       disasm: "vse8.v", "%vs3, (%rs1), %vmask",
       semfunc: "absl::bind_front(&VsStrided, /*element_width*/ 1)";
-    vse16{: vs3, rs1, const1, vmask : },
+    vse16{: vs3, rs1, const2, vmask : },
       disasm: "vse16.v", "%vs3, (%rs1), %vmask",
       semfunc: "absl::bind_front(&VsStrided, /*element_width*/ 2)";
-    vse32{: vs3, rs1, const1, vmask : },
+    vse32{: vs3, rs1, const4, vmask : },
       disasm: "vse32.v", "%vs3, (%rs1), %vmask",
       semfunc: "absl::bind_front(&VsStrided, /*element_width*/ 4)";
-    vse64{: vs3, rs1, const1, vmask : },
+    vse64{: vs3, rs1, const8, vmask : },
       disasm: "vse64.v", "%vs3, (%rs1), %vmask",
       semfunc: "absl::bind_front(&VsStrided, /*element_width*/ 8)";
 
@@ -285,13 +285,13 @@ slot riscv_vector {
     vse8ff{: vs3, rs1, const1, vmask:},
       disasm: "vse8ff.v", "%vs3, (%rs1), %vmask",
       semfunc: "absl::bind_front(&VsStrided, /*element_width*/ 1)";
-    vse16ff{: vs3, rs1, const1, vmask:},
+    vse16ff{: vs3, rs1, const2, vmask:},
       disasm: "vse16ff.v", "%vs3, (%rs1), %vmask",
       semfunc: "absl::bind_front(&VsStrided, /*element_width*/ 2)";
-    vse32ff{: vs3, rs1, const1, vmask:},
+    vse32ff{: vs3, rs1, const4, vmask:},
       disasm: "vse32ff.v", "%vs3, (%rs1), %vmask",
       semfunc: "absl::bind_front(&VsStrided, /*element_width*/ 4)";
-    vse64ff{: vs3, rs1, const1, vmask:},
+    vse64ff{: vs3, rs1, const8, vmask:},
       disasm: "vse64ff.v", "%vs3, (%rs1), %vmask",
       semfunc: "absl::bind_front(&VsStrided, /*element_width*/ 8)";
 
