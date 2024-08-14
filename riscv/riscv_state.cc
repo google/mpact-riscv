@@ -307,7 +307,11 @@ RiscVState::RiscVState(absl::string_view id, RiscVXlen xlen,
       xlen_(xlen),
       memory_(memory),
       atomic_memory_(atomic_memory),
-      csr_set_(new RiscVCsrSet()) {
+      csr_set_(new RiscVCsrSet()),
+      counter_interrupts_taken_("interrupts_taken", 0),
+      counter_interrupt_returns_("interrupt_returns", 0) {
+  CHECK_OK(AddCounter(&counter_interrupt_returns_));
+  CHECK_OK(AddCounter(&counter_interrupts_taken_));
   DataBuffer *db = nullptr;
   switch (xlen_) {
     case RiscVXlen::RV32: {
@@ -692,7 +696,7 @@ void RiscVState::TakeAvailableInterrupt(uint64_t epc) {
   Trap(/*is_interrupt*/ true, 0, *available_interrupt_code_, epc, nullptr);
   // Clear pending interrupt.
   is_interrupt_available_ = false;
-  ++interrupt_handler_depth_;
+  counter_interrupts_taken_.Increment(1);
   available_interrupt_code_ = InterruptCode::kNone;
 }
 
