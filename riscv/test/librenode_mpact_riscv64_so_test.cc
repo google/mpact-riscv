@@ -24,6 +24,7 @@ class LibRenodeMpactRiscV64SoTest : public ::testing::Test {
     std::string path = absl::StrCat(kDepotPath, kFileName);
     absl::LeakCheckDisabler disabler;  // Ignore leaks from dlopen.
     lib_ = dlopen(path.c_str(), RTLD_LAZY);
+    CHECK_NE(lib_, nullptr);
   }
 
   ~LibRenodeMpactRiscV64SoTest() { dlclose(lib_); }
