@@ -17,9 +17,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
-#include <cstring>
 #include <functional>
-#include <ios>
 #include <limits>
 #include <string>
 #include <tuple>
@@ -32,21 +30,19 @@
 #include "absl/types/span.h"
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/instruction.h"
-#include "mpact/sim/generic/operand_interface.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "riscv/riscv_csr.h"
 #include "riscv/riscv_fp_host.h"
 #include "riscv/riscv_fp_info.h"
 #include "riscv/riscv_fp_state.h"
 #include "riscv/riscv_register.h"
-#include "riscv/riscv_vector_state.h"
 #include "riscv/test/riscv_vector_fp_test_utilities.h"
 #include "riscv/test/riscv_vector_instructions_test_base.h"
 
 namespace {
 
 using Instruction = ::mpact::sim::generic::Instruction;
-using ::mpact::sim::generic::operator*;
+using ::mpact::sim::generic::operator*;  // NOLINT: used below (clang error).
 using ::mpact::sim::riscv::FPExceptions;
 
 // Functions to test.
@@ -915,10 +911,6 @@ inline std::tuple<T, uint32_t> VfsqrtvTestHelper(T vs2) {
   if (vs2 == 0.0) return std::make_tuple(vs2, 0);
   if (std::isnan(vs2) || (vs2 < 0.0)) {
     auto val = FPTypeInfo<T>::kCanonicalNaN;
-    uint32_t flags = 0;
-    if (!mpact::sim::generic::FPTypeInfo<T>::IsQNaN(vs2)) {
-      flags = (uint32_t)FPExceptions::kInvalidOp;
-    }
     return std::make_tuple(*reinterpret_cast<const T *>(&val),
                            (uint32_t)FPExceptions::kInvalidOp);
   }

@@ -55,8 +55,6 @@ namespace riscv {
 using ::mpact::sim::generic::ActionPointManagerBase;
 using ::mpact::sim::generic::BreakpointManager;
 
-constexpr char kRiscVName[] = "RiscV";
-
 // Local helper function used to execute instructions.
 static inline bool ExecuteInstruction(Instruction *inst) {
   // The following code can be used to model stalls due to latency of operand

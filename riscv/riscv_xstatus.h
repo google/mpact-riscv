@@ -130,7 +130,6 @@ class RiscVMStatus : public RiscVSimpleCsr<uint64_t> {
     buffer_mask_ |= BitMask << Shift;
   }
 
-  RiscVXlen xlen_;
   RiscVMIsa *misa_;
   uint64_t buffer_ = 0;
   uint64_t buffer_mask_ = 0;
