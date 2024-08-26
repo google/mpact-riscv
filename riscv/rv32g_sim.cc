@@ -133,6 +133,9 @@ ABSL_FLAG(std::optional<uint64_t>, stack_end, 0,
 // }
 //
 
+// Exit on execution of ecall instruction, default false.
+ABSL_FLAG(bool, exit_on_ecall, false, "Exit on ecall - false by default");
+
 constexpr char kStackEndSymbolName[] = "__stack_end";
 constexpr char kStackSizeSymbolName[] = "__stack_size";
 
@@ -251,6 +254,13 @@ int main(int argc, char **argv) {
   }
 
   RiscVTop riscv_top("RiscV32Sim", &rv_state, &rv_decoder);
+
+  if (absl::GetFlag(FLAGS_exit_on_ecall)) {
+    rv_state.set_on_ecall([&riscv_top](const Instruction *inst) -> bool {
+      riscv_top.RequestHalt(RiscVTop::HaltReason::kProgramDone, inst);
+      return true;
+    });
+  }
 
   // Initialize the PC to the entry point.
   uint32_t entry_point = load_result.value();
