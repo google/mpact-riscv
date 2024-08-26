@@ -53,6 +53,7 @@
 #include "riscv/riscv_register_aliases.h"
 #include "riscv/riscv_state.h"
 #include "riscv/riscv_top.h"
+#include "riscv/riscv_vector_state.h"
 #include "src/google/protobuf/text_format.h"
 
 using ::mpact::sim::generic::Instruction;
@@ -62,6 +63,7 @@ using ::mpact::sim::riscv::RiscV32HtifSemiHost;
 using ::mpact::sim::riscv::RiscVArmSemihost;
 using ::mpact::sim::riscv::RiscVFPState;
 using ::mpact::sim::riscv::RiscVState;
+using ::mpact::sim::riscv::RiscVVectorState;
 using ::mpact::sim::riscv::RiscVXlen;
 using ::mpact::sim::riscv::RV32Register;
 using ::mpact::sim::riscv::RVFpRegister;
@@ -234,6 +236,7 @@ int main(int argc, char **argv) {
   RiscVState rv_state("RiscV32GV", RiscVXlen::RV32, memory, atomic_memory);
   // For floating point support add the fp state.
   RiscVFPState rv_fp_state(rv_state.csr_set(), &rv_state);
+  RiscVVectorState rvv_state(&rv_state, 16 /*vector byte length*/);
   rv_state.set_rv_fp(&rv_fp_state);
   // Create the instruction decoder.
   RiscV32GVecDecoder rv_decoder(&rv_state, memory);

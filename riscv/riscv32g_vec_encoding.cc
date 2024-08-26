@@ -25,6 +25,8 @@
 #include "mpact/sim/generic/immediate_operand.h"
 #include "mpact/sim/generic/literal_operand.h"
 #include "mpact/sim/generic/register.h"
+#include "mpact/sim/generic/simple_resource.h"
+#include "mpact/sim/generic/simple_resource_operand.h"
 #include "riscv/riscv32gv_bin_decoder.h"
 #include "riscv/riscv32gv_decoder.h"
 #include "riscv/riscv32gv_enums.h"
@@ -154,12 +156,18 @@ inline SourceOperandInterface *GetRegisterSourceOp(RiscVState *state,
   return op;
 }
 
-RiscV32GVecEncoding::RiscV32GVecEncoding(RiscVState *state) {
+RiscV32GVecEncoding::RiscV32GVecEncoding(RiscVState *state) : state_(state) {
   InitializeSourceOperandGetters();
   InitializeDestinationOperandGetters();
+  InitializeSimpleResourceGetters();
   InitializeVectorSourceOperandGetters();
   InitializeVectorDestinationOperandGetters();
+  resource_pool_ = new generic::SimpleResourcePool("RiscV32GV", 128);
+  resource_delay_line_ =
+      state_->CreateAndAddDelayLine<generic::SimpleResourceDelayLine>(8);
 }
+
+RiscV32GVecEncoding::~RiscV32GVecEncoding() { delete resource_pool_; }
 
 void RiscV32GVecEncoding::InitializeVectorSourceOperandGetters() {
   Insert(source_op_getters_, SourceOpEnum::kVd,
@@ -195,6 +203,57 @@ void RiscV32GVecEncoding::InitializeVectorSourceOperandGetters() {
          [this]() -> SourceOperandInterface * {
            auto num = encoding::v_mem::ExtractVs3(inst_word_);
            return GetVectorRegisterSourceOp<RVVectorRegister>(state_, num);
+         });
+
+  Insert(source_op_getters_, SourceOpEnum::kSimm5,
+         [this]() -> SourceOperandInterface * {
+           const auto num = encoding::inst32_format::ExtractSimm5(inst_word_);
+           return new generic::ImmediateOperand<int32_t>(num);
+         });
+
+  Insert(source_op_getters_, SourceOpEnum::kUimm5,
+         [this]() -> SourceOperandInterface * {
+           const auto num = encoding::inst32_format::ExtractUimm5(inst_word_);
+           return new generic::ImmediateOperand<int32_t>(num);
+         });
+
+  Insert(source_op_getters_, SourceOpEnum::kZimm10,
+         [this]() -> SourceOperandInterface * {
+           const auto num = encoding::inst32_format::ExtractZimm10(inst_word_);
+           return new generic::ImmediateOperand<int32_t>(num);
+         });
+
+  Insert(source_op_getters_, SourceOpEnum::kZimm11,
+         [this]() -> SourceOperandInterface * {
+           const auto num = encoding::inst32_format::ExtractZimm11(inst_word_);
+           return new generic::ImmediateOperand<int32_t>(num);
+         });
+
+  Insert(source_op_getters_, SourceOpEnum::kConst1,
+         []() -> SourceOperandInterface * {
+           return new generic::ImmediateOperand<int32_t>(1);
+         });
+
+  Insert(source_op_getters_, SourceOpEnum::kConst2,
+         []() -> SourceOperandInterface * {
+           return new generic::ImmediateOperand<int32_t>(2);
+         });
+
+  Insert(source_op_getters_, SourceOpEnum::kConst4,
+         []() -> SourceOperandInterface * {
+           return new generic::ImmediateOperand<int32_t>(4);
+         });
+
+  Insert(source_op_getters_, SourceOpEnum::kConst8,
+         []() -> SourceOperandInterface * {
+           return new generic::ImmediateOperand<int32_t>(8);
+         });
+
+  Insert(source_op_getters_, SourceOpEnum::kNf,
+         [this]() -> SourceOperandInterface * {
+           auto num_fields = encoding::v_mem::ExtractNf(inst_word_);
+           return new generic::ImmediateOperand<uint8_t>(
+               num_fields, absl::StrCat(num_fields + 1));
          });
 }
 
@@ -597,24 +656,250 @@ void RiscV32GVecEncoding::ParseInstruction(uint32_t inst_word) {
       static_cast<uint16_t>(inst_word_ & 0xffff));
 }
 
+void RiscV32GVecEncoding::InitializeComplexResourceOperandGetters() {
+  complex_resource_getters_.insert(
+      std::make_pair(static_cast<int>(ComplexResourceEnum::kNone),
+                     [](int begin, int end) { return nullptr; }));
+}
+
+ResourceOperandInterface *RiscV32GVecEncoding::GetComplexResourceOperand(
+    SlotEnum, int, OpcodeEnum, ComplexResourceEnum resource, int begin,
+    int end) {
+  int index = static_cast<int>(resource);
+  auto iter = complex_resource_getters_.find(index);
+  if (iter == complex_resource_getters_.end()) {
+    LOG(WARNING) << "No complex resource getter found for resource: " << index;
+    return nullptr;
+  }
+  return (iter->second)(begin, end);
+}
+
+void RiscV32GVecEncoding::InitializeSimpleResourceGetters() {
+  simple_resource_getters_.insert(std::make_pair(
+      static_cast<int>(SimpleResourceEnum::kNone), []() { return nullptr; }));
+  simple_resource_getters_.insert(std::make_pair(
+      static_cast<int>(SimpleResourceEnum::kC3drd),
+      [this]() -> generic::SimpleResource * {
+        int num = encoding::inst16_format::ExtractClRd(inst_word_);
+        return resource_pool_->GetOrAddResource(absl::StrCat("d", num));
+      }));
+  simple_resource_getters_.insert(std::make_pair(
+      static_cast<int>(SimpleResourceEnum::kC3drs2),
+      [this]() -> generic::SimpleResource * {
+        int num = encoding::inst16_format::ExtractCsRs2(inst_word_);
+        return resource_pool_->GetOrAddResource(absl::StrCat("d", num));
+      }));
+  simple_resource_getters_.insert(std::make_pair(
+      static_cast<int>(SimpleResourceEnum::kC3frd),
+      [this]() -> generic::SimpleResource * {
+        int num = encoding::inst16_format::ExtractClRd(inst_word_);
+        return resource_pool_->GetOrAddResource(absl::StrCat("d", num));
+      }));
+  simple_resource_getters_.insert(std::make_pair(
+      static_cast<int>(SimpleResourceEnum::kC3frs2),
+      [this]() -> generic::SimpleResource * {
+        int num = encoding::inst16_format::ExtractCsRs2(inst_word_);
+        return resource_pool_->GetOrAddResource(absl::StrCat("d", num));
+      }));
+  simple_resource_getters_.insert(std::make_pair(
+      static_cast<int>(SimpleResourceEnum::kC3rd),
+      [this]() -> generic::SimpleResource * {
+        int num = encoding::inst16_format::ExtractClRd(inst_word_);
+        // If num is 0 it refers to the zero register. No resource.
+        if (num == 0) return nullptr;
+        return resource_pool_->GetOrAddResource(absl::StrCat("x", num));
+      }));
+  simple_resource_getters_.insert(std::make_pair(
+      static_cast<int>(SimpleResourceEnum::kC3rs1),
+      [this]() -> generic::SimpleResource * {
+        int num = encoding::inst16_format::ExtractClRs1(inst_word_);
+        // If num is 0 it refers to the zero register. No resource.
+        if (num == 0) return nullptr;
+        return resource_pool_->GetOrAddResource(absl::StrCat("x", num));
+      }));
+  simple_resource_getters_.insert(std::make_pair(
+      static_cast<int>(SimpleResourceEnum::kC3rs2),
+      [this]() -> generic::SimpleResource * {
+        int num = encoding::inst16_format::ExtractCsRs2(inst_word_);
+        // If num is 0 it refers to the zero register. No resource.
+        if (num == 0) return nullptr;
+        return resource_pool_->GetOrAddResource(absl::StrCat("x", num));
+      }));
+  simple_resource_getters_.insert(std::make_pair(
+      static_cast<int>(SimpleResourceEnum::kCdrs2),
+      [this]() -> generic::SimpleResource * {
+        auto num = encoding::c_r::ExtractRs2(inst_word_);
+        return resource_pool_->GetOrAddResource(absl::StrCat("d", num));
+      }));
+  simple_resource_getters_.insert(std::make_pair(
+      static_cast<int>(SimpleResourceEnum::kCfrs2),
+      [this]() -> generic::SimpleResource * {
+        auto num = encoding::c_r::ExtractRs2(inst_word_);
+        return resource_pool_->GetOrAddResource(absl::StrCat("d", num));
+      }));
+  simple_resource_getters_.insert(std::make_pair(
+      static_cast<int>(SimpleResourceEnum::kCrs1),
+      [this]() -> generic::SimpleResource * {
+        auto num = encoding::c_r::ExtractRs1(inst_word_);
+        // If num is 0 it refers to the zero register. No resource.
+        if (num == 0) return nullptr;
+        return resource_pool_->GetOrAddResource(absl::StrCat("x", num));
+      }));
+  simple_resource_getters_.insert(std::make_pair(
+      static_cast<int>(SimpleResourceEnum::kCrs2),
+      [this]() -> generic::SimpleResource * {
+        auto num = encoding::c_r::ExtractRs2(inst_word_);
+        // If num is 0 it refers to the zero register. No resource.
+        if (num == 0) return nullptr;
+        return resource_pool_->GetOrAddResource(absl::StrCat("x", num));
+      }));
+  simple_resource_getters_.insert(
+      std::make_pair(static_cast<int>(SimpleResourceEnum::kCsr),
+                     [this]() -> generic::SimpleResource * {
+                       return resource_pool_->GetOrAddResource("csr");
+                     }));
+  simple_resource_getters_.insert(std::make_pair(
+      static_cast<int>(SimpleResourceEnum::kDrd),
+      [this]() -> generic::SimpleResource * {
+        auto num = encoding::r4_type::ExtractRd(inst_word_);
+        return resource_pool_->GetOrAddResource(absl::StrCat("d", num));
+      }));
+  simple_resource_getters_.insert(std::make_pair(
+      static_cast<int>(SimpleResourceEnum::kDrs1),
+      [this]() -> generic::SimpleResource * {
+        auto num = encoding::a_type::ExtractRs1(inst_word_);
+        return resource_pool_->GetOrAddResource(absl::StrCat("d", num));
+      }));
+  simple_resource_getters_.insert(std::make_pair(
+      static_cast<int>(SimpleResourceEnum::kDrs2),
+      [this]() -> generic::SimpleResource * {
+        auto num = encoding::a_type::ExtractRs2(inst_word_);
+        return resource_pool_->GetOrAddResource(absl::StrCat("d", num));
+      }));
+  simple_resource_getters_.insert(std::make_pair(
+      static_cast<int>(SimpleResourceEnum::kDrs3),
+      [this]() -> generic::SimpleResource * {
+        auto num = encoding::r4_type::ExtractRs3(inst_word_);
+        return resource_pool_->GetOrAddResource(absl::StrCat("d", num));
+      }));
+  simple_resource_getters_.insert(std::make_pair(
+      static_cast<int>(SimpleResourceEnum::kFrd),
+      [this]() -> generic::SimpleResource * {
+        auto num = encoding::r4_type::ExtractRd(inst_word_);
+        return resource_pool_->GetOrAddResource(absl::StrCat("d", num));
+      }));
+  simple_resource_getters_.insert(std::make_pair(
+      static_cast<int>(SimpleResourceEnum::kFrs1),
+      [this]() -> generic::SimpleResource * {
+        auto num = encoding::r4_type::ExtractRs1(inst_word_);
+        return resource_pool_->GetOrAddResource(absl::StrCat("d", num));
+      }));
+  simple_resource_getters_.insert(std::make_pair(
+      static_cast<int>(SimpleResourceEnum::kFrs2),
+      [this]() -> generic::SimpleResource * {
+        auto num = encoding::r4_type::ExtractRs2(inst_word_);
+        return resource_pool_->GetOrAddResource(absl::StrCat("d", num));
+      }));
+  simple_resource_getters_.insert(std::make_pair(
+      static_cast<int>(SimpleResourceEnum::kFrs3),
+      [this]() -> generic::SimpleResource * {
+        auto num = encoding::r4_type::ExtractRs3(inst_word_);
+        return resource_pool_->GetOrAddResource(absl::StrCat("d", num));
+      }));
+  simple_resource_getters_.insert(
+      std::make_pair(static_cast<int>(SimpleResourceEnum::kNextPc),
+                     [this]() -> generic::SimpleResource * {
+                       return resource_pool_->GetOrAddResource("next_pc");
+                     }));
+  simple_resource_getters_.insert(std::make_pair(
+      static_cast<int>(SimpleResourceEnum::kRd),
+      [this]() -> generic::SimpleResource * {
+        auto num = encoding::a_type::ExtractRd(inst_word_);
+        // If num is 0 it refers to the zero register. No resource.
+        if (num == 0) return nullptr;
+        return resource_pool_->GetOrAddResource(absl::StrCat("x", num));
+      }));
+  simple_resource_getters_.insert(std::make_pair(
+      static_cast<int>(SimpleResourceEnum::kRs1),
+      [this]() -> generic::SimpleResource * {
+        auto num = encoding::a_type::ExtractRs1(inst_word_);
+        // If num is 0 it refers to the zero register. No resource.
+        if (num == 0) return nullptr;
+        return resource_pool_->GetOrAddResource(absl::StrCat("x", num));
+      }));
+  simple_resource_getters_.insert(std::make_pair(
+      static_cast<int>(SimpleResourceEnum::kRs2),
+      [this]() -> generic::SimpleResource * {
+        auto num = encoding::a_type::ExtractRs2(inst_word_);
+        // If num is 0 it refers to the zero register. No resource.
+        if (num == 0) return nullptr;
+        return resource_pool_->GetOrAddResource(absl::StrCat("x", num));
+      }));
+  // X0 is constant 0, so no resource issue.
+  simple_resource_getters_.insert(
+      std::make_pair(static_cast<int>(SimpleResourceEnum::kX0),
+                     []() -> generic::SimpleResource * { return nullptr; }));
+  simple_resource_getters_.insert(
+      std::make_pair(static_cast<int>(SimpleResourceEnum::kX1),
+                     [this]() -> generic::SimpleResource * {
+                       return resource_pool_->GetOrAddResource("x1");
+                     }));
+  simple_resource_getters_.insert(
+      std::make_pair(static_cast<int>(SimpleResourceEnum::kX2),
+                     [this]() -> generic::SimpleResource * {
+                       return resource_pool_->GetOrAddResource("x2");
+                     }));
+}
+
+ResourceOperandInterface *RiscV32GVecEncoding::GetSimpleResourceOperand(
+    SlotEnum, int, OpcodeEnum, SimpleResourceVector &resource_vec, int end) {
+  if (resource_vec.empty()) return nullptr;
+  auto *resource_set = resource_pool_->CreateResourceSet();
+  for (auto resource_enum : resource_vec) {
+    int index = static_cast<int>(resource_enum);
+    auto iter = simple_resource_getters_.find(index);
+    if (iter == simple_resource_getters_.end()) {
+      LOG(WARNING) << "No getter for simple resource " << index;
+      continue;
+    }
+    auto *resource = (iter->second)();
+    auto status = resource_set->AddResource(resource);
+    if (!status.ok()) {
+      LOG(ERROR) << "Unable to add resource to resource set ("
+                 << static_cast<int>(resource_enum) << ")";
+    }
+  }
+  auto *op = new generic::SimpleResourceOperand(resource_set, end,
+                                                resource_delay_line_);
+  return op;
+}
+
 DestinationOperandInterface *RiscV32GVecEncoding::GetDestination(
-    SlotEnum, int, OpcodeEnum, DestOpEnum dest_op, int dest_no, int latency) {
+    SlotEnum, int, OpcodeEnum opcode, DestOpEnum dest_op, int dest_no,
+    int latency) {
   int index = static_cast<int>(dest_op);
   auto iter = dest_op_getters_.find(index);
   if (iter == dest_op_getters_.end()) {
-    LOG(ERROR) << "No getter for destination op " << index;
+    LOG(ERROR) << absl::StrCat("No getter for destination op enum value ",
+                               index, "for instruction ",
+                               kOpcodeNames[static_cast<int>(opcode)]);
     return nullptr;
   }
   return (iter->second)(latency);
 }
 
 SourceOperandInterface *RiscV32GVecEncoding::GetSource(SlotEnum, int,
-                                                       OpcodeEnum,
+                                                       OpcodeEnum opcode,
                                                        SourceOpEnum source_op,
                                                        int source_no) {
   int index = static_cast<int>(source_op);
   auto iter = source_op_getters_.find(index);
-  if (iter == source_op_getters_.end()) return nullptr;
+  if (iter == source_op_getters_.end()) {
+    LOG(ERROR) << absl::StrCat("No getter for source op enum value ", index,
+                               " for instruction ",
+                               kOpcodeNames[static_cast<int>(opcode)]);
+    return nullptr;
+  }
   return (iter->second)();
 }
 
