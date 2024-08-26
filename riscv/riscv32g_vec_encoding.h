@@ -15,7 +15,7 @@
 #ifndef MPACT_RISCV_RISCV_RISCV32G_VEC_ENCODING_H_
 #define MPACT_RISCV_RISCV_RISCV32G_VEC_ENCODING_H_
 
-#include <functional>
+#include <cstdint>
 #include <string>
 
 #include "absl/container/flat_hash_map.h"

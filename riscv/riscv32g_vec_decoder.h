@@ -18,7 +18,7 @@
 #include <cstdint>
 #include <memory>
 
-#include "mpact/sim/generic/arch_state.h"
+#include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/decoder_interface.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/program_error.h"
