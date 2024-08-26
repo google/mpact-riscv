@@ -70,6 +70,16 @@ absl::Status RiscVCLIForwarder::DisableAction(uint64_t address, int id) {
 
 absl::Status RiscVCLIForwarder::Halt() { return riscv_cli_top_->CLIHalt(); }
 
+absl::Status RiscVCLIForwarder::Halt(HaltReason halt_reason) {
+  riscv_cli_top_->CLIRequestHalt(halt_reason, nullptr);
+  return absl::OkStatus();
+}
+
+absl::Status RiscVCLIForwarder::Halt(HaltReasonValueType halt_reason) {
+  riscv_cli_top_->CLIRequestHalt(halt_reason, nullptr);
+  return absl::OkStatus();
+}
+
 absl::StatusOr<int> RiscVCLIForwarder::Step(int num) {
   return riscv_cli_top_->CLIStep(num);
 }

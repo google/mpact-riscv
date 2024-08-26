@@ -67,6 +67,8 @@ class RiscVCLIForwarder : public RiscVDebugInterface {
   absl::Status DisableAction(uint64_t address, int id) override;
   // Request that core stop running.
   absl::Status Halt() override;
+  absl::Status Halt(HaltReason halt_reason) override;
+  absl::Status Halt(HaltReasonValueType halt_reason) override;
   // Step the core by num instructions.
   absl::StatusOr<int> Step(int num) override;
   // Allow the core to free-run. The loop to run the instructions should be

@@ -165,6 +165,16 @@ absl::Status RiscVTop::Halt() {
   return absl::OkStatus();
 }
 
+absl::Status RiscVTop::Halt(HaltReason halt_reason) {
+  RequestHalt(halt_reason, nullptr);
+  return absl::OkStatus();
+}
+
+absl::Status RiscVTop::Halt(HaltReasonValueType halt_reason) {
+  RequestHalt(halt_reason, nullptr);
+  return absl::OkStatus();
+}
+
 absl::Status RiscVTop::StepPastBreakpoint() {
   uint64_t pc = state_->pc_operand()->AsUint64(0);
   uint64_t bpt_pc = pc;
