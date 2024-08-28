@@ -906,6 +906,7 @@ cc_binary(
         ":riscv_renode",
         ":riscv_state",
         "@com_google_mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/util/renode",
         "@com_google_mpact-sim//mpact/sim/util/renode:renode_debug_interface",
     ],
 )
@@ -941,6 +942,7 @@ cc_binary(
         ":riscv_renode",
         ":riscv_state",
         "@com_google_mpact-sim//mpact/sim/util/memory",
+        "@com_google_mpact-sim//mpact/sim/util/renode",
         "@com_google_mpact-sim//mpact/sim/util/renode:renode_debug_interface",
     ],
 )
