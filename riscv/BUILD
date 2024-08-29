@@ -292,6 +292,37 @@ mpact_bin_fmt_decoder(
 )
 
 mpact_isa_decoder(
+    name = "riscv32gzb_isa",
+    src = "riscv32gzb.isa",
+    includes = [
+        "riscv32g.isa",
+        "riscv32zb.isa",
+    ],
+    isa_name = "RiscV32GZB",
+    prefix = "riscv32gzb",
+    deps = [
+        ":riscv_bitmanip_instructions",
+        ":riscv_g",
+        ":riscv_v",
+        "@com_google_absl//absl/functional:bind_front",
+    ],
+)
+
+mpact_bin_fmt_decoder(
+    name = "riscv32gzb_bin_fmt",
+    src = "riscv32gzb.bin_fmt",
+    decoder_name = "RiscV32GZB",
+    includes = [
+        "riscv32g.bin_fmt",
+        "riscv32zb.bin_fmt",
+    ],
+    prefix = "riscv32gzb",
+    deps = [
+        ":riscv32gzb_isa",
+    ],
+)
+
+mpact_isa_decoder(
     name = "riscv64g_isa",
     src = "riscv64g.isa",
     includes = [],

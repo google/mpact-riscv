@@ -1,0 +1,202 @@
+// Copyright 2024 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// This file contains the ISA description for the RiscV32 bitmanipulation
+// extension.
+
+includes {
+  #include "riscv/riscv_bitmanip_instructions.h"
+}
+
+disasm widths = {-18};
+
+slot riscv32_zba {
+  default size = 4;
+  default opcode =
+    disasm: "Illegal instruction at 0x%(@:08x)",
+    semfunc: "&RiscVIllegalInstruction";
+  resources ThreeOp = { next_pc, rs1, rs2 : rd[..rd]};
+  opcodes {
+    sh1add{: rs1, rs2, const1 : rd},
+      resources: ThreeOp,
+      disasm: "sh1add", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVShAdd";
+    sh2add{: rs1, rs2, const2 : rd},
+      resources: ThreeOp,
+      disasm: "sh2add", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVShAdd";
+    sh3add{: rs1, rs2, const3 : rd},
+      resources: ThreeOp,
+      disasm: "sh3add", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVShAdd";
+  }
+}
+
+slot riscv32_zbb {
+  default size = 4;
+  default opcode =
+    disasm: "Illegal instruction at 0x%(@:08x)",
+    semfunc: "&RiscVIllegalInstruction";
+  resources TwoOp = { next_pc, rs1 : rd[..rd]};
+  resources ThreeOp = { next_pc, rs1, rs2 : rd[..rd]};
+  opcodes {
+    // Logical with negate.
+    andn{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "andn", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVAndn";
+    orn{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "orn", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVOrn";
+    xnor{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "xor", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVXnor";
+    // Counte leading/trailing zero bits.
+    clz{: rs1 : rd},
+      resources: TwoOp,
+      disasm: "clz", "%rd, %rs1",
+      semfunc: "&RV32::RiscVClz";
+    ctz{: rs1 : rd},
+      resources: TwoOp,
+      disasm: "ctz", "%rd, %rs1",
+      semfunc: "&RV32::RiscVCtz";
+    // Count population
+    cpop{: rs1 : rd},
+      resources: TwoOp,
+      disasm: "cpop", "%rd, %rs1",
+      semfunc: "&RV32::RiscVCpop";
+    // Integer minimum/maximum.
+    max{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "max", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVMax";
+    maxu{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "max", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVMaxu";
+    min{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "min", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVMin";
+    minu{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "min", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVMinu";
+    // Sign and zero extension.
+    sext_b{: rs1 : rd},
+      resources: TwoOp,
+      disasm: "sext.b", "%rd, %rs1",
+      semfunc: "&RV32::RiscVSextB";
+    sext_h{: rs1 : rd},
+      resources: TwoOp,
+      disasm: "sext.h", "%rd, %rs1",
+      semfunc: "&RV32::RiscVSextH";
+    zext_h{: rs1 : rd},
+      resources: TwoOp,
+      disasm: "zext.h", "%rd, %rs1",
+      semfunc: "&RV32::RiscVZextH";
+    // Bitwise rotation.
+    rol{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "rol", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVrol";
+    ror{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "ror", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVror";
+    rori{: rs1, r_uimm5 : rd},
+      resources: TwoOp,
+      disasm: "rori", "%rd, %rs1, %r_uimm5",
+      semfunc: "&RV32::RiscVror";
+    // OR combine.
+    orcb{: rs1 : rd},
+      resources: TwoOp,
+      disasm: "orc", "%rd, %rs1",
+      semfunc: "&RV32::RiscVOrcb";
+    // Byte reverse.
+    rev8{: rs1 : rd},
+      resources: TwoOp,
+      disasm: "rev8", "%rd, %rs1",
+      semfunc: "&RV32::RiscVRev8";
+  }
+}
+
+slot riscv32_zbc {
+  default size = 4;
+  default opcode =
+    disasm: "Illegal instruction at 0x%(@:08x)",
+    semfunc: "&RiscVIllegalInstruction";
+  resources ThreeOp = { next_pc, rs1, rs2 : rd[..rd]};
+  opcodes {
+    // Carry-less multiplication.
+    clmul{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "clmul", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVClmul";
+    clmulh{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "clmulh", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVClmulh";
+    clmulr{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "clmulr", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVClmulr";
+  }
+}
+
+slot riscv32_zbs {
+  default size = 4;
+  default opcode =
+    disasm: "Illegal instruction at 0x%(@:08x)",
+    semfunc: "&RiscVIllegalInstruction";
+  resources TwoOp = { next_pc, rs1 : rd[..rd]};
+  resources ThreeOp = { next_pc, rs1, rs2 : rd[..rd]};
+  opcodes {
+    // Single-bit instructions.
+    bclr{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "bclr", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVBclr";
+    bclri{: rs1, r_uimm5 : rd},
+      resources: TwoOp,
+      disasm: "bclri", "%rd, %rs1, %r_uimm5",
+      semfunc: "&RV32::RiscVBclr";
+    bext{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "bext", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVBext";
+    bexti{: rs1, r_uimm5 : rd},
+      resources: TwoOp,
+      disasm: "bexti", "%rd, %rs1, %r_uimm5",
+      semfunc: "&RV32::RiscVBext";
+    binv{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "binv", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVBinv";
+    binvi{: rs1, r_uimm5 : rd},
+      resources: TwoOp,
+      disasm: "binvi", "%rd, %rs1, %r_uimm5",
+      semfunc: "&RV32::RiscVBinv";
+    bset{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "bset", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVBset";
+    bseti{: rs1, r_uimm5 : rd},
+      resources: TwoOp,
+      disasm: "bseti", "%rd, %rs1, %r_uimm5",
+      semfunc: "&RV32::RiscVBset";
+  }
+}

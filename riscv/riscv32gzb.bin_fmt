@@ -1,0 +1,19 @@
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+decoder RiscV32GZB {
+  namespace mpact::sim::riscv::isa32gzb;
+  opcode_enum = "OpcodeEnum";
+  includes {
+    #include "riscv/riscv32gzb_decoder.h"
+  }
+  RiscV32GZBInst32 = {RiscVGInst32, RiscVZbaInst32, RiscVZbbInst32, RiscVZbcInst32, RiscVZbsInst32};
+  RiscV32GZBInst16 = {RiscVCInst16};
+}
+
+#include "riscv/riscv32g.bin_fmt"
+#include "riscv/riscv32zb.bin_fmt"
