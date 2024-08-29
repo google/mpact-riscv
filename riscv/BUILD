@@ -404,6 +404,29 @@ cc_library(
 )
 
 cc_library(
+    name = "riscv_getters",
+    hdrs = [
+        "riscv_getter_helpers.h",
+        "riscv_getters.h",
+    ],
+    deps = [
+        ":riscv_encoding_common",
+        ":riscv_state",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/functional:any_invocable",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/strings",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+    ],
+)
+
+cc_library(
+    name = "riscv_encoding_common",
+    hdrs = ["riscv_encoding_common.h"],
+    deps = ["@com_google_mpact-sim//mpact/sim/generic:core"],
+)
+
+cc_library(
     name = "riscv32g_vec_decoder",
     srcs = [
         "riscv32g_vec_decoder.cc",
