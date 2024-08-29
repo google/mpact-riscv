@@ -427,6 +427,32 @@ cc_library(
 )
 
 cc_library(
+    name = "riscv32g_bitmanip_decoder",
+    srcs = [
+        "riscv32g_bitmanip_decoder.cc",
+        "riscv32gzb_encoding.cc",
+    ],
+    hdrs = [
+        "riscv32g_bitmanip_decoder.h",
+        "riscv32gzb_encoding.h",
+    ],
+    copts = ["-O3"],
+    deps = [
+        ":riscv32gzb_bin_fmt",
+        ":riscv32gzb_isa",
+        ":riscv_encoding_common",
+        ":riscv_getters",
+        ":riscv_state",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/strings",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
+    ],
+)
+
+cc_library(
     name = "riscv32g_vec_decoder",
     srcs = [
         "riscv32g_vec_decoder.cc",
