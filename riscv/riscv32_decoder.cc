@@ -15,6 +15,7 @@
 #include "riscv/riscv32_decoder.h"
 
 #include <cstdint>
+#include <new>
 #include <string>
 
 #include "mpact/sim/generic/instruction.h"

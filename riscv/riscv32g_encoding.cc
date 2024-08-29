@@ -15,6 +15,7 @@
 #include "riscv/riscv32g_encoding.h"
 
 #include <cstdint>
+#include <new>
 #include <string>
 #include <utility>
 
@@ -236,6 +237,11 @@ void RiscV32GEncoding::InitializeSourceOperandGetters() {
             encoding::inst16_format::ExtractImm18(inst_word_));
       }));
   source_op_getters_.insert(
+      std::make_pair(static_cast<int>(SourceOpEnum::kICiImm6x16), [this]() {
+        return new generic::ImmediateOperand<int32_t>(
+            encoding::inst16_format::ExtractCiImm10(inst_word_));
+      }));
+  source_op_getters_.insert(
       std::make_pair(static_cast<int>(SourceOpEnum::kICiUimm6), [this]() {
         return new generic::ImmediateOperand<uint32_t>(
             encoding::inst16_format::ExtractUimm6(inst_word_));
@@ -249,11 +255,6 @@ void RiscV32GEncoding::InitializeSourceOperandGetters() {
       std::make_pair(static_cast<int>(SourceOpEnum::kICiUimm6x8), [this]() {
         return new generic::ImmediateOperand<uint32_t>(
             encoding::inst16_format::ExtractCiImmD(inst_word_));
-      }));
-  source_op_getters_.insert(
-      std::make_pair(static_cast<int>(SourceOpEnum::kICiImm6x16), [this]() {
-        return new generic::ImmediateOperand<int32_t>(
-            encoding::inst16_format::ExtractCiImm10(inst_word_));
       }));
   source_op_getters_.insert(
       std::make_pair(static_cast<int>(SourceOpEnum::kICiwUimm8x4), [this]() {
@@ -305,6 +306,16 @@ void RiscV32GEncoding::InitializeSourceOperandGetters() {
         return new generic::ImmediateOperand<int32_t>(
             encoding::inst32_format::ExtractJImm(inst_word_));
       }));
+  source_op_getters_.insert(std::make_pair(
+      static_cast<int>(SourceOpEnum::kRd),
+      [this]() -> SourceOperandInterface * {
+        int num = encoding::r_type::ExtractRd(inst_word_);
+        if (num == 0)
+          return new generic::IntLiteralOperand<0>({1}, xreg_alias_[0]);
+        return GetRegisterSourceOp<RV32Register>(
+            state_, absl::StrCat(RiscVState::kXregPrefix, num),
+            xreg_alias_[num]);
+      }));
   source_op_getters_.insert(
       std::make_pair(static_cast<int>(SourceOpEnum::kRm),
                      [this]() -> SourceOperandInterface * {
@@ -330,16 +341,6 @@ void RiscV32GEncoding::InitializeSourceOperandGetters() {
                            return nullptr;
                        }
                      }));
-  source_op_getters_.insert(std::make_pair(
-      static_cast<int>(SourceOpEnum::kRd),
-      [this]() -> SourceOperandInterface * {
-        int num = encoding::r_type::ExtractRd(inst_word_);
-        if (num == 0)
-          return new generic::IntLiteralOperand<0>({1}, xreg_alias_[0]);
-        return GetRegisterSourceOp<RV32Register>(
-            state_, absl::StrCat(RiscVState::kXregPrefix, num),
-            xreg_alias_[num]);
-      }));
   source_op_getters_.insert(std::make_pair(
       static_cast<int>(SourceOpEnum::kRs1),
       [this]() -> SourceOperandInterface * {
@@ -389,14 +390,13 @@ void RiscV32GEncoding::InitializeDestinationOperandGetters() {
       std::make_pair(static_cast<int>(DestOpEnum::kC3drd), [this](int latency) {
         int num = encoding::inst16_format::ExtractClRd(inst_word_);
         return GetRegisterDestinationOp<RV32Register>(
-            state_, absl::StrCat(RiscVState::kXregPrefix, num), latency,
-            xreg_alias_[num]);
+            state_, absl::StrCat(RiscVState::kFregPrefix, num), latency);
       }));
   dest_op_getters_.insert(
       std::make_pair(static_cast<int>(DestOpEnum::kC3frd), [this](int latency) {
         int num = encoding::inst16_format::ExtractClRd(inst_word_);
         return GetRegisterDestinationOp<RVFpRegister>(
-            state_, absl::StrCat(RiscVState::kXregPrefix, num), latency);
+            state_, absl::StrCat(RiscVState::kFregPrefix, num), latency);
       }));
   dest_op_getters_.insert(
       std::make_pair(static_cast<int>(DestOpEnum::kC3rd), [this](int latency) {
