@@ -697,3 +697,19 @@ cc_test(
         "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
     ],
 )
+
+cc_test(
+    name = "riscv_bitmanip_instructions_test",
+    size = "small",
+    srcs = ["riscv_bitmanip_instructions_test.cc"],
+    deps = [
+        "//riscv:riscv_bitmanip_instructions",
+        "//riscv:riscv_state",
+        "@com_google_absl//absl/random",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
+    ],
+)

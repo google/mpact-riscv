@@ -170,6 +170,26 @@ cc_library(
 )
 
 cc_library(
+    name = "riscv_bitmanip_instructions",
+    srcs = [
+        "riscv_bitmanip_instructions.cc",
+    ],
+    hdrs = [
+        "riscv_bitmanip_instructions.h",
+    ],
+    copts = [
+        "-O3",
+        "-ffp-model=strict",
+    ],
+    deps = [
+        ":riscv_g",
+        ":riscv_state",
+        "@com_google_absl//absl/numeric:bits",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+    ],
+)
+
+cc_library(
     name = "riscv_v",
     srcs = [
         "riscv_vector_fp_compare_instructions.cc",
@@ -343,9 +363,7 @@ cc_library(
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/functional:any_invocable",
         "@com_google_absl//absl/log",
-        "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
-        "@com_google_mpact-sim//mpact/sim/generic:arch_state",
         "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
         "@com_google_mpact-sim//mpact/sim/generic:program_error",
@@ -401,7 +419,6 @@ cc_library(
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/strings",
-        "@com_google_mpact-sim//mpact/sim/generic:arch_state",
         "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
         "@com_google_mpact-sim//mpact/sim/generic:program_error",
@@ -567,7 +584,6 @@ cc_library(
         "@com_google_mpact-sim//mpact/sim/generic:core_debug_interface",
         "@com_google_mpact-sim//mpact/sim/generic:debug_command_shell_interface",
         "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
-        "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
         "@com_googlesource_code_re2//:re2",
     ],
 )
@@ -750,7 +766,7 @@ cc_library(
         "riscv_clint.h",
     ],
     deps = [
-        "//riscv:riscv_state",
+        ":riscv_state",
         "@com_google_absl//absl/log",
         "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:counters",
@@ -774,7 +790,6 @@ cc_binary(
         "@com_google_absl//absl/flags:parse",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/strings:str_format",
         "@com_google_mpact-sim//mpact/sim/generic:core_debug_interface",
         "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
         "@com_google_mpact-sim//mpact/sim/util/memory",
@@ -790,7 +805,6 @@ cc_binary(
     copts = ["-O3"],
     deps = [
         ":riscv64g_decoder",
-        ":riscv_fp_state",
         ":riscv_state",
         ":riscv_test_mem_watcher",
         ":riscv_top",
@@ -846,14 +860,13 @@ cc_library(
         ":instrumentation",
         ":riscv32g_decoder",
         ":riscv64g_decoder",
+        ":riscv_arm_semihost",
+        ":riscv_clint",
         ":riscv_debug_info",
         ":riscv_debug_interface",
+        ":riscv_state",
         ":riscv_top",
-        "//riscv:riscv_arm_semihost",
-        "//riscv:riscv_clint",
-        "//riscv:riscv_state",
-        "//riscv:stoull_wrapper",
-        "@com_google_absl//absl/container:flat_hash_map",
+        ":stoull_wrapper",
         "@com_google_absl//absl/functional:any_invocable",
         "@com_google_absl//absl/functional:bind_front",
         "@com_google_absl//absl/log",
@@ -868,7 +881,6 @@ cc_library(
         "@com_google_mpact-sim//mpact/sim/util/memory",
         "@com_google_mpact-sim//mpact/sim/util/other:instruction_profiler",
         "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
-        "@com_google_mpact-sim//mpact/sim/util/renode",
         "@com_google_mpact-sim//mpact/sim/util/renode:renode_debug_interface",
         "@com_google_mpact-sim//mpact/sim/util/renode:socket_cli",
         "@com_google_protobuf//:protobuf",
