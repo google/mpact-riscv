@@ -21,6 +21,7 @@
 #include <ios>
 #include <iostream>
 #include <memory>
+#include <new>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -37,6 +38,7 @@
 #include "absl/time/time.h"
 #include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/generic/counters.h"
+#include "mpact/sim/generic/decoder_interface.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/proto/component_data.pb.h"
 #include "mpact/sim/util/memory/atomic_memory.h"
@@ -47,6 +49,7 @@
 #include "riscv/debug_command_shell.h"
 #include "riscv/riscv32_decoder.h"
 #include "riscv/riscv32_htif_semihost.h"
+#include "riscv/riscv32g_bitmanip_decoder.h"
 #include "riscv/riscv_arm_semihost.h"
 #include "riscv/riscv_fp_state.h"
 #include "riscv/riscv_register.h"
@@ -58,6 +61,7 @@
 using ::mpact::sim::generic::Instruction;
 using ::mpact::sim::proto::ComponentData;
 using ::mpact::sim::riscv::RiscV32Decoder;
+using ::mpact::sim::riscv::RiscV32GBitmanipDecoder;
 using ::mpact::sim::riscv::RiscV32HtifSemiHost;
 using ::mpact::sim::riscv::RiscVArmSemihost;
 using ::mpact::sim::riscv::RiscVFPState;
@@ -135,6 +139,9 @@ ABSL_FLAG(std::optional<uint64_t>, stack_end, 0,
 
 // Exit on execution of ecall instruction, default false.
 ABSL_FLAG(bool, exit_on_ecall, false, "Exit on ecall - false by default");
+
+// Enable bit manipulation instructions.
+ABSL_FLAG(bool, bitmanip, false, "Enable bit manipulation instructions");
 
 constexpr char kStackEndSymbolName[] = "__stack_end";
 constexpr char kStackSizeSymbolName[] = "__stack_size";
@@ -236,7 +243,12 @@ int main(int argc, char **argv) {
   RiscVFPState rv_fp_state(rv_state.csr_set(), &rv_state);
   rv_state.set_rv_fp(&rv_fp_state);
   // Create the instruction decoder.
-  RiscV32Decoder rv_decoder(&rv_state, memory);
+  mpact::sim::generic::DecoderInterface *rv_decoder = nullptr;
+  if (absl::GetFlag(FLAGS_bitmanip)) {
+    rv_decoder = new RiscV32GBitmanipDecoder(&rv_state, memory);
+  } else {
+    rv_decoder = new RiscV32Decoder(&rv_state, memory);
+  }
 
   // Make sure the architectural and abi register aliases are added.
   std::string reg_name;
@@ -253,7 +265,7 @@ int main(int argc, char **argv) {
         reg_name, ::mpact::sim::riscv::kFRegisterAliases[i]);
   }
 
-  RiscVTop riscv_top("RiscV32Sim", &rv_state, &rv_decoder);
+  RiscVTop riscv_top("RiscV32Sim", &rv_state, rv_decoder);
 
   if (absl::GetFlag(FLAGS_exit_on_ecall)) {
     rv_state.set_on_ecall([&riscv_top](const Instruction *inst) -> bool {
@@ -437,4 +449,5 @@ int main(int argc, char **argv) {
   delete watcher;
   delete arm_semihost;
   delete htif_semihost;
+  delete rv_decoder;
 }

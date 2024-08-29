@@ -706,6 +706,7 @@ cc_binary(
     deps = [
         ":debug_command_shell",
         ":riscv32_htif_semihost",
+        ":riscv32g_bitmanip_decoder",
         ":riscv32g_decoder",
         ":riscv_arm_semihost",
         ":riscv_fp_state",
@@ -718,6 +719,7 @@ cc_binary(
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/time",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:core_debug_interface",
         "@com_google_mpact-sim//mpact/sim/generic:counters",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
