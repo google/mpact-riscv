@@ -238,6 +238,21 @@ cc_test(
 )
 
 cc_test(
+    name = "riscv32gzb_encoding_test",
+    size = "small",
+    srcs = [
+        "riscv32gzb_encoding_test.cc",
+    ],
+    deps = [
+        "//riscv:riscv32g_bitmanip_decoder",
+        "//riscv:riscv32gzb_isa",
+        "//riscv:riscv_state",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
+    ],
+)
+
+cc_test(
     name = "riscv64g_encoding_test",
     size = "small",
     srcs = [
