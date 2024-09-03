@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <limits>
+#include <new>
 #include <string>
 #include <vector>
 
@@ -27,8 +28,8 @@
 #include "mpact/sim/generic/arch_state.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/memory_interface.h"
+#include "riscv/riscv_counter_csr.h"
 #include "riscv/riscv_csr.h"
-#include "riscv/riscv_minstret.h"
 #include "riscv/riscv_misa.h"
 #include "riscv/riscv_pmp.h"
 #include "riscv/riscv_register.h"
@@ -224,10 +225,23 @@ void CreateCsrs(RiscVState *state, std::vector<RiscVCsrInterface *> &csr_vec) {
            nullptr);
 
   // minstret/minstreth
-  CHECK_NE(CreateCsr<RiscVMInstret>(state, csr_vec, "minstret", state),
-           nullptr);
-  CHECK_NE(CreateCsr<RiscVMInstreth>(state, csr_vec, "minstreth", state),
-           nullptr);
+  auto *minstret = CreateCsr<RiscVCounterCsr<T, RiscVState>>(
+      state, csr_vec, "minstret", RiscVCsrEnum ::kMInstret, state);
+  CHECK_NE(minstret, nullptr);
+  if (sizeof(T) == sizeof(uint32_t)) {
+    CHECK_NE(CreateCsr<RiscVCounterCsrHigh<RiscVState>>(
+                 state, csr_vec, "minstreth", RiscVCsrEnum::kMInstretH, state),
+             nullptr);
+  }
+  // mcycle/mcycleh
+  auto *mcycle = CreateCsr<RiscVCounterCsr<T, RiscVState>>(
+      state, csr_vec, "mcycle", RiscVCsrEnum::kMCycle, state);
+  CHECK_NE(mcycle, nullptr);
+  if (sizeof(T) == sizeof(uint32_t)) {
+    CHECK_NE(CreateCsr<RiscVCounterCsrHigh<RiscVState>>(
+                 state, csr_vec, "mcycleh", RiscVCsrEnum::kMCycleH, state),
+             nullptr);
+  }
 
   // Supervisor level CSRs
 

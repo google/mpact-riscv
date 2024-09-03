@@ -17,8 +17,9 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
+#include <new>
 #include <string>
-#include <thread>
+#include <thread>  // NOLINT: third_party.
 #include <utility>
 
 #include "absl/functional/any_invocable.h"
@@ -37,6 +38,7 @@
 #include "mpact/sim/generic/decode_cache.h"
 #include "mpact/sim/generic/decoder_interface.h"
 #include "riscv/riscv_action_point_memory_interface.h"
+#include "riscv/riscv_counter_csr.h"
 #include "riscv/riscv_csr.h"
 #include "riscv/riscv_debug_interface.h"
 #include "riscv/riscv_fp_state.h"
@@ -125,6 +127,41 @@ void RiscVTop::Initialize() {
         absl::StrCat("num_", rv_decoder_->GetOpcodeName(i)), 0);
     CHECK_OK(AddCounter(&counter_opcode_[i]))
         << "Failed to register opcode counter";
+  }
+
+  // Connect counters to instret(h) and mcycle(h) CSRs.
+  auto csr_res = state_->csr_set()->GetCsr("minstret");
+  CHECK_OK(csr_res.status()) << "Failed to get minstret CSR";
+  if (state_->xlen() == RiscVXlen::RV32) {
+    // Minstret/minstreth.
+    auto *minstret = reinterpret_cast<RiscVCounterCsr<uint32_t, RiscVState> *>(
+        csr_res.value());
+    minstret->set_counter(&counter_num_instructions_);
+    csr_res = state_->csr_set()->GetCsr("minstreth");
+    CHECK_OK(csr_res.status()) << "Failed to get minstret CSR";
+    auto *minstreth =
+        reinterpret_cast<RiscVCounterCsrHigh<RiscVState> *>(csr_res.value());
+    minstreth->set_counter(&counter_num_instructions_);
+    // Mcycle/mcycleh.
+    csr_res = state_->csr_set()->GetCsr("mcycle");
+    CHECK_OK(csr_res.status()) << "Failed to get mcycle CSR";
+    auto *mcycle = reinterpret_cast<RiscVCounterCsr<uint32_t, RiscVState> *>(
+        csr_res.value());
+    mcycle->set_counter(&counter_num_cycles_);
+    csr_res = state_->csr_set()->GetCsr("mcycleh");
+    CHECK_OK(csr_res.status()) << "Failed to get mcycleh CSR";
+    auto *mcycleh =
+        reinterpret_cast<RiscVCounterCsrHigh<RiscVState> *>(csr_res.value());
+    mcycleh->set_counter(&counter_num_cycles_);
+  } else {
+    // Minstret/minstreth.
+    auto *minstret = reinterpret_cast<RiscVCounterCsr<uint64_t, RiscVState> *>(
+        csr_res.value());
+    minstret->set_counter(&counter_num_instructions_);
+    // Mcycle/mcycleh.
+    auto *mcycle = reinterpret_cast<RiscVCounterCsr<uint64_t, RiscVState> *>(
+        csr_res.value());
+    mcycle->set_counter(&counter_num_cycles_);
   }
 
   // Set up break and action points.

@@ -22,6 +22,7 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <new>
 #include <string>
 #include <string_view>
 
@@ -49,7 +50,6 @@
 #include "riscv/riscv_debug_info.h"
 #include "riscv/riscv_debug_interface.h"
 #include "riscv/riscv_instrumentation_control.h"
-#include "riscv/riscv_minstret.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_register_aliases.h"
 #include "riscv/riscv_renode_cli_top.h"
@@ -130,18 +130,6 @@ RiscVRenode::RiscVRenode(std::string name, MemoryInterface *renode_sysbus,
   }
 
   riscv_top_ = new RiscVTop(name, rv_state_, rv_decoder_);
-
-  // Initialize minstret/minstreth. Bind the instruction counter to those
-  // registers.
-  auto minstret_res = riscv_top_->state()->csr_set()->GetCsr("minstret");
-  auto minstreth_res = riscv_top_->state()->csr_set()->GetCsr("minstreth");
-  if (!minstret_res.ok() || !minstreth_res.ok()) {
-    LOG(ERROR) << name << ": Error while initializing minstret/minstreth\n";
-  }
-  auto *minstret = static_cast<RiscVMInstret *>(minstret_res.value());
-  auto *minstreth = static_cast<RiscVMInstreth *>(minstreth_res.value());
-  minstret->set_counter(riscv_top_->counter_num_instructions());
-  minstreth->set_counter(riscv_top_->counter_num_instructions());
 
   // Set up the memory router with the system bus. Other devices are added once
   // config info has been received. Add a tagged default memory transactor, so

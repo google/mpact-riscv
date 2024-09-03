@@ -48,7 +48,6 @@ cc_library(
     name = "riscv_state",
     srcs = [
         "riscv_csr.cc",
-        "riscv_minstret.cc",
         "riscv_misa.cc",
         "riscv_register.cc",
         "riscv_sim_csrs.cc",
@@ -58,8 +57,8 @@ cc_library(
         "riscv_xstatus.cc",
     ],
     hdrs = [
+        "riscv_counter_csr.h",
         "riscv_csr.h",
-        "riscv_minstret.h",
         "riscv_misa.h",
         "riscv_pmp.h",
         "riscv_register.h",
