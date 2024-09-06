@@ -51,7 +51,7 @@ TEST_F(RiscVMCycleTest, GetTest32) {
   RiscVCounterCsr<uint32_t, RiscVState> mcycle("mcycle", RiscVCsrEnum::kMCycle,
                                                nullptr);
   RiscVCounterCsrHigh<RiscVState> mcycleh("mcycleh", RiscVCsrEnum::kMCycleH,
-                                          nullptr);
+                                          nullptr, &mcycle);
   mcycle.set_counter(&counter_);
   mcycleh.set_counter(&counter_);
   // Initial value should be zero.
@@ -101,7 +101,7 @@ TEST_F(RiscVMCycleTest, SetTest32) {
   RiscVCounterCsr<uint32_t, RiscVState> mcycle("mcycle", RiscVCsrEnum::kMCycle,
                                                nullptr);
   RiscVCounterCsrHigh<RiscVState> mcycleh("mcycleh", RiscVCsrEnum::kMCycleH,
-                                          nullptr);
+                                          nullptr, &mcycle);
   mcycle.set_counter(&counter_);
   mcycleh.set_counter(&counter_);
   EXPECT_EQ(mcycle.GetUint32(), 0);

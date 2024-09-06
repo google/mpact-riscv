@@ -230,7 +230,9 @@ void CreateCsrs(RiscVState *state, std::vector<RiscVCsrInterface *> &csr_vec) {
   CHECK_NE(minstret, nullptr);
   if (sizeof(T) == sizeof(uint32_t)) {
     CHECK_NE(CreateCsr<RiscVCounterCsrHigh<RiscVState>>(
-                 state, csr_vec, "minstreth", RiscVCsrEnum::kMInstretH, state),
+                 state, csr_vec, "minstreth", RiscVCsrEnum::kMInstretH, state,
+                 reinterpret_cast<RiscVCounterCsr<uint32_t, RiscVState> *>(
+                     minstret)),
              nullptr);
   }
   // mcycle/mcycleh
@@ -238,9 +240,11 @@ void CreateCsrs(RiscVState *state, std::vector<RiscVCsrInterface *> &csr_vec) {
       state, csr_vec, "mcycle", RiscVCsrEnum::kMCycle, state);
   CHECK_NE(mcycle, nullptr);
   if (sizeof(T) == sizeof(uint32_t)) {
-    CHECK_NE(CreateCsr<RiscVCounterCsrHigh<RiscVState>>(
-                 state, csr_vec, "mcycleh", RiscVCsrEnum::kMCycleH, state),
-             nullptr);
+    CHECK_NE(
+        CreateCsr<RiscVCounterCsrHigh<RiscVState>>(
+            state, csr_vec, "mcycleh", RiscVCsrEnum::kMCycleH, state,
+            reinterpret_cast<RiscVCounterCsr<uint32_t, RiscVState> *>(mcycle)),
+        nullptr);
   }
 
   // Supervisor level CSRs

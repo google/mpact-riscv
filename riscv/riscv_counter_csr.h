@@ -24,10 +24,15 @@ namespace mpact::sim::riscv {
 using ::mpact::sim::generic::SimpleCounter;
 using ::mpact::sim::riscv::RiscVSimpleCsr;
 
+template <typename S>
+class RiscVCounterCsrHigh;
+
 // This class implements the 64 bit CSR, or the low 32 bit CSR depending on the
 // RiscV xlen width.
 template <typename T, typename S>
 class RiscVCounterCsr : public RiscVSimpleCsr<T> {
+  friend class RiscVCounterCsrHigh<S>;
+
  public:
   const T kMax = std::numeric_limits<T>::max();
   RiscVCounterCsr(std::string name, RiscVCsrEnum csr_enum, S* state)
@@ -37,7 +42,10 @@ class RiscVCounterCsr : public RiscVSimpleCsr<T> {
   ~RiscVCounterCsr() override = default;
 
   // RiscVSimpleCsr method overrides.
-  uint32_t GetUint32() override { return (GetCounterValue() + offset_) & kMax; }
+  uint32_t GetUint32() override {
+    auto value = (GetCounterValue() + offset_) & kMax;
+    return value;
+  }
   uint64_t GetUint64() override {
     return (GetCounterValue() + offset_) & kMax;
   };
@@ -65,32 +73,41 @@ class RiscVCounterCsr : public RiscVSimpleCsr<T> {
 template <typename S>
 class RiscVCounterCsrHigh : public RiscVSimpleCsr<uint32_t> {
  public:
-  RiscVCounterCsrHigh(std::string name, RiscVCsrEnum csr_enum, S* state)
-      : RiscVSimpleCsr<uint32_t>(name, csr_enum, state) {}
+  RiscVCounterCsrHigh(std::string name, RiscVCsrEnum csr_enum, S* state,
+                      RiscVCounterCsr<uint32_t, S>* low_csr)
+      : RiscVSimpleCsr<uint32_t>(name, csr_enum, state), low_csr_(low_csr) {}
   RiscVCounterCsrHigh(const RiscVCounterCsrHigh&) = delete;
   RiscVCounterCsrHigh& operator=(const RiscVCounterCsrHigh&) = delete;
   ~RiscVCounterCsrHigh() override = default;
 
   // RiscVSimpleCsr method overrides.
-  uint32_t GetUint32() override { return GetCounterValue() + offset_; };
+  uint32_t GetUint32() override {
+    uint64_t offset = (offset_ << 32) | low_csr_->offset_;
+    uint64_t value64 = GetCounterValue() + offset;
+    uint32_t value = static_cast<uint32_t>(value64 >> 32);
+    return value;
+  };
   uint64_t GetUint64() override { return static_cast<uint64_t>(GetUint32()); };
 
   // Any value written to the CSR is used to create an offset from the current
   // value of the counter.
-  void Set(uint32_t value) override { offset_ = value - GetCounterValue(); };
+  void Set(uint32_t value) override {
+    offset_ = value - (GetCounterValue() >> 32);
+  };
   void Set(uint64_t value) override { Set(static_cast<uint32_t>(value)); };
 
   // This is called to tie a cycle counter to the CSR.
   void set_counter(SimpleCounter<uint64_t>* counter) { counter_ = counter; }
 
  private:
-  inline uint32_t GetCounterValue() const {
+  inline uint64_t GetCounterValue() const {
     if (counter_ == nullptr) return 0;
-    return static_cast<uint32_t>(counter_->GetValue() >> 32);
+    return counter_->GetValue();
   };
 
+  RiscVCounterCsr<uint32_t, S>* low_csr_;
   SimpleCounter<uint64_t>* counter_ = nullptr;
-  uint32_t offset_ = 0;
+  uint64_t offset_ = 0;
 };
 
 }  // namespace mpact::sim::riscv
