@@ -12,45 +12,79 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "riscv/riscv_b_instructions.h"
-
 #include <cstdint>
+#include <limits>
 #include <memory>
 #include <string_view>
 #include <tuple>
 #include <vector>
 
+#include "absl/numeric/int128.h"
+#include "absl/random/random.h"
 #include "absl/strings/string_view.h"
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/immediate_operand.h"
 #include "mpact/sim/generic/instruction.h"
-#include "mpact/sim/util/memory/flat_demand_memory.h"
+#include "riscv/riscv_bitmanip_instructions.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
 
-namespace mpact {
-namespace sim {
-namespace riscv {
 namespace {
+using ::mpact::sim::riscv::RV64::RiscVAddUw;
+using ::mpact::sim::riscv::RV64::RiscVAndn;
+using ::mpact::sim::riscv::RV64::RiscVBclr;
+using ::mpact::sim::riscv::RV64::RiscVBext;
+using ::mpact::sim::riscv::RV64::RiscVBinv;
+using ::mpact::sim::riscv::RV64::RiscVBset;
+using ::mpact::sim::riscv::RV64::RiscVClmul;
+using ::mpact::sim::riscv::RV64::RiscVClmulh;
+using ::mpact::sim::riscv::RV64::RiscVClmulr;
+using ::mpact::sim::riscv::RV64::RiscVClz;
+using ::mpact::sim::riscv::RV64::RiscVClzw;
+using ::mpact::sim::riscv::RV64::RiscVCpop;
+using ::mpact::sim::riscv::RV64::RiscVCpopw;
+using ::mpact::sim::riscv::RV64::RiscVCtz;
+using ::mpact::sim::riscv::RV64::RiscVCtzw;
+using ::mpact::sim::riscv::RV64::RiscVMax;
+using ::mpact::sim::riscv::RV64::RiscVMaxu;
+using ::mpact::sim::riscv::RV64::RiscVMin;
+using ::mpact::sim::riscv::RV64::RiscVMinu;
+using ::mpact::sim::riscv::RV64::RiscVOrcb;
+using ::mpact::sim::riscv::RV64::RiscVOrn;
+using ::mpact::sim::riscv::RV64::RiscVRev8;
+using ::mpact::sim::riscv::RV64::RiscVRol;
+using ::mpact::sim::riscv::RV64::RiscVRolw;
+using ::mpact::sim::riscv::RV64::RiscVRor;
+using ::mpact::sim::riscv::RV64::RiscVRorw;
+using ::mpact::sim::riscv::RV64::RiscVSextB;
+using ::mpact::sim::riscv::RV64::RiscVSextH;
+using ::mpact::sim::riscv::RV64::RiscVShAdd;
+using ::mpact::sim::riscv::RV64::RiscVShAddUw;
+using ::mpact::sim::riscv::RV64::RiscVSlliUw;
+using ::mpact::sim::riscv::RV64::RiscVXnor;
+using ::mpact::sim::riscv::RV64::RiscVZextH;
 
 using ::mpact::sim::generic::ImmediateOperand;
 using ::mpact::sim::generic::Instruction;
-using ::mpact::sim::util::FlatDemandMemory;
+using ::mpact::sim::riscv::RiscVState;
+using ::mpact::sim::riscv::RiscVXlen;
+using ::mpact::sim::riscv::RV64Register;
 
-constexpr uint32_t kInstAddress = 0x2468;
+constexpr uint64_t kInstAddress = 0x2468;
 
 constexpr std::string_view kX1 = "x1";
 constexpr std::string_view kX2 = "x2";
 constexpr std::string_view kX3 = "x3";
+constexpr std::string_view kX4 = "x4";
 
 constexpr uint64_t kUVal1 = 0x1111222233334444ULL;
 constexpr uint64_t kUVal2 = 0x5555666677778888ULL;
 
 // Test class for testing RISCV bit manipulation instructions.
-class RV64BInstructionTest : public testing::Test {
+class RV64BitmanipInstructionTest : public testing::Test {
  public:
-  RV64BInstructionTest() {
-    state_ = std::make_unique<RiscVState>("test", RiscVXlen::RV64, &memory_);
+  RV64BitmanipInstructionTest() {
+    state_ = std::make_unique<RiscVState>("test", RiscVXlen::RV64, nullptr);
     instruction_ = std::make_unique<Instruction>(kInstAddress, state_.get());
     instruction_->set_size(4);
   }
@@ -111,113 +145,115 @@ class RV64BInstructionTest : public testing::Test {
     return reg->data_buffer()->Get<T>(0);
   }
 
-  FlatDemandMemory memory_;
   std::unique_ptr<RiscVState> state_;
   std::unique_ptr<Instruction> instruction_;
+  absl::BitGen bitgen_;
 };
 
 // The following tests target the Zba instructions. Most have two source
 // register operands and one destination register operand. One replaces a
 // source register operand with an immediate operand.
 
-TEST_F(RV64BInstructionTest, RV64VAddUw) {
+TEST_F(RV64BitmanipInstructionTest, RV64VAddUw) {
   AppendRegisterOperands({kX1, kX2}, {kX3});
-  SetSemanticFunction(&RV64::RiscVAddUw);
+  SetSemanticFunction(&RiscVAddUw);
 
   SetRegisterValues<uint64_t>({{kX1, kUVal1}, {kX2, kUVal2}});
   instruction_->Execute(nullptr);
   EXPECT_EQ(GetRegisterValue<int64_t>(kX3), (kUVal1 & 0xffff'ffffLL) + kUVal2);
 }
 
-void VshNaddTestHelper(RV64BInstructionTest &test, int shift) {
-  test.AppendRegisterOperands({kX1, kX2}, {kX3});
+void VshNaddTestHelper(RV64BitmanipInstructionTest &test, int shift) {
+  test.AppendRegisterOperands({kX1, kX2, kX4}, {kX3});
 
-  test.SetRegisterValues<uint64_t>({{kX1, kUVal1}, {kX2, kUVal2}});
+  test.SetRegisterValues<uint64_t>(
+      {{kX1, kUVal1}, {kX2, kUVal2}, {kX4, shift}});
   test.instruction_->Execute(nullptr);
   EXPECT_EQ(test.GetRegisterValue<int64_t>(kX3), (kUVal1 << shift) + kUVal2);
 }
 
-TEST_F(RV64BInstructionTest, RV64VSh1add) {
-  SetSemanticFunction(&RV64::RiscVSh1add);
+TEST_F(RV64BitmanipInstructionTest, RV64VSh1add) {
+  SetSemanticFunction(&RiscVShAdd);
   VshNaddTestHelper(*this, 1);
 }
 
-TEST_F(RV64BInstructionTest, RV64VSh2add) {
-  SetSemanticFunction(&RV64::RiscVSh2add);
+TEST_F(RV64BitmanipInstructionTest, RV64VSh2add) {
+  SetSemanticFunction(&RiscVShAdd);
   VshNaddTestHelper(*this, 2);
 }
 
-TEST_F(RV64BInstructionTest, RV64VSh3add) {
-  SetSemanticFunction(&RV64::RiscVSh3add);
+TEST_F(RV64BitmanipInstructionTest, RV64VSh3add) {
+  SetSemanticFunction(&RiscVShAdd);
   VshNaddTestHelper(*this, 3);
 }
 
-void VshNadduwTestHelper(RV64BInstructionTest &test, int shift) {
-  test.AppendRegisterOperands({kX1, kX2}, {kX3});
+void VshNadduwTestHelper(RV64BitmanipInstructionTest &test, int shift) {
+  test.AppendRegisterOperands({kX1, kX2, kX4}, {kX3});
 
-  test.SetRegisterValues<uint64_t>({{kX1, kUVal1}, {kX2, kUVal2}});
+  test.SetRegisterValues<uint64_t>(
+      {{kX1, kUVal1}, {kX2, kUVal2}, {kX4, shift}});
   test.instruction_->Execute(nullptr);
   EXPECT_EQ(test.GetRegisterValue<int64_t>(kX3),
             ((kUVal1 & 0xffff'ffffULL) << shift) + kUVal2);
 }
 
-TEST_F(RV64BInstructionTest, RV64VSh1adduw) {
-  SetSemanticFunction(&RV64::RiscVSh1adduw);
+TEST_F(RV64BitmanipInstructionTest, RV64VSh1adduw) {
+  SetSemanticFunction(&RiscVShAddUw);
   VshNadduwTestHelper(*this, 1);
 }
 
-TEST_F(RV64BInstructionTest, RV64VSh2adduw) {
-  SetSemanticFunction(&RV64::RiscVSh2adduw);
+TEST_F(RV64BitmanipInstructionTest, RV64VSh2adduw) {
+  SetSemanticFunction(&RiscVShAddUw);
   VshNadduwTestHelper(*this, 2);
 }
 
-TEST_F(RV64BInstructionTest, RV64VSh3adduw) {
-  SetSemanticFunction(&RV64::RiscVSh3adduw);
+TEST_F(RV64BitmanipInstructionTest, RV64VSh3adduw) {
+  SetSemanticFunction(&RiscVShAddUw);
   VshNadduwTestHelper(*this, 3);
 }
 
-TEST_F(RV64BInstructionTest, RV64Slliuw) {
+TEST_F(RV64BitmanipInstructionTest, RV64Slliuw) {
   constexpr int32_t kShiftValue = 3;
   AppendRegisterOperands({kX1}, {kX3});
   AppendImmediateOperands<int32_t>({kShiftValue});
-  SetSemanticFunction(&RV64::RiscVSlliuw);
+  SetSemanticFunction(&RiscVSlliUw);
 
   SetRegisterValues<int64_t>({{kX1, kUVal1}});
   instruction_->Execute(nullptr);
-  EXPECT_EQ(GetRegisterValue<int64_t>(kX3), (kUVal1 & 0xffff'ffffLL)
+  EXPECT_EQ(GetRegisterValue<int64_t>(kX3), (kUVal1 & 0xffff'ffffULL)
                                                 << kShiftValue);
 }
 
-TEST_F(RV64BInstructionTest, RV64Andn) {
+TEST_F(RV64BitmanipInstructionTest, RV64Andn) {
   AppendRegisterOperands({kX1, kX2}, {kX3});
-  SetSemanticFunction(&RV64::RiscVAndn);
+  SetSemanticFunction(&RiscVAndn);
 
   SetRegisterValues<uint64_t>({{kX1, kUVal1}, {kX2, kUVal2}});
   instruction_->Execute(nullptr);
   EXPECT_EQ(GetRegisterValue<int64_t>(kX3), kUVal1 & ~kUVal2);
 }
 
-TEST_F(RV64BInstructionTest, RV64Orn) {
+TEST_F(RV64BitmanipInstructionTest, RV64Orn) {
   AppendRegisterOperands({kX1, kX2}, {kX3});
-  SetSemanticFunction(&RV64::RiscVOrn);
+  SetSemanticFunction(&RiscVOrn);
 
   SetRegisterValues<uint64_t>({{kX1, kUVal1}, {kX2, kUVal2}});
   instruction_->Execute(nullptr);
   EXPECT_EQ(GetRegisterValue<int64_t>(kX3), kUVal1 | ~kUVal2);
 }
 
-TEST_F(RV64BInstructionTest, RV64Xnor) {
+TEST_F(RV64BitmanipInstructionTest, RV64Xnor) {
   AppendRegisterOperands({kX1, kX2}, {kX3});
-  SetSemanticFunction(&RV64::RiscVXnor);
+  SetSemanticFunction(&RiscVXnor);
 
   SetRegisterValues<uint64_t>({{kX1, kUVal1}, {kX2, kUVal2}});
   instruction_->Execute(nullptr);
   EXPECT_EQ(GetRegisterValue<int64_t>(kX3), kUVal1 ^ ~kUVal2);
 }
 
-TEST_F(RV64BInstructionTest, RV64Clz) {
+TEST_F(RV64BitmanipInstructionTest, RV64Clz) {
   AppendRegisterOperands({kX1}, {kX3});
-  SetSemanticFunction(&RV64::RiscVClz);
+  SetSemanticFunction(&RiscVClz);
 
   SetRegisterValues<uint64_t>({{kX1, 0x0010'0000'0000'0000ULL}});
   instruction_->Execute(nullptr);
@@ -232,9 +268,9 @@ TEST_F(RV64BInstructionTest, RV64Clz) {
   EXPECT_EQ(GetRegisterValue<int64_t>(kX3), 64);
 }
 
-TEST_F(RV64BInstructionTest, RV64Clzw) {
+TEST_F(RV64BitmanipInstructionTest, RV64Clzw) {
   AppendRegisterOperands({kX1}, {kX3});
-  SetSemanticFunction(&RV64::RiscVClzw);
+  SetSemanticFunction(&RiscVClzw);
 
   SetRegisterValues<uint64_t>({{kX1, 0x8000'0000'0000'0800ULL}});
   instruction_->Execute(nullptr);
@@ -249,9 +285,9 @@ TEST_F(RV64BInstructionTest, RV64Clzw) {
   EXPECT_EQ(GetRegisterValue<int64_t>(kX3), 32);
 }
 
-TEST_F(RV64BInstructionTest, RV64Ctz) {
+TEST_F(RV64BitmanipInstructionTest, RV64Ctz) {
   AppendRegisterOperands({kX1}, {kX3});
-  SetSemanticFunction(&RV64::RiscVCtz);
+  SetSemanticFunction(&RiscVCtz);
 
   SetRegisterValues<uint64_t>({{kX1, 0x0000'0000'0000'0800ULL}});
   instruction_->Execute(nullptr);
@@ -266,9 +302,9 @@ TEST_F(RV64BInstructionTest, RV64Ctz) {
   EXPECT_EQ(GetRegisterValue<int64_t>(kX3), 64);
 }
 
-TEST_F(RV64BInstructionTest, RV64Ctzw) {
+TEST_F(RV64BitmanipInstructionTest, RV64Ctzw) {
   AppendRegisterOperands({kX1}, {kX3});
-  SetSemanticFunction(&RV64::RiscVCtzw);
+  SetSemanticFunction(&RiscVCtzw);
 
   SetRegisterValues<uint64_t>({{kX1, 0x8000'0001'0010'0000ULL}});
   instruction_->Execute(nullptr);
@@ -283,9 +319,9 @@ TEST_F(RV64BInstructionTest, RV64Ctzw) {
   EXPECT_EQ(GetRegisterValue<int64_t>(kX3), 32);
 }
 
-TEST_F(RV64BInstructionTest, RV64Cpop) {
+TEST_F(RV64BitmanipInstructionTest, RV64Cpop) {
   AppendRegisterOperands({kX1}, {kX3});
-  SetSemanticFunction(&RV64::RiscVCpop);
+  SetSemanticFunction(&RiscVCpop);
 
   SetRegisterValues<uint64_t>({{kX1, 0x8003'0401'0f00'4002ULL}});
   instruction_->Execute(nullptr);
@@ -300,9 +336,9 @@ TEST_F(RV64BInstructionTest, RV64Cpop) {
   EXPECT_EQ(GetRegisterValue<int64_t>(kX3), 64);
 }
 
-TEST_F(RV64BInstructionTest, RV64Cpopw) {
+TEST_F(RV64BitmanipInstructionTest, RV64Cpopw) {
   AppendRegisterOperands({kX1}, {kX3});
-  SetSemanticFunction(&RV64::RiscVCpopw);
+  SetSemanticFunction(&RiscVCpopw);
 
   SetRegisterValues<uint64_t>({{kX1, 0xffff'ffff'0ff0'f0ffULL}});
   instruction_->Execute(nullptr);
@@ -317,9 +353,9 @@ TEST_F(RV64BInstructionTest, RV64Cpopw) {
   EXPECT_EQ(GetRegisterValue<int64_t>(kX3), 32);
 }
 
-TEST_F(RV64BInstructionTest, RV64Max) {
+TEST_F(RV64BitmanipInstructionTest, RV64Max) {
   AppendRegisterOperands({kX1, kX2}, {kX3});
-  SetSemanticFunction(&RV64::RiscVMax);
+  SetSemanticFunction(&RiscVMax);
 
   SetRegisterValues<int64_t>({{kX1, 0}, {kX2, 1}});
   instruction_->Execute(nullptr);
@@ -338,9 +374,9 @@ TEST_F(RV64BInstructionTest, RV64Max) {
   EXPECT_EQ(GetRegisterValue<int64_t>(kX3), 0);
 }
 
-TEST_F(RV64BInstructionTest, RV64Maxu) {
+TEST_F(RV64BitmanipInstructionTest, RV64Maxu) {
   AppendRegisterOperands({kX1, kX2}, {kX3});
-  SetSemanticFunction(&RV64::RiscVMaxu);
+  SetSemanticFunction(&RiscVMaxu);
 
   SetRegisterValues<uint64_t>({{kX1, 0}, {kX2, 1}});
   instruction_->Execute(nullptr);
@@ -360,9 +396,9 @@ TEST_F(RV64BInstructionTest, RV64Maxu) {
   EXPECT_EQ(GetRegisterValue<int64_t>(kX3), 0xffff'ffff'ffff'ffff);
 }
 
-TEST_F(RV64BInstructionTest, RV64Min) {
+TEST_F(RV64BitmanipInstructionTest, RV64Min) {
   AppendRegisterOperands({kX1, kX2}, {kX3});
-  SetSemanticFunction(&RV64::RiscVMin);
+  SetSemanticFunction(&RiscVMin);
 
   SetRegisterValues<int64_t>({{kX1, 0}, {kX2, 1}});
   instruction_->Execute(nullptr);
@@ -381,9 +417,9 @@ TEST_F(RV64BInstructionTest, RV64Min) {
   EXPECT_EQ(GetRegisterValue<int64_t>(kX3), -1);
 }
 
-TEST_F(RV64BInstructionTest, RV64Minu) {
+TEST_F(RV64BitmanipInstructionTest, RV64Minu) {
   AppendRegisterOperands({kX1, kX2}, {kX3});
-  SetSemanticFunction(&RV64::RiscVMinu);
+  SetSemanticFunction(&RiscVMinu);
 
   SetRegisterValues<uint64_t>({{kX1, 0}, {kX2, 1}});
   instruction_->Execute(nullptr);
@@ -403,9 +439,9 @@ TEST_F(RV64BInstructionTest, RV64Minu) {
   EXPECT_EQ(GetRegisterValue<int64_t>(kX3), 0);
 }
 
-TEST_F(RV64BInstructionTest, RV64Sexth) {
+TEST_F(RV64BitmanipInstructionTest, RV64Sexth) {
   AppendRegisterOperands({kX1}, {kX3});
-  SetSemanticFunction(&RV64::RiscVSexth);
+  SetSemanticFunction(&RiscVSextH);
 
   SetRegisterValues<uint64_t>({{kX1, 0xa5a5'a5a5'a5a5'5678ULL}});
   instruction_->Execute(nullptr);
@@ -416,9 +452,9 @@ TEST_F(RV64BInstructionTest, RV64Sexth) {
   EXPECT_EQ(GetRegisterValue<int64_t>(kX3), 0xffff'ffff'ffff'd678ULL);
 }
 
-TEST_F(RV64BInstructionTest, RV64Sextb) {
+TEST_F(RV64BitmanipInstructionTest, RV64Sextb) {
   AppendRegisterOperands({kX1}, {kX3});
-  SetSemanticFunction(&RV64::RiscVSextb);
+  SetSemanticFunction(&RiscVSextB);
 
   SetRegisterValues<uint64_t>({{kX1, 0xa5a5'a5a5'a5a5'a578ULL}});
   instruction_->Execute(nullptr);
@@ -429,9 +465,10 @@ TEST_F(RV64BInstructionTest, RV64Sextb) {
   EXPECT_EQ(GetRegisterValue<int64_t>(kX3), 0xffff'ffff'ffff'fff8ULL);
 }
 
-TEST_F(RV64BInstructionTest, RV64Zextw) {
+/*
+TEST_F(RV64BitmanipInstructionTest, RV64Zextw) {
   AppendRegisterOperands({kX1}, {kX3});
-  SetSemanticFunction(&RV64::RiscVZextw);
+  SetSemanticFunction(&RiscVZextw);
 
   SetRegisterValues<uint64_t>({{kX1, 0xa5a5'a5a5'1234'5678ULL}});
   instruction_->Execute(nullptr);
@@ -441,10 +478,11 @@ TEST_F(RV64BInstructionTest, RV64Zextw) {
   instruction_->Execute(nullptr);
   EXPECT_EQ(GetRegisterValue<int64_t>(kX3), 0x9234'5678ULL);
 }
+*/
 
-TEST_F(RV64BInstructionTest, RV64Zexth) {
+TEST_F(RV64BitmanipInstructionTest, RV64Zexth) {
   AppendRegisterOperands({kX1}, {kX3});
-  SetSemanticFunction(&RV64::RiscVZexth);
+  SetSemanticFunction(&RiscVZextH);
 
   SetRegisterValues<uint64_t>({{kX1, 0xa5a5'a5a5'a5a5'5678ULL}});
   instruction_->Execute(nullptr);
@@ -455,9 +493,9 @@ TEST_F(RV64BInstructionTest, RV64Zexth) {
   EXPECT_EQ(GetRegisterValue<int64_t>(kX3), 0xd678ULL);
 }
 
-TEST_F(RV64BInstructionTest, RV64Rol) {
+TEST_F(RV64BitmanipInstructionTest, RV64Rol) {
   AppendRegisterOperands({kX1, kX2}, {kX3});
-  SetSemanticFunction(&RV64::RiscVRol);
+  SetSemanticFunction(&RiscVRol);
 
   SetRegisterValues<uint64_t>({{kX1, 0x1234'5678'9abc'def0ULL}, {kX2, 16}});
   instruction_->Execute(nullptr);
@@ -468,9 +506,9 @@ TEST_F(RV64BInstructionTest, RV64Rol) {
   EXPECT_EQ(GetRegisterValue<int64_t>(kX3), 0x1234'5678'9abc'def0ULL);
 }
 
-TEST_F(RV64BInstructionTest, RV64Rolw) {
+TEST_F(RV64BitmanipInstructionTest, RV64Rolw) {
   AppendRegisterOperands({kX1, kX2}, {kX3});
-  SetSemanticFunction(&RV64::RiscVRolw);
+  SetSemanticFunction(&RiscVRolw);
 
   SetRegisterValues<uint64_t>({{kX1, 0x1234'5678'9abc'def0ULL}, {kX2, 16}});
   instruction_->Execute(nullptr);
@@ -481,9 +519,9 @@ TEST_F(RV64BInstructionTest, RV64Rolw) {
   EXPECT_EQ(GetRegisterValue<int64_t>(kX3), 0xffff'ffff'9abc'7ef0ULL);
 }
 
-TEST_F(RV64BInstructionTest, RV64Ror) {
+TEST_F(RV64BitmanipInstructionTest, RV64Ror) {
   AppendRegisterOperands({kX1, kX2}, {kX3});
-  SetSemanticFunction(&RV64::RiscVRor);
+  SetSemanticFunction(&RiscVRor);
 
   SetRegisterValues<uint64_t>({{kX1, 0x1234'5678'9abc'def0ULL}, {kX2, 16}});
   instruction_->Execute(nullptr);
@@ -494,9 +532,9 @@ TEST_F(RV64BInstructionTest, RV64Ror) {
   EXPECT_EQ(GetRegisterValue<int64_t>(kX3), 0x1234'5678'9abc'def0ULL);
 }
 
-TEST_F(RV64BInstructionTest, RV64Rorw) {
+TEST_F(RV64BitmanipInstructionTest, RV64Rorw) {
   AppendRegisterOperands({kX1, kX2}, {kX3});
-  SetSemanticFunction(&RV64::RiscVRorw);
+  SetSemanticFunction(&RiscVRorw);
 
   SetRegisterValues<uint64_t>({{kX1, 0x1234'5678'9abc'7ef0ULL}, {kX2, 16}});
   instruction_->Execute(nullptr);
@@ -507,31 +545,9 @@ TEST_F(RV64BInstructionTest, RV64Rorw) {
   EXPECT_EQ(GetRegisterValue<int64_t>(kX3), 0xffff'ffff'9abc'7ef0ULL);
 }
 
-TEST_F(RV64BInstructionTest, RV64Rori) {
-  constexpr int32_t kShiftValue = 16;
+TEST_F(RV64BitmanipInstructionTest, RV64Orcb) {
   AppendRegisterOperands({kX1}, {kX3});
-  AppendImmediateOperands<int32_t>({kShiftValue});
-  SetSemanticFunction(&RV64::RiscVRori);
-
-  SetRegisterValues<int64_t>({{kX1, 0x1234'5678'9abc'def0ULL}});
-  instruction_->Execute(nullptr);
-  EXPECT_EQ(GetRegisterValue<int64_t>(kX3), 0xdef0'1234'5678'9abcULL);
-}
-
-TEST_F(RV64BInstructionTest, RV64Roriw) {
-  constexpr int32_t kShiftValue = 16;
-  AppendRegisterOperands({kX1}, {kX3});
-  AppendImmediateOperands<int32_t>({kShiftValue});
-  SetSemanticFunction(&RV64::RiscVRoriw);
-
-  SetRegisterValues<int64_t>({{kX1, 0x1234'5678'9abc'def0ULL}});
-  instruction_->Execute(nullptr);
-  EXPECT_EQ(GetRegisterValue<int64_t>(kX3), 0xffff'ffff'def0'9abcULL);
-}
-
-TEST_F(RV64BInstructionTest, RV64Orcb) {
-  AppendRegisterOperands({kX1}, {kX3});
-  SetSemanticFunction(&RV64::RiscVOrcb);
+  SetSemanticFunction(&RiscVOrcb);
 
   SetRegisterValues<uint64_t>({{kX1, 0x8003'0401'0f00'4002ULL}});
   instruction_->Execute(nullptr);
@@ -546,16 +562,136 @@ TEST_F(RV64BInstructionTest, RV64Orcb) {
   EXPECT_EQ(GetRegisterValue<int64_t>(kX3), 0x0000'ff00'00ff'0000ULL);
 }
 
-TEST_F(RV64BInstructionTest, RV64Rev8) {
+TEST_F(RV64BitmanipInstructionTest, RV64Rev8) {
   AppendRegisterOperands({kX1}, {kX3});
-  SetSemanticFunction(&RV64::RiscVRev8);
+  SetSemanticFunction(&RiscVRev8);
 
   SetRegisterValues<uint64_t>({{kX1, 0x11'22'33'44'55'66'77'88ULL}});
   instruction_->Execute(nullptr);
   EXPECT_EQ(GetRegisterValue<int64_t>(kX3), 0x8877'6655'4433'2211ULL);
 }
 
+TEST_F(RV64BitmanipInstructionTest, RV64Clmul) {
+  using T = uint64_t;
+  AppendRegisterOperands({kX1, kX2}, {kX3});
+  SetSemanticFunction(&RiscVClmul);
+  for (int i = 0; i < 100; i++) {
+    T val1 = absl::Uniform(absl::IntervalClosed, bitgen_,
+                           std::numeric_limits<T>::min(),
+                           std::numeric_limits<T>::max());
+    T val2 = absl::Uniform(absl::IntervalClosed, bitgen_,
+                           std::numeric_limits<T>::min(),
+                           std::numeric_limits<T>::max());
+    SetRegisterValues<uint64_t>({{kX1, val1}, {kX2, val2}});
+    instruction_->Execute(nullptr);
+    uint64_t result = 0;
+    for (int i = 0; i < sizeof(T) * 8; ++i) {
+      if (val2 & (1ULL << i)) result ^= static_cast<uint64_t>(val1 << i);
+    }
+    EXPECT_EQ(GetRegisterValue<uint64_t>(kX3), result);
+  }
+}
+
+TEST_F(RV64BitmanipInstructionTest, RV64Clmulh) {
+  using T = uint64_t;
+  AppendRegisterOperands({kX1, kX2}, {kX3});
+  SetSemanticFunction(&RiscVClmulh);
+  for (int i = 0; i < 100; i++) {
+    T val1 = absl::Uniform(absl::IntervalClosed, bitgen_,
+                           std::numeric_limits<T>::min(),
+                           std::numeric_limits<T>::max());
+    T val2 = absl::Uniform(absl::IntervalClosed, bitgen_,
+                           std::numeric_limits<T>::min(),
+                           std::numeric_limits<T>::max());
+    SetRegisterValues<uint64_t>({{kX1, val1}, {kX2, val2}});
+    instruction_->Execute(nullptr);
+    absl::uint128 result = 0;
+    for (int i = 0; i < sizeof(T) * 8; ++i) {
+      if (val2 & (1ULL << i)) result ^= (absl::MakeUint128(0, val1) << i);
+    }
+    EXPECT_EQ(GetRegisterValue<uint64_t>(kX3), absl::Uint128High64(result));
+  }
+}
+
+TEST_F(RV64BitmanipInstructionTest, RV64Clmulr) {
+  using T = uint64_t;
+  AppendRegisterOperands({kX1, kX2}, {kX3});
+  SetSemanticFunction(&RiscVClmulr);
+  for (int i = 0; i < 100; i++) {
+    T val1 = absl::Uniform(absl::IntervalClosed, bitgen_,
+                           std::numeric_limits<T>::min(),
+                           std::numeric_limits<T>::max());
+    T val2 = absl::Uniform(absl::IntervalClosed, bitgen_,
+                           std::numeric_limits<T>::min(),
+                           std::numeric_limits<T>::max());
+    SetRegisterValues<uint64_t>({{kX1, val1}, {kX2, val2}});
+    instruction_->Execute(nullptr);
+    uint64_t result = 0;
+    for (int i = 0; i < sizeof(T) * 8 - 1; ++i) {
+      if ((val2 >> i) & 1) result ^= (val1 >> (sizeof(T) * 8 - 1 - i));
+    }
+    EXPECT_EQ(GetRegisterValue<uint64_t>(kX3), result);
+  }
+}
+
+TEST_F(RV64BitmanipInstructionTest, RV64Bclr) {
+  using T = uint64_t;
+  AppendRegisterOperands({kX1, kX2}, {kX3});
+  SetSemanticFunction(&RiscVBclr);
+  for (int i = 0; i < 100; i++) {
+    T val1 = absl::Uniform(absl::IntervalClosed, bitgen_,
+                           std::numeric_limits<T>::min(),
+                           std::numeric_limits<T>::max());
+    T val2 = absl::Uniform(absl::IntervalClosed, bitgen_, 0, 63);
+    SetRegisterValues<uint64_t>({{kX1, val1}, {kX2, val2}});
+    instruction_->Execute(nullptr);
+    EXPECT_EQ(GetRegisterValue<uint64_t>(kX3), val1 & ~(1ULL << val2));
+  }
+}
+
+TEST_F(RV64BitmanipInstructionTest, RV64Bext) {
+  using T = uint64_t;
+  AppendRegisterOperands({kX1, kX2}, {kX3});
+  SetSemanticFunction(&RiscVBext);
+  for (int i = 0; i < 100; i++) {
+    T val1 = absl::Uniform(absl::IntervalClosed, bitgen_,
+                           std::numeric_limits<T>::min(),
+                           std::numeric_limits<T>::max());
+    T val2 = absl::Uniform(absl::IntervalClosed, bitgen_, 0, 63);
+    SetRegisterValues<uint64_t>({{kX1, val1}, {kX2, val2}});
+    instruction_->Execute(nullptr);
+    EXPECT_EQ(GetRegisterValue<uint64_t>(kX3), (val1 >> val2) & 0x1);
+  }
+}
+
+TEST_F(RV64BitmanipInstructionTest, RV64Binv) {
+  using T = uint64_t;
+  AppendRegisterOperands({kX1, kX2}, {kX3});
+  SetSemanticFunction(&RiscVBinv);
+  for (int i = 0; i < 100; i++) {
+    T val1 = absl::Uniform(absl::IntervalClosed, bitgen_,
+                           std::numeric_limits<T>::min(),
+                           std::numeric_limits<T>::max());
+    T val2 = absl::Uniform(absl::IntervalClosed, bitgen_, 0, 63);
+    SetRegisterValues<uint64_t>({{kX1, val1}, {kX2, val2}});
+    instruction_->Execute(nullptr);
+    EXPECT_EQ(GetRegisterValue<uint64_t>(kX3), val1 ^ (1ULL << val2));
+  }
+}
+
+TEST_F(RV64BitmanipInstructionTest, RV64Bset) {
+  using T = uint64_t;
+  AppendRegisterOperands({kX1, kX2}, {kX3});
+  SetSemanticFunction(&RiscVBset);
+  for (int i = 0; i < 100; i++) {
+    T val1 = absl::Uniform(absl::IntervalClosed, bitgen_,
+                           std::numeric_limits<T>::min(),
+                           std::numeric_limits<T>::max());
+    T val2 = absl::Uniform(absl::IntervalClosed, bitgen_, 0, 63);
+    SetRegisterValues<uint64_t>({{kX1, val1}, {kX2, val2}});
+    instruction_->Execute(nullptr);
+    EXPECT_EQ(GetRegisterValue<uint64_t>(kX3), val1 | (1ULL << val2));
+  }
+}
+
 }  // namespace
-}  // namespace riscv
-}  // namespace sim
-}  // namespace mpact

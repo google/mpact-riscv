@@ -1,3 +1,17 @@
+// Copyright 2024 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 // RiscV vector instruction encodings.
 
 format VMem[32] : Inst32Format {
@@ -136,17 +150,17 @@ instruction group RiscVVInst32[32] : Inst32Format {
   // VECTOR STORES
 
   // Unit stride.
-  vse8  : VMem : mew == 0, mop == 0b00, sumop == 0b00000, width == 0b000, opcode == 0b010'0111;
-  vse16 : VMem : mew == 0, mop == 0b00, sumop == 0b00000, width == 0b101, opcode == 0b010'0111;
-  vse32 : VMem : mew == 0, mop == 0b00, sumop == 0b00000, width == 0b110, opcode == 0b010'0111;
-  vse64 : VMem : mew == 0, mop == 0b00, sumop == 0b00000, width == 0b111, opcode == 0b010'0111;
+  vse8  : VMem : nf == 0, mew == 0, mop == 0b00, sumop == 0b00000, width == 0b000, opcode == 0b010'0111;
+  vse16 : VMem : nf == 0, mew == 0, mop == 0b00, sumop == 0b00000, width == 0b101, opcode == 0b010'0111;
+  vse32 : VMem : nf == 0, mew == 0, mop == 0b00, sumop == 0b00000, width == 0b110, opcode == 0b010'0111;
+  vse64 : VMem : nf == 0, mew == 0, mop == 0b00, sumop == 0b00000, width == 0b111, opcode == 0b010'0111;
   // Mask store.
-  vsm   : VMem : mew == 0, mop == 0b00, sumop == 0b01011, width == 0b000, opcode == 0b010'0111;
+  vsm   : VMem : nf == 0, mew == 0, mop == 0b00, sumop == 0b01011, width == 0b000, opcode == 0b010'0111;
   // Unit stride, fault first.
-  vse8ff  : VMem : mew == 0, mop == 0b00, sumop == 0b10000, width == 0b000, opcode == 0b010'0111;
-  vse16ff : VMem : mew == 0, mop == 0b00, sumop == 0b10000, width == 0b101, opcode == 0b010'0111;
-  vse32ff : VMem : mew == 0, mop == 0b00, sumop == 0b10000, width == 0b110, opcode == 0b010'0111;
-  vse64ff : VMem : mew == 0, mop == 0b00, sumop == 0b10000, width == 0b111, opcode == 0b010'0111;
+  vse8ff  : VMem : nf == 0, mew == 0, mop == 0b00, sumop == 0b10000, width == 0b000, opcode == 0b010'0111;
+  vse16ff : VMem : nf == 0, mew == 0, mop == 0b00, sumop == 0b10000, width == 0b101, opcode == 0b010'0111;
+  vse32ff : VMem : nf == 0, mew == 0, mop == 0b00, sumop == 0b10000, width == 0b110, opcode == 0b010'0111;
+  vse64ff : VMem : nf == 0, mew == 0, mop == 0b00, sumop == 0b10000, width == 0b111, opcode == 0b010'0111;
   // Unit stride, whole register store.
   vs1re8  : VMem : nf == 0, mop == 0b00, vm == 1, sumop == 0b01000, width == 0b000, opcode == 0b010'0111;
   vs1re16 : VMem : nf == 0, mop == 0b00, vm == 1, sumop == 0b01000, width == 0b101, opcode == 0b010'0111;
@@ -165,20 +179,20 @@ instruction group RiscVVInst32[32] : Inst32Format {
   vs8re32 : VMem : nf == 7, mop == 0b00, vm == 1, sumop == 0b01000, width == 0b110, opcode == 0b010'0111;
   vs8re64 : VMem : nf == 7, mop == 0b00, vm == 1, sumop == 0b01000, width == 0b111, opcode == 0b010'0111;
   // Store strided.
-  vsse8  : VMem : mew == 0, mop == 0b10, width == 0b000, opcode == 0b010'0111;
-  vsse16 : VMem : mew == 0, mop == 0b10, width == 0b101, opcode == 0b010'0111;
-  vsse32 : VMem : mew == 0, mop == 0b10, width == 0b110, opcode == 0b010'0111;
-  vsse64 : VMem : mew == 0, mop == 0b10, width == 0b111, opcode == 0b010'0111;
+  vsse8  : VMem : nf == 0, mew == 0, mop == 0b10, width == 0b000, opcode == 0b010'0111;
+  vsse16 : VMem : nf == 0, mew == 0, mop == 0b10, width == 0b101, opcode == 0b010'0111;
+  vsse32 : VMem : nf == 0, mew == 0, mop == 0b10, width == 0b110, opcode == 0b010'0111;
+  vsse64 : VMem : nf == 0, mew == 0, mop == 0b10, width == 0b111, opcode == 0b010'0111;
   // Store indexed, unordered.
-  vsuxei8 : VMem : mew == 0, mop == 0b01, width == 0b000, opcode == 0b010'0111;
-  vsuxei16: VMem : mew == 0, mop == 0b01, width == 0b101, opcode == 0b010'0111;
-  vsuxei32: VMem : mew == 0, mop == 0b01, width == 0b110, opcode == 0b010'0111;
-  vsuxei64: VMem : mew == 0, mop == 0b01, width == 0b111, opcode == 0b010'0111;
+  vsuxei8 : VMem : nf == 0, mew == 0, mop == 0b01, width == 0b000, opcode == 0b010'0111;
+  vsuxei16: VMem : nf == 0, mew == 0, mop == 0b01, width == 0b101, opcode == 0b010'0111;
+  vsuxei32: VMem : nf == 0, mew == 0, mop == 0b01, width == 0b110, opcode == 0b010'0111;
+  vsuxei64: VMem : nf == 0, mew == 0, mop == 0b01, width == 0b111, opcode == 0b010'0111;
   // Store indexed, ordered.
-  vsoxei8 : VMem : mew == 0, mop == 0b11, width == 0b000, opcode == 0b010'0111;
-  vsoxei16: VMem : mew == 0, mop == 0b11, width == 0b101, opcode == 0b010'0111;
-  vsoxei32: VMem : mew == 0, mop == 0b11, width == 0b110, opcode == 0b010'0111;
-  vsoxei64: VMem : mew == 0, mop == 0b11, width == 0b111, opcode == 0b010'0111;
+  vsoxei8 : VMem : nf == 0, mew == 0, mop == 0b11, width == 0b000, opcode == 0b010'0111;
+  vsoxei16: VMem : nf == 0, mew == 0, mop == 0b11, width == 0b101, opcode == 0b010'0111;
+  vsoxei32: VMem : nf == 0, mew == 0, mop == 0b11, width == 0b110, opcode == 0b010'0111;
+  vsoxei64: VMem : nf == 0, mew == 0, mop == 0b11, width == 0b111, opcode == 0b010'0111;
   // Vector segment store, unit stride.
   vssege8:   VMem : nf != 0, mew == 0, mop == 0b00, sumop == 0b00000, width == 0b000, opcode == 0b010'0111;
   vssege16:  VMem : nf != 0, mew == 0, mop == 0b00, sumop == 0b00000, width == 0b101, opcode == 0b010'0111;

@@ -31,13 +31,19 @@ instruction group RiscVZbbInst32[32] : Inst32Format {
   minu:   RType : func7 == 0b000'0101, func3 == 0b101, opcode == 0b011'0011;
   sext_b: RType : func7 == 0b011'0000, rs2 == 0b0'0100, func3 == 0b001, opcode == 0b001'0011;
   sext_h: RType : func7 == 0b011'0000, rs2 == 0b0'0101, func3 == 0b001, opcode == 0b001'0011;
-  zext_h: RType : func7 == 0b000'0100, rs2 == 0b0'0000, func3 == 0b100, opcode == 0b011'0011;
   rol:    RType : func7 == 0b011'0000, func3 == 0b001, opcode == 0b011'0011;
   ror:    RType : func7 == 0b011'0000, func3 == 0b101, opcode == 0b011'0011;
-  rori:   RType : func7 == 0b011'0000, func3 == 0b101, opcode == 0b001'0011;
   orcb:   RType : func7 == 0b001'0100, rs2 == 0b0'0111, func3 == 0b101, opcode == 0b001'0011;
   rev8:   RType : func7 == 0b011'0100, rs2 == 0b1'1000, func3 == 0b101, opcode == 0b001'0011;
 };
+
+instruction group RiscVZbbInst32Only[32] : Inst32Format {
+  zext_h: RType : func7 == 0b000'0100, rs2 == 0b0'0000, func3 == 0b100, opcode == 0b011'0011;
+}
+
+instruction group RiscVZbbImmInst32[32] : Inst32Format {
+  rori:   RType : func7 == 0b011'0000, func3 == 0b101, opcode == 0b001'0011;
+}
 
 instruction group RiscVZbcInst32[32] : Inst32Format {
   clmul:  RType : func7 == 0b000'0101, func3 == 0b001, opcode == 0b011'0011;
@@ -47,11 +53,14 @@ instruction group RiscVZbcInst32[32] : Inst32Format {
 
 instruction group RiscVZbsInst32[32] : Inst32Format {
   bclr:   RType : func7 == 0b010'0100, func3 == 0b001, opcode == 0b011'0011;
-  bclri:  RType : func7 == 0b010'0100, func3 == 0b001, opcode == 0b001'0011;
   bext:   RType : func7 == 0b010'0100, func3 == 0b101, opcode == 0b011'0011;
-  bexti:  RType : func7 == 0b010'0100, func3 == 0b101, opcode == 0b001'0011;
   binv:   RType : func7 == 0b011'0100, func3 == 0b001, opcode == 0b011'0011;
-  binvi:  RType : func7 == 0b011'0100, func3 == 0b001, opcode == 0b001'0011;
   bset:   RType : func7 == 0b001'0100, func3 == 0b001, opcode == 0b011'0011;
+};
+
+instruction group RiscVZbsImmInst32[32] : Inst32Format {
+  bclri:  RType : func7 == 0b010'0100, func3 == 0b001, opcode == 0b001'0011;
+  bexti:  RType : func7 == 0b010'0100, func3 == 0b101, opcode == 0b001'0011;
+  binvi:  RType : func7 == 0b011'0100, func3 == 0b001, opcode == 0b001'0011;
   bseti:  RType : func7 == 0b001'0100, func3 == 0b001, opcode == 0b001'0011;
 };

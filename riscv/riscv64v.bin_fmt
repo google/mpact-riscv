@@ -25,5 +25,21 @@ decoder RiscV64GV {
   RiscVCInst16;
 };
 
+decoder RiscV64GVZB {
+  namespace mpact::sim::riscv::isa64gvzb;
+  opcode_enum = "isa64gvzb::OpcodeEnum";
+  includes {
+    #include "riscv/riscv64gvzb_decoder.h"
+  }
+  // Group these instruction groups in the same decoder function.
+  RiscV64GVZBInst32 = {RiscVGInst32, RiscVVInst32, RiscVZbaInst32,
+                      RiscVZbaInst64, RiscVZbbInst32, RiscVZbbInst64,
+                      RiscVZbcInst32, RiscVZbsInst32, RiscVZbsImmInst64};
+  // Keep this separate (different base format).
+  RiscVCInst16;
+}
+
+#include "riscv/riscv32zb.bin_fmt"
 #include "riscv/riscv64g.bin_fmt"
+#include "riscv/riscv64zb.bin_fmt"
 #include "riscv/riscv_vector.bin_fmt"

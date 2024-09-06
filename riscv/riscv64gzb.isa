@@ -12,18 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-isa RiscV32GZB {
-  namespace mpact::sim::riscv::isa32gzb;
+isa RiscV64GZB {
+  namespace mpact::sim::riscv::isa64gzb;
   slots {
-    riscv32gzb;
+    riscv64gzb;
   }
 }
 
-#include "riscv/riscv32g.isa"
-#include "riscv/riscv32zb.isa"
+#include "riscv/riscv64g.isa"
+#include "riscv/riscv64zb.isa"
 
-slot riscv32gzb : riscv32g, riscv32_zba, riscv32_zbb, riscv32_zbb_imm,
-                  riscv32_zbc, riscv32_zbs, riscv32_zbs_imm {
+slot riscv64gzb : riscv64g, riscv64_zba , riscv64_zbb, riscv64_zbb_imm,
+                  riscv64_zbc, riscv64_zbs, riscv64_zbs_imm {
   default size = 4;
   default opcode =
     disasm: "Illegal instruction at 0x%(@:08x)",

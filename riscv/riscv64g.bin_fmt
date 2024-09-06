@@ -338,41 +338,6 @@ instruction group RiscVGInst32[32] : Inst32Format {
   sfence_vma_zn : RType : func7 == 0b000'1001, rs2 != 0, rs1 == 0, func3 == 0, rd == 0, opcode == 0b111'0011;
   sfence_vma_nz : RType : func7 == 0b000'1001, rs2 == 0, rs1 != 0, func3 == 0, rd == 0, opcode == 0b111'0011;
   sfence_vma_nn : RType : func7 == 0b000'1001, rs2 != 0, rs1 != 0, func3 == 0, rd == 0, opcode == 0b111'0011;
-  // RV64 Zba instructions.
-  adduw    : RType  : func7 == 0b000'0100, func3 == 0b000, opcode == 0b011'1011;
-  sh1add   : RType  : func7 == 0b001'0000, func3 == 0b010, opcode == 0b011'0011;
-  sh2add   : RType  : func7 == 0b001'0000, func3 == 0b100, opcode == 0b011'0011;
-  sh3add   : RType  : func7 == 0b001'0000, func3 == 0b110, opcode == 0b011'0011;
-  sh1adduw : RType  : func7 == 0b001'0000, func3 == 0b010, opcode == 0b011'1011;
-  sh2adduw : RType  : func7 == 0b001'0000, func3 == 0b100, opcode == 0b011'1011;
-  sh3adduw : RType  : func7 == 0b001'0000, func3 == 0b110, opcode == 0b011'1011;
-  slliuw   : RSType : func6 ==  0b00'0010, func3 == 0b001, opcode == 0b001'1011;
-  // RV64 Zbb instructions.
-  andn  : RType   : func7  == 0b010'0000,       func3 == 0b111, opcode == 0b011'0011;
-  orn   : RType   : func7  == 0b010'0000,       func3 == 0b110, opcode == 0b011'0011;
-  xnor  : RType   : func7  == 0b010'0000,       func3 == 0b100, opcode == 0b011'0011;
-  clz   : F12Type : func12 == 0b0110'0000'0000, func3 == 0b001, opcode == 0b001'0011;
-  clzw  : F12Type : func12 == 0b0110'0000'0000, func3 == 0b001, opcode == 0b001'1011;
-  ctz   : F12Type : func12 == 0b0110'0000'0001, func3 == 0b001, opcode == 0b001'0011;
-  ctzw  : F12Type : func12 == 0b0110'0000'0001, func3 == 0b001, opcode == 0b001'1011;
-  cpop  : F12Type : func12 == 0b0110'0000'0010, func3 == 0b001, opcode == 0b001'0011;
-  cpopw : F12Type : func12 == 0b0110'0000'0010, func3 == 0b001, opcode == 0b001'1011;
-  max   : RType   : func7  == 0b000'0101,       func3 == 0b110, opcode == 0b011'0011;
-  maxu  : RType   : func7  == 0b000'0101,       func3 == 0b111, opcode == 0b011'0011;
-  min   : RType   : func7  == 0b000'0101,       func3 == 0b100, opcode == 0b011'0011;
-  minu  : RType   : func7  == 0b000'0101,       func3 == 0b101, opcode == 0b011'0011;
-  sexth : F12Type : func12 == 0b0110'0000'0101, func3 == 0b001, opcode == 0b001'0011;
-  sextb : F12Type : func12 == 0b0110'0000'0100, func3 == 0b001, opcode == 0b001'0011;
-  zextw : F12Type : func12 == 0b0000'1000'0000, func3 == 0b100, opcode == 0b011'0011;
-  zexth : F12Type : func12 == 0b0000'1000'0000, func3 == 0b100, opcode == 0b011'1011;
-  rol   : RType   : func7  == 0b011'0000,       func3 == 0b001, opcode == 0b011'0011;
-  rolw  : RType   : func7  == 0b011'0000,       func3 == 0b001, opcode == 0b011'1011;
-  ror   : RType   : func7  == 0b011'0000,       func3 == 0b101, opcode == 0b011'0011;
-  rorw  : RType   : func7  == 0b011'0000,       func3 == 0b101, opcode == 0b011'1011;
-  rori  : RSType  : func6  == 0b01'1000,        func3 == 0b101, opcode == 0b001'0011;
-  roriw : RType  : func7 == 0b011'0000,         func3 == 0b101, opcode == 0b001'1011;
-  orcb  : F12Type : func12 == 0b0010'1000'0111, func3 == 0b101, opcode == 0b001'0011;
-  rev8  : F12Type : func12 == 0b0110'1011'1000, func3 == 0b101, opcode == 0b001'0011;
 };
 
 // Compact instruction formats.

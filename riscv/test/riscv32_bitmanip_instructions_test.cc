@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "riscv/riscv_bitmanip_instructions.h"
-
 #include <algorithm>
 #include <cstdint>
 #include <ios>
@@ -29,6 +27,7 @@
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/immediate_operand.h"
 #include "mpact/sim/generic/instruction.h"
+#include "riscv/riscv_bitmanip_instructions.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
 
@@ -55,8 +54,8 @@ using ::mpact::sim::riscv::RV32::RiscVMinu;
 using ::mpact::sim::riscv::RV32::RiscVOrcb;
 using ::mpact::sim::riscv::RV32::RiscVOrn;
 using ::mpact::sim::riscv::RV32::RiscVRev8;
-using ::mpact::sim::riscv::RV32::RiscVrol;
-using ::mpact::sim::riscv::RV32::RiscVror;
+using ::mpact::sim::riscv::RV32::RiscVRol;
+using ::mpact::sim::riscv::RV32::RiscVRor;
 using ::mpact::sim::riscv::RV32::RiscVSextB;
 using ::mpact::sim::riscv::RV32::RiscVSextH;
 using ::mpact::sim::riscv::RV32::RiscVShAdd;
@@ -351,7 +350,7 @@ TEST_F(RV32BitmanipInstructionTest, RV32ZextH) {
 TEST_F(RV32BitmanipInstructionTest, RV32Rol) {
   using T = uint32_t;
   AppendRegisterOperands({kX1, kX2}, {kX3});
-  SetSemanticFunction(&RiscVrol);
+  SetSemanticFunction(&RiscVRol);
   for (int i = 0; i < 100; i++) {
     T val1 = absl::Uniform(absl::IntervalClosed, bitgen_,
                            std::numeric_limits<T>::min(),
@@ -367,7 +366,7 @@ TEST_F(RV32BitmanipInstructionTest, RV32Rol) {
 TEST_F(RV32BitmanipInstructionTest, RV32Ror) {
   using T = uint32_t;
   AppendRegisterOperands({kX1, kX2}, {kX3});
-  SetSemanticFunction(&RiscVror);
+  SetSemanticFunction(&RiscVRor);
   for (int i = 0; i < 100; i++) {
     T val1 = absl::Uniform(absl::IntervalClosed, bitgen_,
                            std::numeric_limits<T>::min(),
@@ -423,7 +422,6 @@ TEST_F(RV32BitmanipInstructionTest, RV32Rev8) {
   }
 }
 
-// TODO(torerik): clmul, clmulh, clmulr
 TEST_F(RV32BitmanipInstructionTest, RV32Clmul) {
   using T = uint32_t;
   AppendRegisterOperands({kX1, kX2}, {kX3});

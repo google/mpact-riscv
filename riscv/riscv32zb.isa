@@ -112,15 +112,11 @@ slot riscv32_zbb {
     rol{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "rol", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVrol";
+      semfunc: "&RV32::RiscVRol";
     ror{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "ror", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVror";
-    rori{: rs1, r_uimm5 : rd},
-      resources: TwoOp,
-      disasm: "rori", "%rd, %rs1, %r_uimm5",
-      semfunc: "&RV32::RiscVror";
+      semfunc: "&RV32::RiscVRor";
     // OR combine.
     orcb{: rs1 : rd},
       resources: TwoOp,
@@ -131,6 +127,21 @@ slot riscv32_zbb {
       resources: TwoOp,
       disasm: "rev8", "%rd, %rs1",
       semfunc: "&RV32::RiscVRev8";
+  }
+}
+
+slot riscv32_zbb_imm {
+  default size = 4;
+  default opcode =
+    disasm: "Illegal instruction at 0x%(@:08x)",
+    semfunc: "&RiscVIllegalInstruction";
+  resources TwoOp = { next_pc, rs1 : rd[..rd]};
+  resources ThreeOp = { next_pc, rs1, rs2 : rd[..rd]};
+  opcodes {
+    rori{: rs1, r_uimm5 : rd},
+      resources: TwoOp,
+      disasm: "rori", "%rd, %rs1, %r_uimm5",
+      semfunc: "&RV32::RiscVRor";
   }
 }
 
@@ -170,30 +181,41 @@ slot riscv32_zbs {
       resources: ThreeOp,
       disasm: "bclr", "%rd, %rs1, %rs2",
       semfunc: "&RV32::RiscVBclr";
-    bclri{: rs1, r_uimm5 : rd},
-      resources: TwoOp,
-      disasm: "bclri", "%rd, %rs1, %r_uimm5",
-      semfunc: "&RV32::RiscVBclr";
     bext{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "bext", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVBext";
-    bexti{: rs1, r_uimm5 : rd},
-      resources: TwoOp,
-      disasm: "bexti", "%rd, %rs1, %r_uimm5",
       semfunc: "&RV32::RiscVBext";
     binv{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "binv", "%rd, %rs1, %rs2",
       semfunc: "&RV32::RiscVBinv";
-    binvi{: rs1, r_uimm5 : rd},
-      resources: TwoOp,
-      disasm: "binvi", "%rd, %rs1, %r_uimm5",
-      semfunc: "&RV32::RiscVBinv";
     bset{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "bset", "%rd, %rs1, %rs2",
       semfunc: "&RV32::RiscVBset";
+  }
+}
+
+slot riscv32_zbs_imm {
+  default size = 4;
+  default opcode =
+    disasm: "Illegal instruction at 0x%(@:08x)",
+    semfunc: "&RiscVIllegalInstruction";
+  resources TwoOp = { next_pc, rs1 : rd[..rd]};
+  opcodes {
+    // Single-bit instructions.
+    bclri{: rs1, r_uimm5 : rd},
+      resources: TwoOp,
+      disasm: "bclri", "%rd, %rs1, %r_uimm5",
+      semfunc: "&RV32::RiscVBclr";
+    bexti{: rs1, r_uimm5 : rd},
+      resources: TwoOp,
+      disasm: "bexti", "%rd, %rs1, %r_uimm5",
+      semfunc: "&RV32::RiscVBext";
+    binvi{: rs1, r_uimm5 : rd},
+      resources: TwoOp,
+      disasm: "binvi", "%rd, %rs1, %r_uimm5",
+      semfunc: "&RV32::RiscVBinv";
     bseti{: rs1, r_uimm5 : rd},
       resources: TwoOp,
       disasm: "bseti", "%rd, %rs1, %r_uimm5",

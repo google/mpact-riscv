@@ -19,8 +19,6 @@
 #include <new>
 #include <string>
 
-#include "absl/container/flat_hash_map.h"
-#include "absl/functional/any_invocable.h"
 #include "absl/strings/str_cat.h"
 #include "mpact/sim/generic/immediate_operand.h"
 #include "mpact/sim/generic/literal_operand.h"
@@ -47,16 +45,6 @@ using ::mpact::sim::generic::ImmediateOperand;
 using ::mpact::sim::generic::IntLiteralOperand;
 using ::mpact::sim::generic::ResourceOperandInterface;
 using ::mpact::sim::generic::SourceOperandInterface;
-
-using SourceOpGetterMap =
-    absl::flat_hash_map<int, absl::AnyInvocable<SourceOperandInterface *()>>;
-using DestOpGetterMap =
-    absl::flat_hash_map<int,
-                        absl::AnyInvocable<DestinationOperandInterface *(int)>>;
-using SimpleResourceGetterMap =
-    absl::flat_hash_map<int, absl::AnyInvocable<generic::SimpleResource *()>>;
-using ComplexResourceGetterMap = absl::flat_hash_map<
-    int, absl::AnyInvocable<ResourceOperandInterface *(int, int)>>;
 
 // The following function adds source operand getters to the given getter map.
 // The function uses the template parameters to get the correct enum type
@@ -91,12 +79,6 @@ void AddRiscVSourceGetters(SourceOpGetterMap &getter_map,
         common->state(), absl::StrCat(RiscVState::kFregPrefix, num),
         kXRegisterAliases[num]);
   });
-  Insert(getter_map, *Enum::kC3frs2, [common]() {
-    auto num = Extractors::CS::ExtractCsRs2(common->inst_word());
-    return GetRegisterSourceOp<FpRegister>(
-        common->state(), absl::StrCat(RiscVState::kFregPrefix, num),
-        kXRegisterAliases[num]);
-  });
   Insert(getter_map, *Enum::kC3rs1, [common]() {
     auto num = Extractors::CS::ExtractCsRs1(common->inst_word());
     return GetRegisterSourceOp<IntRegister>(
@@ -114,12 +96,6 @@ void AddRiscVSourceGetters(SourceOpGetterMap &getter_map,
         Extractors::Inst32Format::ExtractIUimm5(common->inst_word()));
   });
   Insert(getter_map, *Enum::kCdrs2, [common]() {
-    auto num = Extractors::CR::ExtractRs2(common->inst_word());
-    return GetRegisterSourceOp<FpRegister>(
-        common->state(), absl::StrCat(RiscVState::kFregPrefix, num),
-        kXRegisterAliases[num]);
-  });
-  Insert(getter_map, *Enum::kCfrs2, [common]() {
     auto num = Extractors::CR::ExtractRs2(common->inst_word());
     return GetRegisterSourceOp<FpRegister>(
         common->state(), absl::StrCat(RiscVState::kFregPrefix, num),
@@ -326,11 +302,6 @@ void AddRiscVDestGetters(DestOpGetterMap &getter_map,
     return GetRegisterDestinationOp<IntRegister>(
         common->state(), absl::StrCat(RiscVState::kFregPrefix, num), latency);
   });
-  Insert(getter_map, *Enum::kC3frd, [common](int latency) {
-    int num = Extractors::CL::ExtractClRd(common->inst_word());
-    return GetRegisterDestinationOp<IntRegister>(
-        common->state(), absl::StrCat(RiscVState::kFregPrefix, num), latency);
-  });
   Insert(getter_map, *Enum::kC3rd, [common](int latency) {
     int num = Extractors::CL::ExtractClRd(common->inst_word());
     return GetRegisterDestinationOp<IntRegister>(
@@ -397,7 +368,6 @@ void AddRiscVDestGetters(DestOpGetterMap &getter_map,
     return GetCSRSetBitsDestinationOp<uint32_t>(common->state(), "fflags",
                                                 latency, "");
   });
-  Insert(getter_map, *Enum::kNone, [](int latency) { return nullptr; });
 }
 
 // This function is used to add the simple resource getters to the given
@@ -408,20 +378,11 @@ void AddRiscVDestGetters(DestOpGetterMap &getter_map,
 template <typename Enum, typename Extractors>
 void AddRiscVSimpleResourceGetters(SimpleResourceGetterMap &getter_map,
                                    RiscVEncodingCommon *common) {
-  Insert(getter_map, *Enum::kNone, []() { return nullptr; });
   Insert(getter_map, *Enum::kC3drd, [common]() -> generic::SimpleResource * {
     int num = Extractors::CL::ExtractClRd(common->inst_word());
     return common->resource_pool()->GetOrAddResource(absl::StrCat("d", num));
   });
   Insert(getter_map, *Enum::kC3drs2, [common]() -> generic::SimpleResource * {
-    int num = Extractors::CS::ExtractCsRs2(common->inst_word());
-    return common->resource_pool()->GetOrAddResource(absl::StrCat("d", num));
-  });
-  Insert(getter_map, *Enum::kC3frd, [common]() -> generic::SimpleResource * {
-    int num = Extractors::CL::ExtractClRd(common->inst_word());
-    return common->resource_pool()->GetOrAddResource(absl::StrCat("d", num));
-  });
-  Insert(getter_map, *Enum::kC3frs2, [common]() -> generic::SimpleResource * {
     int num = Extractors::CS::ExtractCsRs2(common->inst_word());
     return common->resource_pool()->GetOrAddResource(absl::StrCat("d", num));
   });
@@ -435,6 +396,18 @@ void AddRiscVSimpleResourceGetters(SimpleResourceGetterMap &getter_map,
   });
   Insert(getter_map, *Enum::kC3rs2, [common]() -> generic::SimpleResource * {
     int num = Extractors::CS::ExtractCsRs2(common->inst_word());
+    return common->resource_pool()->GetOrAddResource(absl::StrCat("x", num));
+  });
+  Insert(getter_map, *Enum::kCdrs2, [common]() -> generic::SimpleResource * {
+    auto num = Extractors::CR::ExtractRs2(common->inst_word());
+    return common->resource_pool()->GetOrAddResource(absl::StrCat("d", num));
+  });
+  Insert(getter_map, *Enum::kCrs1, [common]() -> generic::SimpleResource * {
+    auto num = Extractors::CR::ExtractRs1(common->inst_word());
+    return common->resource_pool()->GetOrAddResource(absl::StrCat("x", num));
+  });
+  Insert(getter_map, *Enum::kCrs2, [common]() -> generic::SimpleResource * {
+    auto num = Extractors::CR::ExtractRs2(common->inst_word());
     return common->resource_pool()->GetOrAddResource(absl::StrCat("x", num));
   });
   Insert(getter_map, *Enum::kCsr, [common]() -> generic::SimpleResource * {

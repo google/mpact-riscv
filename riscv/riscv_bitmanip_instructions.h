@@ -26,60 +26,39 @@ using ::mpact::sim::generic::Instruction;
 
 namespace RV32 {
 
-// This function takes 3 source operands, rs1, rs2, and a shift amount. It takes
-// one destination operand rd.
+// This function takes 3 source operands, rs1, rs2, a shift amount, and one
+// destination operand rd.
 void RiscVShAdd(const Instruction *instruction);
-// This function takes 2 source operands, rs1, rs2, and one destination operand
+// These functions take 2 source operands, rs1, rs2, and one destination operand
 // rd.
 void RiscVAndn(const Instruction *instruction);
-// This function takes 2 source operands, rs1, rs2, and one destination operand
-// rd.
 void RiscVOrn(const Instruction *instruction);
-// This function takes 2 source operands, rs1, rs2, and one destination operand
-// rd.
 void RiscVXnor(const Instruction *instruction);
-// This function takes 1 source operands, rs1, and one destination operand rd.
+// These functions take 1 source operands, rs1, and one destination operand rd.
 void RiscVClz(const Instruction *instruction);
-// This function takes 1 source operands, rs1, and one destination operand rd.
 void RiscVCtz(const Instruction *instruction);
-// This function takes 1 source operands, rs1, and one destination operand rd.
 void RiscVCpop(const Instruction *instruction);
-// This function takes 2 source operands, rs1, rs2, and one destination operand
+// These functions take 2 source operands, rs1, rs2, and one destination operand
 // rd.
 void RiscVMax(const Instruction *instruction);
-// This function takes 2 source operands, rs1, rs2, and one destination operand
-// rd.
 void RiscVMaxu(const Instruction *instruction);
-// This function takes 2 source operands, rs1, rs2, and one destination operand
-// rd.
 void RiscVMin(const Instruction *instruction);
-// This function takes 2 source operands, rs1, rs2, and one destination operand
-// rd.
 void RiscVMinu(const Instruction *instruction);
-// This function takes 1 source operands, rs1, and one destination operand rd.
+// These functions take 1 source operands, rs1, and one destination operand rd.
 void RiscVSextB(const Instruction *instruction);
-// This function takes 1 source operands, rs1, and one destination operand rd.
 void RiscVSextH(const Instruction *instruction);
-// This function takes 1 source operands, rs1, and one destination operand rd.
 void RiscVZextH(const Instruction *instruction);
-// This function takes 2 source operands, rs1, rs2, and one destination operand
+// These functions take 2 source operands, rs1, rs2, and one destination operand
 // rd.
-void RiscVrol(const Instruction *instruction);
-// This function takes 2 source operands, rs1, rs2, and one destination operand
-// rd.
-void RiscVror(const Instruction *instruction);
-// This function takes 1 source operands, rs1, and one destination operand rd.
+void RiscVRol(const Instruction *instruction);
+void RiscVRor(const Instruction *instruction);
+// These functions take 1 source operands, rs1, and one destination operand rd.
 void RiscVOrcb(const Instruction *instruction);
-// This function takes 1 source operands, rs1, and one destination operand rd.
 void RiscVRev8(const Instruction *instruction);
-// This function takes 2 source operands, rs1, rs2, and one destination operand
+// These functions take 2 source operands, rs1, rs2, and one destination operand
 // rd.
 void RiscVClmul(const Instruction *instruction);
-// This function takes 2 source operands, rs1, rs2, and one destination operand
-// rd.
 void RiscVClmulh(const Instruction *instruction);
-// This function takes 2 source operands, rs1, rs2, and one destination operand
-// rd.
 void RiscVClmulr(const Instruction *instruction);
 // The following functions take 2 source operands, rs1, rs2/imm, and one
 // destination operand rd.
@@ -89,6 +68,58 @@ void RiscVBinv(const Instruction *instruction);
 void RiscVBset(const Instruction *instruction);
 
 }  // namespace RV32
+
+namespace RV64 {
+// These functions take 3 source operands, rs1, rs2, a shift amount, and one
+// one destination operand rd.
+void RiscVAddUw(const Instruction *instruction);
+void RiscVShAdd(const Instruction *instruction);
+void RiscVShAddUw(const Instruction *instruction);
+void RiscVSlliUw(const Instruction *instruction);
+// These functions take 2 source operands, rs1, rs2, and one destination
+// operand rd.
+void RiscVAndn(const Instruction *instruction);
+void RiscVOrn(const Instruction *instruction);
+void RiscVXnor(const Instruction *instruction);
+// These functions take 1 source operands, rs1, and one destination operand rd.
+void RiscVClz(const Instruction *instruction);
+void RiscVClzw(const Instruction *instruction);
+void RiscVCtz(const Instruction *instruction);
+void RiscVCtzw(const Instruction *instruction);
+void RiscVCpop(const Instruction *instruction);
+void RiscVCpopw(const Instruction *instruction);
+// These functions take 2 source operands, rs1, rs2, and one destination operand
+// rd.
+void RiscVMax(const Instruction *instruction);
+void RiscVMaxu(const Instruction *instruction);
+void RiscVMin(const Instruction *instruction);
+void RiscVMinu(const Instruction *instruction);
+// These functions take 1 source operands, rs1, and one destination operand rd.
+void RiscVSextB(const Instruction *instruction);
+void RiscVSextH(const Instruction *instruction);
+void RiscVZextH(const Instruction *instruction);
+// These functions take 2 source operands, rs1, rs2, and one destination operand
+// rd.
+void RiscVRol(const Instruction *instruction);
+void RiscVRor(const Instruction *instruction);
+void RiscVRolw(const Instruction *instruction);
+void RiscVRorw(const Instruction *instruction);
+// These functions take 1 source operands, rs1, and one destination operand rd.
+void RiscVOrcb(const Instruction *instruction);
+void RiscVRev8(const Instruction *instruction);
+// These function takes 2 source operands, rs1, rs2, and one destination operand
+// rd.
+void RiscVClmul(const Instruction *instruction);
+void RiscVClmulh(const Instruction *instruction);
+void RiscVClmulr(const Instruction *instruction);
+// These functions take 2 source operands, rs1, rs2/imm, and one destination
+// operand rd.
+void RiscVBclr(const Instruction *instruction);
+void RiscVBext(const Instruction *instruction);
+void RiscVBinv(const Instruction *instruction);
+void RiscVBset(const Instruction *instruction);
+
+}  // namespace RV64
 
 }  // namespace mpact::sim::riscv
 

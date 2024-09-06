@@ -12,20 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-isa RiscV32GZB {
-  namespace mpact::sim::riscv::isa32gzb;
-  slots {
-    riscv32gzb;
+
+decoder RiscV64GZB {
+  namespace mpact::sim::riscv::isa64gzb;
+  opcode_enum = "OpcodeEnum";
+  includes {
+    #include "riscv/riscv64gzb_decoder.h"
   }
+  RiscV64GZBInst32 = {RiscVGInst32, RiscVZbaInst32, RiscVZbaInst64,
+                      RiscVZbbInst32, RiscVZbbInst64, RiscVZbcInst32,
+                      RiscVZbsInst32, RiscVZbsImmInst64};
+  RiscV64GZBInst16 = {RiscVCInst16};
 }
 
-#include "riscv/riscv32g.isa"
-#include "riscv/riscv32zb.isa"
-
-slot riscv32gzb : riscv32g, riscv32_zba, riscv32_zbb, riscv32_zbb_imm,
-                  riscv32_zbc, riscv32_zbs, riscv32_zbs_imm {
-  default size = 4;
-  default opcode =
-    disasm: "Illegal instruction at 0x%(@:08x)",
-    semfunc: "&RiscVIllegalInstruction";
-}
+#include "riscv/riscv64g.bin_fmt"
+#include "riscv/riscv64zb.bin_fmt"
+#include "riscv/riscv32zb.bin_fmt"

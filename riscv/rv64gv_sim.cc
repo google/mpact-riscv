@@ -21,6 +21,7 @@
 #include <ios>
 #include <iostream>
 #include <memory>
+#include <new>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -37,6 +38,7 @@
 #include "absl/time/time.h"
 #include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/generic/counters.h"
+#include "mpact/sim/generic/decoder_interface.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/proto/component_data.pb.h"
 #include "mpact/sim/util/memory/atomic_memory.h"
@@ -46,20 +48,24 @@
 #include "re2/re2.h"
 #include "riscv/debug_command_shell.h"
 #include "riscv/riscv64g_vec_decoder.h"
+#include "riscv/riscv64gzb_vec_decoder.h"
 #include "riscv/riscv_arm_semihost.h"
 #include "riscv/riscv_fp_state.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_register_aliases.h"
 #include "riscv/riscv_state.h"
 #include "riscv/riscv_top.h"
+#include "riscv/riscv_vector_state.h"
 #include "src/google/protobuf/text_format.h"
 
 using ::mpact::sim::generic::Instruction;
 using ::mpact::sim::proto::ComponentData;
 using ::mpact::sim::riscv::RiscV64GVecDecoder;
+using ::mpact::sim::riscv::RiscV64GZBVecDecoder;
 using ::mpact::sim::riscv::RiscVArmSemihost;
 using ::mpact::sim::riscv::RiscVFPState;
 using ::mpact::sim::riscv::RiscVState;
+using ::mpact::sim::riscv::RiscVVectorState;
 using ::mpact::sim::riscv::RiscVXlen;
 using ::mpact::sim::riscv::RV64Register;
 using ::mpact::sim::riscv::RVFpRegister;
@@ -133,6 +139,9 @@ ABSL_FLAG(std::optional<uint64_t>, stack_end, std::nullopt,
 
 // Exit on execution of ecall instruction, default false.
 ABSL_FLAG(bool, exit_on_ecall, false, "Exit on ecall - false by default");
+
+// Enable bit manipulation instructions.
+ABSL_FLAG(bool, bitmanip, false, "Enable bit manipulation instructions");
 
 constexpr char kStackEndSymbolName[] = "__stack_end";
 constexpr char kStackSizeSymbolName[] = "__stack_size";
@@ -211,8 +220,16 @@ int main(int argc, char **argv) {
   // For floating point support add the fp state.
   RiscVFPState rv_fp_state(rv_state.csr_set(), &rv_state);
   rv_state.set_rv_fp(&rv_fp_state);
+  // Set up the vector state.
+  RiscVVectorState rv_vector_state(&rv_state, 64);
+  rv_state.set_rv_vector(&rv_vector_state);
   // Create the instruction decoder.
-  RiscV64GVecDecoder rv_decoder(&rv_state, memory);
+  mpact::sim::generic::DecoderInterface *rv_decoder = nullptr;
+  if (absl::GetFlag(FLAGS_bitmanip)) {
+    rv_decoder = new RiscV64GZBVecDecoder(&rv_state, memory);
+  } else {
+    rv_decoder = new RiscV64GVecDecoder(&rv_state, memory);
+  }
 
   // Make sure the architectural and abi register aliases are added.
   std::string reg_name;
@@ -229,7 +246,7 @@ int main(int argc, char **argv) {
         reg_name, ::mpact::sim::riscv::kFRegisterAliases[i]);
   }
 
-  RiscVTop riscv_top("RiscV32Sim", &rv_state, &rv_decoder);
+  RiscVTop riscv_top("RiscV32Sim", &rv_state, rv_decoder);
 
   if (absl::GetFlag(FLAGS_exit_on_ecall)) {
     rv_state.set_on_ecall([&riscv_top](const Instruction *inst) -> bool {
@@ -391,4 +408,5 @@ int main(int argc, char **argv) {
   delete atomic_memory;
   delete memory;
   delete arm_semihost;
+  delete rv_decoder;
 }

@@ -1,0 +1,39 @@
+// Copyright 2024 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+instruction group RiscVZbaInst64[32] : Inst32Format {
+  add_uw:    RType : func7 == 0b000'0100, func3 == 0b000, opcode == 0b011'1011;
+  sh1add_uw: RType : func7 == 0b001'0000, func3 == 0b010, opcode == 0b011'1011;
+  sh2add_uw: RType : func7 == 0b001'0000, func3 == 0b100, opcode == 0b011'1011;
+  sh3add_uw: RType : func7 == 0b001'0000, func3 == 0b110, opcode == 0b011'1011;
+  slli_uw:   RSType : func6 == 0b000'010, func3 == 0b001, opcode == 0b001'1011;
+}
+
+instruction group RiscVZbbInst64[32] : Inst32Format {
+  clzw  : RType  : func7 == 0b011'0000, rs2 == 0b0'0000, func3 == 0b001, opcode == 0b001'1011;
+  cpopw : RType  : func7 == 0b011'0000, rs2 == 0b0'0010, func3 == 0b001, opcode == 0b001'1011;
+  ctzw  : RType  : func7 == 0b011'0000, rs2 == 0b0'0001, func3 == 0b001, opcode == 0b001'1011;
+  rolw  : RType  : func7 == 0b011'0000, func3 == 0b001, opcode == 0b011'1011;
+  rori  : RSType : func6 == 0b011'000, func3 == 0b101, opcode == 0b001'0011;
+  roriw : RType  : func7 == 0b011'0000, func3 == 0b101, opcode == 0b001'1011;
+  rorw  : RType  : func7 == 0b011'0000, func3 == 0b101, opcode == 0b011'1011;
+  zext_h: RType  : func7 == 0b000'0100, rs2 == 0b0'0000, func3 == 0b100, opcode == 0b011'1011;
+}
+
+instruction group RiscVZbsImmInst64[32] : Inst32Format {
+  bclri : RSType : func6 == 0b010'010, func3 == 0b001, opcode == 0b001'1011;
+  bexti : RSType : func6 == 0b010'010, func3 == 0b101, opcode == 0b001'1011;
+  binvi : RSType : func6 == 0b011'010, func3 == 0b001, opcode == 0b001'1011;
+  bseti : RSType : func6 == 0b001'010, func3 == 0b001, opcode == 0b001'1011;
+}

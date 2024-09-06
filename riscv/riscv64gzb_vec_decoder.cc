@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "riscv/riscv64g_vec_decoder.h"
+#include "riscv/riscv64gzb_vec_decoder.h"
 
 #include <cstdint>
 #include <memory>
@@ -23,9 +23,9 @@
 #include "mpact/sim/generic/program_error.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/memory_interface.h"
-#include "riscv/riscv64g_vec_encoding.h"
-#include "riscv/riscv64gv_decoder.h"
-#include "riscv/riscv64gv_enums.h"
+#include "riscv/riscv64gvzb_decoder.h"
+#include "riscv/riscv64gvzb_enums.h"
+#include "riscv/riscv64gzb_vec_encoding.h"
 #include "riscv/riscv_state.h"
 
 namespace mpact {
@@ -34,8 +34,8 @@ namespace riscv {
 
 using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 
-RiscV64GVecDecoder::RiscV64GVecDecoder(RiscVState *state,
-                                       util::MemoryInterface *memory)
+RiscV64GZBVecDecoder::RiscV64GZBVecDecoder(RiscVState *state,
+                                           util::MemoryInterface *memory)
     : state_(state),
       memory_(memory),
       inst_db_(state_->db_factory()->Allocate<uint32_t>(1)) {
@@ -45,24 +45,25 @@ RiscV64GVecDecoder::RiscV64GVecDecoder(RiscVState *state,
 
   // Allocate the isa factory class, the top level isa decoder instance, and
   // the encoding parser.
-  riscv_isa_factory_ = std::make_unique<RV64GVIsaFactory>();
-  riscv_isa_ = std::make_unique<isa64v::RiscV64GVInstructionSet>(
+  riscv_isa_factory_ = std::make_unique<RV64GVZBIsaFactory>();
+  riscv_isa_ = std::make_unique<isa64gvzb::RiscV64GVZBInstructionSet>(
       state, riscv_isa_factory_.get());
-  riscv_encoding_ = std::make_unique<isa64v::RiscV64GVecEncoding>(state);
+  riscv_encoding_ = std::make_unique<isa64gvzb::RiscV64GZBVecEncoding>(state);
   decode_error_ = state->program_error_controller()->GetProgramError(
       generic::ProgramErrorController::kInternalErrorName);
 }
 
-RiscV64GVecDecoder::~RiscV64GVecDecoder() { inst_db_->DecRef(); }
+RiscV64GZBVecDecoder::~RiscV64GZBVecDecoder() { inst_db_->DecRef(); }
 
-generic::Instruction *RiscV64GVecDecoder::DecodeInstruction(uint64_t address) {
+generic::Instruction *RiscV64GZBVecDecoder::DecodeInstruction(
+    uint64_t address) {
   // First check that the address is aligned properly. If not, create and return
   // an instruction object that will raise an exception.
   if (address & 0x1) {
     auto *inst = new generic::Instruction(address, state_);
     inst->set_size(1);
     inst->SetDisassemblyString("Misaligned instruction address");
-    inst->set_opcode(*isa64v::OpcodeEnum::kNone);
+    inst->set_opcode(*isa64gvzb::OpcodeEnum::kNone);
     inst->set_address(address);
     inst->set_semantic_function([this, address](generic::Instruction *inst) {
       state_->Trap(/*is_interrupt*/ false, address,
@@ -78,7 +79,7 @@ generic::Instruction *RiscV64GVecDecoder::DecodeInstruction(uint64_t address) {
     auto *inst = new generic::Instruction(address, state_);
     inst->set_size(0);
     inst->SetDisassemblyString("Instruction access fault");
-    inst->set_opcode(*isa64v::OpcodeEnum::kNone);
+    inst->set_opcode(*isa64gvzb::OpcodeEnum::kNone);
     inst->set_address(address);
     inst->set_semantic_function([this, address](generic::Instruction *inst) {
       state_->Trap(/*is_interrupt*/ false, address,

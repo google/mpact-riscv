@@ -1,0 +1,191 @@
+// Copyright 2024 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// This file contains the ISA description for the RiscV32 bitmanipulation
+// extension.
+
+includes {
+  #include "riscv/riscv_bitmanip_instructions.h"
+}
+
+#include "riscv/riscv32zb.isa"
+
+disasm widths = {-18};
+
+slot riscv64_zba : riscv32_zba {
+  default size = 4;
+  default opcode =
+    disasm: "Illegal instruction at 0x%(@:08x)",
+    semfunc: "&RiscVIllegalInstruction";
+  resources ThreeOp = { next_pc, rs1, rs2 : rd[..rd]};
+  resources TwoOp = { next_pc, rs1 : rd[..rd]};
+  opcodes {
+    sh1add = override, semfunc: "&RV64::RiscVShAdd";
+    sh2add = override, semfunc: "&RV64::RiscVShAdd";
+    sh3add = override, semfunc: "&RV64::RiscVShAdd";
+    // 64 bit unique instructions.
+    add_uw{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "add.uw", "%rd, %rs1, %rs2",
+      semfunc: "&RV64::RiscVAddUw";
+    sh1add_uw{: rs1, rs2, const1 : rd},
+      resources: ThreeOp,
+      disasm: "sh1add.uw", "%rd, %rs1, %rs2",
+      semfunc: "&RV64::RiscVShAddUw";
+    sh2add_uw{: rs1, rs2, const2 : rd},
+      resources: ThreeOp,
+      disasm: "sh2add.uw", "%rd, %rs1, %rs2",
+      semfunc: "&RV64::RiscVShAddUw";
+    sh3add_uw{: rs1, rs2, const3 : rd},
+      resources: ThreeOp,
+      disasm: "sh3add.uw", "%rd, %rs1, %rs2",
+      semfunc: "&RV64::RiscVShAddUw";
+    slli_uw{: rs1, r_uimm6 : rd},
+      resources: TwoOp,
+      disasm: "slli.uw", "%rd, %rs1, %r_uimm6",
+      semfunc: "&RV64::RiscVSlliUw";
+  }
+}
+
+slot riscv64_zbb : riscv32_zbb {
+  default size = 4;
+  default opcode =
+    disasm: "Illegal instruction at 0x%(@:08x)",
+    semfunc: "&RiscVIllegalInstruction";
+  resources TwoOp = { next_pc, rs1 : rd[..rd]};
+  resources ThreeOp = { next_pc, rs1, rs2 : rd[..rd]};
+  opcodes {
+    // Logical with negate.
+    andn = override, semfunc: "&RV64::RiscVAndn";
+    orn = override, semfunc: "&RV64::RiscVOrn";
+    xnor = override, semfunc: "&RV64::RiscVXnor";
+    // Counte leading/trailing zero bits.
+    clz = override, semfunc: "&RV64::RiscVClz";
+    ctz = override, semfunc: "&RV64::RiscVCtz";
+    // Count population
+    cpop = override, semfunc: "&RV64::RiscVCpop";
+    // Integer minimum/maximum.
+    max = override, semfunc: "&RV64::RiscVMax";
+    maxu = override, semfunc: "&RV64::RiscVMaxu";
+    min = override, semfunc: "&RV64::RiscVMin";
+    minu = override, semfunc: "&RV64::RiscVMinu";
+    // Sign and zero extension.
+    sext_b = override, semfunc: "&RV64::RiscVSextB";
+    sext_h = override, semfunc: "&RV64::RiscVSextH";
+    zext_h = override, semfunc: "&RV64::RiscVZextH";
+    // Bitwise rotation.
+    rol = override, semfunc: "&RV64::RiscVRol";
+    ror = override, semfunc: "&RV64::RiscVRor";
+    // OR combine.
+    orcb = override, semfunc: "&RV64::RiscVOrcb";
+    // Byte reverse.
+    rev8 = override, semfunc: "&RV64::RiscVRev8";
+    // 64 bit unique instructions.
+    clzw{: rs1 : rd},
+      resources: TwoOp,
+      disasm: "clzw", "%rd, %rs1",
+      semfunc: "&RV64::RiscVClzw";
+    ctzw{: rs1 : rd},
+      resources: TwoOp,
+      disasm: "ctzw", "%rd, %rs1",
+      semfunc: "&RV64::RiscVCtzw";
+    cpopw{: rs1 : rd},
+      resources: TwoOp,
+      disasm: "cpopw", "%rd, %rs1",
+      semfunc: "&RV64::RiscVCpopw";
+    rolw{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "rolw", "%rd, %rs1, %rs2",
+      semfunc: "&RV64::RiscVRolw";
+    roriw{: rs1, r_uimm6 : rd},
+      resources: TwoOp,
+      disasm: "roriw", "%rd, %rs1, %r_uimm6",
+      semfunc: "&RV64::RiscVRorw";
+    rorw{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "rorw", "%rd, %rs1, %rs2",
+      semfunc: "&RV64::RiscVRorw";
+  }
+}
+
+slot riscv64_zbb_imm {
+  default size = 4;
+  default opcode =
+    disasm: "Illegal instruction at 0x%(@:08x)",
+    semfunc: "&RiscVIllegalInstruction";
+  resources TwoOp = { next_pc, rs1 : rd[..rd]};
+  resources ThreeOp = { next_pc, rs1, rs2 : rd[..rd]};
+  opcodes {
+    rori{: rs1, r_uimm6 : rd},
+      resources: TwoOp,
+      disasm: "rori", "%rd, %rs1, %r_uimm6",
+      semfunc: "&RV64::RiscVRor";
+  }
+}
+
+slot riscv64_zbc : riscv32_zbc {
+  default size = 4;
+  default opcode =
+    disasm: "Illegal instruction at 0x%(@:08x)",
+    semfunc: "&RiscVIllegalInstruction";
+  resources ThreeOp = { next_pc, rs1, rs2 : rd[..rd]};
+  opcodes {
+    // Carry-less multiplication.
+    clmul = override, semfunc: "&RV64::RiscVClmul";
+    clmulh = override, semfunc: "&RV64::RiscVClmulh";
+    clmulr = override, semfunc: "&RV64::RiscVClmulr";
+  }
+}
+
+slot riscv64_zbs : riscv32_zbs {
+  default size = 4;
+  default opcode =
+    disasm: "Illegal instruction at 0x%(@:08x)",
+    semfunc: "&RiscVIllegalInstruction";
+  resources ThreeOp = { next_pc, rs1, rs2 : rd[..rd]};
+  opcodes {
+    // Single-bit instructions.
+    bclr = override, semfunc: "&RV64::RiscVBclr";
+    bext = override, semfunc: "&RV64::RiscVBext";
+    binv = override, semfunc: "&RV64::RiscVBinv";
+    bset = override, semfunc: "&RV64::RiscVBset";
+  }
+}
+
+slot riscv64_zbs_imm {
+  default size = 4;
+  default opcode =
+    disasm: "Illegal instruction at 0x%(@:08x)",
+    semfunc: "&RiscVIllegalInstruction";
+  resources TwoOp = { next_pc, rs1 : rd[..rd]};
+  opcodes {
+    // Single-bit instructions.
+    bclri{: rs1, r_uimm6 : rd},
+      resources: TwoOp,
+      disasm: "bclri", "%rd, %rs1, %r_uimm6",
+      semfunc: "&RV64::RiscVBclr";
+    bexti{: rs1, r_uimm6 : rd},
+      resources: TwoOp,
+      disasm: "bexti", "%rd, %rs1, %r_uimm6",
+      semfunc: "&RV64::RiscVBext";
+    binvi{: rs1, r_uimm6 : rd},
+      resources: TwoOp,
+      disasm: "binvi", "%rd, %rs1, %r_uimm6",
+      semfunc: "&RV64::RiscVBinv";
+    bseti{: rs1, r_uimm6 : rd},
+      resources: TwoOp,
+      disasm: "bseti", "%rd, %rs1, %r_uimm6",
+      semfunc: "&RV64::RiscVBset";
+  }
+}

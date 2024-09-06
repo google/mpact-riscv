@@ -14,15 +14,19 @@
 
 #include "riscv/riscv64g_encoding.h"
 
+#include <cstdint>
+#include <new>
 #include <string>
 #include <utility>
 
 #include "absl/log/log.h"
+#include "absl/strings/str_cat.h"
 #include "mpact/sim/generic/immediate_operand.h"
 #include "mpact/sim/generic/literal_operand.h"
-#include "mpact/sim/generic/operand_interface.h"
+#include "mpact/sim/generic/simple_resource.h"
 #include "mpact/sim/generic/simple_resource_operand.h"
 #include "riscv/riscv64g_bin_decoder.h"
+#include "riscv/riscv64g_decoder.h"
 #include "riscv/riscv64g_enums.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
@@ -32,7 +36,6 @@ namespace sim {
 namespace riscv {
 namespace isa64 {
 
-// TODO
 using generic::SimpleResourceOperand;
 
 // Generic helper functions to create register operands.
@@ -401,9 +404,9 @@ void RiscV64GEncoding::InitializeSourceOperandGetters() {
             encoding64::s_type::ExtractSImm(inst_word_));
       }));
   source_op_getters_.insert(
-      std::make_pair(static_cast<int>(SourceOpEnum::kSImm20), [this]() {
+      std::make_pair(static_cast<int>(SourceOpEnum::kUImm20), [this]() {
         return new generic::ImmediateOperand<int32_t>(
-            encoding64::u_type::ExtractSImm(inst_word_));
+            encoding64::u_type::ExtractUImm(inst_word_));
       }));
   source_op_getters_.insert(
       std::make_pair(static_cast<int>(SourceOpEnum::kX0), [this]() {

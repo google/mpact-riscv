@@ -15,10 +15,12 @@
 #include "riscv/riscv64g_vec_encoding.h"
 
 #include <cstdint>
+#include <new>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "absl/base/casts.h"
 #include "absl/log/log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/types/span.h"
@@ -495,9 +497,10 @@ void RiscV64GVecEncoding::InitializeSourceOperandGetters() {
             encoding64::s_type::ExtractSImm(inst_word_));
       }));
   source_op_getters_.insert(
-      std::make_pair(static_cast<int>(SourceOpEnum::kSImm20), [this]() {
+      std::make_pair(static_cast<int>(SourceOpEnum::kUImm20), [this]() {
+        uint32_t uimm = encoding64::u_type::ExtractUImm(inst_word_);
         return new generic::ImmediateOperand<int32_t>(
-            encoding64::u_type::ExtractSImm(inst_word_));
+            absl::bit_cast<int32_t>(uimm));
       }));
   source_op_getters_.insert(
       std::make_pair(static_cast<int>(SourceOpEnum::kX0), [this]() {

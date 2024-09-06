@@ -19,12 +19,13 @@
 #include <cstring>
 #include <new>
 #include <string>
-#include <thread>  // NOLINT: third_party.
+#include <thread>  // NOLINT: third_party code.
 #include <utility>
 
 #include "absl/functional/any_invocable.h"
 #include "absl/functional/bind_front.h"
 #include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"

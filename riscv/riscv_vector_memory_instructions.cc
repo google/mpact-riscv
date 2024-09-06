@@ -16,7 +16,7 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <vector>
+#include <new>
 
 #include "absl/log/log.h"
 #include "absl/status/status.h"
