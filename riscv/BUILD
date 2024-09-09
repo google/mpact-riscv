@@ -493,6 +493,7 @@ cc_library(
         "riscv_getters_rv64.h",
         "riscv_getters_vector.h",
         "riscv_getters_zba.h",
+        "riscv_getters_zbb32.h",
         "riscv_getters_zbb64.h",
     ],
     deps = [

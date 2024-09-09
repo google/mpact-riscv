@@ -100,6 +100,10 @@ void AddRiscV32SimpleResourceGetters(SimpleResourceGetterMap &getter_map,
     int num = Extractors::CS::ExtractCsRs2(common->inst_word());
     return common->resource_pool()->GetOrAddResource(absl::StrCat("d", num));
   });
+  Insert(getter_map, *Enum::kCfrs2, [common]() -> generic::SimpleResource * {
+    int num = Extractors::CR::ExtractRs2(common->inst_word());
+    return common->resource_pool()->GetOrAddResource(absl::StrCat("d", num));
+  });
 }
 
 }  // namespace riscv

@@ -29,6 +29,7 @@
 #include "riscv/riscv_getters.h"
 #include "riscv/riscv_getters_rv32.h"
 #include "riscv/riscv_getters_zba.h"
+#include "riscv/riscv_getters_zbb32.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
 
@@ -67,6 +68,8 @@ RiscV32GZBEncoding::RiscV32GZBEncoding(RiscVState *state)
       simple_resource_getters_, this);
   AddRiscVZbaSourceGetters<SourceOpEnum, Extractors, RV32Register,
                            RVFpRegister>(source_op_getters_, this);
+  AddRiscVZbb32SourceGetters<SourceOpEnum, Extractors, RV32Register,
+                             RVFpRegister>(source_op_getters_, this);
   // Verify that there are getters for each enum value.
   for (int i = *SourceOpEnum::kNone; i < *SourceOpEnum::kPastMaxValue; ++i) {
     if (source_op_getters_.find(i) == source_op_getters_.end()) {
