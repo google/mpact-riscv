@@ -129,6 +129,7 @@ void RiscVRol(const Instruction *instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a, UIntReg b) {
         int shamt = b & 0x1f;
+        if (shamt == 0) return a;
         return (a << shamt) | (a >> (kXlen - shamt));
       });
 }
@@ -138,6 +139,7 @@ void RiscVRor(const Instruction *instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a, UIntReg b) {
         int shamt = b & 0x1f;
+        if (shamt == 0) return a;
         return (a >> shamt) | (a << (kXlen - shamt));
       });
 }
@@ -369,6 +371,7 @@ void RiscVRol(const Instruction *instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a, UIntReg b) {
         int shamt = b & 0x3f;
+        if (shamt == 0) return a;
         return (a << shamt) | (a >> (kXlen - shamt));
       });
 }
@@ -378,7 +381,7 @@ void RiscVRolw(const Instruction *instruction) {  // hmm
       instruction, [](uint32_t a, uint32_t b) {
         int shamt = b & 0x1f;
         // Perform rotation.
-        auto c = (a << shamt) | (a >> (32 - shamt));
+        auto c = shamt == 0 ? a : (a << shamt) | (a >> (32 - shamt));
         // Sign extend the result.
         auto d = absl::bit_cast<int32_t>(c);
         return static_cast<IntReg>(d);
@@ -390,6 +393,7 @@ void RiscVRor(const Instruction *instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a, UIntReg b) {
         int shamt = b & 0x3f;
+        if (shamt == 0) return a;
         return (a >> shamt) | (a << (kXlen - shamt));
       });
 }
@@ -399,7 +403,7 @@ void RiscVRorw(const Instruction *instruction) {
       instruction, [](uint32_t a, uint32_t b) {
         int shamt = b & 0x1f;
         // Perform rotation.
-        auto c = (a >> shamt) | (a << (32 - shamt));
+        auto c = shamt == 0 ? a : (a >> shamt) | (a << (32 - shamt));
         // Sign extend the result.
         auto d = absl::bit_cast<int32_t>(c);
         return static_cast<IntReg>(d);
