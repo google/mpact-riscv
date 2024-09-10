@@ -41,7 +41,7 @@ class RiscV64GZBVecEncoding : public RiscV64GVZBEncodingBase,
   ~RiscV64GZBVecEncoding() override;
 
   void ParseInstruction(uint32_t inst_word);
-  OpcodeEnum GetOpcode(SlotEnum, int) { return opcode_; }
+  OpcodeEnum GetOpcode(SlotEnum, int) override { return opcode_; }
   FormatEnum GetFormat(SlotEnum, int) { return format_; }
 
   PredicateOperandInterface *GetPredicate(SlotEnum, int, OpcodeEnum,
@@ -55,7 +55,7 @@ class RiscV64GZBVecEncoding : public RiscV64GVZBEncodingBase,
 
   ResourceOperandInterface *GetComplexResourceOperand(
       SlotEnum, int, OpcodeEnum, ComplexResourceEnum resource, int begin,
-      int end);
+      int end) override;
 
   SourceOperandInterface *GetSource(SlotEnum, int, OpcodeEnum, SourceOpEnum op,
                                     int source_no) override;

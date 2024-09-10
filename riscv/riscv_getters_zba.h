@@ -40,11 +40,11 @@ void AddRiscVZbaSourceGetters(SourceOpGetterMap &getter_map,
                               RiscVEncodingCommon *common) {
   // Source operand getters.
   Insert(getter_map, *Enum::kConst1,
-         [common]() { return new generic::IntLiteralOperand<1>(); });
+         []() { return new generic::IntLiteralOperand<1>(); });
   Insert(getter_map, *Enum::kConst2,
-         [common]() { return new generic::IntLiteralOperand<2>(); });
+         []() { return new generic::IntLiteralOperand<2>(); });
   Insert(getter_map, *Enum::kConst3,
-         [common]() { return new generic::IntLiteralOperand<3>(); });
+         []() { return new generic::IntLiteralOperand<3>(); });
 }
 
 template <typename Enum, typename Extractors, typename IntRegister,

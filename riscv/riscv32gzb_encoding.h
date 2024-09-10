@@ -24,6 +24,7 @@
 #include "riscv/riscv32gzb_decoder.h"
 #include "riscv/riscv32gzb_enums.h"
 #include "riscv/riscv_encoding_common.h"
+#include "riscv/riscv_getter_helpers.h"
 #include "riscv/riscv_getters.h"
 #include "riscv/riscv_state.h"
 
@@ -41,7 +42,7 @@ class RiscV32GZBEncoding : public RiscV32GZBEncodingBase,
   ~RiscV32GZBEncoding() override;
 
   void ParseInstruction(uint32_t inst_word);
-  OpcodeEnum GetOpcode(SlotEnum, int) { return opcode_; }
+  OpcodeEnum GetOpcode(SlotEnum, int) override { return opcode_; }
   FormatEnum GetFormat(SlotEnum, int) { return format_; }
 
   PredicateOperandInterface *GetPredicate(SlotEnum, int, OpcodeEnum,
@@ -55,7 +56,7 @@ class RiscV32GZBEncoding : public RiscV32GZBEncodingBase,
 
   ResourceOperandInterface *GetComplexResourceOperand(
       SlotEnum, int, OpcodeEnum, ComplexResourceEnum resource, int begin,
-      int end);
+      int end) override;
 
   SourceOperandInterface *GetSource(SlotEnum, int, OpcodeEnum, SourceOpEnum op,
                                     int source_no) override;
