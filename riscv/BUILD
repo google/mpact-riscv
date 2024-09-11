@@ -52,6 +52,11 @@ config_setting(
     values = {"cpu": "darwin_arm64"},
 )
 
+config_setting(
+    name = "aarch64",
+    values = {"cpu": "aarch64"},
+)
+
 cc_library(
     name = "riscv_state",
     srcs = [
@@ -104,6 +109,7 @@ cc_library(
         "riscv_fp_state.cc",
     ] + select({
         "arm_cpu": ["riscv_fp_host_arm.cc"],
+        "aarch64": ["riscv_fp_host_arm.cc"],
         "darwin_arm64_cpu": ["riscv_fp_host_arm.cc"],
         "//conditions:default": ["riscv_fp_host_x86.cc"],
     }),
