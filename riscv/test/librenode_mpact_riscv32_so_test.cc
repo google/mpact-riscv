@@ -104,6 +104,7 @@ using LoadElfType = uint64_t (*)(int32_t, const char *, bool, int32_t *);
 using GetRegInfoSize = int32_t (*)(int32_t);
 using GetRegInfo = int32_t (*)(int32_t, int32_t, char *name, void *info);
 using WriteRegisterType = void (*)(int32_t, int32_t, uint64_t);
+using DestructType = void (*)(int32_t);
 
 TEST_F(LibRenodeMpactRiscV32SoTest, RunProgram) {
   absl::LeakCheckDisabler disabler;
@@ -120,6 +121,8 @@ TEST_F(LibRenodeMpactRiscV32SoTest, RunProgram) {
       reinterpret_cast<GetRegInfo>(dlsym(lib_, "get_reg_info"));
   WriteRegisterType write_register =
       reinterpret_cast<WriteRegisterType>(dlsym(lib_, "write_register"));
+  DestructType destruct =
+      reinterpret_cast<DestructType>(dlsym(lib_, "destruct"));
   // Verify that the function pointers are valid.
   CHECK_NE(construct, nullptr);
   CHECK_NE(step, nullptr);
@@ -174,6 +177,7 @@ TEST_F(LibRenodeMpactRiscV32SoTest, RunProgram) {
     total_stepped += num_stepped;
   } while (num_stepped > 10'000 && status == 0 && total_stepped < 100'000);
   EXPECT_EQ("Hello World! 5\n", testing::internal::GetCapturedStdout());
+  destruct(id);
 }
 
 }  // namespace
