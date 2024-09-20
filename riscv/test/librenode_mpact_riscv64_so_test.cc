@@ -21,9 +21,9 @@ using ::mpact::sim::util::renode::RenodeCpuRegister;
 class LibRenodeMpactRiscV64SoTest : public ::testing::Test {
  protected:
   LibRenodeMpactRiscV64SoTest() {
+    absl::LeakCheckDisabler disabler;
     std::string path = absl::StrCat(kDepotPath, kFileName);
-    absl::LeakCheckDisabler disabler;  // Ignore leaks from dlopen.
-    lib_ = dlopen(path.c_str(), RTLD_LAZY);
+    lib_ = absl::IgnoreLeak(dlopen(path.c_str(), RTLD_LAZY));
     CHECK_NE(lib_, nullptr);
   }
 
@@ -97,6 +97,7 @@ TEST_F(LibRenodeMpactRiscV64SoTest, SetIrqValue) {
 }
 
 using ConstructType = int32_t (*)(char *, int32_t);
+using DestructType = void (*)(int32_t);
 using StepType = uint64_t (*)(int32_t, uint64_t, int32_t *);
 using SetConfigType = int32_t (*)(int32_t, const char *[], const char *[],
                                   int32_t);
@@ -120,6 +121,8 @@ TEST_F(LibRenodeMpactRiscV64SoTest, RunProgram) {
       reinterpret_cast<GetRegInfo>(dlsym(lib_, "get_reg_info"));
   WriteRegisterType write_register =
       reinterpret_cast<WriteRegisterType>(dlsym(lib_, "write_register"));
+  DestructType destruct =
+      reinterpret_cast<DestructType>(dlsym(lib_, "destruct"));
   // Verify that the function pointers are valid.
   CHECK_NE(construct, nullptr);
   CHECK_NE(step, nullptr);
@@ -174,6 +177,7 @@ TEST_F(LibRenodeMpactRiscV64SoTest, RunProgram) {
     total_stepped += num_stepped;
   } while (num_stepped > 10'000 && status == 0 && total_stepped < 100'000);
   EXPECT_EQ("Hello world! 5\n", testing::internal::GetCapturedStdout());
+  destruct(id);
 }
 
 }  // namespace

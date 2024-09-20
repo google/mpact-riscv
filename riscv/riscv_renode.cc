@@ -22,7 +22,6 @@
 #include <functional>
 #include <iostream>
 #include <memory>
-#include <new>
 #include <string>
 #include <string_view>
 
@@ -207,14 +206,17 @@ RiscVRenode::~RiscVRenode() {
   proto_file_name = absl::StrCat("./mpact_riscv_", name_, ".proto");
   std::fstream proto_file(proto_file_name.c_str(), std::ios_base::out);
   std::string serialized;
-  if (!proto_file.good() || !google::protobuf::TextFormat::PrintToString(
-                                *component_proto.get(), &serialized)) {
-    LOG(ERROR) << "Failed to write proto to file";
+  if (!proto_file.good()) {
+    LOG(ERROR) << "Failed to open proto file for writing";
+  } else if (!google::protobuf::TextFormat::PrintToString(
+                 *component_proto.get(), &serialized)) {
+    LOG(ERROR) << "Failed to serialize protos";
   } else {
     proto_file << serialized;
-    proto_file.close();
   }
+  proto_file.close();
   // Clean up.
+  delete renode_router_;
   delete mem_profiler_;
   delete inst_profiler_;
   delete instrumentation_control_;
