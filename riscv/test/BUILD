@@ -649,6 +649,7 @@ cc_test(
         "testfiles/hello_world_arm.elf",
         "//riscv:renode_mpact_riscv32",
     ],
+    tags = ["notap"],
     deps = [
         "@com_google_absl//absl/debugging:leak_check",
         "@com_google_absl//absl/log:check",
@@ -666,6 +667,7 @@ cc_test(
         "testfiles/hello_world_64.elf",
         "//riscv:renode_mpact_riscv64",
     ],
+    tags = ["notap"],
     deps = [
         "@com_google_absl//absl/debugging:leak_check",
         "@com_google_absl//absl/log:check",
