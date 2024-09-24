@@ -595,6 +595,12 @@ void RiscV32GVecEncoding::InitializeDestinationOperandGetters() {
             state_, absl::StrCat(RiscVState::kFregPrefix, num), latency);
       }));
   dest_op_getters_.insert(
+      std::make_pair(static_cast<int>(DestOpEnum::kFd), [this](int latency) {
+        int num = encoding::v_arith::ExtractRd(inst_word_);
+        return GetRegisterDestinationOp<RVFpRegister>(
+            state_, absl::StrCat(RiscVState::kFregPrefix, num), latency);
+      }));
+  dest_op_getters_.insert(
       std::make_pair(static_cast<int>(DestOpEnum::kFrd), [this](int latency) {
         int num = encoding::r_type::ExtractRd(inst_word_);
         return GetRegisterDestinationOp<RVFpRegister>(
