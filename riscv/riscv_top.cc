@@ -17,11 +17,11 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
-#include <new>
 #include <string>
 #include <thread>  // NOLINT: third_party code.
 #include <utility>
 
+#include "absl/flags/flag.h"
 #include "absl/functional/any_invocable.h"
 #include "absl/functional/bind_front.h"
 #include "absl/log/check.h"
@@ -48,8 +48,12 @@
 // Uncomment if using resource checks below.
 // #include "mpact/sim/generic/resource_operand_interface.h"
 #include "mpact/sim/generic/type_helpers.h"
+#include "mpact/sim/util/memory/cache.h"
 #include "mpact/sim/util/memory/memory_interface.h"
 #include "mpact/sim/util/memory/memory_watcher.h"
+
+// Flag to enable and configure instruction cache.
+ABSL_FLAG(std::string, icache, "", "Instruction cache configuration");
 
 namespace mpact {
 namespace sim {
@@ -99,6 +103,8 @@ RiscVTop::~RiscVTop() {
     run_halted_ = nullptr;
   }
 
+  delete icache_;
+  if (inst_db_) inst_db_->DecRef();
   delete rv_breakpoint_manager_;
   delete rv_action_point_manager_;
   delete rv_action_point_memory_interface_;
@@ -187,6 +193,15 @@ void RiscVTop::Initialize() {
     }
     return false;
   });
+  if (!absl::GetFlag(FLAGS_icache).empty()) {
+    icache_ = new util::Cache("icache", this);
+    absl::Status status =
+        icache_->Configure(absl::GetFlag(FLAGS_icache), &counter_num_cycles_);
+    if (!status.ok()) {
+      LOG(ERROR) << "Failed to configure instruction cache: " << status;
+    }
+    inst_db_ = state_->db_factory()->Allocate<uint32_t>(1);
+  }
 }
 
 absl::Status RiscVTop::Halt() {
@@ -225,6 +240,7 @@ absl::Status RiscVTop::StepPastBreakpoint() {
   uint64_t next_seq_pc = pc + real_inst->size();
   SetPc(next_seq_pc);
   bool executed = false;
+  if (icache_) ICacheFetch(pc);
   do {
     executed = ExecuteInstruction(real_inst);
     counter_num_cycles_.Increment(1);
@@ -282,6 +298,7 @@ absl::StatusOr<int> RiscVTop::Step(int num) {
     // that is executed will overwrite this.
     SetPc(pc + inst->size());
     bool executed = false;
+    if (icache_) ICacheFetch(pc);
     do {
       executed = ExecuteInstruction(inst);
       counter_num_cycles_.Increment(1);
@@ -368,6 +385,7 @@ absl::Status RiscVTop::Run() {
       // executed will overwrite this.
       SetPc(pc + inst->size());
       bool executed = false;
+      if (icache_) ICacheFetch(pc);
       do {
         // Try executing the instruction. If it fails, advance a cycle
         // and try again.
@@ -784,6 +802,10 @@ void RiscVTop::DisableStatistics() {
     if (counter_ptr->GetName() == "pc") continue;
     counter_ptr->SetIsEnabled(false);
   }
+}
+
+void RiscVTop::ICacheFetch(uint64_t address) {
+  icache_->Load(address, inst_db_, nullptr, nullptr);
 }
 
 }  // namespace riscv

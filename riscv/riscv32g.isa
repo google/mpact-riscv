@@ -130,7 +130,7 @@ slot riscv32i {
       semfunc: "&RiscVINop";
     jal{: J_imm20 : next_pc, rd},
       resources: { next_pc : next_pc[0..], rd[0..]},
-      disasm: "jal", "%rd, %(@+J_imm20:08x)",
+      disasm: "jal", "%rd, 0x%(@+J_imm20:08x)",
       semfunc: "&RV32::RiscVIJal";
     jalr{: rs1, J_imm12 : next_pc, rd},
       resources: { next_pc, rs1 : next_pc[0..], rd[0..]},
@@ -138,7 +138,7 @@ slot riscv32i {
       semfunc: "&RV32::RiscVIJalr";
     j{: J_imm20 : next_pc, rd},
       resources: { next_pc : next_pc[0..], rd[0..]},
-      disasm: "j", "%(@+J_imm20:08x)",
+      disasm: "j", "0x%(@+J_imm20:08x)",
       semfunc: "&RV32::RiscVIJal";
     jr{: rs1, J_imm12 : next_pc, rd},
       resources: { next_pc, rs1 : next_pc[0..], rd[0..]},
@@ -146,27 +146,27 @@ slot riscv32i {
       semfunc: "&RV32::RiscVIJalr";
     beq{: rs1, rs2, B_imm12 : next_pc},
       resources: { next_pc, rs1, rs2 : next_pc[0..]},
-      disasm: "beq", "%rs1, %rs2, %(@+B_imm12:08x)",
+      disasm: "beq", "%rs1, %rs2, 0x%(@+B_imm12:08x)",
       semfunc: "&RV32::RiscVIBeq";
     bne{: rs1, rs2, B_imm12 : next_pc},
       resources: { next_pc, rs1, rs2 : next_pc[0..]},
-      disasm: "bne", "%rs1, %rs2, %(@+B_imm12:08x)",
+      disasm: "bne", "%rs1, %rs2, 0x%(@+B_imm12:08x)",
       semfunc: "&RV32::RiscVIBne";
     blt{: rs1, rs2, B_imm12 : next_pc},
       resources: { next_pc, rs1, rs2 : next_pc[0..]},
-      disasm: "blt", "%rs1, %rs2, %(@+B_imm12:08x)",
+      disasm: "blt", "%rs1, %rs2, 0x%(@+B_imm12:08x)",
       semfunc: "&RV32::RiscVIBlt";
     bltu{: rs1, rs2, B_imm12 : next_pc},
       resources: { next_pc, rs1, rs2 : next_pc[0..]},
-      disasm: "bltu", "%rs1, %rs2, %(@+B_imm12:08x)",
+      disasm: "bltu", "%rs1, %rs2, 0x%(@+B_imm12:08x)",
       semfunc: "&RV32::RiscVIBltu";
     bge{: rs1, rs2, B_imm12 : next_pc},
       resources: { next_pc, rs1, rs2 : next_pc[0..]},
-      disasm: "bge", "%rs1, %rs2, %(@+B_imm12:08x)",
+      disasm: "bge", "%rs1, %rs2, 0x%(@+B_imm12:08x)",
       semfunc: "&RV32::RiscVIBge";
     bgeu{: rs1, rs2, B_imm12 : next_pc},
       resources: { next_pc, rs1, rs2 : next_pc[0..]},
-      disasm: "bgeu", "%rs1, %rs2, %(@+B_imm12:08x)",
+      disasm: "bgeu", "%rs1, %rs2, 0x%(@+B_imm12:08x)",
       semfunc: "&RV32::RiscVIBgeu";
     lw{(: rs1, I_imm12), (: : rd)},
       resources: { next_pc, rs1 : rd[0..]},
@@ -754,11 +754,11 @@ slot riscv32c {
       semfunc: "&RV32::RiscVDSd";
     cj{: I_cj_imm11, x0 : next_pc, x0},
       resources: {next_pc,x0 : next_pc[0..], x0[0..]},
-      disasm: "j", "%(@+I_cj_imm11:08x)",
+      disasm: "j", "0x%(@+I_cj_imm11:08x)",
       semfunc: "&RV32::RiscVIJal";
     cjal{: I_cj_imm11, x0 : next_pc, x1},
       resources: {next_pc,x0 : next_pc[0..], x1[0..]},
-      disasm: "jal", "%(@+I_cj_imm11:08x)",
+      disasm: "jal", "0x%(@+I_cj_imm11:08x)",
       semfunc: "&RV32::RiscVIJal";
     cjr{: crs1, x0 : next_pc, x0},
       resources: {next_pc,crs1, x0 : next_pc[0..], x0[0..]},
@@ -770,11 +770,11 @@ slot riscv32c {
       semfunc: "&RV32::RiscVIJalr";
     cbeqz{: c3rs1, x0, I_cb_imm8 : next_pc},
       resources: {next_pc,c3rs1, x0 : next_pc[0..]},
-      disasm: "beqz", "%c3rs1, %(@+I_cb_imm8:08x)",
+      disasm: "beqz", "%c3rs1, 0x%(@+I_cb_imm8:08x)",
       semfunc: "&RV32::RiscVIBeq";
     cbnez{: c3rs1, x0, I_cb_imm8 : next_pc},
       resources: {next_pc,c3rs1, x0 : next_pc[0..]},
-      disasm: "bnez", "%c3rs1, %(@+I_cb_imm8:08x)",
+      disasm: "bnez", "%c3rs1, 0x%(@+I_cb_imm8:08x)",
       semfunc: "&RV32::RiscVIBne";
     cli{: x0, I_ci_imm6 : rd},
       resources: {next_pc,x0 : rd[0..]},

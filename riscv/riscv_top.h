@@ -36,6 +36,7 @@
 #include "mpact/sim/generic/decoder_interface.h"
 #include "mpact/sim/generic/register.h"
 #include "mpact/sim/generic/type_helpers.h"
+#include "mpact/sim/util/memory/cache.h"
 #include "mpact/sim/util/memory/memory_watcher.h"
 #include "riscv/riscv_action_point_memory_interface.h"
 #include "riscv/riscv_debug_interface.h"
@@ -49,6 +50,7 @@ namespace riscv {
 using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 using ::mpact::sim::generic::ActionPointManagerBase;
 using ::mpact::sim::generic::BreakpointManager;
+using ::mpact::sim::util::Cache;
 
 // Top level class for the RiscV32G simulator. This is the main interface for
 // interacting and controlling execution of programs running on the simulator.
@@ -147,6 +149,7 @@ class RiscVTop : public generic::Component, public RiscVDebugInterface {
   absl::Status StepPastBreakpoint();
   // Set the pc value.
   void SetPc(uint64_t value);
+  void ICacheFetch(uint64_t address);
 
   // The DB factory is used to manage data buffers for memory read/writes.
   generic::DataBufferFactory db_factory_;
@@ -184,6 +187,9 @@ class RiscVTop : public generic::Component, public RiscVDebugInterface {
   // disabled with the other counters.
   generic::SimpleCounter<uint64_t> counter_pc_;
   absl::flat_hash_map<uint32_t, std::string> register_id_map_;
+  // ICache.
+  Cache *icache_ = nullptr;
+  DataBuffer *inst_db_ = nullptr;
 };
 
 }  // namespace riscv
