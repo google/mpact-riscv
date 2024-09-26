@@ -29,6 +29,7 @@
 #include "mpact/sim/generic/action_point_manager_base.h"
 #include "mpact/sim/generic/breakpoint_manager.h"
 #include "mpact/sim/generic/component.h"
+#include "mpact/sim/generic/config.h"
 #include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/generic/counters.h"
 #include "mpact/sim/generic/data_buffer.h"
@@ -50,6 +51,7 @@ namespace riscv {
 using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 using ::mpact::sim::generic::ActionPointManagerBase;
 using ::mpact::sim::generic::BreakpointManager;
+using ::mpact::sim::generic::Config;
 using ::mpact::sim::util::Cache;
 
 // Top level class for the RiscV32G simulator. This is the main interface for
@@ -142,9 +144,14 @@ class RiscVTop : public generic::Component, public RiscVDebugInterface {
   const std::string &halt_string() const { return halt_string_; }
   void set_halt_string(std::string halt_string) { halt_string_ = halt_string; }
 
+  Cache *icache() const { return icache_; }
+  Cache *dcache() const { return dcache_; }
+
  private:
   // Initialize the top.
   void Initialize();
+  // Configure cache helper method.
+  void ConfigureCache(Cache *&cache, Config<std::string> &config);
   // Helper method to step past a breakpoint.
   absl::Status StepPastBreakpoint();
   // Set the pc value.
@@ -187,7 +194,11 @@ class RiscVTop : public generic::Component, public RiscVDebugInterface {
   // disabled with the other counters.
   generic::SimpleCounter<uint64_t> counter_pc_;
   absl::flat_hash_map<uint32_t, std::string> register_id_map_;
-  // ICache.
+  // Configuration items.
+  Config<std::string> icache_config_;
+  Config<std::string> dcache_config_;
+  // ICache & DCache.
+  Cache *dcache_ = nullptr;
   Cache *icache_ = nullptr;
   DataBuffer *inst_db_ = nullptr;
 };

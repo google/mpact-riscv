@@ -21,7 +21,6 @@
 #include <thread>  // NOLINT: third_party code.
 #include <utility>
 
-#include "absl/flags/flag.h"
 #include "absl/functional/any_invocable.h"
 #include "absl/functional/bind_front.h"
 #include "absl/log/check.h"
@@ -51,9 +50,6 @@
 #include "mpact/sim/util/memory/cache.h"
 #include "mpact/sim/util/memory/memory_interface.h"
 #include "mpact/sim/util/memory/memory_watcher.h"
-
-// Flag to enable and configure instruction cache.
-ABSL_FLAG(std::string, icache, "", "Instruction cache configuration");
 
 namespace mpact {
 namespace sim {
@@ -90,7 +86,15 @@ RiscVTop::RiscVTop(std::string name, RiscVState *state,
       state_(state),
       rv_decoder_(decoder),
       counter_num_instructions_("num_instructions", 0),
-      counter_num_cycles_("num_cycles", 0) {
+      counter_num_cycles_("num_cycles", 0),
+      icache_config_("icache", ""),
+      dcache_config_("dcache", "") {
+  CHECK_OK(AddConfig(&icache_config_));
+  icache_config_.AddValueWrittenCallback(
+      [this]() { ConfigureCache(icache_, icache_config_); });
+  CHECK_OK(AddConfig(&dcache_config_));
+  dcache_config_.AddValueWrittenCallback(
+      [this]() { ConfigureCache(dcache_, dcache_config_); });
   Initialize();
 }
 
@@ -193,14 +197,22 @@ void RiscVTop::Initialize() {
     }
     return false;
   });
-  if (!absl::GetFlag(FLAGS_icache).empty()) {
-    icache_ = new util::Cache("icache", this);
-    absl::Status status =
-        icache_->Configure(absl::GetFlag(FLAGS_icache), &counter_num_cycles_);
-    if (!status.ok()) {
-      LOG(ERROR) << "Failed to configure instruction cache: " << status;
-    }
-    inst_db_ = state_->db_factory()->Allocate<uint32_t>(1);
+  inst_db_ = db_factory_.Allocate<uint32_t>(1);
+}
+
+void RiscVTop::ConfigureCache(Cache *&cache, Config<std::string> &config) {
+  if (cache != nullptr) {
+    LOG(WARNING) << "Cache already configured - ignored";
+    return;
+  }
+  auto cfg_str = config.GetValue();
+  if (cfg_str.empty()) {
+    LOG(WARNING) << "Cache configuration is empty - ignored";
+  }
+  cache = new util::Cache(config.name(), this);
+  absl::Status status = cache->Configure(cfg_str, &counter_num_cycles_);
+  if (!status.ok()) {
+    LOG(ERROR) << "Failed to configure instruction cache: " << status.message();
   }
 }
 

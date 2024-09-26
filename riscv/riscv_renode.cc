@@ -34,6 +34,7 @@
 #include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/proto/component_data.pb.h"
+#include "mpact/sim/proto/component_data.proto.h"
 #include "mpact/sim/util/memory/atomic_memory.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "mpact/sim/util/memory/memory_interface.h"
@@ -63,6 +64,7 @@ namespace sim {
 namespace riscv {
 
 using ::mpact::sim::proto::ComponentData;
+using ::mpact::sim::proto::ComponentValueEntry;
 using ::mpact::sim::riscv::RiscVClint;
 using ::mpact::sim::util::AtomicMemoryOpInterface;
 using ::mpact::sim::util::MemoryWatcher;
@@ -82,6 +84,8 @@ constexpr std::string_view kInstProfile = "instProfile";
 constexpr std::string_view kMemProfile = "memProfile";
 constexpr std::string_view kStackEnd = "stackEnd";
 constexpr std::string_view kStackSize = "stackSize";
+constexpr std::string_view kICache = "iCache";
+constexpr std::string_view kDCache = "dCache";
 
 constexpr char kStackEndSymbolName[] = "__stack_end";
 constexpr char kStackSizeSymbolName[] = "__stack_size";
@@ -227,8 +231,8 @@ RiscVRenode::~RiscVRenode() {
   delete riscv_cli_forwarder_;
   delete rv_decoder_;
   delete rv_fp_state_;
-  delete rv_state_;
   delete riscv_top_;
+  delete rv_state_;
   delete semihost_;
   delete router_;
   delete atomic_memory_;
@@ -401,6 +405,8 @@ static absl::StatusOr<uint64_t> ParseNumber(const std::string &number) {
 
 absl::Status RiscVRenode::SetConfig(const char *config_names[],
                                     const char *config_values[], int size) {
+  std::string icache_cfg;
+  std::string dcache_cfg;
   uint64_t memory_base = 0;
   uint64_t memory_size = 0;
   uint64_t clint_mmr_base = 0;
@@ -413,33 +419,40 @@ absl::Status RiscVRenode::SetConfig(const char *config_names[],
   int wait_for_cli = 0;
   for (int i = 0; i < size; ++i) {
     std::string name(config_names[i]);
-    auto res = ParseNumber(config_values[i]);
-    if (!res.ok()) {
-      return res.status();
-    }
-    auto value = res.value();
-    if (name == kMemoryBase) {
-      memory_base = value;
-    } else if (name == kMemorySize) {
-      memory_size = value;
-    } else if (name == kClintMMRBase) {
-      clint_mmr_base = value;
-    } else if (name == kCLIPort) {
-      cli_port = value;
-    } else if (name == kWaitForCLI) {
-      wait_for_cli = value;
-    } else if (name == kInstProfile) {
-      do_inst_profile = value != 0;
-    } else if (name == kMemProfile) {
-      mem_profiler_->set_is_enabled(value != 0);
-    } else if (name == kStackEnd) {
-      stack_end_value = value;
-      stack_end_set = true;
-    } else if (name == kStackSize) {
-      stack_size_value = value;
-      stack_size_set = true;
+    if (name == kICache) {
+      icache_cfg = config_values[i];
+    } else if (name == kDCache) {
+      dcache_cfg = config_values[i];
     } else {
-      LOG(ERROR) << "Unknown config name: " << name << " " << config_values[i];
+      auto res = ParseNumber(config_values[i]);
+      if (!res.ok()) {
+        return res.status();
+      }
+      auto value = res.value();
+      if (name == kMemoryBase) {
+        memory_base = value;
+      } else if (name == kMemorySize) {
+        memory_size = value;
+      } else if (name == kClintMMRBase) {
+        clint_mmr_base = value;
+      } else if (name == kCLIPort) {
+        cli_port = value;
+      } else if (name == kWaitForCLI) {
+        wait_for_cli = value;
+      } else if (name == kInstProfile) {
+        do_inst_profile = value != 0;
+      } else if (name == kMemProfile) {
+        mem_profiler_->set_is_enabled(value != 0);
+      } else if (name == kStackEnd) {
+        stack_end_value = value;
+        stack_end_set = true;
+      } else if (name == kStackSize) {
+        stack_size_value = value;
+        stack_size_set = true;
+      } else {
+        LOG(ERROR) << "Unknown config name: " << name << " "
+                   << config_values[i];
+      }
     }
   }
   if (memory_size == 0) {
@@ -535,6 +548,22 @@ absl::Status RiscVRenode::SetConfig(const char *config_names[],
 
     auto sp_write = riscv_top_->WriteRegister("sp", stack_end + stack_size);
     if (!sp_write.ok()) return sp_write;
+  }
+  if (!icache_cfg.empty()) {
+    ComponentValueEntry icache_value;
+    icache_value.set_name("icache");
+    icache_value.set_string_value(icache_cfg);
+    auto *cfg = riscv_top_->GetConfig("icache");
+    auto status = cfg->Import(&icache_value);
+    if (!status.ok()) return status;
+  }
+  if (!dcache_cfg.empty()) {
+    ComponentValueEntry dcache_value;
+    dcache_value.set_name("dcache");
+    dcache_value.set_string_value(dcache_cfg);
+    auto *cfg = riscv_top_->GetConfig("dcache");
+    auto status = cfg->Import(&dcache_value);
+    if (!status.ok()) return status;
   }
   return absl::OkStatus();
 }

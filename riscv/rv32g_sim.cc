@@ -21,7 +21,6 @@
 #include <ios>
 #include <iostream>
 #include <memory>
-#include <new>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -60,6 +59,7 @@
 
 using ::mpact::sim::generic::Instruction;
 using ::mpact::sim::proto::ComponentData;
+using ::mpact::sim::proto::ComponentValueEntry;
 using ::mpact::sim::riscv::RiscV32Decoder;
 using ::mpact::sim::riscv::RiscV32GBitmanipDecoder;
 using ::mpact::sim::riscv::RiscV32HtifSemiHost;
@@ -142,6 +142,9 @@ ABSL_FLAG(bool, exit_on_ecall, false, "Exit on ecall - false by default");
 
 // Enable bit manipulation instructions.
 ABSL_FLAG(bool, bitmanip, false, "Enable bit manipulation instructions");
+
+// Flag to enable and configure the instruction cache.
+ABSL_FLAG(std::string, icache, "", "Instruction cache configuration");
 
 constexpr char kStackEndSymbolName[] = "__stack_end";
 constexpr char kStackSizeSymbolName[] = "__stack_size";
@@ -266,6 +269,17 @@ int main(int argc, char **argv) {
   }
 
   RiscVTop riscv_top("RiscV32Sim", &rv_state, rv_decoder);
+
+  if (!absl::GetFlag(FLAGS_icache).empty()) {
+    ComponentValueEntry icache_value;
+    icache_value.set_name("icache");
+    icache_value.set_string_value(absl::GetFlag(FLAGS_icache));
+    auto *cfg = riscv_top.GetConfig("icache");
+    auto status = cfg->Import(&icache_value);
+    if (!status.ok()) return -1;
+  }
+
+  // TODO: enable dcache.
 
   if (absl::GetFlag(FLAGS_exit_on_ecall)) {
     rv_state.set_on_ecall([&riscv_top](const Instruction *inst) -> bool {

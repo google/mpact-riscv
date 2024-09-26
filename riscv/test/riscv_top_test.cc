@@ -193,8 +193,8 @@ class RiscVTopTest : public testing::Test {
     delete loader_;
     delete decoder_;
     delete fp_state_;
-    delete state_;
     delete riscv_top_;
+    delete state_;
     delete memory_;
   }
 
