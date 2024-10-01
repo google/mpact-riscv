@@ -34,7 +34,6 @@
 #include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/proto/component_data.pb.h"
-#include "mpact/sim/proto/component_data.proto.h"
 #include "mpact/sim/util/memory/atomic_memory.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "mpact/sim/util/memory/memory_interface.h"
