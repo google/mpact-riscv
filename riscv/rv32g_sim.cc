@@ -143,8 +143,9 @@ ABSL_FLAG(bool, exit_on_ecall, false, "Exit on ecall - false by default");
 // Enable bit manipulation instructions.
 ABSL_FLAG(bool, bitmanip, false, "Enable bit manipulation instructions");
 
-// Flag to enable and configure the instruction cache.
+// Flag to enable and configure the instruction and data caches.
 ABSL_FLAG(std::string, icache, "", "Instruction cache configuration");
+ABSL_FLAG(std::string, dcache, "", "Data cache configuration");
 
 constexpr char kStackEndSymbolName[] = "__stack_end";
 constexpr char kStackSizeSymbolName[] = "__stack_size";
@@ -279,7 +280,18 @@ int main(int argc, char **argv) {
     if (!status.ok()) return -1;
   }
 
-  // TODO: enable dcache.
+  if (!absl::GetFlag(FLAGS_dcache).empty()) {
+    ComponentValueEntry dcache_value;
+    dcache_value.set_name("dcache");
+    dcache_value.set_string_value(absl::GetFlag(FLAGS_dcache));
+    auto *cfg = riscv_top.GetConfig("dcache");
+    auto status = cfg->Import(&dcache_value);
+    if (!status.ok()) return -1;
+    // Hook the cache into the memory port.
+    auto *dcache = riscv_top.dcache();
+    dcache->set_memory(riscv_top.state()->memory());
+    riscv_top.state()->set_memory(dcache);
+  }
 
   if (absl::GetFlag(FLAGS_exit_on_ecall)) {
     rv_state.set_on_ecall([&riscv_top](const Instruction *inst) -> bool {

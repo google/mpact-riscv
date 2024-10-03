@@ -563,6 +563,10 @@ absl::Status RiscVRenode::SetConfig(const char *config_names[],
     auto *cfg = riscv_top_->GetConfig("dcache");
     auto status = cfg->Import(&dcache_value);
     if (!status.ok()) return status;
+    // Hook the cache into the memory port.
+    auto *dcache = riscv_top_->dcache();
+    dcache->set_memory(riscv_top_->state()->memory());
+    riscv_top_->state()->set_memory(dcache);
   }
   return absl::OkStatus();
 }

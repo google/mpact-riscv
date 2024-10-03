@@ -108,6 +108,7 @@ RiscVTop::~RiscVTop() {
   }
 
   delete icache_;
+  delete dcache_;
   if (inst_db_) inst_db_->DecRef();
   delete rv_breakpoint_manager_;
   delete rv_action_point_manager_;
