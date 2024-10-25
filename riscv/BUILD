@@ -256,9 +256,11 @@ cc_library(
     name = "riscv_rvm23_instructions",
     srcs = [
         "riscv_zicond_instructions.cc",
+        "riscv_zimop_instructions.cc",
     ],
     hdrs = [
         "riscv_zicond_instructions.h",
+        "riscv_zimop_instructions.h",
     ],
     copts = [
         "-O3",
@@ -268,6 +270,7 @@ cc_library(
         ":riscv_g",
         ":riscv_state",
         ":riscv_v",
+        "@com_google_mpact-sim//mpact/sim/generic:arch_state",
         "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
     ],
@@ -366,6 +369,7 @@ mpact_isa_decoder(
         "riscv32zb.isa",
         "riscv_vector.isa",
         "riscv_zicond.isa",
+        "riscv_zimop.isa",
     ],
     isa_name = "RVM23",
     prefix = "rvm23",
@@ -387,6 +391,7 @@ mpact_bin_fmt_decoder(
         "riscv32v.bin_fmt",
         "riscv32zb.bin_fmt",
         "riscv_zicond.bin_fmt",
+        "riscv_zimop.bin_fmt",
     ],
     prefix = "rvm23",
     deps = [

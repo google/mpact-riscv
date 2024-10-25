@@ -1,0 +1,109 @@
+// Copyright 2024 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// This file contains the encoding for the Zimop and Zcmop instructions.
+
+format MopRType[32] : Inst32Format {
+  fields:
+    unsigned func1[1];
+    unsigned n_hi[1];
+    unsigned func2[2];
+    unsigned n_mid[2];
+    unsigned func4[4];
+    unsigned n_lo[2];
+    unsigned rs1[5];
+    unsigned func3[3];
+    unsigned rd[5];
+    unsigned opcode[7];
+  overlays:
+    unsigned mop_no[5] = n_hi, n_mid, n_lo;
+};
+
+format MopRRType[32] : Inst32Format {
+  fields:
+    unsigned func1h[1];
+    unsigned n_hi[1];
+    unsigned func2[2];
+    unsigned n_lo[2];
+    unsigned func1l[1];
+    unsigned rs2[5];
+    unsigned rs1[5];
+    unsigned func3[3];
+    unsigned rd[5];
+    unsigned opcode[7];
+  overlays:
+    unsigned mop_no[3] = n_hi, n_lo;
+};
+
+instruction group RiscVZimop[32] : Inst32Format {
+  mop_r_0: MopRType : mop_no == 0, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_1: MopRType : mop_no == 1, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_2: MopRType : mop_no == 2, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_3: MopRType : mop_no == 3, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_4: MopRType : mop_no == 4, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_5: MopRType : mop_no == 5, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_6: MopRType : mop_no == 6, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_7: MopRType : mop_no == 7, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_8: MopRType : mop_no == 8, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_9: MopRType : mop_no == 9, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_10: MopRType : mop_no == 10, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_11: MopRType : mop_no == 11, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_12: MopRType : mop_no == 12, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_13: MopRType : mop_no == 13, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_14: MopRType : mop_no == 14, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_15: MopRType : mop_no == 15, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_16: MopRType : mop_no == 16, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_17: MopRType : mop_no == 17, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_18: MopRType : mop_no == 18, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_19: MopRType : mop_no == 19, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_20: MopRType : mop_no == 20, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_21: MopRType : mop_no == 21, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_22: MopRType : mop_no == 22, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_23: MopRType : mop_no == 23, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_24: MopRType : mop_no == 24, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_25: MopRType : mop_no == 25, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_26: MopRType : mop_no == 26, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_27: MopRType : mop_no == 27, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_28: MopRType : mop_no == 28, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_29: MopRType : mop_no == 29, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_30: MopRType : mop_no == 30, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_r_31: MopRType : mop_no == 31, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
+  mop_rr_0: MopRRType : mop_no == 0, func1h == 0b1, func2 == 0b00, func1l == 0b1, opcode == 0b111'0011;
+  mop_rr_1: MopRRType : mop_no == 1, func1h == 0b1, func2 == 0b00, func1l == 0b1, opcode == 0b111'0011;
+  mop_rr_2: MopRRType : mop_no == 2, func1h == 0b1, func2 == 0b00, func1l == 0b1, opcode == 0b111'0011;
+  mop_rr_3: MopRRType : mop_no == 3, func1h == 0b1, func2 == 0b00, func1l == 0b1, opcode == 0b111'0011;
+  mop_rr_4: MopRRType : mop_no == 4, func1h == 0b1, func2 == 0b00, func1l == 0b1, opcode == 0b111'0011;
+  mop_rr_5: MopRRType : mop_no == 5, func1h == 0b1, func2 == 0b00, func1l == 0b1, opcode == 0b111'0011;
+  mop_rr_6: MopRRType : mop_no == 6, func1h == 0b1, func2 == 0b00, func1l == 0b1, opcode == 0b111'0011;
+  mop_rr_7: MopRRType : mop_no == 7, func1h == 0b1, func2 == 0b00, func1l == 0b1, opcode == 0b111'0011;
+};
+
+format CMopType[16] : Inst16Format {
+  fields:
+    unsigned func4[4];
+    unsigned num[5];
+    unsigned rd[5];
+    unsigned op[2];
+};
+
+instruction group RiscVZcmop[16] : Inst16Format {
+  c_mop_1:  CMopType : func4 == 0b0110, num == 1, rd == 0, op == 0b01;
+  c_mop_3:  CMopType : func4 == 0b0110, num == 3, rd == 0, op == 0b01;
+  c_mop_5:  CMopType : func4 == 0b0110, num == 5, rd == 0, op == 0b01;
+  c_mop_7:  CMopType : func4 == 0b0110, num == 7, rd == 0, op == 0b01;
+  c_mop_9:  CMopType : func4 == 0b0110, num == 9, rd == 0, op == 0b01;
+  c_mop_11: CMopType : func4 == 0b0110, num == 11, rd == 0, op == 0b01;
+  c_mop_13: CMopType : func4 == 0b0110, num == 13, rd == 0, op == 0b01;
+  c_mop_15: CMopType : func4 == 0b0110, num == 15, rd == 0, op == 0b01;
+}

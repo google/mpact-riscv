@@ -1,0 +1,266 @@
+// Copyright 2024 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// This file contains the ISA description for the RiscV32/64 Zimop and Zcmop
+// extensions. These are the "may be  operations", which are simply opcodes for
+// instructions that do not generate exceptions, but have no other semantics
+// other than writing zero to the destination register (Zimop) or operate as a
+// nop (Zcmop).
+
+includes {
+  #include "riscv/riscv_i_instructions.h"
+  #include "riscv/riscv_zimop_instructions.isa"
+}
+
+slot riscv32_zimop {
+  resources OneOp = {next_pc : rd[..rd]};
+  opcodes {
+    mop_r_0{: rs1 : rd},
+      resources: OneOp,
+      disasm: "mop.r.0", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_1{: rs1 : rd},
+      resources: OneOp,
+      disasm: "mop.r.1", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_2{: rs1 : rd},
+      resources: OneOp,
+      disasm: "mop.r.2", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_3{: rs1 : rd},
+      resources: OneOp,
+      disasm: "mop.r.3", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_4{: rs1 : rd},
+      resources: OneOp,
+      disasm: "mop.r.4", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_5{: rs1 : rd},
+      resources: OneOp,
+      disasm: "mop.r.5", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_6{: rs1: rd},
+      resources: OneOp,
+      disasm: "mop.r.6", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_7{: rs1: rd},
+      resources: OneOp,
+      disasm: "mop.r.7", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_8{: rs1: rd},
+      resources: OneOp,
+      disasm: "mop.r.8", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_9{: rs1: rd},
+      resources: OneOp,
+      disasm: "mop.r.9", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_10{: rs1 : rd},
+      resources: OneOp,
+      disasm: "mop.r.10", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_11{: rs1 : rd},
+      resources: OneOp,
+      disasm: "mop.r.11", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_12{: rs1 : rd},
+      resources: OneOp,
+      disasm: "mop.r.12", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_13{: rs1 : rd},
+      resources: OneOp,
+      disasm: "mop.r.13", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_14{: rs1 : rd},
+      resources: OneOp,
+      disasm: "mop.r.14", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_15{: rs1 : rd},
+      resources: OneOp,
+      disasm: "mop.r.15", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_16{: rs1 : rd},
+      resources: OneOp,
+      disasm: "mop.r.15", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_17{: rs1 : rd},
+      resources: OneOp,
+      disasm: "mop.r.17", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_18{: rs1 : rd},
+      resources: OneOp,
+      disasm: "mop.r.18", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_19{: rs1 : rd},
+      resources: OneOp,
+      disasm: "mop.r.19", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_20{: rs1 : rd},
+      resources: OneOp,
+      disasm: "mop.r.20", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_21{: rs1 : rd},
+      resources: OneOp,
+      disasm: "mop.r.21", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_22{: rs1 : rd},
+      resources: OneOp,
+      disasm: "mop.r.22", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_23{: rs1 : rd},
+      resources: OneOp,
+      disasm: "mop.r.23", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_24{: rs1 : rd},
+      resources: OneOp,
+      disasm: "mop.r.24", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_25{: rs1 : rd},
+      resources: OneOp,
+      disasm: "mop.r.25", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_26{: rs1 : rd},
+      resources: OneOp,
+      disasm: "mop.r.26", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_27{: rs1 : rd},
+      resources: OneOp,
+      disasm: "mop.r.27", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_28{: rs1 : rd},
+      resources: OneOp,
+      disasm: "mop.r.28", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_29{: rs1 : rd},
+      resources: OneOp,
+      disasm: "mop.r.29", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_30{: rs1 : rd},
+      resources: OneOp,
+      disasm: "mop.r.30", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_r_31{: rs1 : rd},
+      resources: OneOp,
+      disasm: "mop.r.31", "%rd, %rs1",
+      semfunc: "&RV32::RiscVMop";
+    mop_rr_0{: rs1, rs2 : rd},
+      resources: OneOp,
+      disasm: "mop.rr.0", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVMop";
+    mop_rr_1{: rs1, rs2 : rd},
+      resources: OneOp,
+      disasm: "mop.rr.1", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVMop";
+    mop_rr_2{: rs1, rs2 : rd},
+      resources: OneOp,
+      disasm: "mop.rr.2", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVMop";
+    mop_rr_3{: rs1, rs2 : rd},
+      resources: OneOp,
+      disasm: "mop.rr.3", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVMop";
+    mop_rr_4{: rs1, rs2 : rd},
+      resources: OneOp,
+      disasm: "mop.rr.4", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVMop";
+    mop_rr_5{: rs1, rs2 : rd},
+      resources: OneOp,
+      disasm: "mop.rr.5", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVMop";
+    mop_rr_6{: rs1, rs2 : rd},
+      resources: OneOp,
+      disasm: "mop.rr.6", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVMop";
+    mop_rr_7{: rs1, rs2 : rd},
+      resources: OneOp,
+      disasm: "mop.rr.7", "%rd, %rs1, %rs2",
+      semfunc: "&RV32::RiscVMop";
+  }
+}
+
+slot riscv64_zimop : riscv32_zimop {
+  resources OneOp = {next_pc : rd[..rd]};
+  opcodes {
+    mop_r_0 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_1 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_2 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_3 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_4 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_5 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_6 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_7 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_8 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_9 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_10 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_11 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_12 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_13 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_14 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_15 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_16 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_17 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_18 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_19 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_20 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_21 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_22 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_23 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_24 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_25 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_26 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_27 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_28 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_29 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_30 = override, semfunc: "&RV64::RiscVMop";
+    mop_r_31 = override, semfunc: "&RV64::RiscVMop";
+    mop_rr_0 = override, semfunc: "&RV64::RiscVMop";
+    mop_rr_1 = override, semfunc: "&RV64::RiscVMop";
+    mop_rr_2 = override, semfunc: "&RV64::RiscVMop";
+    mop_rr_3 = override, semfunc: "&RV64::RiscVMop";
+    mop_rr_4 = override, semfunc: "&RV64::RiscVMop";
+    mop_rr_5 = override, semfunc: "&RV64::RiscVMop";
+    mop_rr_6 = override, semfunc: "&RV64::RiscVMop";
+    mop_rr_7 = override, semfunc: "&RV64::RiscVMop";
+  }
+}
+
+// Compact May-be-operations.
+slot riscv_zcmop {
+  opcodes {
+    c_mop_1{},
+      disasm: "c.mop.1",
+      semfunc: "RiscVINop";
+    c_mop_3{},
+      disasm: "c.mop.3",
+      semfunc: "RiscVINop";
+    c_mop_5{},
+      disasm: "c.mop.5",
+      semfunc: "RiscVINop";
+    c_mop_7{},
+      disasm: "c.mop.7",
+      semfunc: "RiscVINop";
+    c_mop_9{},
+      disasm: "c.mop.9",
+      semfunc: "RiscVINop";
+    c_mop_11{},
+      disasm: "c.mop.11",
+      semfunc: "RiscVINop";
+    c_mop_13{},
+      disasm: "c.mop.13",
+      semfunc: "RiscVINop";
+    c_mop_15{},
+      disasm: "c.mop.15",
+      semfunc: "RiscVINop";
+  }
+}
