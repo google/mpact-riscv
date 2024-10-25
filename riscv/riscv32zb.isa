@@ -21,11 +21,18 @@ includes {
 
 disasm widths = {-18};
 
+// Slot that gathers all the bitmanipulation instructions.
+slot riscv32_zb :
+  riscv32_zba,
+  riscv32_zbb,
+  riscv32_zbb_imm,
+  riscv32_zbc,
+  riscv32_zbs,
+  riscv32_zbs_imm {
+}
+
 slot riscv32_zba {
   default size = 4;
-  default opcode =
-    disasm: "Illegal instruction at 0x%(@:08x)",
-    semfunc: "&RiscVIllegalInstruction";
   resources ThreeOp = { next_pc, rs1, rs2 : rd[..rd]};
   opcodes {
     sh1add{: rs1, rs2, const1 : rd},
@@ -45,9 +52,6 @@ slot riscv32_zba {
 
 slot riscv32_zbb {
   default size = 4;
-  default opcode =
-    disasm: "Illegal instruction at 0x%(@:08x)",
-    semfunc: "&RiscVIllegalInstruction";
   resources TwoOp = { next_pc, rs1 : rd[..rd]};
   resources ThreeOp = { next_pc, rs1, rs2 : rd[..rd]};
   opcodes {
@@ -132,9 +136,6 @@ slot riscv32_zbb {
 
 slot riscv32_zbb_imm {
   default size = 4;
-  default opcode =
-    disasm: "Illegal instruction at 0x%(@:08x)",
-    semfunc: "&RiscVIllegalInstruction";
   resources TwoOp = { next_pc, rs1 : rd[..rd]};
   resources ThreeOp = { next_pc, rs1, rs2 : rd[..rd]};
   opcodes {
@@ -147,9 +148,6 @@ slot riscv32_zbb_imm {
 
 slot riscv32_zbc {
   default size = 4;
-  default opcode =
-    disasm: "Illegal instruction at 0x%(@:08x)",
-    semfunc: "&RiscVIllegalInstruction";
   resources ThreeOp = { next_pc, rs1, rs2 : rd[..rd]};
   opcodes {
     // Carry-less multiplication.
@@ -170,9 +168,6 @@ slot riscv32_zbc {
 
 slot riscv32_zbs {
   default size = 4;
-  default opcode =
-    disasm: "Illegal instruction at 0x%(@:08x)",
-    semfunc: "&RiscVIllegalInstruction";
   resources TwoOp = { next_pc, rs1 : rd[..rd]};
   resources ThreeOp = { next_pc, rs1, rs2 : rd[..rd]};
   opcodes {
@@ -198,9 +193,6 @@ slot riscv32_zbs {
 
 slot riscv32_zbs_imm {
   default size = 4;
-  default opcode =
-    disasm: "Illegal instruction at 0x%(@:08x)",
-    semfunc: "&RiscVIllegalInstruction";
   resources TwoOp = { next_pc, rs1 : rd[..rd]};
   opcodes {
     // Single-bit instructions.

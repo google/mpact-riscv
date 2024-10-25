@@ -23,6 +23,15 @@ includes {
 
 disasm widths = {-18};
 
+// Slot that gathers all the bitmanipulation instructions.
+slot riscv64_zb :
+  riscv64_zba,
+  riscv64_zbb,
+  riscv64_zbb_imm,
+  riscv64_zbc,
+  riscv64_zbs_imm {
+}
+
 slot riscv64_zba : riscv32_zba {
   default size = 4;
   default opcode =

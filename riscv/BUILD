@@ -142,6 +142,7 @@ cc_library(
         "riscv_m_instructions.cc",
         "riscv_priv_instructions.cc",
         "riscv_zfencei_instructions.cc",
+        "riscv_zicond_instructions.cc",
         "riscv_zicsr_instructions.cc",
     ],
     hdrs = [
@@ -153,6 +154,7 @@ cc_library(
         "riscv_m_instructions.h",
         "riscv_priv_instructions.h",
         "riscv_zfencei_instructions.h",
+        "riscv_zicond_instructions.h",
         "riscv_zicsr_instructions.h",
     ],
     copts = [
@@ -250,6 +252,27 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "riscv_rvm23_instructions",
+    srcs = [
+        "riscv_zicond_instructions.cc",
+    ],
+    hdrs = [
+        "riscv_zicond_instructions.h",
+    ],
+    copts = [
+        "-O3",
+        "-ffp-model=strict",
+    ],
+    deps = [
+        ":riscv_g",
+        ":riscv_state",
+        ":riscv_v",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+    ],
+)
+
 mpact_isa_decoder(
     name = "riscv32g_isa",
     src = "riscv32g.isa",
@@ -331,6 +354,43 @@ mpact_bin_fmt_decoder(
     prefix = "riscv32gzb",
     deps = [
         ":riscv32gzb_isa",
+    ],
+)
+
+mpact_isa_decoder(
+    name = "rvm23_isa",
+    src = "rvm23.isa",
+    includes = [
+        "riscv32g.isa",
+        "riscv32v.isa",
+        "riscv32zb.isa",
+        "riscv_vector.isa",
+        "riscv_zicond.isa",
+    ],
+    isa_name = "RVM23",
+    prefix = "rvm23",
+    deps = [
+        ":riscv_bitmanip_instructions",
+        ":riscv_g",
+        ":riscv_rvm23_instructions",
+        ":riscv_v",
+        "@com_google_absl//absl/functional:bind_front",
+    ],
+)
+
+mpact_bin_fmt_decoder(
+    name = "rvm23_bin_fmt",
+    src = "rvm23.bin_fmt",
+    decoder_name = "RVM23",
+    includes = [
+        "riscv32g.bin_fmt",
+        "riscv32v.bin_fmt",
+        "riscv32zb.bin_fmt",
+        "riscv_zicond.bin_fmt",
+    ],
+    prefix = "rvm23",
+    deps = [
+        ":rvm23_isa",
     ],
 )
 
