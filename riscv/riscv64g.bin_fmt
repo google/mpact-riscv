@@ -202,7 +202,8 @@ instruction group RiscVGInst32[32] : Inst32Format {
   sraw   : RType  : func7 == 0b010'0000, func3==0b101, opcode == 0b011'1011;
   or     : RType  : func7 == 0b000'0000, func3==0b110, opcode == 0b011'0011;
   and    : RType  : func7 == 0b000'0000, func3==0b111, opcode == 0b011'0011;
-  fence  : Fence  : func3 == 0b000, opcode == 0b000'1111;
+  fence     : Fence  : fm == 0b0000, succ != 0b0000, func3 == 0b000, opcode == 0b000'1111;
+  fence_tso : Fence : fm == 0b1000, pred == 0b0011, succ == 0b0011, func3 == 0b000, opcode == 0b000'1111;
   ecall  : Inst32Format : bits == 0b0000'0000'0000'00000'000'00000, opcode == 0b111'0011;
   ebreak : Inst32Format : bits == 0b0000'0000'0001'00000'000'00000, opcode == 0b111'0011;
   // RiscV32 Instruction fence.
