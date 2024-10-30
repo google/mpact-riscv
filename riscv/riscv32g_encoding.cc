@@ -15,6 +15,7 @@
 #include "riscv/riscv32g_encoding.h"
 
 #include <cstdint>
+#include <new>
 #include <string>
 #include <utility>
 
@@ -305,11 +306,6 @@ void RiscV32GEncoding::InitializeSourceOperandGetters() {
         return new generic::ImmediateOperand<int32_t>(
             encoding::inst32_format::ExtractJImm(inst_word_));
       }));
-  source_op_getters_.insert(
-      std::make_pair(static_cast<int>(SourceOpEnum::kPred), [this]() {
-        return new generic::ImmediateOperand<uint32_t>(
-            encoding::inst32_format::ExtractPred(inst_word_));
-      }));
   source_op_getters_.insert(std::make_pair(
       static_cast<int>(SourceOpEnum::kRd),
       [this]() -> SourceOperandInterface * {
@@ -369,11 +365,6 @@ void RiscV32GEncoding::InitializeSourceOperandGetters() {
       std::make_pair(static_cast<int>(SourceOpEnum::kSImm12), [this]() {
         return new generic::ImmediateOperand<int32_t>(
             encoding::inst32_format::ExtractSImm(inst_word_));
-      }));
-  source_op_getters_.insert(
-      std::make_pair(static_cast<int>(SourceOpEnum::kSucc), [this]() {
-        return new generic::ImmediateOperand<uint32_t>(
-            encoding::inst32_format::ExtractSucc(inst_word_));
       }));
   source_op_getters_.insert(
       std::make_pair(static_cast<int>(SourceOpEnum::kUImm20), [this]() {

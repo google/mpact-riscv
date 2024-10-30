@@ -16,6 +16,7 @@
 
 #include <cstdint>
 #include <functional>
+#include <iostream>
 #include <limits>
 #include <type_traits>
 
@@ -540,17 +541,12 @@ void RiscVISb(const Instruction *instruction) {
 }  // namespace RV64
 
 void RiscVIFence(const Instruction *instruction) {
-  int pred = generic::GetInstructionSource<uint32_t>(instruction, 0) & 0xf;
-  int succ = generic::GetInstructionSource<uint32_t>(instruction, 1) & 0xf;
+  uint32_t bits = instruction->Source(0)->AsUint32(0);
+  int fm = (bits >> 8) & 0xf;
+  int predecessor = (bits >> 4) & 0xf;
+  int successor = bits & 0xf;
   auto *state = static_cast<RiscVState *>(instruction->state());
-  // Fence mode is 0x0
-  state->Fence(instruction, /*fence_mode=*/0x0, pred, succ);
-}
-
-void RiscVIFenceTso(const Instruction *instruction) {
-  auto *state = static_cast<RiscVState *>(instruction->state());
-  state->Fence(instruction, /*fence_mode=*/0b1000, /*pred=*/0b0011,
-               /*succ=*/0b0011);
+  state->Fence(instruction, fm, predecessor, successor);
 }
 
 void RiscVIEcall(const Instruction *instruction) {

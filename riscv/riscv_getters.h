@@ -16,6 +16,7 @@
 #define THIRD_PARTY_MPACT_RISCV_RISCV_GETTERS_H_
 
 #include <cstdint>
+#include <new>
 #include <string>
 
 #include "absl/strings/str_cat.h"
@@ -225,10 +226,6 @@ void AddRiscVSourceGetters(SourceOpGetterMap &getter_map,
     return new ImmediateOperand<int32_t>(
         Extractors::Inst32Format::ExtractJImm(common->inst_word()));
   });
-  Insert(getter_map, *Enum::kPred, [common]() {
-    return new ImmediateOperand<uint32_t>(
-        Extractors::Fence::ExtractPred(common->inst_word()));
-  });
   Insert(getter_map, *Enum::kRd, [common]() -> SourceOperandInterface * {
     int num = Extractors::RType::ExtractRd(common->inst_word());
     if (num == 0) return new generic::IntLiteralOperand<0>({1});
@@ -276,10 +273,6 @@ void AddRiscVSourceGetters(SourceOpGetterMap &getter_map,
   Insert(getter_map, *Enum::kSImm12, [common]() {
     return new ImmediateOperand<int32_t>(
         Extractors::SType::ExtractSImm(common->inst_word()));
-  });
-  Insert(getter_map, *Enum::kSucc, [common]() {
-    return new ImmediateOperand<uint32_t>(
-        Extractors::Fence::ExtractSucc(common->inst_word()));
   });
   Insert(getter_map, *Enum::kUImm20, [common]() {
     return new ImmediateOperand<int32_t>(
