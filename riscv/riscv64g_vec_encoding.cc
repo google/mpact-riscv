@@ -15,7 +15,6 @@
 #include "riscv/riscv64g_vec_encoding.h"
 
 #include <cstdint>
-#include <new>
 #include <string>
 #include <utility>
 #include <vector>
@@ -422,6 +421,11 @@ void RiscV64GVecEncoding::InitializeSourceOperandGetters() {
             encoding64::inst32_format::ExtractJImm(inst_word_));
       }));
   source_op_getters_.insert(
+      std::make_pair(static_cast<int>(SourceOpEnum::kPred), [this]() {
+        return new generic::ImmediateOperand<uint32_t>(
+            encoding64::fence::ExtractPred(inst_word_));
+      }));
+  source_op_getters_.insert(
       std::make_pair(static_cast<int>(SourceOpEnum::kRm),
                      [this]() -> SourceOperandInterface * {
                        uint32_t rm = (inst_word_ >> 12) & 0x7;
@@ -495,6 +499,11 @@ void RiscV64GVecEncoding::InitializeSourceOperandGetters() {
       std::make_pair(static_cast<int>(SourceOpEnum::kSImm12), [this]() {
         return new generic::ImmediateOperand<int32_t>(
             encoding64::s_type::ExtractSImm(inst_word_));
+      }));
+  source_op_getters_.insert(
+      std::make_pair(static_cast<int>(SourceOpEnum::kSucc), [this]() {
+        return new generic::ImmediateOperand<uint32_t>(
+            encoding64::fence::ExtractSucc(inst_word_));
       }));
   source_op_getters_.insert(
       std::make_pair(static_cast<int>(SourceOpEnum::kUImm20), [this]() {

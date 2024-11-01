@@ -200,9 +200,12 @@ slot riscv32i {
       resources: { next_pc, rs1, rs2 : },
       disasm: "sb", "%rs2, %S_imm12(%rs1)",
       semfunc: "&RV32::RiscVISb";
-    fence{: I_imm12 : },
+    fence{: pred, succ : },
       disasm: "fence",
       semfunc: "&RiscVIFence";
+    fence_tso{},
+      disasm: "fence.tso",
+      semfunc: "&RiscVIFenceTso";
     ecall{},
       disasm: "ecall",
       semfunc: "&RiscVIEcall";

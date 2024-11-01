@@ -15,6 +15,8 @@
 #ifndef MPACT_RISCV_RISCV_RISCV_I_INSTRUCTIONS_H_
 #define MPACT_RISCV_RISCV_RISCV_I_INSTRUCTIONS_H_
 
+#include <cstdint>
+
 #include "mpact/sim/generic/instruction.h"
 
 // This file contains the declarations of the instruction semantic functions
@@ -182,10 +184,11 @@ void RiscVISb(const Instruction *instruction);
 
 }  // namespace RV64
 
-// The Fence instruction takes a single source operand (index 0) which consists
-// of an immediate value containing the right justified concatenation of the FM,
-// predecessor, and successor bit fields of the instruction.
+// The Fence instruction takes two source operands, the 4 bit values of the
+// predecessor and successor sets.
 void RiscVIFence(const Instruction *instruction);
+// The Fence.tso takes no operands.
+void RiscVIFenceTso(const Instruction *instruction);
 // Ecall and EBreak take no source or destination operands.
 void RiscVIEcall(const Instruction *instruction);
 void RiscVIEbreak(const Instruction *instruction);
