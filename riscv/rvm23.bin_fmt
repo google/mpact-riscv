@@ -30,10 +30,13 @@ decoder RVM23 {
     // Conditional zero.
     RiscVZicond,
     RiscVZimop,
+    RiscVZhintpause,
+    RiscVZihintntl,
   };
   RVM23Inst16 = {
     RiscVCInst16,
     RiscVZcmop,
+    RiscVCZihintntl,
   };
 }
 
@@ -41,3 +44,5 @@ decoder RVM23 {
 #include "riscv/riscv32zb.bin_fmt"
 #include "riscv/riscv_zicond.bin_fmt"
 #include "riscv/riscv_zimop.bin_fmt"
+#include "riscv/riscv_zhintpause.bin_fmt"
+#include "riscv/riscv_zihintntl.bin_fmt"

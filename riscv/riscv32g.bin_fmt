@@ -159,7 +159,7 @@ instruction group RiscVGInst32[32] : Inst32Format {
   slli   : RType  : func7 == 0b000'0000, func3==0b001, opcode == 0b001'0011;
   srli   : RType  : func7 == 0b000'0000, func3==0b101, opcode == 0b001'0011;
   srai   : RType  : func7 == 0b010'0000, func3==0b101, opcode == 0b001'0011;
-  add    : RType  : func7 == 0b000'0000, func3==0b000, opcode == 0b011'0011;
+  add    : RType  : func7 == 0b000'0000, func3==0b000, rd != 0, opcode == 0b011'0011;
   sub    : RType  : func7 == 0b010'0000, func3==0b000, opcode == 0b011'0011;
   sll    : RType  : func7 == 0b000'0000, func3==0b001, opcode == 0b011'0011;
   slt    : RType  : func7 == 0b000'0000, func3==0b010, opcode == 0b011'0011;

@@ -187,7 +187,7 @@ instruction group RiscVGInst32[32] : Inst32Format {
   slliw  : RType  : func7 == 0b000'0000, func3==0b001, opcode == 0b001'1011;
   srliw  : RType  : func7 == 0b000'0000, func3==0b101, opcode == 0b001'1011;
   sraiw  : RType  : func7 == 0b010'0000, func3==0b101, opcode == 0b001'1011;
-  add    : RType  : func7 == 0b000'0000, func3==0b000, opcode == 0b011'0011;
+  add    : RType  : func7 == 0b000'0000, func3==0b000, rd != 0,  opcode == 0b011'0011;
   addw   : RType  : func7 == 0b000'0000, func3==0b000, opcode == 0b011'1011;
   sub    : RType  : func7 == 0b010'0000, func3==0b000, opcode == 0b011'0011;
   subw   : RType  : func7 == 0b010'0000, func3==0b000, opcode == 0b011'1011;

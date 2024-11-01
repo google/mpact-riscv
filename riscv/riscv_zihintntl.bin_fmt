@@ -1,0 +1,29 @@
+// Copyright 2024 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// This file defines the non-temporal localicty hint instruction encodings.
+
+instruction group RiscVZihintntl[32] : Inst32Format {
+  ntl_p1  : RType : func7 == 0b000'0000, rs1 == 0, rs2 == 2, func3 == 0b000, rd == 0, opcode == 0b011'0011;
+  ntl_pall: RType : func7 == 0b000'0000, rs1 == 0, rs2 == 3, func3 == 0b000, rd == 0, opcode == 0b011'0011;
+  ntl_s1  : RType : func7 == 0b000'0000, rs1 == 0, rs2 == 4, func3 == 0b000, rd == 0, opcode == 0b011'0011;
+  ntl_all : RType : func7 == 0b000'0000, rs1 == 0, rs2 == 5, func3 == 0b000, rd == 0, opcode == 0b011'0011;
+};
+
+instruction group RiscVCZihintntl[16] : Inst16Format {
+  c_ntl_p1  : CR : func4 == 0b1001, rs1 == 0, rs2 == 2, op == 0b10;
+  c_ntl_pall: CR : func4 == 0b1001, rs1 == 0, rs2 == 3, op == 0b10;
+  c_ntl_s1  : CR : func4 == 0b1001, rs1 == 0, rs2 == 4, op == 0b10;
+  c_ntl_all : CR : func4 == 0b1001, rs1 == 0, rs2 == 5, op == 0b10;
+}
