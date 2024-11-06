@@ -72,6 +72,7 @@ cc_library(
     hdrs = [
         "riscv_counter_csr.h",
         "riscv_csr.h",
+        "riscv_jvt.h",
         "riscv_misa.h",
         "riscv_pmp.h",
         "riscv_register.h",
@@ -253,14 +254,16 @@ cc_library(
 )
 
 cc_library(
-    name = "riscv_rvm23_instructions",
+    name = "rvm23_instructions",
     srcs = [
+        "riscv_zc_instructions.cc",
         "riscv_zhintpause_instructions.cc",
         "riscv_zicond_instructions.cc",
         "riscv_zihintntl_instructions.cc",
         "riscv_zimop_instructions.cc",
     ],
     hdrs = [
+        "riscv_zc_instructions.h",
         "riscv_zhintpause_instructions.h",
         "riscv_zicond_instructions.h",
         "riscv_zihintntl_instructions.h",
@@ -372,6 +375,7 @@ mpact_isa_decoder(
         "riscv32v.isa",
         "riscv32zb.isa",
         "riscv_vector.isa",
+        "riscv_zc.isa",
         "riscv_zhintpause.isa",
         "riscv_zicond.isa",
         "riscv_zihintntl.isa",
@@ -396,6 +400,7 @@ mpact_bin_fmt_decoder(
         "riscv32g.bin_fmt",
         "riscv32v.bin_fmt",
         "riscv32zb.bin_fmt",
+        "riscv_zc.bin_fmt",
         "riscv_zhintpause.bin_fmt",
         "riscv_zicond.bin_fmt",
         "riscv_zihintntl.bin_fmt",

@@ -1,0 +1,416 @@
+// Copyright 2024 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// This file refactors the original "C" extension into the new set of Zc*
+// extensions. These should be preferred for new simulator targets.
+
+// Non floating point compact instructions from "C".
+
+slot riscv_zca32 {
+  default size = 2;
+  includes {
+    #include "riscv/riscv_i_instructions.h"
+  }
+  opcodes {
+    clwsp{(: x2, I_ci_uimm6x4 : ), (: : rd)},
+      resources:{next_pc,x2 : rd[0..]},
+      disasm: "lw", "%rd, %I_ci_uimm6x4(%x2)",
+      semfunc: "&RV32::RiscVILw", "&RV32::RiscVILwChild";
+    cswsp{: x2, I_css_uimm6x4, crs2 : },
+      resources: {next_pc,x2, crs2},
+      disasm: "sw", "%crs2, %I_css_uimm6x4(%x2)",
+      semfunc: "&RV32::RiscVISw";
+    clw{(: c3rs1, I_cl_uimm5x4 : ), (: : c3rd)},
+      resources: {next_pc,c3rs1 : c3rd[0..]},
+      disasm: "lw", "%c3rd, %I_cl_uimm5x4(%c3rs1)",
+      semfunc: "&RV32::RiscVILw", "&RV32::RiscVILwChild";
+    csw{: c3rs1, I_cl_uimm5x4, c3rs2 : },
+      resources: {next_pc,c3rs1, c3rs2},
+      disasm: "sw", "%c3rs2, %I_cl_uimm5x4(%c3rs1)",
+      semfunc: "&RV32::RiscVISw";
+    cj{: I_cj_imm11, x0 : next_pc, x0},
+      resources: {next_pc,x0 : next_pc[0..], x0[0..]},
+      disasm: "j", "0x%(@+I_cj_imm11:08x)",
+      semfunc: "&RV32::RiscVIJal";
+    cjal{: I_cj_imm11, x0 : next_pc, x1},
+      resources: {next_pc,x0 : next_pc[0..], x1[0..]},
+      disasm: "jal", "0x%(@+I_cj_imm11:08x)",
+      semfunc: "&RV32::RiscVIJal";
+    cjr{: crs1, x0 : next_pc, x0},
+      resources: {next_pc,crs1, x0 : next_pc[0..], x0[0..]},
+      disasm: "jr", "%crs1",
+      semfunc: "&RV32::RiscVIJalr";
+    cjalr{: crs1, x0 : next_pc, x1},
+      resources: {next_pc,crs1, x0 : next_pc[0..], x1[0..]},
+      disasm: "jalr", "%crs1",
+      semfunc: "&RV32::RiscVIJalr";
+    cbeqz{: c3rs1, x0, I_cb_imm8 : next_pc},
+      resources: {next_pc,c3rs1, x0 : next_pc[0..]},
+      disasm: "beqz", "%c3rs1, 0x%(@+I_cb_imm8:08x)",
+      semfunc: "&RV32::RiscVIBeq";
+    cbnez{: c3rs1, x0, I_cb_imm8 : next_pc},
+      resources: {next_pc,c3rs1, x0 : next_pc[0..]},
+      disasm: "bnez", "%c3rs1, 0x%(@+I_cb_imm8:08x)",
+      semfunc: "&RV32::RiscVIBne";
+    cli{: x0, I_ci_imm6 : rd},
+      resources: {next_pc,x0 : rd[0..]},
+      disasm: "li", "%rd, %I_ci_imm6",
+      semfunc: "&RV32::RiscVIAdd";
+    clui{: I_ci_imm6_12 : rd},
+      resources: {next_pc : rd[0..]},
+      disasm: "lui", "%rd, 0x%(I_ci_imm6_12:x)",
+      semfunc: "&RV32::RiscVILui";
+    caddi{: rd, I_ci_imm6 : rd},
+      resources: {next_pc, rd : rd[0..]},
+      disasm: "addi", "%rd, %rd, %I_ci_imm6",
+      semfunc: "&RV32::RiscVIAdd";
+    caddi16sp{: x2, I_ci_imm6x16 : x2},
+      resources: {next_pc, x2 : x2[0..]},
+      disasm: "addi", "%x2, %x2, %(I_ci_imm6x16:d)",
+      semfunc: "&RV32::RiscVIAdd";
+    caddi4spn{: x2, I_ciw_uimm8x4 : c3rd},
+      resources: {next_pc, x2 : c3rd[0..]},
+      disasm: "addi", "%c3rd, %x2, %I_ciw_uimm8x4",
+      semfunc: "&RV32::RiscVIAdd";
+    cslli{: rd, I_ci_uimm6 : rd},
+      resources: {next_pc, rd : rd[0..]},
+      disasm: "slli", "%rd, %rd, 0x%(I_ci_uimm6:x)",
+      semfunc: "&RV32::RiscVISll";
+    csrli{: c3rs1, I_ci_uimm6 : c3rs1},
+      resources: {next_pc, c3rs1 : c3rs1[0..]},
+      disasm: "srli", "%c3rs1, %c3rs1, 0x%(I_ci_uimm6:x)",
+      semfunc: "&RV32::RiscVISrl";
+    csrai{: c3rs1, I_ci_uimm6 : c3rs1},
+      resources: {next_pc, c3rs1 : c3rs1[0..]},
+      disasm: "srai", "%c3rs1, %c3rs1, 0x%(I_ci_uimm6:x)",
+      semfunc: "&RV32::RiscVISra";
+    candi{: c3rs1, I_ci_imm6 : c3rs1},
+      resources: {next_pc, c3rs1 : c3rs1[0..]},
+      disasm: "andi", "%c3rs1, %c3rs1, %I_ci_imm6",
+      semfunc: "&RV32::RiscVIAnd";
+    cmv{: crs2 , x0: crd},
+      resources: {next_pc, crs2, x0 : crd[0..]},
+      disasm: "mv", "%crd, %crs2",
+      semfunc: "&RV32::RiscVIAdd";
+    cadd{: crs2, crd: crd},
+      resources: {next_pc, crs2, crd : crd[0..]},
+      disasm: "add", "%crd, %crd, %crs2",
+      semfunc: "&RV32::RiscVIAdd";
+    cand{: c3rs1, c3rs2 : c3rs1},
+      resources: {next_pc, c3rs1, c3rs2 : c3rs1[0..]},
+      disasm: "and", "%c3rs1, %c3rs1, %c3rs2",
+      semfunc: "&RV32::RiscVIAnd";
+    cor{: c3rs1, c3rs2 : c3rs1},
+      resources: {next_pc, c3rs1, c3rs2 : c3rs1[0..]},
+      disasm: "or", "%c3rs1, %c3rs1, %c3rs2",
+      semfunc: "&RV32::RiscVIOr";
+    cxor{: c3rs1, c3rs2 : c3rs1},
+      resources: {next_pc, c3rs1, c3rs2 : c3rs1[0..]},
+      disasm: "xor", "%c3rs1, %c3rs1, %c3rs2",
+      semfunc: "&RV32::RiscVIXor";
+    csub{: c3rs1, c3rs2 : c3rs1},
+      resources: {next_pc, c3rs1, c3rs2 : c3rs1[0..]},
+      disasm: "sub", "%c3rs1, %c3rs1, %c3rs2",
+      semfunc: "&RV32::RiscVISub";
+    cnop{},
+      disasm: "nop",
+      resources: {next_pc},
+      semfunc: "&RiscVINop";
+    cebreak{},
+      disasm: "ebreak",
+      resources: {next_pc},
+      semfunc: "&RiscVIEbreak";
+  }
+}
+
+slot riscv_zca64 : riscv_zca32 {
+  includes {
+    #include "riscv/riscv_i_instructions.h"
+  }
+  default size = 2;
+  opcodes {
+    clwsp = override, semfunc: "&RV64::RiscVILw", "&RV64::RiscVILwChild";
+    cswsp = override, semfunc: "&RV64::RiscVISw";
+    clw = override, semfunc: "&RV64::RiscVILw", "&RV64::RiscVILwChild";
+    csw = override, semfunc: "&RV64::RiscVISw";
+    cj = override, semfunc: "&RV64::RiscVIJal";
+    cjal = override, semfunc: "&RV64::RiscVIJal";
+    cjr = override, semfunc: "&RV64::RiscVIJalr";
+    cjalr = override, semfunc: "&RV64::RiscVIJalr";
+    cbeqz = override, semfunc: "&RV64::RiscVIBeq";
+    cbnez = override, semfunc: "&RV64::RiscVIBne";
+    cli = override, semfunc: "&RV64::RiscVIAdd";
+    clui = override, semfunc: "&RV64::RiscVILui";
+    caddi = override, semfunc: "&RV64::RiscVIAdd";
+    caddi16sp = override, semfunc: "&RV64::RiscVIAdd";
+    caddi4spn = override, semfunc: "&RV64::RiscVIAdd";
+    cslli = override, semfunc: "&RV64::RiscVISll";
+    csrli = override, semfunc: "&RV64::RiscVISrl";
+    csrai = override, semfunc: "&RV64::RiscVISra";
+    candi = override, semfunc: "&RV64::RiscVIAnd";
+    cmv = override, semfunc: "&RV64::RiscVIAdd";
+    cadd = override, semfunc: "&RV64::RiscVIAdd";
+    cand = override, semfunc: "&RV64::RiscVIAnd";
+    cor = override, semfunc: "&RV64::RiscVIOr";
+    cxor = override, semfunc: "&RV64::RiscVIXor";
+    csub = override, semfunc: "&RV64::RiscVISub";
+  }
+}
+
+slot riscv_zcf32 {
+  includes {
+    #include "riscv/riscv_i_instructions.h"
+  }
+  default size = 2;
+  opcodes {
+    cflwsp{(: x2, I_ci_uimm6x4 : ), (: : c3frd)},
+      resources:{next_pc,x2 : cfrd[0..]},
+      disasm: "flw", "%frd, %I_ci_uimm6x4(%x2)",
+      semfunc: "&RV32::RiscVILw", "&RV32::RiscVILwChild";
+    cfswsp{: x2, I_css_uimm6x4, cfrs2 : },
+      resources: {next_pc,x2, cfrs2},
+      disasm: "fsw", "%cfrs2, %I_css_uimm6x4(%x2)",
+      semfunc: "&RV32::RiscVISw";
+    cflw{(: c3rs1, I_cl_uimm5x4 : ), (: : c3frd)},
+      resources: {next_pc,c3rs1 : c3frd[0..]},
+      disasm: "flw", "%c3frd, %I_cl_uimm5x4(%c3rs1)",
+      semfunc: "&RV32::RiscVILw", "&RV32::RiscVILwChild";
+    cfsw{: c3rs1, I_cl_uimm5x4, c3frs2 : },
+      resources: {next_pc,c3rs1, c3frs2},
+      disasm: "fsw", "%c3frs2, %I_cl_uimm5x4(%c3rs1)",
+      semfunc: "&RV32::RiscVISw";
+  }
+}
+
+slot riscv_zcf64 {
+  includes {
+    #include "riscv/riscv_i_instructions.h"
+  }
+  default size = 2;
+  opcodes {
+    cflwsp = override, semfunc: "&RV64::RiscVILw", "&RV64::RiscVILwChild";
+    cfswsp = override, semfunc: "&RV64::RiscVISw";
+    cflw = override, semfunc: "&RV64::RiscVILw", "&RV64::RiscVILwChild";
+    cfsw = override, semfunc: "&RV64::RiscVISw";
+  }
+}
+
+slot riscv_zcd32 {
+  includes {
+    #include "riscv/riscv_i_instructions.h"
+  }
+  default size = 2;
+  opcodes {
+    cfldsp{(: x2, I_ci_uimm6x8 : ), (: : c3drd)},
+      resources:{next_pc,x2 : drd[0..]},
+      disasm: "fld", "%drd, %I_ci_uimm6x8(%x2)",
+      semfunc: "&RV64::RiscVILd", "&RV64::RiscVILdChild";
+    cfsdsp{: x2, I_css_uimm6x8, cdrs2 : },
+      resources: {next_pc,x2, cdrs2},
+      disasm: "fsd", "%cdrs2, %I_css_uimm6x8(%x2)",
+      semfunc: "&RV64::RiscVISd";
+    cfld{(: c3rs1, I_cl_uimm5x8 : ), (: : c3drd)},
+      resources: {next_pc,c3rs1 : c3drd[0..]},
+      disasm: "fld", "%c3drd, %I_cl_uimm5x8(%c3rs1)",
+      semfunc: "&RV64::RiscVILd", "&RV64::RiscVILdChild";
+    cfsd{: c3rs1, I_cl_uimm5x8, c3drs2 : },
+      resources: {next_pc,c3rs1, c3drs2},
+      disasm: "fsd", "%c3drs2, %I_cl_uimm5x8(%c3rs1)",
+      semfunc: "&RV32::RiscVDSd";
+  }
+}
+
+slot riscv_zcd64 {
+  includes {
+    #include "riscv/riscv_i_instructions.h"
+  }
+  default size = 2;
+  opcodes {
+    cfldsp = override, semfunc: "&RV64::RiscVILd", "&RV64::RiscVILdChild";
+    cfsdsp = override, semfunc: "&RV64::RiscVISd";
+    cfld = override, semfunc: "&RV64::RiscVILd", "&RV64::RiscVILdChild";
+    cfsd = override, semfunc: "&RV64::RiscVDSd";
+  }
+}
+
+slot riscv_zcb32 {
+  includes {
+    #include "riscv/riscv_bitmanip_instructions.h"
+  }
+  default size = 2;
+    opcodes {
+    c_lbu{(: c3rs1, uimm2b),(: : c3rs2)},
+      resources: {c3rs1 : c3rs2},
+      disasm: "c.lbu", "%c3rs2, %uimm2b(%c3rs1)",
+      semfunc: "&RV32::RiscVILbu", "&RV32::RiscVILbuChild";
+    c_lhu{(: c3rs1, uimm2h),(: : c3rs2)},
+      resources: {c3rs1 : c3rs2},
+      disasm: "c.lhu", "c3rs2, %uimm2h(%c3rs1)",
+      semfunc: "&RV32::RiscVILhu", "&RV32::RiscVILhuChild";
+    c_lh{(: c3rs1, uimm2h),(: : c3rs2)},
+      resources: {c3rs1 : c3rs2},
+      disasm: "c.lh", "%c3rs2, %uimm2h(%c3rs1)",
+      semfunc: "&RV32::RiscVILh", "&RV32::RiscVILhChild";
+    c_sb{ : c3rs1, uimm2b, c3rs2},
+      resources: {c3rs1, c3rs2},
+      disasm: "c.sb", "%c3rs2, %uimm2b(%c3rs1)",
+      semfunc: "&RV32::RiscVISb";
+    c_sh{: c3rs1, uimm2h, c3rs2},
+      resources: {c3rs1, c3rs2},
+      disasm: "c.sh", "%c3rs2, %uimm2h(%c3rs1)",
+      semfunc: "&RV32::RiscVISh";
+    c_zext_b{: c3rs1 : c3rd},
+      resources: {c3rs1: c3rd},
+      disasm: "c.zext.b", "%c3rs1",
+      semfunc: "&RV32::RiscVZextB";
+    c_sext_b{: c3rs1 : c3rd},
+      resources: {c3rs1 : c3rd},
+      disasm: "c.sext.b", "c3rs1",
+      semfunc: "&RV32::RiscVSextB";
+    c_zext_h{: c3rs1 : c3rd},
+      resources: {c3rs1 : c3rd},
+      disasm: "c.zext.h", "c3rs1",
+      semfunc: "&RV32::RiscVZextH";
+    c_sext_h{: c3rs1 : c3rd},
+      resources: {c3rs1 : c3rd},
+      disasm: "c.sext.h", "c3rs1",
+      semfunc: "&RV32::RiscVSextH";
+    c_not{: c3rs1 : c3rd},
+      resources: {c3rs1 : c3rd},
+      disasm: "c.not", "c3rs1",
+      semfunc: "&RV32::RiscVNot";
+    c_mul{: c3rs1, c3rs2 : c3rd},
+      resources: {c3rs1, c3rs2 : c3rd},
+      disasm: "c.mul", "%c3rd, %c3rs2",
+      semfunc: "&RV32::MMul";
+  }
+}
+
+slot riscv_zcb64 {
+  includes {
+    #include "riscv/riscv_bitmanip_instructions.h"
+  }
+  default size = 2;
+    opcodes {
+    c_lbu = override, semfunc: "&RV64::RiscVILbu", "&RV64::RiscVILbuChild";
+    c_lhu = override, semfunc: "&RV64::RiscVLhu", "&RV64::RiscVILhuChild";
+    c_lh = override, semfunc: "&RV64::RiscVLh", "&RV64::RiscVILhChild";
+    c_sb = override, semfunc: "&RV64::RiscVSb";
+    c_sh = override, semfunc: "&RV64::RiscVSh";
+    c_zext_b = override, semfunc: "&RV64::RiscVZextB";
+    c_sext_b = override, semfunc: "&RV64::RiscVSextB";
+    c_zext_h = override, semfunc: "&RV64::RiscVZextH";
+    c_sext_h = override, semfunc: "&RV64::RiscVSextH";
+    c_not = override, semfunc: "&RV64::RiscV";
+    c_mul = override, semfunc: "&RV64::MMul";
+    c_sext_w{: c3rs1 : c3rd},
+      resources: {c3rs1 : c3rd},
+      disasm: "c.sext.w", "%c3rs1",
+      semfunc: "&RV64::RiscVSextW";
+  }
+}
+
+slot riscv_zcmp32 {
+  includes {
+    #include "riscv/riscv_zc_instructions.h"
+  }
+  default size = 2;
+  opcodes {
+    cm_push{: x2, spimm6, rlist, [rlist] : x2},
+      resources: {x2, [rlist] : x2},
+      disasm: "cm.push",
+      semfunc: "&RV32::RiscVZCmpPush";
+    cm_pop{: x2, spimm6, rlist : x2, [rlist]},
+      resources: {x2 : x2, [rlist]},
+      disasm: "cm.pop",
+      semfunc: "&RV32::RiscVZCmpPop";
+    cm_popret{: x2, spimm6, rlist : x2, [rlist]},
+      resources: {x2 : x2, [rlist]},
+      disasm: "cm.popret",
+      semfunc: "&RV32::RiscVZCmpPopRet";
+    cm_popretz{: x2, spimm6, rlist : x2, [rlist]},
+      resources: {x2 : x2, [rlist]},
+      disasm: "cm.popretz",
+      semfunc: "&RV32::RiscVZCmpPopRetz";
+    cm_mvsa01{ : x10, x11 : sreg1, sreg2},
+      resources: {x10, x11 : sreg1, sreg2},
+      disasm: "cm.mvsa01","%sreg1, %sreg2",
+      semfunc: "&RV32::RiscVZCmpMvTwoRegs";
+    cm_mva01s{ : sreg1, sreg2 : x10, x11 },
+      resources: {sreg1, sreg2 : x10, x11},
+      disasm: "cm.mva01s", "%sreg1, %sreg2",
+      semfunc: "&RV32::RiscVZCmpMvTwoRegs";
+  }
+}
+
+slot riscv_zcmp64 {
+  includes {
+    #include "riscv/riscv_zc_instructions.h"
+  }
+  default size = 2;
+  opcodes {
+    cm_push{ : x2, spimm6, rlist, [rlist] : x2},
+      resources: {[rlist]},
+      disasm: "cm.push",
+      semfunc: "&RV64::RiscVZCmpPush";
+    cm_pop{ : x2, spimm6, rlist : [rlist], x2},
+      resources: { : [rlist]},
+      disasm: "cm.pop",
+      semfunc: "&RV64::RiscVZCmpPop";
+    cm_popret{ : x2, spimm6, rlist, x1 : [rlist], x2, next_pc},
+      resources: { : [rlist]},
+      disasm: "cm.popret",
+      semfunc: "&RV64::RiscVZCmpPopRet";
+    cm_popretz{ : x2, spimm6, rlist, x1 : [rlist], x2, x10, next_pc},
+      resources: { : [rlist]},
+      disasm: "cm.popretz",
+      semfunc: "&RV64::RiscVZCmpPopRetz";
+    cm_mvsa01{ : x10, x11 : sreg1, sreg2},
+      resources: {x10, x11 : sreg1, sreg2},
+      disasm: "cm.mvsa01", "%sreg1, %sreg2",
+      semfunc: "&RV64::RiscVZCmpMvTwoRegs";
+    cm_mva01s{ : sreg1, sreg2 : x10, x11},
+      resources: {sreg1, sreg2 : x10, x11},
+      disasm: "cm.mva01s", "%sreg1, %sreg2",
+      semfunc: "&RV64::RiscVZCmpMvTwoRegs";
+  }
+}
+
+slot riscv_zcmt32 {
+  includes {
+    #include "riscv/riscv_zc_instructions.h"
+  }
+  default size = 2;
+  opcodes {
+    cm_jt{: index : next_pc},
+      resources: {: next_pc},
+      disasm: "cm.jt",
+      semfunc: "&RV32::RiscVZCmtJt";
+    cm_jalt{: index : next_pc, x1},
+      resources: {: next_pc, x1},
+      disasm: "cm.jalt",
+      semfunc: "&RV32::RiscVZCmtJalt";
+  }
+}
+
+slot riscv_zcmt64 {
+  includes {
+    #include "riscv/riscv_zc_instructions.h"
+  }
+  default size = 2;
+  opcodes {
+    cm_jt = override, semfunc: "&RV64::RiscVZCmtJt";
+    cm_jalt = override, semfunc: "&RV64::RiscVZCmtJalt";
+  }
+}

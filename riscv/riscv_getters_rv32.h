@@ -57,13 +57,13 @@ void AddRiscV32SourceGetters(SourceOpGetterMap &getter_map,
     auto num = Extractors::CS::ExtractCsRs2(common->inst_word());
     return GetRegisterSourceOp<FpRegister>(
         common->state(), absl::StrCat(RiscVState::kFregPrefix, num),
-        kXRegisterAliases[num]);
+        kFRegisterAliases[num]);
   });
   Insert(getter_map, *Enum::kCfrs2, [common]() {
     auto num = Extractors::CR::ExtractRs2(common->inst_word());
     return GetRegisterSourceOp<FpRegister>(
         common->state(), absl::StrCat(RiscVState::kFregPrefix, num),
-        kXRegisterAliases[num]);
+        kFRegisterAliases[num]);
   });
 }
 

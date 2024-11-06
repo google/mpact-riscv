@@ -63,6 +63,11 @@ void RiscVXnor(const Instruction *instruction) {
       instruction, [](UIntReg a, UIntReg b) { return ~(a ^ b); });
 }
 
+void RiscVNot(const generic::Instruction *instruction) {
+  RiscVUnaryOp<RegisterType, UIntReg, UIntReg>(instruction,
+                                               [](UIntReg a) { return ~a; });
+}
+
 // Count leading zeros.
 void RiscVClz(const Instruction *instruction) {
   RiscVUnaryOp<RegisterType, UIntReg, UIntReg>(
@@ -122,6 +127,13 @@ void RiscVZextH(const Instruction *instruction) {
   RiscVUnaryOp<RegisterType, UIntReg, uint16_t>(
       instruction,
       [](uint16_t a) -> UIntReg { return static_cast<UIntReg>(a); });
+}
+
+// Zero extend byte.
+void RiscVZextB(const Instruction *instruction) {
+  RiscVUnaryOp<RegisterType, UIntReg, uint8_t>(
+      instruction,
+      [](uint8_t a) -> UIntReg { return static_cast<UIntReg>(a); });
 }
 
 // Rotate left.
@@ -290,6 +302,11 @@ void RiscVXnor(const Instruction *instruction) {  // hmm
       instruction, [](UIntReg a, UIntReg b) { return ~(a ^ b); });
 }
 
+void RiscVNot(const generic::Instruction *instruction) {
+  RiscVUnaryOp<RegisterType, UIntReg, UIntReg>(instruction,
+                                               [](UIntReg a) { return ~a; });
+}
+
 // Count leading zeros.
 void RiscVClz(const Instruction *instruction) {
   RiscVUnaryOp<RegisterType, UIntReg, UIntReg>(
@@ -364,6 +381,13 @@ void RiscVZextH(const Instruction *instruction) {
   RiscVUnaryOp<RegisterType, UIntReg, uint16_t>(
       instruction,
       [](uint16_t a) -> UIntReg { return static_cast<UIntReg>(a); });
+}
+
+// Zero extend byte.
+void RiscVZextB(const Instruction *instruction) {
+  RiscVUnaryOp<RegisterType, UIntReg, uint8_t>(
+      instruction,
+      [](uint8_t a) -> UIntReg { return static_cast<UIntReg>(a); });
 }
 
 // Rotate left.

@@ -308,6 +308,17 @@ inline void RiscVBinaryOp(const Instruction *instruction,
   reg->data_buffer()->template Set<Result>(0, dest_value);
 }
 
+// Generic helper function for writing a value to a register by destination
+// operand index.
+template <typename Register, typename Value>
+inline void RiscVWriteReg(const Instruction *instruction, int index,
+                          Value value) {
+  auto *reg = static_cast<generic::RegisterDestinationOperand<Value> *>(
+                  instruction->Destination(index))
+                  ->GetRegister();
+  reg->data_buffer()->template Set<Value>(0, value);
+}
+
 // Generic helper function for unary instructions.
 template <typename Register, typename Result, typename Argument>
 inline void RiscVUnaryOp(const Instruction *instruction,

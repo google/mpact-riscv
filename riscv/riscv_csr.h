@@ -52,6 +52,8 @@ enum class RiscVCsrEnum {
   kVxsat = 0x009,
   kVxrm = 0x00a,
   kVcsr = 0x00f,
+  // Jump base vector and control register.
+  kJvt = 0x017,
   // User trap handling.
   kUScratch = 0x040,
   kUEpc = 0x041,

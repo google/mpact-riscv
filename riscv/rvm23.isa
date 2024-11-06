@@ -22,6 +22,7 @@ isa RVM23 {
 #include "riscv/riscv32g.isa"
 #include "riscv/riscv32zb.isa"
 #include "riscv/riscv_vector.isa"
+#include "riscv/riscv_zc.isa"
 #include "riscv/riscv_zicond.isa"
 #include "riscv/riscv_zimop.isa"
 #include "riscv/riscv_zhintpause.isa"
@@ -29,7 +30,6 @@ isa RVM23 {
 
 slot rvm23 :
   riscv32i,
-  riscv32c,
   riscv32m,
   riscv32_amo_arithmetic,
   riscv32f,
@@ -44,7 +44,11 @@ slot rvm23 :
   riscv_zcmop,
   riscv_zhintpause,
   riscv_zihintntl,
-  riscv_czihintntl {
+  riscv_czihintntl,
+  riscv_zca32,
+  riscv_zcb32,
+  riscv_zcmp32,
+  riscv_zcmt32 {
   default opcode =
     disasm: "Illegal instruction at 0x%(@:08x)",
     semfunc: "&RiscVIllegalInstruction";

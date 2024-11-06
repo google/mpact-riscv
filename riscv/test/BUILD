@@ -760,3 +760,33 @@ cc_test(
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
     ],
 )
+
+cc_test(
+    name = "riscv_zc_instructions_test",
+    size = "small",
+    srcs = ["riscv_zc_instructions_test.cc"],
+    deps = [
+        "//riscv:riscv_state",
+        "//riscv:rvm23_instructions",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
+    ],
+)
+
+cc_test(
+    name = "riscv_zc64_instructions_test",
+    size = "small",
+    srcs = ["riscv_zc64_instructions_test.cc"],
+    deps = [
+        "//riscv:riscv_state",
+        "//riscv:rvm23_instructions",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
+    ],
+)

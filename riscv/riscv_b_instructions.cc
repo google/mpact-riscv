@@ -15,6 +15,7 @@
 #include "riscv/riscv_b_instructions.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <type_traits>
 
 #include "absl/base/casts.h"
@@ -22,6 +23,7 @@
 #include "absl/types/span.h"
 #include "mpact/sim/generic/instruction.h"
 #include "riscv/riscv_instruction_helpers.h"
+#include "riscv/riscv_register.h"
 
 namespace mpact {
 namespace sim {

@@ -29,6 +29,7 @@
 #include "mpact/sim/util/memory/memory_interface.h"
 #include "riscv/riscv_counter_csr.h"
 #include "riscv/riscv_csr.h"
+#include "riscv/riscv_jvt.h"
 #include "riscv/riscv_misa.h"
 #include "riscv/riscv_pmp.h"
 #include "riscv/riscv_register.h"
@@ -303,6 +304,12 @@ void CreateCsrs(RiscVState *state, std::vector<RiscVCsrInterface *> &csr_vec) {
   // PMP CSRs
   state->pmp_ = new RiscVPmp(state);
   state->pmp_->CreatePmpCsrs<T, RiscVCsrEnum>(state->csr_set());
+
+  // Jump base vector and control register (for Zcmt instructions).
+  auto *jvt_csr = CreateCsr<RiscVJvtCsr<T>>(state, state->jvt_, csr_vec, "jvt",
+                                            RiscVCsrEnum::kJvt, 0, state);
+  CHECK_NE(jvt_csr, nullptr);
+  state->jvt_ = jvt_csr;
 
   // Simulator CSRs
 

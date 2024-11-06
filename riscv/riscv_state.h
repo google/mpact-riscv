@@ -377,6 +377,7 @@ class RiscVState : public ArchState {
   RiscVMIsa *misa() const { return misa_; }
   RiscVMIp *mip() const { return mip_; }
   RiscVMIe *mie() const { return mie_; }
+  RiscVCsrInterface *jvt() const { return jvt_; }
   RiscVCsrInterface *mtvec() const { return mtvec_; }
   RiscVCsrInterface *mepc() const { return mepc_; }
   RiscVCsrInterface *mcause() const { return mcause_; }
@@ -426,6 +427,7 @@ class RiscVState : public ArchState {
   RiscVMIp *mip_ = nullptr;
   RiscVMIe *mie_ = nullptr;
   RiscVPmp *pmp_ = nullptr;
+  RiscVCsrInterface *jvt_ = nullptr;
   RiscVCsrInterface *mtvec_ = nullptr;
   RiscVCsrInterface *mepc_ = nullptr;
   RiscVCsrInterface *mcause_ = nullptr;

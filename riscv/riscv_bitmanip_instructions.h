@@ -34,6 +34,10 @@ void RiscVShAdd(const Instruction *instruction);
 void RiscVAndn(const Instruction *instruction);
 void RiscVOrn(const Instruction *instruction);
 void RiscVXnor(const Instruction *instruction);
+// Performs the bitwise negation of rs1 (this instruction is strictly not part
+// of Zbb, but part of the 16 bit Zcb extension). It is implemented here because
+// it fits with the other bitwise instructions.
+void RiscVNot(const generic::Instruction *instruction);
 // These functions take 1 source operands, rs1, and one destination operand rd.
 void RiscVClz(const Instruction *instruction);
 void RiscVCtz(const Instruction *instruction);
@@ -47,6 +51,7 @@ void RiscVMinu(const Instruction *instruction);
 // These functions take 1 source operands, rs1, and one destination operand rd.
 void RiscVSextB(const Instruction *instruction);
 void RiscVSextH(const Instruction *instruction);
+void RiscVZextB(const Instruction *instruction);
 void RiscVZextH(const Instruction *instruction);
 // These functions take 2 source operands, rs1, rs2, and one destination operand
 // rd.

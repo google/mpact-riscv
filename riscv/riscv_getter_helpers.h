@@ -16,6 +16,7 @@
 #define THIRD_PARTY_MPACT_RISCV_RISCV_GETTER_HELPERS_H_
 
 #include <string>
+#include <vector>
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/functional/any_invocable.h"
@@ -39,9 +40,13 @@ using ::mpact::sim::generic::SourceOperandInterface;
 
 using SourceOpGetterMap =
     absl::flat_hash_map<int, absl::AnyInvocable<SourceOperandInterface *()>>;
+using ListSourceOpGetterMap = absl::flat_hash_map<
+    int, absl::AnyInvocable<std::vector<SourceOperandInterface *>()>>;
 using DestOpGetterMap =
     absl::flat_hash_map<int,
                         absl::AnyInvocable<DestinationOperandInterface *(int)>>;
+using ListDestOpGetterMap = absl::flat_hash_map<
+    int, absl::AnyInvocable<std::vector<DestinationOperandInterface *>(int)>>;
 using SimpleResourceGetterMap =
     absl::flat_hash_map<int, absl::AnyInvocable<generic::SimpleResource *()>>;
 using ComplexResourceGetterMap = absl::flat_hash_map<
@@ -51,7 +56,11 @@ using ComplexResourceGetterMap = absl::flat_hash_map<
 // the riscv_*_getter.h files.
 template <typename M, typename E, typename G>
 inline void Insert(M &map, E entry, G getter) {
-  map.insert(std::make_pair(static_cast<int>(entry), getter));
+  if (!map.contains(static_cast<int>(entry))) {
+    map.insert(std::make_pair(static_cast<int>(entry), getter));
+  } else {
+    map.at(static_cast<int>(entry)) = getter;
+  }
 }
 
 // Generic helper functions to create register operands.

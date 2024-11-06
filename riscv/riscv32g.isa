@@ -764,7 +764,7 @@ slot riscv32c {
       disasm: "jal", "0x%(@+I_cj_imm11:08x)",
       semfunc: "&RV32::RiscVIJal";
     cjr{: crs1, x0 : next_pc, x0},
-      resources: {next_pc,crs1, x0 : next_pc[0..], x0[0..]},
+      resources: {next_pc, crs1, x0 : next_pc[0..], x0[0..]},
       disasm: "jr", "%crs1",
       semfunc: "&RV32::RiscVIJalr";
     cjalr{: crs1, x0 : next_pc, x1},

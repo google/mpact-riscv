@@ -34,9 +34,12 @@ decoder RVM23 {
     RiscVZihintntl,
   };
   RVM23Inst16 = {
-    RiscVCInst16,
     RiscVZcmop,
     RiscVCZihintntl,
+    RiscVCZca32,
+    RiscVCZcb32,
+    RiscVCZcmp32,
+    RiscVCZcmt32,
   };
 }
 
@@ -46,3 +49,4 @@ decoder RVM23 {
 #include "riscv/riscv_zimop.bin_fmt"
 #include "riscv/riscv_zhintpause.bin_fmt"
 #include "riscv/riscv_zihintntl.bin_fmt"
+#include "riscv/riscv_zc.bin_fmt"
