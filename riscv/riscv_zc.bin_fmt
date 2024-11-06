@@ -17,96 +17,6 @@
 
 // Compact instruction formats.
 
-format Inst16Format[16] {
-  fields:
-    unsigned func3[3];
-    unsigned bits[11];
-    unsigned op[2];
-};
-
-format CA[16] : Inst16Format {
-  fields:
-    unsigned func6[6];
-    unsigned rs1p[3];
-    unsigned func2[2];
-    unsigned fs2p[3];
-    unsigned op[2];
-  overlays:
-    unsigned uimm2[2] = func2;
-    unsigned uimm1[1] = func2[0];
-    unsigned func5[5] = func2, fs2p;
-    unsigned rs1[5] = 0b01, rs1p;
-    unsigned rs2[5] = 0b01, fs2p;
-    unsigned rd[5] = 0b01, rs1p;
-};
-
-format CB[16] : Inst16Format {
-  fields:
-    unsigned func3[3];
-    unsigned imm3[3];
-    unsigned rs1p[3];
-    unsigned imm5[5];
-    unsigned op[2];
-  overlays:
-    unsigned func2[2] = [11, 10];
-    unsigned func5[5] = [12..10, 6..5];
-    unsigned shamt[6] = [12, 6..2];
-    unsigned rs2p[3] = [4..2];
-    unsigned rs2[5] = 0b10, [4..2];
-    signed bimm[9] = imm3[2], imm5[4..3, 0], imm3[1..0], imm5[2..1], 0b0;
-};
-
-format CI[16] : Inst16Format {
-  fields:
-    unsigned func3[3];
-    unsigned imm1[1];
-    unsigned rs1[5];
-    unsigned imm5[5];
-    unsigned op[2];
-  overlays:
-    unsigned rd[5] = rs1;
-    signed imm6[6] = imm1, imm5;
-    unsigned uimm6[6] = imm1, imm5;
-    signed imm18[18] = imm1, imm5, 0b0000'0000'0000;
-    signed ci_imm10[10] = imm1, imm5[2..1, 3, 0, 4], 0b0000;
-    unsigned ci_imm_w[8] = imm5[1..0], imm1, imm5[4..2], 0b00;
-    unsigned ci_imm_d[9] = imm5[2..0], imm1, imm5[4..3], 0b000;
-};
-
-format CIW[16] : Inst16Format {
-  fields:
-    unsigned func3[3];
-    unsigned imm8[8];
-    unsigned rdp[3];
-    unsigned op[2];
-  overlays:
-    unsigned rd[5] = 0b01, rdp;
-    unsigned ciw_imm10[10] = imm8[5..2, 7..6, 0, 1], 0b00;
-};
-
-format CJ[16] : Inst16Format {
-  fields:
-    unsigned func3[3];
-    unsigned imm11[11];
-    unsigned op[2];
-  overlays:
-    signed jimm[12] = imm11[10, 6, 8..7, 4, 5, 0, 9, 3..1], 0b0;
-};
-
-format CL[16] : Inst16Format {
-  fields:
-    unsigned func3[3];
-    unsigned imm3[3];
-    unsigned rs1p[3];
-    unsigned imm2[2];
-    unsigned rdp[3];
-    unsigned op[2];
-  overlays:
-    unsigned cl_rs1[5] = 0b01, rs1p;
-    unsigned cl_rd[5] = 0b01, rdp;
-    unsigned cl_imm_w[7] = imm2[0], imm3, imm2[1], 0b00;
-    unsigned cl_imm_d[8] = imm2, imm3, 0b000;
-};
 
 format CLB[16] : Inst16Format {
   fields:
@@ -134,14 +44,6 @@ format CLH[16] : Inst16Format {
     unsigned uimm2[2] = uimm1, 0b0;
 };
 
-format CMJT[16] : Inst16Format {
-  fields:
-    unsigned func6[6];
-    unsigned index[8];
-    unsigned op[2];
-  overlays:
-};
-
 format CMMV[16] : Inst16Format {
   fields:
     unsigned func6[6];
@@ -156,35 +58,12 @@ format CMMV[16] : Inst16Format {
 
 format CMPP[16] : Inst16Format {
   fields:
-    unsigned func6[6];
-    unsigned func2[2];
+    unsigned func8[8];
     unsigned rlist[4];
     unsigned spimm[2];
     unsigned op[2];
 };
 
-format CR[16] : Inst16Format {
-  fields:
-    unsigned func4[4];
-    unsigned rs1[5];
-    unsigned rs2[5];
-    unsigned op[2];
-};
-
-format CS[16] : Inst16Format {
-  fields:
-    unsigned func3[3];
-    unsigned imm3[3];
-    unsigned rs1p[3];
-    unsigned imm2[2];
-    unsigned rs2p[3];
-    unsigned op[2];
-  overlays:
-    unsigned cs_rs1[5] = 0b01, rs1p;
-    unsigned cs_rs2[5] = 0b01, rs2p;
-    unsigned cs_imm_w[7] = imm2[0], imm3, imm2[1], 0b00;
-    unsigned cs_imm_d[8] = imm2, imm3, 0b000;
-};
 
 format CSB[16] : Inst16Format {
   fields:
@@ -212,17 +91,6 @@ format CSH[16] : Inst16Format {
     unsigned uimm2[2] = uimm1, 0b0;
 };
 
-format CSS[16] : Inst16Format {
-  fields:
-    unsigned func3[3];
-    unsigned imm6[6];
-    unsigned rs2[5];
-    unsigned op[2];
-  overlays:
-    unsigned css_imm_w[8] = imm6[1..0], imm6[5..2], 0b00;
-    unsigned css_imm_d[9] = imm6[2..0], imm6[5..3], 0b000;
-};
-
 format CU[16] : Inst16Format {
   fields:
     unsigned func6[6];
@@ -235,7 +103,7 @@ format CU[16] : Inst16Format {
 };
 
 // Non floating point compact instructions from "C".
-instruction group RiscVZca[16] : Inst16Format {
+instruction group RiscVCZca[16] : Inst16Format {
   caddi4spn : CIW: func3 == 0b000, op == 0b00, imm8 != 0;
   clw       : CL : func3 == 0b010, op == 0b00;
   csw       : CS : func3 == 0b110, op == 0b00;
@@ -266,7 +134,7 @@ instruction group RiscVZca[16] : Inst16Format {
 }
 
 // Single-precision floating point compact instructions from "C".
-instruction group RiscVZcf[16] : Inst16Format {
+instruction group RiscVCZcf[16] : Inst16Format {
   cflw      : CL : func3 == 0b011, op == 0b00;
   cfsw      : CS : func3 == 0b111, op == 0b00;
   cflwsp    : CI : func3 == 0b011, op == 0b10;
@@ -274,7 +142,7 @@ instruction group RiscVZcf[16] : Inst16Format {
 }
 
 // Double-precision floating point compact instructions from "C".
-instruction group RiscVZcd[16] : Inst16Format {
+instruction group RiscVCZcd[16] : Inst16Format {
   cfld      : CL : func3 == 0b001, op == 0b00;
   cfldsp    : CI : func3 == 0b001, op == 0b10;
   cfsd      : CS : func3 == 0b101, op == 0b00;
@@ -282,32 +150,33 @@ instruction group RiscVZcd[16] : Inst16Format {
 }
 
 // Simple code-size saving instructions that are easy to implement on all CPUs.
-instruction group RiscVZcb32[16] : Inst16Format {
+instruction group RiscVCZcb32[16] : Inst16Format {
   c_lbu    : CLB : func6 == 0b100'000, op == 0b00;
-  c_lhu    : CLH : func6 == 0b100'001, func2[1] == 0b0, op == 0b00;
-  c_lh     : CLH : func6 == 0b100'001, func2[1] == 0b1, op == 0b00;
-  c_sb     : CSB : func6 == 0b100'010, op2 == 0b00;
-  c_sh     : CSH : func6 == 0b100'011, func2[1] == 0b0, op == 0b00;
-  c_zext_b : CU : func6 == 0b100'111, func5 == 0b11000, op = 0b01;
+  c_lhu    : CLH : func6 == 0b100'001, func1 == 0b0, op == 0b00;
+  c_lh     : CLH : func6 == 0b100'001, func1 == 0b1, op == 0b00;
+  c_sb     : CSB : func6 == 0b100'010, op == 0b00;
+  c_sh     : CSH : func6 == 0b100'011, func1 == 0b0, op == 0b00;
+  c_zext_b : CU : func6 == 0b100'111, func5 == 0b11000, op == 0b01;
   c_sext_b : CU : func6 == 0b100'111, func5 == 0b11001, op == 0b01;
   c_zext_h : CU : func6 == 0b100'111, func5 == 0b11010, op == 0b01;
   c_sext_h : CU : func6 == 0b100'111, func5 == 0b11011, op == 0b01;
-  c_not    : CU : func6 == 0b100'111, func5 == 0b11101, op == 0b01;;
+  c_not    : CU : func6 == 0b100'111, func5 == 0b11101, op == 0b01;
   c_mul    : CA : func6 == 0b100'111, func2 == 0b10, op == 0b01;
 }
 
 // For 64 bit CPUs the zext_w instruction is added.
 instruction group RiscV64Zcb64[64] : Inst16Format {
-  c_zext_w : CU : func6 == 0b100'111, func5 = 0b11100, op == 0b01;
+  c_zext_w : CU : func6 == 0b100'111, func5 == 0b11100, op == 0b01;
 }
 
 // Push/pop/register move instructions. Incompatible with Zcf and Zcd.
-instruction group RiscVZcmp[16] : Inst16Format {
+instruction group RiscVCZcmp[16] : Inst16Format {
   cm_push    : CMPP : func8 == 0b101'11000, rlist > 3, op == 0b10;
   cm_pop     : CMPP : func8 == 0b101'11010, rlist > 3,op == 0b10;
   cm_popret  : CMPP : func8 == 0b101'11110, rlist > 3,op == 0b10;
   cm_popretz : CMPP : func8 == 0b101'11100, rlist > 3, op == 0b10;
-  cm_mvsa01  : CMMV : func6 == 0b101'011, func2 == 0b01, rs1p != rs2p, op == 0b10;
+  cm_mvsa01  : CMMV : func6 == 0b101'011, func2 == 0b01, op == 0b10;
+  // cm_mvsa01  : CMMV : func6 == 0b101'011, func2 == 0b01, rs1p != rs2p, op == 0b10;
   cm_mva01s  : CMMV : func6 == 0b101'011, func2 == 0b11, op == 0b10;
 }
 
@@ -319,7 +188,7 @@ format CMJT[16] : Inst16Format {
 }
 
 // Jump table instructions.
-instruction group RiscVZcmt[16] : Inst16Format {
+instruction group RiscVCZcmt[16] : Inst16Format {
   cm_jt   : CMJT : func6 == 0b101'000, index < 32, op == 0b10;
   cm_jalt : CMJT : func6 == 0b101'000, index >= 32,op == 0b10;
 }

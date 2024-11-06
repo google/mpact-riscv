@@ -174,20 +174,20 @@ slot riscv_zcf32 {
   }
   default size = 2;
   opcodes {
-    cflwsp{(: x2, I_ci_uimm6x4 : ), (: : c3frd)},
-      resources:{next_pc,x2 : cfrd[0..]},
+    cflwsp{(: x2, I_ci_uimm6x4 : ), (: : frd)},
+      resources:{next_pc, x2 : frd[0..]},
       disasm: "flw", "%frd, %I_ci_uimm6x4(%x2)",
       semfunc: "&RV32::RiscVILw", "&RV32::RiscVILwChild";
     cfswsp{: x2, I_css_uimm6x4, cfrs2 : },
-      resources: {next_pc,x2, cfrs2},
+      resources: {next_pc, x2, cfrs2},
       disasm: "fsw", "%cfrs2, %I_css_uimm6x4(%x2)",
       semfunc: "&RV32::RiscVISw";
     cflw{(: c3rs1, I_cl_uimm5x4 : ), (: : c3frd)},
-      resources: {next_pc,c3rs1 : c3frd[0..]},
+      resources: {next_pc, c3rs1 : c3frd[0..]},
       disasm: "flw", "%c3frd, %I_cl_uimm5x4(%c3rs1)",
       semfunc: "&RV32::RiscVILw", "&RV32::RiscVILwChild";
     cfsw{: c3rs1, I_cl_uimm5x4, c3frs2 : },
-      resources: {next_pc,c3rs1, c3frs2},
+      resources: {next_pc, c3rs1, c3frs2},
       disasm: "fsw", "%c3frs2, %I_cl_uimm5x4(%c3rs1)",
       semfunc: "&RV32::RiscVISw";
   }
@@ -212,20 +212,20 @@ slot riscv_zcd32 {
   }
   default size = 2;
   opcodes {
-    cfldsp{(: x2, I_ci_uimm6x8 : ), (: : c3drd)},
-      resources:{next_pc,x2 : drd[0..]},
+    cfldsp{(: x2, I_ci_uimm6x8 : ), (: : drd)},
+      resources:{next_pc, x2 : drd[0..]},
       disasm: "fld", "%drd, %I_ci_uimm6x8(%x2)",
       semfunc: "&RV64::RiscVILd", "&RV64::RiscVILdChild";
     cfsdsp{: x2, I_css_uimm6x8, cdrs2 : },
-      resources: {next_pc,x2, cdrs2},
+      resources: {next_pc, x2, cdrs2},
       disasm: "fsd", "%cdrs2, %I_css_uimm6x8(%x2)",
       semfunc: "&RV64::RiscVISd";
     cfld{(: c3rs1, I_cl_uimm5x8 : ), (: : c3drd)},
-      resources: {next_pc,c3rs1 : c3drd[0..]},
+      resources: {next_pc, c3rs1 : c3drd[0..]},
       disasm: "fld", "%c3drd, %I_cl_uimm5x8(%c3rs1)",
       semfunc: "&RV64::RiscVILd", "&RV64::RiscVILdChild";
     cfsd{: c3rs1, I_cl_uimm5x8, c3drs2 : },
-      resources: {next_pc,c3rs1, c3drs2},
+      resources: {next_pc, c3rs1, c3drs2},
       disasm: "fsd", "%c3drs2, %I_cl_uimm5x8(%c3rs1)",
       semfunc: "&RV32::RiscVDSd";
   }

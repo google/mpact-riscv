@@ -1,0 +1,48 @@
+// Copyright 2024 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// This file defines the cache prefetch instructions in the Zicbop extension.
+
+slot riscv_zicbop32 {
+  includes {
+    #include "riscv/riscv_zicbop_instructions.h"
+  }
+  default size = 4;
+  opcodes {
+    prefetch_i{: rs1, bop_uimm12: },
+      resources: { rs1 :},
+      disasm: "prefetch.i", "%bop_uimm12(%rs1)",
+      semfunc: "&RV32::RiscVPrefetchI";
+    prefetch_r{: rs1, bop_uimm12: },
+      resources: { rs1 :},
+      disasm: "prefetch.r", "%bop_uimm12(%rs1)",
+      semfunc: "&RV32::RiscVPrefetchR";
+    prefetch_w{: rs1, bop_uimm12: },
+      resources: { rs1 :},
+      disasm: "prefetch.w", "%bop_uimm12(%rs1)",
+      semfunc: "&RV32::RiscVPrefetchW";
+  }
+}
+
+slot riscv_zicbop64 : riscv_zicbop32 {
+  includes {
+    #include "riscv/riscv_zicbop_instructions.h"
+  }
+  default size = 4;
+  opcodes {
+    prefetch_i = override, semfunc: "&RV64::RiscVPrefetchI";
+    prefetch_r = override, semfunc: "&RV64::RiscVPrefetchR";
+    prefetch_w = override, semfunc: "&RV64::RiscVPrefetchW";
+  }
+}

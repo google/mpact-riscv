@@ -258,6 +258,7 @@ cc_library(
     srcs = [
         "riscv_zc_instructions.cc",
         "riscv_zhintpause_instructions.cc",
+        "riscv_zicbop_instructions.cc",
         "riscv_zicond_instructions.cc",
         "riscv_zihintntl_instructions.cc",
         "riscv_zimop_instructions.cc",
@@ -265,6 +266,7 @@ cc_library(
     hdrs = [
         "riscv_zc_instructions.h",
         "riscv_zhintpause_instructions.h",
+        "riscv_zicbop_instructions.h",
         "riscv_zicond_instructions.h",
         "riscv_zihintntl_instructions.h",
         "riscv_zimop_instructions.h",
@@ -377,6 +379,7 @@ mpact_isa_decoder(
         "riscv_vector.isa",
         "riscv_zc.isa",
         "riscv_zhintpause.isa",
+        "riscv_zicbop.isa",
         "riscv_zicond.isa",
         "riscv_zihintntl.isa",
         "riscv_zimop.isa",
@@ -386,8 +389,8 @@ mpact_isa_decoder(
     deps = [
         ":riscv_bitmanip_instructions",
         ":riscv_g",
-        ":riscv_rvm23_instructions",
         ":riscv_v",
+        ":rvm23_instructions",
         "@com_google_absl//absl/functional:bind_front",
     ],
 )
@@ -402,6 +405,7 @@ mpact_bin_fmt_decoder(
         "riscv32zb.bin_fmt",
         "riscv_zc.bin_fmt",
         "riscv_zhintpause.bin_fmt",
+        "riscv_zicbop.bin_fmt",
         "riscv_zicond.bin_fmt",
         "riscv_zihintntl.bin_fmt",
         "riscv_zimop.bin_fmt",
