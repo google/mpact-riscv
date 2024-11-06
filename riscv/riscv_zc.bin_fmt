@@ -175,8 +175,7 @@ instruction group RiscVCZcmp[16] : Inst16Format {
   cm_pop     : CMPP : func8 == 0b101'11010, rlist > 3,op == 0b10;
   cm_popret  : CMPP : func8 == 0b101'11110, rlist > 3,op == 0b10;
   cm_popretz : CMPP : func8 == 0b101'11100, rlist > 3, op == 0b10;
-  cm_mvsa01  : CMMV : func6 == 0b101'011, func2 == 0b01, op == 0b10;
-  // cm_mvsa01  : CMMV : func6 == 0b101'011, func2 == 0b01, rs1p != rs2p, op == 0b10;
+  cm_mvsa01  : CMMV : func6 == 0b101'011, func2 == 0b01, rs1p != rs2p, op == 0b10;
   cm_mva01s  : CMMV : func6 == 0b101'011, func2 == 0b11, op == 0b10;
 }
 
