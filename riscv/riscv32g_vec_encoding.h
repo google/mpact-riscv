@@ -34,6 +34,15 @@ namespace isa32v {
 // This class extends the RiscV scalar encoding class with vector instructions.
 class RiscV32GVecEncoding : public RiscV32GVEncodingBase {
  public:
+  using SourceOpGetterMap =
+      absl::flat_hash_map<int, absl::AnyInvocable<SourceOperandInterface *()>>;
+  using DestOpGetterMap = absl::flat_hash_map<
+      int, absl::AnyInvocable<DestinationOperandInterface *(int)>>;
+  using SimpleResourceGetterMap =
+      absl::flat_hash_map<int, absl::AnyInvocable<generic::SimpleResource *()>>;
+  using ComplexResourceGetterMap = absl::flat_hash_map<
+      int, absl::AnyInvocable<ResourceOperandInterface *(int, int)>>;
+
   static constexpr int kParseGroup32Size = 32;
   static constexpr int kParseGroup16Size = 32;
 
@@ -88,16 +97,17 @@ class RiscV32GVecEncoding : public RiscV32GVEncodingBase {
     return 0;
   }
 
- private:
-  using SourceOpGetterMap =
-      absl::flat_hash_map<int, absl::AnyInvocable<SourceOperandInterface *()>>;
-  using DestOpGetterMap = absl::flat_hash_map<
-      int, absl::AnyInvocable<DestinationOperandInterface *(int)>>;
-  using SimpleResourceGetterMap =
-      absl::flat_hash_map<int, absl::AnyInvocable<generic::SimpleResource *()>>;
-  using ComplexResourceGetterMap = absl::flat_hash_map<
-      int, absl::AnyInvocable<ResourceOperandInterface *(int, int)>>;
+  // Getter.
+  const SourceOpGetterMap &source_op_getters() { return source_op_getters_; }
+  const DestOpGetterMap &dest_op_getters() { return dest_op_getters_; }
+  const SimpleResourceGetterMap &simple_resource_getters() {
+    return simple_resource_getters_;
+  }
+  const ComplexResourceGetterMap &complex_resource_getters() {
+    return complex_resource_getters_;
+  }
 
+ private:
   const std::string xreg_alias_[32] = {
       "zero", "ra", "sp", "gp", "tp",  "t0",  "t1", "t2", "s0", "s1", "a0",
       "a1",   "a2", "a3", "a4", "a5",  "a6",  "a7", "s2", "s3", "s4", "s5",

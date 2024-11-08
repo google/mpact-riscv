@@ -16,7 +16,6 @@
 #define THIRD_PARTY_MPACT_RISCV_RISCV_GETTERS_ZBB64_H_
 
 #include <cstdint>
-#include <new>
 
 #include "mpact/sim/generic/immediate_operand.h"
 #include "mpact/sim/generic/type_helpers.h"

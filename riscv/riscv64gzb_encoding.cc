@@ -15,7 +15,6 @@
 #include "riscv/riscv64gzb_encoding.h"
 
 #include <cstdint>
-#include <new>
 
 #include "absl/log/log.h"
 #include "absl/strings/str_cat.h"
@@ -27,7 +26,9 @@
 #include "riscv/riscv64gzb_enums.h"
 #include "riscv/riscv_encoding_common.h"
 #include "riscv/riscv_getters.h"
+#include "riscv/riscv_getters_rv64.h"
 #include "riscv/riscv_getters_zba.h"
+#include "riscv/riscv_getters_zbb64.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
 
@@ -54,8 +55,12 @@ RiscV64GZBEncoding::RiscV64GZBEncoding(RiscVState *state)
       [](int latency, int end) { return nullptr; });
   AddRiscVSourceGetters<SourceOpEnum, Extractors, RV64Register, RVFpRegister>(
       source_op_getters_, this);
+  AddRiscV64SourceGetters<SourceOpEnum, Extractors, RV64Register, RVFpRegister>(
+      source_op_getters_, this);
   AddRiscVZbaSourceGetters<SourceOpEnum, Extractors, RV64Register,
                            RVFpRegister>(source_op_getters_, this);
+  AddRiscVZbb64SourceGetters<SourceOpEnum, Extractors, RV64Register,
+                             RVFpRegister>(source_op_getters_, this);
   AddRiscVDestGetters<DestOpEnum, Extractors, RV64Register, RVFpRegister>(
       dest_op_getters_, this);
   AddRiscVZbaDestGetters<DestOpEnum, Extractors, RV64Register, RVFpRegister>(

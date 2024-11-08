@@ -37,6 +37,15 @@ namespace isa64v {
 // instructions according to the operand fields in the encoding.
 class RiscV64GVecEncoding : public RiscV64GVEncodingBase {
  public:
+  using SourceOpGetterMap =
+      absl::flat_hash_map<int, absl::AnyInvocable<SourceOperandInterface *()>>;
+  using DestOpGetterMap = absl::flat_hash_map<
+      int, absl::AnyInvocable<DestinationOperandInterface *(int)>>;
+  using SimpleResourceGetterMap =
+      absl::flat_hash_map<int, absl::AnyInvocable<generic::SimpleResource *()>>;
+  using ComplexResourceGetterMap = absl::flat_hash_map<
+      int, absl::AnyInvocable<ResourceOperandInterface *(int, int)>>;
+
   static constexpr int kParseGroup32Size = 32;
   static constexpr int kParseGroup16Size = 32;
 
@@ -92,18 +101,17 @@ class RiscV64GVecEncoding : public RiscV64GVEncodingBase {
   }
 
   // Getter.
-  generic::SimpleResourcePool *resource_pool() const { return resource_pool_; }
+
+  const SourceOpGetterMap &source_op_getters() { return source_op_getters_; }
+  const DestOpGetterMap &dest_op_getters() { return dest_op_getters_; }
+  const SimpleResourceGetterMap &simple_resource_getters() {
+    return simple_resource_getters_;
+  }
+  const ComplexResourceGetterMap &complex_resource_getters() {
+    return complex_resource_getters_;
+  }
 
  protected:
-  using SourceOpGetterMap =
-      absl::flat_hash_map<int, absl::AnyInvocable<SourceOperandInterface *()>>;
-  using DestOpGetterMap = absl::flat_hash_map<
-      int, absl::AnyInvocable<DestinationOperandInterface *(int)>>;
-  using SimpleResourceGetterMap =
-      absl::flat_hash_map<int, absl::AnyInvocable<generic::SimpleResource *()>>;
-  using ComplexResourceGetterMap = absl::flat_hash_map<
-      int, absl::AnyInvocable<ResourceOperandInterface *(int, int)>>;
-
   // Architectural names for the integer registers.
   const std::string xreg_names_[32] = {
       "x0",  "x1",  "x2",  "x3",  "x4",  "x5",  "x6",  "x7",
@@ -128,18 +136,10 @@ class RiscV64GVecEncoding : public RiscV64GVEncodingBase {
       "fa6", "fa7", "fs2",  "fs3",  "fs4", "fs5", "fs6",  "fs7",
       "fs8", "fs9", "fs10", "fs11", "ft8", "ft9", "ft10", "ft11"};
 
-  SourceOpGetterMap &source_op_getters() { return source_op_getters_; }
-  DestOpGetterMap &dest_op_getters() { return dest_op_getters_; }
-  SimpleResourceGetterMap &simple_resource_getters() {
-    return simple_resource_getters_;
-  }
-  ComplexResourceGetterMap &complex_resource_getters() {
-    return complex_resource_getters_;
-  }
-
   RiscVState *state() const { return state_; }
   OpcodeEnum opcode() const { return opcode_; }
   uint32_t inst_word() const { return inst_word_; }
+  generic::SimpleResourcePool *resource_pool() const { return resource_pool_; }
 
  private:
   std::string GetSimpleResourceName(SimpleResourceEnum resource_enum);

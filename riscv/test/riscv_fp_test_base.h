@@ -372,8 +372,6 @@ class RiscVFPInstructionTestBase : public testing::Test {
     for (auto &[reg_name, value] : values) {
       typename RegisterType::ValueType reg_value =
           NaNBox<T, typename RegisterType::ValueType>(value);
-      LOG(INFO) << "Setting " << reg_name << " to " << std::hex << reg_value
-                << " from: " << value;
       auto *reg = state_->GetRegister<RegisterType>(reg_name).first;
       auto *db =
           state_->db_factory()->Allocate<typename RegisterType::ValueType>(1);
@@ -650,16 +648,6 @@ class RiscVFPInstructionTestBase : public testing::Test {
         {
           ScopedFPStatus set_fpstatus(rv_fp_->host_fp_interface());
           std::tie(op_val, flag) = operation(lhs_span[i], rhs_span[i]);
-        }
-        if (name == "fmin") {
-          LOG(INFO) << "L: " << lhs_span[i] << " R: " << rhs_span[i];
-          LHS lhs_val = state_->GetRegister<LhsRegisterType>(kR1Name)
-                            .first->data_buffer()
-                            ->template Get<LHS>(0);
-          RHS rhs_val = state_->GetRegister<RhsRegisterType>(kR2Name)
-                            .first->data_buffer()
-                            ->template Get<RHS>(0);
-          LOG(INFO) << "Lreg: " << lhs_val << " Rreg: " << rhs_val;
         }
         auto reg_val = state_->GetRegister<DestRegisterType>(kRdName)
                            .first->data_buffer()

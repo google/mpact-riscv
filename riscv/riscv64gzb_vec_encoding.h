@@ -75,6 +75,15 @@ class RiscV64GZBVecEncoding : public RiscV64GVZBEncodingBase,
   }
   uint32_t inst_word() const override { return inst_word_; }
 
+  const SourceOpGetterMap &source_op_getters() { return source_op_getters_; }
+  const DestOpGetterMap &dest_op_getters() { return dest_op_getters_; }
+  const SimpleResourceGetterMap &simple_resource_getters() {
+    return simple_resource_getters_;
+  }
+  const ComplexResourceGetterMap &complex_resource_getters() {
+    return complex_resource_getters_;
+  }
+
  private:
   std::string GetSimpleResourceName(SimpleResourceEnum resource_enum);
 

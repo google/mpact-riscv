@@ -19,6 +19,7 @@
 #include <string>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/functional/any_invocable.h"
 #include "mpact/sim/generic/simple_resource.h"
 #include "mpact/sim/generic/simple_resource_operand.h"
 #include "riscv/riscv64g_decoder.h"
@@ -37,8 +38,29 @@ namespace isa64 {
 // instructions according to the operand fields in the encoding.
 class RiscV64GEncoding : public RiscV64GEncodingBase {
  public:
+  using SourceOpGetterMap =
+      absl::flat_hash_map<int, absl::AnyInvocable<SourceOperandInterface *()>>;
+  using DestOpGetterMap = absl::flat_hash_map<
+      int, absl::AnyInvocable<DestinationOperandInterface *(int)>>;
+  using SimpleResourceGetterMap =
+      absl::flat_hash_map<int, absl::AnyInvocable<generic::SimpleResource *()>>;
+  using ComplexResourceGetterMap = absl::flat_hash_map<
+      int, absl::AnyInvocable<ResourceOperandInterface *(int, int)>>;
+
   static constexpr int kParseGroup32Size = 32;
   static constexpr int kParseGroup16Size = 32;
+
+  // Architectural names for the integer registers.
+  const std::string xreg_names_[32] = {
+      "x0",  "x1",  "x2",  "x3",  "x4",  "x5",  "x6",  "x7",
+      "x8",  "x9",  "x10", "x11", "x12", "x13", "x14", "x15",
+      "x16", "x17", "x18", "x19", "x20", "x21", "x22", "x23",
+      "x24", "x25", "x26", "x27", "x28", "x29", "x30", "x31"};
+  // ABI names for the integer registers.
+  const std::string xreg_abi_names_[32] = {
+      "zero", "ra", "sp", "gp", "tp",  "t0",  "t1", "t2", "s0", "s1", "a0",
+      "a1",   "a2", "a3", "a4", "a5",  "a6",  "a7", "s2", "s3", "s4", "s5",
+      "s6",   "s7", "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6"};
 
   explicit RiscV64GEncoding(RiscVState *state);
   RiscV64GEncoding(RiscVState *state, bool use_abi_names);
@@ -94,34 +116,12 @@ class RiscV64GEncoding : public RiscV64GEncodingBase {
   // Getter.
   generic::SimpleResourcePool *resource_pool() const { return resource_pool_; }
 
- protected:
-  using SourceOpGetterMap =
-      absl::flat_hash_map<int, absl::AnyInvocable<SourceOperandInterface *()>>;
-  using DestOpGetterMap = absl::flat_hash_map<
-      int, absl::AnyInvocable<DestinationOperandInterface *(int)>>;
-  using SimpleResourceGetterMap =
-      absl::flat_hash_map<int, absl::AnyInvocable<generic::SimpleResource *()>>;
-  using ComplexResourceGetterMap = absl::flat_hash_map<
-      int, absl::AnyInvocable<ResourceOperandInterface *(int, int)>>;
-
-  // Architectural names for the integer registers.
-  const std::string xreg_names_[32] = {
-      "x0",  "x1",  "x2",  "x3",  "x4",  "x5",  "x6",  "x7",
-      "x8",  "x9",  "x10", "x11", "x12", "x13", "x14", "x15",
-      "x16", "x17", "x18", "x19", "x20", "x21", "x22", "x23",
-      "x24", "x25", "x26", "x27", "x28", "x29", "x30", "x31"};
-  // ABI names for the integer registers.
-  const std::string xreg_abi_names_[32] = {
-      "zero", "ra", "sp", "gp", "tp",  "t0",  "t1", "t2", "s0", "s1", "a0",
-      "a1",   "a2", "a3", "a4", "a5",  "a6",  "a7", "s2", "s3", "s4", "s5",
-      "s6",   "s7", "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6"};
-
-  SourceOpGetterMap &source_op_getters() { return source_op_getters_; }
-  DestOpGetterMap &dest_op_getters() { return dest_op_getters_; }
-  SimpleResourceGetterMap &simple_resource_getters() {
+  const SourceOpGetterMap &source_op_getters() { return source_op_getters_; }
+  const DestOpGetterMap &dest_op_getters() { return dest_op_getters_; }
+  const SimpleResourceGetterMap &simple_resource_getters() {
     return simple_resource_getters_;
   }
-  ComplexResourceGetterMap &complex_resource_getters() {
+  const ComplexResourceGetterMap &complex_resource_getters() {
     return complex_resource_getters_;
   }
 

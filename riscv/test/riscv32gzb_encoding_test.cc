@@ -15,9 +15,9 @@
 #include "riscv/riscv32gzb_encoding.h"
 
 #include <cstdint>
-#include <new>
 
 #include "googlemock/include/gmock/gmock.h"
+#include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "riscv/riscv32gzb_enums.h"
 #include "riscv/riscv_state.h"
@@ -27,9 +27,19 @@
 
 namespace {
 
+using ::mpact::sim::generic::operator*;  // NOLINT: clang-tidy false positive.
+
 using mpact::sim::riscv::RiscVState;
 using mpact::sim::riscv::RiscVXlen;
+using mpact::sim::riscv::isa32gzb::ComplexResourceEnum;
+using mpact::sim::riscv::isa32gzb::DestOpEnum;
+using mpact::sim::riscv::isa32gzb::kComplexResourceNames;
+using mpact::sim::riscv::isa32gzb::kDestOpNames;
+using mpact::sim::riscv::isa32gzb::kSimpleResourceNames;
+using mpact::sim::riscv::isa32gzb::kSourceOpNames;
 using mpact::sim::riscv::isa32gzb::RiscV32GZBEncoding;
+using mpact::sim::riscv::isa32gzb::SimpleResourceEnum;
+using mpact::sim::riscv::isa32gzb::SourceOpEnum;
 using mpact::sim::util::FlatDemandMemory;
 using SlotEnum = mpact::sim::riscv::isa32gzb::SlotEnum;
 using OpcodeEnum = mpact::sim::riscv::isa32gzb::OpcodeEnum;
@@ -91,6 +101,40 @@ class RiscV32GZBEncodingTest : public testing::Test {
   RiscVState *state_;
   RiscV32GZBEncoding *enc_;
 };
+
+TEST_F(RiscV32GZBEncodingTest, SourceOperands) {
+  auto &getters = enc_->source_op_getters();
+  for (int i = *SourceOpEnum::kNone; i < *SourceOpEnum::kPastMaxValue; ++i) {
+    EXPECT_TRUE(getters.contains(i)) << "No source operand for enum value " << i
+                                     << " (" << kSourceOpNames[i] << ")";
+  }
+}
+
+TEST_F(RiscV32GZBEncodingTest, DestOperands) {
+  auto &getters = enc_->dest_op_getters();
+  for (int i = *DestOpEnum::kNone; i < *DestOpEnum::kPastMaxValue; ++i) {
+    EXPECT_TRUE(getters.contains(i)) << "No dest operand for enum value " << i
+                                     << " (" << kDestOpNames[i] << ")";
+  }
+}
+
+TEST_F(RiscV32GZBEncodingTest, SimpleResources) {
+  auto &getters = enc_->simple_resource_getters();
+  for (int i = *SimpleResourceEnum::kNone;
+       i < *SimpleResourceEnum::kPastMaxValue; ++i) {
+    EXPECT_TRUE(getters.contains(i)) << "No source operand for enum value " << i
+                                     << " (" << kSimpleResourceNames[i] << ")";
+  }
+}
+
+TEST_F(RiscV32GZBEncodingTest, ComplexResources) {
+  auto &getters = enc_->source_op_getters();
+  for (int i = *ComplexResourceEnum::kNone;
+       i < *ComplexResourceEnum::kPastMaxValue; ++i) {
+    EXPECT_TRUE(getters.contains(i)) << "No source operand for enum value " << i
+                                     << " (" << kComplexResourceNames[i] << ")";
+  }
+}
 
 TEST_F(RiscV32GZBEncodingTest, Zba) {
   enc_->ParseInstruction(kSh1Add);

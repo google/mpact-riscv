@@ -393,6 +393,12 @@ void RiscV32GVecEncoding::InitializeSourceOperandGetters() {
             state_, absl::StrCat(RiscVState::kFregPrefix, num));
       }));
   source_op_getters_.insert(
+      std::make_pair(static_cast<int>(SourceOpEnum::kFs1), [this]() {
+        const int num = encoding::v_arith::ExtractRs1(inst_word_);
+        return GetRegisterSourceOp<RVFpRegister>(
+            state_, absl::StrCat(RiscVState::kFregPrefix, num));
+      }));
+  source_op_getters_.insert(
       std::make_pair(static_cast<int>(SourceOpEnum::kICbImm8), [this]() {
         return new generic::ImmediateOperand<int32_t>(
             encoding::inst16_format::ExtractBimm(inst_word_));
@@ -478,6 +484,11 @@ void RiscV32GVecEncoding::InitializeSourceOperandGetters() {
             encoding::inst32_format::ExtractJImm(inst_word_));
       }));
   source_op_getters_.insert(
+      std::make_pair(static_cast<int>(SourceOpEnum::kPred), [this]() {
+        return new generic::ImmediateOperand<uint32_t>(
+            encoding::fence::ExtractPred(inst_word_));
+      }));
+  source_op_getters_.insert(
       std::make_pair(static_cast<int>(SourceOpEnum::kRm),
                      [this]() -> SourceOperandInterface * {
                        uint32_t rm = (inst_word_ >> 12) & 0x7;
@@ -538,10 +549,21 @@ void RiscV32GVecEncoding::InitializeSourceOperandGetters() {
             encoding::inst32_format::ExtractSImm(inst_word_));
       }));
   source_op_getters_.insert(
+      std::make_pair(static_cast<int>(SourceOpEnum::kSucc), [this]() {
+        return new generic::ImmediateOperand<uint32_t>(
+            encoding::fence::ExtractSucc(inst_word_));
+      }));
+  source_op_getters_.insert(
       std::make_pair(static_cast<int>(SourceOpEnum::kUImm20), [this]() {
         return new generic::ImmediateOperand<int32_t>(
             encoding::inst32_format::ExtractUImm(inst_word_));
       }));
+  Insert(source_op_getters_, SourceOpEnum::kVm,
+         [this]() -> SourceOperandInterface * {
+           auto vm = encoding::v_arith::ExtractVm(inst_word_);
+           return new generic::ImmediateOperand<bool>(
+               vm, absl::StrCat("vm.", vm ? "t" : "f"));
+         });
   source_op_getters_.insert(
       std::make_pair(static_cast<int>(SourceOpEnum::kX0), [this]() {
         return new generic::IntLiteralOperand<0>({1}, xreg_alias_[0]);
