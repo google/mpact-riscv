@@ -21,6 +21,7 @@
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/type_helpers.h"
+#include "riscv/riscv_fp_info.h"
 #include "riscv/test/riscv_fp_test_base.h"
 
 namespace {

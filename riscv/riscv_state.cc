@@ -162,6 +162,12 @@ template <typename T>
 void CreateCsrs(RiscVState *state, std::vector<RiscVCsrInterface *> &csr_vec) {
   absl::Status result;
   // Create CSRs.
+
+  // menvcfg
+  CHECK_NE(CreateCsr<RiscVSimpleCsr<T>>(state, csr_vec, "menvcfg",
+                                        RiscVCsrEnum::kMenvcfg, 0, state),
+           nullptr);
+
   // misa
   auto *misa = CreateCsr(state, state->misa_, csr_vec,
                          CsrInfo<T>::kMisaInitialValue, state);
@@ -247,7 +253,24 @@ void CreateCsrs(RiscVState *state, std::vector<RiscVCsrInterface *> &csr_vec) {
         nullptr);
   }
 
+  // Hypervisor level CSRs
+
+  // henvcfg
+  CHECK_NE(CreateCsr<RiscVSimpleCsr<T>>(state, csr_vec, "henvcfg",
+                                        RiscVCsrEnum::kHenvcfg, 0, state),
+           nullptr);
+
   // Supervisor level CSRs
+
+  // senvcfg
+  CHECK_NE(CreateCsr<RiscVSimpleCsr<T>>(state, csr_vec, "senvcfg",
+                                        RiscVCsrEnum::kSenvcfg, 0, state),
+           nullptr);
+
+  // scounteren
+  CHECK_NE(CreateCsr<RiscVSimpleCsr<T>>(state, csr_vec, "scounteren",
+                                        RiscVCsrEnum::kSCounteren, 0, state),
+           nullptr);
 
   // sstatus
   CHECK_NE(CreateCsr<RiscVSStatus>(state, csr_vec, mstatus, state), nullptr);
@@ -530,13 +553,15 @@ void RiscVState::Cease(const Instruction *inst) {
     if (res) return;
   }
 
-  // If no handler is specidied, then CEASE is treated as an infinite loop.
+  // If no handler is specified, then CEASE is treated as an infinite loop.
   auto current_xlen = xlen();
   auto *db = pc_dst_operand_->AllocateDataBuffer();
   if (current_xlen == RiscVXlen::RV32) {
     db->SetSubmit<uint32_t>(0, static_cast<uint32_t>(inst->address()));
+    set_branch(true);
   } else if (current_xlen == RiscVXlen::RV64) {
     db->SetSubmit<uint64_t>(0, inst->address());
+    set_branch(true);
   } else {
     LOG(ERROR) << "Unknown xlen";
   }
@@ -581,7 +606,6 @@ void RiscVState::Trap(bool is_interrupt, uint64_t trap_value,
       }
     }
   } else {
-    // Exceptions are not delegated to a lower privilege level.
     if ((privilege_mode() != PrivilegeMode::kMachine) &&
         (medeleg_->AsUint64() & (1ULL << exception_code))) {
       destination_mode = PrivilegeMode::kSupervisor;
@@ -656,8 +680,10 @@ void RiscVState::Trap(bool is_interrupt, uint64_t trap_value,
   auto *db = pc_dst_operand_->AllocateDataBuffer();
   if (current_xlen == RiscVXlen::RV32) {
     db->SetSubmit<uint32_t>(0, static_cast<uint32_t>(trap_target));
+    set_branch(true);
   } else if (current_xlen == RiscVXlen::RV64) {
     db->SetSubmit<uint64_t>(0, trap_target);
+    set_branch(true);
   } else {
     LOG(ERROR) << "Unknown xlen";
   }

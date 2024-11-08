@@ -606,7 +606,7 @@ TEST_F(RV64BitmanipInstructionTest, RV64Clmulh) {
     SetRegisterValues<uint64_t>({{kX1, val1}, {kX2, val2}});
     instruction_->Execute(nullptr);
     absl::uint128 result = 0;
-    for (int i = 0; i < sizeof(T) * 8; ++i) {
+    for (int i = 1; i < sizeof(T) * 8; ++i) {
       if (val2 & (1ULL << i)) result ^= (absl::MakeUint128(0, val1) << i);
     }
     EXPECT_EQ(GetRegisterValue<uint64_t>(kX3), absl::Uint128High64(result));
@@ -627,7 +627,7 @@ TEST_F(RV64BitmanipInstructionTest, RV64Clmulr) {
     SetRegisterValues<uint64_t>({{kX1, val1}, {kX2, val2}});
     instruction_->Execute(nullptr);
     uint64_t result = 0;
-    for (int i = 0; i < sizeof(T) * 8 - 1; ++i) {
+    for (int i = 0; i < sizeof(T) * 8; ++i) {
       if ((val2 >> i) & 1) result ^= (val1 >> (sizeof(T) * 8 - 1 - i));
     }
     EXPECT_EQ(GetRegisterValue<uint64_t>(kX3), result);

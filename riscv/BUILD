@@ -313,11 +313,14 @@ mpact_isa_decoder(
     src = "riscv32v.isa",
     includes = [
         "riscv32g.isa",
+        "riscv32gzb.isa",
+        "riscv32zb.isa",
         "riscv_vector.isa",
     ],
     isa_name = "RiscV32GV",
     prefix = "riscv32gv",
     deps = [
+        ":riscv_bitmanip_instructions",
         ":riscv_g",
         ":riscv_v",
         "@com_google_absl//absl/functional:bind_front",
@@ -330,6 +333,7 @@ mpact_bin_fmt_decoder(
     decoder_name = "RiscV32GV",
     includes = [
         "riscv32g.bin_fmt",
+        "riscv32zb.bin_fmt",
         "riscv_vector.bin_fmt",
     ],
     prefix = "riscv32gv",
@@ -366,6 +370,40 @@ mpact_bin_fmt_decoder(
     prefix = "riscv32gzb",
     deps = [
         ":riscv32gzb_isa",
+    ],
+)
+
+mpact_isa_decoder(
+    name = "riscv32gvzb_isa",
+    src = "riscv32v.isa",
+    includes = [
+        "riscv32g.isa",
+        "riscv32gzb.isa",
+        "riscv32zb.isa",
+        "riscv_vector.isa",
+    ],
+    isa_name = "RiscV32GVZB",
+    prefix = "riscv32gvzb",
+    deps = [
+        ":riscv_bitmanip_instructions",
+        ":riscv_g",
+        ":riscv_v",
+        "@com_google_absl//absl/functional:bind_front",
+    ],
+)
+
+mpact_bin_fmt_decoder(
+    name = "riscv32gvzb_bin_fmt",
+    src = "riscv32v.bin_fmt",
+    decoder_name = "RiscV32GVZB",
+    includes = [
+        "riscv32g.bin_fmt",
+        "riscv32zb.bin_fmt",
+        "riscv_vector.bin_fmt",
+    ],
+    prefix = "riscv32gvzb",
+    deps = [
+        ":riscv32gvzb_isa",
     ],
 )
 
@@ -686,6 +724,40 @@ cc_library(
 )
 
 cc_library(
+    name = "riscv32gzb_vec_decoder",
+    srcs = [
+        "riscv32gzb_vec_decoder.cc",
+        "riscv32gzb_vec_encoding.cc",
+    ],
+    hdrs = [
+        "riscv32gzb_vec_decoder.h",
+        "riscv32gzb_vec_encoding.h",
+    ],
+    copts = ["-O3"],
+    deps = [
+        ":riscv32gvzb_bin_fmt",
+        ":riscv32gvzb_isa",
+        ":riscv_encoding_common",
+        ":riscv_getters",
+        ":riscv_state",
+        "@com_google_absl//absl/base",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/functional:any_invocable",
+        "@com_google_absl//absl/functional:bind_front",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/types:span",
+        "@com_google_mpact-sim//mpact/sim/generic:arch_state",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:program_error",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
+    ],
+)
+
+cc_library(
     name = "riscv64g_decoder",
     srcs = [
         "riscv64_decoder.cc",
@@ -794,6 +866,7 @@ cc_library(
         "@com_google_absl//absl/functional:bind_front",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
+        "@com_google_absl//absl/numeric:bits",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
@@ -894,6 +967,7 @@ cc_library(
     copts = ["-O3"],
     deps = [
         ":riscv_debug_interface",
+        ":riscv_top",
         ":stoull_wrapper",
         "@com_google_absl//absl/container:btree",
         "@com_google_absl//absl/container:flat_hash_set",
@@ -954,10 +1028,12 @@ cc_binary(
         ":riscv_fp_state",
         ":riscv_state",
         ":riscv_top",
+        "@com_google_absl//absl/base:log_severity",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
+        "@com_google_absl//absl/log:globals",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/time",
@@ -983,17 +1059,21 @@ cc_binary(
         ":debug_command_shell",
         ":riscv32_htif_semihost",
         ":riscv32g_vec_decoder",
+        ":riscv32gzb_vec_decoder",
         ":riscv_arm_semihost",
         ":riscv_fp_state",
         ":riscv_state",
         ":riscv_top",
+        "@com_google_absl//absl/base:log_severity",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
+        "@com_google_absl//absl/log:globals",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/time",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:core_debug_interface",
         "@com_google_mpact-sim//mpact/sim/generic:counters",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
@@ -1018,10 +1098,12 @@ cc_binary(
         ":riscv_fp_state",
         ":riscv_state",
         ":riscv_top",
+        "@com_google_absl//absl/base:log_severity",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
+        "@com_google_absl//absl/log:globals",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/time",
@@ -1050,10 +1132,12 @@ cc_binary(
         ":riscv_fp_state",
         ":riscv_state",
         ":riscv_top",
+        "@com_google_absl//absl/base:log_severity",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
+        "@com_google_absl//absl/log:globals",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/time",

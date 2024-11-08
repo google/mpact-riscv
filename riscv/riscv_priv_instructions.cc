@@ -65,6 +65,7 @@ void RiscVPrivSRet(const Instruction *inst) {
   auto *db = inst->Destination(0)->AllocateDataBuffer();
   // Write the contents of mepc to the pc.
   db->SetSubmit<UIntReg>(0, sepc->AsUint32());
+  state->set_branch(true);
   // Need to update new privilege level.
   res = state->csr_set()->GetCsr(*RiscVCsrEnum::kMStatus);
   if (!res.ok()) {
@@ -114,6 +115,7 @@ void RiscVPrivMRet(const Instruction *inst) {
   auto *db = inst->Destination(0)->AllocateDataBuffer();
   // Write the contents of mepc to the pc.
   db->SetSubmit<UIntReg>(0, mepc->AsUint32());
+  state->set_branch(true);
   // Need to update new privilege level.
   res = state->csr_set()->GetCsr(*RiscVCsrEnum::kMStatus);
   if (!res.ok()) {
@@ -164,8 +166,10 @@ void RiscVPrivURet(const Instruction *inst) {
 
 void RiscVPrivSRet(const Instruction *inst) {
   RiscVState *state = static_cast<RiscVState *>(inst->state());
-  if (state->privilege_mode() != PrivilegeMode::kSupervisor) {
-    LOG(ERROR) << "sret executed when not in Supervisor mode";
+  if (*state->privilege_mode() < *PrivilegeMode::kSupervisor) {
+    LOG(ERROR) << absl::StrCat(
+        "sret executed when not in Supervisor mode at pc = 0x",
+        absl::Hex(inst->address()));
     state->Trap(/*is_interrupt*/ false, /*trap_value*/ 0,
                 *ExceptionCode::kIllegalInstruction, inst->address(), inst);
     return;
@@ -186,6 +190,7 @@ void RiscVPrivSRet(const Instruction *inst) {
   auto *db = inst->Destination(0)->AllocateDataBuffer();
   // Write the contents of mepc to the pc.
   db->SetSubmit<UIntReg>(0, sepc->AsUint64());
+  state->set_branch(true);
   // Need to update new privilege level.
   res = state->csr_set()->GetCsr(*RiscVCsrEnum::kMStatus);
   if (!res.ok()) {
@@ -211,7 +216,19 @@ void RiscVPrivSRet(const Instruction *inst) {
   mstatus->set_sie(mstatus->spie());
   // Set mstatus:mpie to 1.
   mstatus->set_spie(1);
-  mstatus->set_spp(*PrivilegeMode::kUser & 0b1);
+  // Get misa too.
+  res = state->csr_set()->GetCsr(*RiscVCsrEnum::kMIsa);
+  if (!res.ok()) {
+    LOG(ERROR) << absl::StrCat("At PC=", absl::Hex(inst->address()),
+                               " mret: cannot access isa");
+    return;
+  }
+  auto *misa = static_cast<RiscVMIsa *>(*res);
+  if (misa->HasUserMode()) {
+    mstatus->set_spp(*PrivilegeMode::kUser);
+  } else {
+    mstatus->set_spp(*PrivilegeMode::kMachine);
+  }
   state->set_privilege_mode(static_cast<PrivilegeMode>(target_mode));
   state->SignalReturnFromInterrupt();
   mstatus->Submit();
@@ -235,6 +252,7 @@ void RiscVPrivMRet(const Instruction *inst) {
   auto *db = inst->Destination(0)->AllocateDataBuffer();
   // Write the contents of mepc to the pc.
   db->SetSubmit<UIntReg>(0, mepc->AsUint64());
+  state->set_branch(true);
   // Need to update new privilege level.
   res = state->csr_set()->GetCsr(*RiscVCsrEnum::kMStatus);
   if (!res.ok()) {

@@ -128,6 +128,8 @@ void RiscVIJal(const Instruction *instruction) {
   UIntReg return_address = instruction->address() + instruction->size();
   auto *db = instruction->Destination(0)->AllocateDataBuffer();
   db->SetSubmit<UIntReg>(0, target);
+  auto *state = static_cast<RiscVState *>(instruction->state());
+  state->set_branch(true);
   auto *reg = static_cast<generic::RegisterDestinationOperand<UIntReg> *>(
                   instruction->Destination(1))
                   ->GetRegister();
@@ -141,6 +143,8 @@ void RiscVIJalr(const Instruction *instruction) {
   UIntReg return_address = instruction->address() + instruction->size();
   auto *db = instruction->Destination(0)->AllocateDataBuffer();
   db->SetSubmit<UIntReg>(0, target);
+  auto *state = static_cast<RiscVState *>(instruction->state());
+  state->set_branch(true);
   auto *reg = static_cast<generic::RegisterDestinationOperand<UIntReg> *>(
                   instruction->Destination(1))
                   ->GetRegister();
@@ -277,6 +281,8 @@ void RiscVIJal(const Instruction *instruction) {
   UIntReg return_address = instruction->address() + instruction->size();
   auto *db = instruction->Destination(0)->AllocateDataBuffer();
   db->SetSubmit<UIntReg>(0, target);
+  auto *state = static_cast<RiscVState *>(instruction->state());
+  state->set_branch(true);
   auto *reg = static_cast<generic::RegisterDestinationOperand<UIntReg> *>(
                   instruction->Destination(1))
                   ->GetRegister();
@@ -291,6 +297,8 @@ void RiscVIJalr(const Instruction *instruction) {
   UIntReg return_address = instruction->address() + instruction->size();
   auto *db = instruction->Destination(0)->AllocateDataBuffer();
   db->SetSubmit<UIntReg>(0, target);
+  auto *state = static_cast<RiscVState *>(instruction->state());
+  state->set_branch(true);
   auto *reg = static_cast<generic::RegisterDestinationOperand<UIntReg> *>(
                   instruction->Destination(1))
                   ->GetRegister();

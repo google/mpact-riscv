@@ -107,6 +107,8 @@ void RiscVZCmpPopRet(const Instruction *inst) {
   UIntReg target = generic::GetInstructionSource<UIntReg>(inst, 3);
   auto *db = inst->Destination(size + 1)->AllocateDataBuffer();
   db->SetSubmit<UIntReg>(0, target);
+  auto *state = static_cast<RiscVState *>(inst->state());
+  state->set_branch(true);
 }
 
 void RiscVZCmpPopRetz(const Instruction *inst) {
@@ -119,6 +121,8 @@ void RiscVZCmpPopRetz(const Instruction *inst) {
   UIntReg target = generic::GetInstructionSource<UIntReg>(inst, 3);
   auto *db = inst->Destination(size + 2)->AllocateDataBuffer();
   db->SetSubmit<UIntReg>(0, target);
+  auto *state = static_cast<RiscVState *>(inst->state());
+  state->set_branch(true);
 }
 
 void RiscVZCmpMvTwoRegs(const Instruction *inst) {
@@ -150,6 +154,7 @@ void RiscVZCmtJtHelper(const Instruction *inst, int dest_index) {
   // Write the target address to the next pc operand.
   auto *target_db = inst->Destination(0)->AllocateDataBuffer();
   target_db->SetSubmit<UIntReg>(0, target_address);
+  state->set_branch(true);
 }
 
 }  // namespace
@@ -243,6 +248,8 @@ void RiscVZCmpPopRet(const Instruction *inst) {
   UIntReg target = generic::GetInstructionSource<UIntReg>(inst, 3);
   auto *db = inst->Destination(size + 1)->AllocateDataBuffer();
   db->SetSubmit<UIntReg>(0, target);
+  auto *state = static_cast<RiscVState *>(inst->state());
+  state->set_branch(true);
 }
 
 void RiscVZCmpPopRetz(const Instruction *inst) {
@@ -255,6 +262,8 @@ void RiscVZCmpPopRetz(const Instruction *inst) {
   UIntReg target = generic::GetInstructionSource<UIntReg>(inst, 3);
   auto *db = inst->Destination(size + 2)->AllocateDataBuffer();
   db->SetSubmit<UIntReg>(0, target);
+  auto *state = static_cast<RiscVState *>(inst->state());
+  state->set_branch(true);
 }
 
 void RiscVZCmpMvTwoRegs(const Instruction *inst) {
@@ -286,6 +295,7 @@ void RiscVZCmtJtHelper(const Instruction *inst, int dest_index) {
   // Write the target address to the next pc operand.
   auto *target_db = inst->Destination(0)->AllocateDataBuffer();
   target_db->SetSubmit<UIntReg>(0, target_address);
+  state->set_branch(true);
 }
 
 }  // namespace

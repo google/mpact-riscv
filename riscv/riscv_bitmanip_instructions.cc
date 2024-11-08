@@ -491,7 +491,7 @@ void RiscVClmulr(const Instruction *instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a, UIntReg b) {
         UIntReg result = 0;
-        for (int i = 0; i < kXlen - 1; i++) {
+        for (int i = 0; i < kXlen; i++) {
           result = ((b >> i) & 1) ? result ^ (a >> (kXlen - i - 1)) : result;
         }
         return result;

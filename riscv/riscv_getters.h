@@ -76,7 +76,7 @@ void AddRiscVSourceGetters(SourceOpGetterMap &getter_map,
     auto num = Extractors::CS::ExtractCsRs2(common->inst_word());
     return GetRegisterSourceOp<FpRegister>(
         common->state(), absl::StrCat(RiscVState::kFregPrefix, num),
-        kXRegisterAliases[num]);
+        kFRegisterAliases[num]);
   });
   Insert(getter_map, *Enum::kC3rs1, [common]() {
     auto num = Extractors::CS::ExtractCsRs1(common->inst_word());
@@ -98,7 +98,7 @@ void AddRiscVSourceGetters(SourceOpGetterMap &getter_map,
     auto num = Extractors::CR::ExtractRs2(common->inst_word());
     return GetRegisterSourceOp<FpRegister>(
         common->state(), absl::StrCat(RiscVState::kFregPrefix, num),
-        kXRegisterAliases[num]);
+        kFRegisterAliases[num]);
   });
   Insert(getter_map, *Enum::kCrs1, [common]() {
     auto num = Extractors::CR::ExtractRs1(common->inst_word());
@@ -125,37 +125,37 @@ void AddRiscVSourceGetters(SourceOpGetterMap &getter_map,
     int num = Extractors::RType::ExtractRs1(common->inst_word());
     return GetRegisterSourceOp<IntRegister>(
         common->state(), absl::StrCat(RiscVState::kFregPrefix, num),
-        kXRegisterAliases[num]);
+        kFRegisterAliases[num]);
   });
   Insert(getter_map, *Enum::kDrs2, [common]() -> SourceOperandInterface * {
     int num = Extractors::RType::ExtractRs2(common->inst_word());
     return GetRegisterSourceOp<IntRegister>(
         common->state(), absl::StrCat(RiscVState::kFregPrefix, num),
-        kXRegisterAliases[num]);
+        kFRegisterAliases[num]);
   });
   Insert(getter_map, *Enum::kDrs3, [common]() -> SourceOperandInterface * {
     int num = Extractors::R4Type::ExtractRs3(common->inst_word());
     return GetRegisterSourceOp<IntRegister>(
         common->state(), absl::StrCat(RiscVState::kFregPrefix, num),
-        kXRegisterAliases[num]);
+        kFRegisterAliases[num]);
   });
   Insert(getter_map, *Enum::kFrs1, [common]() -> SourceOperandInterface * {
     int num = Extractors::RType::ExtractRs1(common->inst_word());
     return GetRegisterSourceOp<IntRegister>(
         common->state(), absl::StrCat(RiscVState::kFregPrefix, num),
-        kXRegisterAliases[num]);
+        kFRegisterAliases[num]);
   });
   Insert(getter_map, *Enum::kFrs2, [common]() -> SourceOperandInterface * {
     int num = Extractors::RType::ExtractRs2(common->inst_word());
     return GetRegisterSourceOp<IntRegister>(
         common->state(), absl::StrCat(RiscVState::kFregPrefix, num),
-        kXRegisterAliases[num]);
+        kFRegisterAliases[num]);
   });
   Insert(getter_map, *Enum::kFrs3, [common]() -> SourceOperandInterface * {
     int num = Extractors::R4Type::ExtractRs3(common->inst_word());
     return GetRegisterSourceOp<IntRegister>(
         common->state(), absl::StrCat(RiscVState::kFregPrefix, num),
-        kXRegisterAliases[num]);
+        kFRegisterAliases[num]);
   });
   Insert(getter_map, *Enum::kICbImm8, [common]() {
     return new ImmediateOperand<int32_t>(
@@ -307,7 +307,8 @@ void AddRiscVDestGetters(DestOpGetterMap &getter_map,
   Insert(getter_map, *Enum::kC3drd, [common](int latency) {
     int num = Extractors::CL::ExtractClRd(common->inst_word());
     return GetRegisterDestinationOp<IntRegister>(
-        common->state(), absl::StrCat(RiscVState::kFregPrefix, num), latency);
+        common->state(), absl::StrCat(RiscVState::kFregPrefix, num), latency,
+        kFRegisterAliases[num]);
   });
   Insert(getter_map, *Enum::kC3rd, [common](int latency) {
     int num = Extractors::CL::ExtractClRd(common->inst_word());
@@ -330,14 +331,14 @@ void AddRiscVDestGetters(DestOpGetterMap &getter_map,
            int num = Extractors::RType::ExtractRd(common->inst_word());
            return GetRegisterDestinationOp<IntRegister>(
                common->state(), absl::StrCat(RiscVState::kFregPrefix, num),
-               latency);
+               latency, kFRegisterAliases[num]);
          });
   Insert(getter_map, *Enum::kFrd,
          [common](int latency) -> DestinationOperandInterface * {
            int num = Extractors::RType::ExtractRd(common->inst_word());
            return GetRegisterDestinationOp<IntRegister>(
                common->state(), absl::StrCat(RiscVState::kFregPrefix, num),
-               latency);
+               latency, kFRegisterAliases[num]);
          });
   Insert(getter_map, *Enum::kNextPc,
          [common](int latency) -> DestinationOperandInterface * {

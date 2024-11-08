@@ -114,9 +114,9 @@ class HtifSemihostSetup {
   }
 
   ~HtifSemihostSetup() {
+    state_->set_memory(memory_);
     delete semihost_;
     delete watcher_;
-    state_->set_memory(memory_);
   }
 
  private:

@@ -83,7 +83,8 @@ enum class RiscVCsrEnum {
   kSIDeleg = 0x103,
   kSIe = 0x104,
   kSTvec = 0x105,
-  kSCounteren = 0x106,
+  kSCounteren = 0x106,  // Supervisor counter enable.
+  kSenvcfg = 0x10a,     // Supervisor environment configuration register.
   // Supervisor trap handling.
   kSScratch = 0x140,  // Scratch register for supervisor trap handlers.
   kSEpc = 0x141,      // Supervisor exception program counter.
@@ -113,6 +114,7 @@ enum class RiscVCsrEnum {
   kMCause = 0x342,    // Machine trap cause.
   kMTval = 0x343,     // Machine bad address or instruction.
   kMIp = 0x344,       // Machine interrupt pending.
+  kMenvcfg = 0x30A,   // Machine environment configuration register.
 
   // PMP registers.
   kPmpCfg0 = 0x3a0,    // PMP configuration register 0.
@@ -135,6 +137,9 @@ enum class RiscVCsrEnum {
   kPmpAddr13 = 0x3bd,  // PMP address register 13.
   kPmpAddr14 = 0x3be,  // PMP address register 14.
   kPmpAddr15 = 0x3bf,  // PMP address register 15.
+
+  // Hypervisor level CSRs.
+  kHenvcfg = 0x60A,  // Hypervisor environment configuration register.
 
   // Ignoring machine memory protection for now.
 

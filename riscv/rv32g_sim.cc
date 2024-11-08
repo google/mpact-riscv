@@ -26,9 +26,11 @@
 #include <string>
 #include <vector>
 
+#include "absl/base/log_severity.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
 #include "absl/log/check.h"
+#include "absl/log/globals.h"
 #include "absl/log/log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
@@ -42,6 +44,7 @@
 #include "mpact/sim/proto/component_data.pb.h"
 #include "mpact/sim/util/memory/atomic_memory.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
+#include "mpact/sim/util/memory/memory_interface.h"
 #include "mpact/sim/util/memory/memory_watcher.h"
 #include "mpact/sim/util/program_loader/elf_program_loader.h"
 #include "re2/re2.h"
@@ -143,6 +146,12 @@ ABSL_FLAG(bool, exit_on_ecall, false, "Exit on ecall - false by default");
 // Enable bit manipulation instructions.
 ABSL_FLAG(bool, bitmanip, false, "Enable bit manipulation instructions");
 
+// Exit on write to 'tohost'
+ABSL_FLAG(bool, exit_on_tohost, false, "Exit on write to 'tohost'");
+
+// Quiet mode. Suppress informational and warning messages.
+ABSL_FLAG(bool, quiet, false, "Suppress informational and warning messages");
+
 // Flag to enable and configure the instruction and data caches.
 ABSL_FLAG(std::string, icache, "", "Instruction cache configuration");
 ABSL_FLAG(std::string, dcache, "", "Data cache configuration");
@@ -214,6 +223,7 @@ static bool PrintRegisters(
 }
 
 int main(int argc, char **argv) {
+  int return_code = 0;
   auto arg_vec = absl::ParseCommandLine(argc, argv);
 
   if (absl::GetFlag(FLAGS_semihost_htif) && absl::GetFlag(FLAGS_semihost_arm)) {
@@ -225,13 +235,26 @@ int main(int argc, char **argv) {
     std::cerr << "Only a single input file allowed" << std::endl;
     return -1;
   }
+
+  bool quiet = absl::GetFlag(FLAGS_quiet);
+  if (quiet) {
+    absl::SetMinLogLevel(absl::LogSeverityAtLeast::kError);
+  }
+
   std::string full_file_name = arg_vec[1];
   std::string file_name =
       full_file_name.substr(full_file_name.find_last_of('/') + 1);
   std::string file_basename = file_name.substr(0, file_name.find_first_of('.'));
 
   auto *memory = new mpact::sim::util::FlatDemandMemory();
-  auto *atomic_memory = new mpact::sim::util::AtomicMemory(memory);
+  mpact::sim::util::MemoryWatcher *memory_watcher = nullptr;
+  mpact::sim::util::AtomicMemory *atomic_memory = nullptr;
+  if (absl::GetFlag(FLAGS_exit_on_tohost)) {
+    memory_watcher = new mpact::sim::util::MemoryWatcher(memory);
+    atomic_memory = new mpact::sim::util::AtomicMemory(memory_watcher);
+  } else {
+    atomic_memory = new mpact::sim::util::AtomicMemory(memory);
+  }
   // Load the elf segments into memory.
   mpact::sim::util::ElfProgramLoader elf_loader(memory);
   auto load_result = elf_loader.LoadProgram(full_file_name);
@@ -241,8 +264,13 @@ int main(int argc, char **argv) {
     return -1;
   }
 
+  mpact::sim::util::MemoryInterface *memory_interface = memory;
+  if (memory_watcher != nullptr) {
+    memory_interface = memory_watcher;
+  }
   // Set up architectural state and decoder.
-  RiscVState rv_state("RiscV32", RiscVXlen::RV32, memory, atomic_memory);
+  RiscVState rv_state("RiscV32", RiscVXlen::RV32, memory_interface,
+                      atomic_memory);
   // For floating point support add the fp state.
   RiscVFPState rv_fp_state(rv_state.csr_set(), &rv_state);
   rv_state.set_rv_fp(&rv_fp_state);
@@ -298,6 +326,35 @@ int main(int argc, char **argv) {
       riscv_top.RequestHalt(RiscVTop::HaltReason::kProgramDone, inst);
       return true;
     });
+  }
+  if (absl::GetFlag(FLAGS_exit_on_tohost)) {
+    auto res = elf_loader.GetSymbol("tohost");
+    if (res.ok()) {
+      auto tohost_addr = res.value().first;
+      auto status = memory_watcher->SetStoreWatchCallback(
+          AddressRange(tohost_addr),
+          [&riscv_top, tohost_addr, memory, &rv_state, &return_code, quiet](
+              uint64_t, int) -> void {
+            riscv_top.RequestHalt(RiscVTop::HaltReason::kProgramDone, nullptr);
+            auto *db = rv_state.db_factory()->Allocate<uint32_t>(1);
+            memory->Load(tohost_addr, db, nullptr, nullptr);
+            auto word = db->Get<uint32_t>(0);
+            db->DecRef();
+            return_code = word >> 1;
+            if (return_code == 0) {
+              if (!quiet) std::cerr << "PASS\n";
+            } else {
+            }
+          });
+      if (!status.ok()) {
+        std::cerr << "Error setting store watch callback for 'tohost': "
+                  << status.message();
+        return -1;
+      }
+    } else {
+      std::cerr << "Error: no symbol 'tohost' found";
+      return -1;
+    }
   }
 
   // Initialize the PC to the entry point.
@@ -358,15 +415,16 @@ int main(int argc, char **argv) {
     }
   }
 
-  mpact::sim::util::MemoryWatcher *watcher = nullptr;
   RiscV32HtifSemiHost *htif_semihost = nullptr;
   if (absl::GetFlag(FLAGS_semihost_htif)) {
     // Add htif semihosting.
     RiscV32HtifSemiHost::SemiHostAddresses magic_addresses;
     if (GetMagicAddresses(&elf_loader, &magic_addresses)) {
-      watcher = new mpact::sim::util::MemoryWatcher(memory);
+      if (memory_watcher == nullptr) {
+        memory_watcher = new mpact::sim::util::MemoryWatcher(memory);
+      }
       htif_semihost = new RiscV32HtifSemiHost(
-          watcher, memory, magic_addresses,
+          memory_watcher, memory, magic_addresses,
           [&riscv_top]() {
             riscv_top.RequestHalt(RiscVTop::HaltReason::kSemihostHaltRequest,
                                   nullptr);
@@ -375,7 +433,7 @@ int main(int argc, char **argv) {
             riscv_top.RequestHalt(RiscVTop::HaltReason::kSemihostHaltRequest,
                                   nullptr);
           });
-      riscv_top.state()->set_memory(watcher);
+      riscv_top.state()->set_memory(memory_watcher);
     }
   }
 
@@ -422,7 +480,7 @@ int main(int argc, char **argv) {
         PrintRegisters);
     cmd_shell.Run(std::cin, std::cout);
   } else {
-    std::cerr << "Starting simulation\n";
+    if (!quiet) std::cerr << "Starting simulation\n";
 
     auto t0 = absl::Now();
 
@@ -441,8 +499,9 @@ int main(int argc, char **argv) {
     double sec = static_cast<double>(duration / absl::Milliseconds(100)) / 10;
     counter_sec.SetValue(sec);
 
-    std::cerr << absl::StrFormat("Simulation done: %0.1f sec\n", sec)
-              << std::endl;
+    if (!quiet)
+      std::cerr << absl::StrFormat("Simulation done: %0.1f sec\n", sec)
+                << std::endl;
   }
 
   // Export counters.
@@ -472,8 +531,9 @@ int main(int argc, char **argv) {
   }
   delete atomic_memory;
   delete memory;
-  delete watcher;
-  delete arm_semihost;
   delete htif_semihost;
+  delete memory_watcher;
+  delete arm_semihost;
   delete rv_decoder;
+  return return_code;
 }

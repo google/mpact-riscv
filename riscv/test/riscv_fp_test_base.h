@@ -266,7 +266,7 @@ template <typename S, typename D>
 inline typename std::enable_if<internal::LessSize<S, D>::value, D>::type NaNBox(
     S value) {
   using SInt = typename FPTypeInfo<S>::IntType;
-  SInt sval = *reinterpret_cast<SInt *>(&value);
+  SInt sval = absl::bit_cast<SInt>(value);
   D dval = (~static_cast<D>(0) << (sizeof(S) * 8)) | sval;
   return *reinterpret_cast<D *>(&dval);
 }
@@ -275,7 +275,7 @@ inline typename std::enable_if<internal::LessSize<S, D>::value, D>::type NaNBox(
 template <typename S, typename D>
 inline typename std::enable_if<internal::EqualSize<S, D>::value, D>::type
 NaNBox(S value) {
-  return *reinterpret_cast<D *>(&value);
+  return absl::bit_cast<D>(value);
 }
 
 // Signal error if the register is smaller than the floating point value.
@@ -361,6 +361,23 @@ class RiscVFPInstructionTestBase : public testing::Test {
       auto *db =
           state_->db_factory()->Allocate<typename RegisterType::ValueType>(1);
       db->template Set<T>(0, value);
+      reg->SetDataBuffer(db);
+      db->DecRef();
+    }
+  }
+
+  template <typename T, typename RegisterType = RV32Register>
+  void SetNaNBoxedRegisterValues(
+      const std::vector<std::tuple<std::string, const T>> &values) {
+    for (auto &[reg_name, value] : values) {
+      typename RegisterType::ValueType reg_value =
+          NaNBox<T, typename RegisterType::ValueType>(value);
+      LOG(INFO) << "Setting " << reg_name << " to " << std::hex << reg_value
+                << " from: " << value;
+      auto *reg = state_->GetRegister<RegisterType>(reg_name).first;
+      auto *db =
+          state_->db_factory()->Allocate<typename RegisterType::ValueType>(1);
+      db->template Set<typename RegisterType::ValueType>(0, reg_value);
       reg->SetDataBuffer(db);
       db->DecRef();
     }
@@ -486,7 +503,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
     *reinterpret_cast<LhsInt *>(&lhs_span[6]) = FPTypeInfo<LHS>::kPosDenorm;
     *reinterpret_cast<LhsInt *>(&lhs_span[7]) = FPTypeInfo<LHS>::kNegDenorm;
     for (int i = 0; i < kTestValueLength; i++) {
-      SetRegisterValues<LHS, LhsRegisterType>({{kR1Name, lhs_span[i]}});
+      SetNaNBoxedRegisterValues<LHS, LhsRegisterType>({{kR1Name, lhs_span[i]}});
 
       for (int rm : {0, 1, 2, 3, 4}) {
         rv_fp_->SetRoundingMode(static_cast<FPRoundingMode>(rm));
@@ -553,8 +570,8 @@ class RiscVFPInstructionTestBase : public testing::Test {
     *reinterpret_cast<LhsInt *>(&lhs_span[6]) = FPTypeInfo<LHS>::kPosDenorm;
     *reinterpret_cast<LhsInt *>(&lhs_span[7]) = FPTypeInfo<LHS>::kNegDenorm;
     for (int i = 0; i < kTestValueLength; i++) {
-      SetRegisterValues<LHS, LhsRegisterType>({{kR1Name, lhs_span[i]}});
-      SetRegisterValues<RHS, RhsRegisterType>({{kR2Name, rhs_span[i]}});
+      SetNaNBoxedRegisterValues<LHS, LhsRegisterType>({{kR1Name, lhs_span[i]}});
+      SetNaNBoxedRegisterValues<RHS, RhsRegisterType>({{kR2Name, rhs_span[i]}});
 
       for (int rm : {0, 1, 2, 3, 4}) {
         rv_fp_->SetRoundingMode(static_cast<FPRoundingMode>(rm));
@@ -615,8 +632,8 @@ class RiscVFPInstructionTestBase : public testing::Test {
     *reinterpret_cast<LhsInt *>(&lhs_span[6]) = FPTypeInfo<LHS>::kPosDenorm;
     *reinterpret_cast<LhsInt *>(&lhs_span[7]) = FPTypeInfo<LHS>::kNegDenorm;
     for (int i = 0; i < kTestValueLength; i++) {
-      SetRegisterValues<LHS, LhsRegisterType>({{kR1Name, lhs_span[i]}});
-      SetRegisterValues<RHS, RhsRegisterType>({{kR2Name, rhs_span[i]}});
+      SetNaNBoxedRegisterValues<LHS, LhsRegisterType>({{kR1Name, lhs_span[i]}});
+      SetNaNBoxedRegisterValues<RHS, RhsRegisterType>({{kR2Name, rhs_span[i]}});
 
       for (int rm : {0, 1, 2, 3, 4}) {
         rv_fp_->SetRoundingMode(static_cast<FPRoundingMode>(rm));
@@ -626,11 +643,23 @@ class RiscVFPInstructionTestBase : public testing::Test {
 
         inst->Execute(nullptr);
 
+        auto fflags = rv_fp_->fflags()->GetUint32();
+
         R op_val;
         uint32_t flag;
         {
           ScopedFPStatus set_fpstatus(rv_fp_->host_fp_interface());
           std::tie(op_val, flag) = operation(lhs_span[i], rhs_span[i]);
+        }
+        if (name == "fmin") {
+          LOG(INFO) << "L: " << lhs_span[i] << " R: " << rhs_span[i];
+          LHS lhs_val = state_->GetRegister<LhsRegisterType>(kR1Name)
+                            .first->data_buffer()
+                            ->template Get<LHS>(0);
+          RHS rhs_val = state_->GetRegister<RhsRegisterType>(kR2Name)
+                            .first->data_buffer()
+                            ->template Get<RHS>(0);
+          LOG(INFO) << "Lreg: " << lhs_val << " Rreg: " << rhs_val;
         }
         auto reg_val = state_->GetRegister<DestRegisterType>(kRdName)
                            .first->data_buffer()
@@ -640,7 +669,6 @@ class RiscVFPInstructionTestBase : public testing::Test {
             absl::StrCat(name, "  ", i, ": ", lhs_span[i], "  ", rhs_span[i]));
         auto lhs_uint = *reinterpret_cast<LhsUInt *>(&lhs_span[i]);
         auto rhs_uint = *reinterpret_cast<RhsUInt *>(&rhs_span[i]);
-        auto fflags = rv_fp_->fflags()->GetUint32();
         EXPECT_EQ(flag, fflags)
             << std::hex << name << "(" << lhs_uint << ", " << rhs_uint << ")";
       }
@@ -682,9 +710,9 @@ class RiscVFPInstructionTestBase : public testing::Test {
     *reinterpret_cast<LhsInt *>(&lhs_span[6]) = FPTypeInfo<LHS>::kPosDenorm;
     *reinterpret_cast<LhsInt *>(&lhs_span[7]) = FPTypeInfo<LHS>::kNegDenorm;
     for (int i = 0; i < kTestValueLength; i++) {
-      SetRegisterValues<LHS, LhsRegisterType>({{kR1Name, lhs_span[i]}});
-      SetRegisterValues<MHS, MhsRegisterType>({{kR2Name, mhs_span[i]}});
-      SetRegisterValues<RHS, RhsRegisterType>({{kR3Name, rhs_span[i]}});
+      SetNaNBoxedRegisterValues<LHS, LhsRegisterType>({{kR1Name, lhs_span[i]}});
+      SetNaNBoxedRegisterValues<MHS, MhsRegisterType>({{kR2Name, mhs_span[i]}});
+      SetNaNBoxedRegisterValues<RHS, RhsRegisterType>({{kR3Name, rhs_span[i]}});
 
       for (int rm : {0, 1, 2, 3, 4}) {
         rv_fp_->SetRoundingMode(static_cast<FPRoundingMode>(rm));
@@ -745,9 +773,9 @@ class RiscVFPInstructionTestBase : public testing::Test {
     *reinterpret_cast<LhsInt *>(&lhs_span[6]) = FPTypeInfo<LHS>::kPosDenorm;
     *reinterpret_cast<LhsInt *>(&lhs_span[7]) = FPTypeInfo<LHS>::kNegDenorm;
     for (int i = 0; i < kTestValueLength; i++) {
-      SetRegisterValues<LHS, LhsRegisterType>({{kR1Name, lhs_span[i]}});
-      SetRegisterValues<MHS, MhsRegisterType>({{kR2Name, mhs_span[i]}});
-      SetRegisterValues<RHS, RhsRegisterType>({{kR3Name, rhs_span[i]}});
+      SetNaNBoxedRegisterValues<LHS, LhsRegisterType>({{kR1Name, lhs_span[i]}});
+      SetNaNBoxedRegisterValues<MHS, MhsRegisterType>({{kR2Name, mhs_span[i]}});
+      SetNaNBoxedRegisterValues<RHS, RhsRegisterType>({{kR3Name, rhs_span[i]}});
 
       for (int rm : {0, 1, 2, 3, 4}) {
         rv_fp_->SetRoundingMode(static_cast<FPRoundingMode>(rm));

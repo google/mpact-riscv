@@ -54,11 +54,18 @@ using ::mpact::sim::generic::BreakpointManager;
 using ::mpact::sim::generic::Config;
 using ::mpact::sim::util::Cache;
 
-// Top level class for the RiscV32G simulator. This is the main interface for
+struct BranchTraceEntry {
+  uint32_t from;
+  uint32_t to;
+  uint32_t count;
+};
+
+// Top level class for the RiscV simulator. This is the main interface for
 // interacting and controlling execution of programs running on the simulator.
 // This class brings together the decoder, the architecture state, and control.
 class RiscVTop : public generic::Component, public RiscVDebugInterface {
  public:
+  static constexpr int kBranchTraceSize = 16;
   using RunStatus = generic::CoreDebugInterface::RunStatus;
   using HaltReason = generic::CoreDebugInterface::HaltReason;
 
@@ -157,6 +164,8 @@ class RiscVTop : public generic::Component, public RiscVDebugInterface {
   // Set the pc value.
   void SetPc(uint64_t value);
   void ICacheFetch(uint64_t address);
+  // Branch tracing.
+  void AddToBranchTrace(uint64_t from, uint64_t to);
 
   // The DB factory is used to manage data buffers for memory read/writes.
   generic::DataBufferFactory db_factory_;
@@ -168,6 +177,7 @@ class RiscVTop : public generic::Component, public RiscVDebugInterface {
   // Set to true if the next instruction requires a step-over.
   bool need_to_step_over_ = false;
   absl::Notification *run_halted_ = nullptr;
+  absl::Notification *run_started_ = nullptr;
   // The local RiscV32 state.
   RiscVState *state_;
   // Memory interface used by action point manager.
@@ -185,6 +195,17 @@ class RiscVTop : public generic::Component, public RiscVDebugInterface {
   // Decode cache, memory and memory watcher.
   generic::DecodeCache *rv_decode_cache_ = nullptr;
   util::MemoryWatcher *memory_watcher_ = nullptr;
+  // Branch trace info - uses a circular buffer. The size is defined by the
+  // constant kBranchTraceSize in the .cc file.
+  BranchTraceEntry *branch_trace_;
+  // Data buffer used to hold the branch trace info. This is used so that it
+  // can be returned to the debug command shell using the GetRegisterDataBuffer
+  // call.
+  DataBuffer *branch_trace_db_ = nullptr;
+  // Points to the most recently written entry in the circular buffer.
+  int branch_trace_head_ = 0;
+  int branch_trace_mask_ = kBranchTraceSize - 1;
+  int branch_trace_size_ = kBranchTraceSize;
   // Counter for the number of instructions simulated.
   std::vector<generic::SimpleCounter<uint64_t>> counter_opcode_;
   generic::SimpleCounter<uint64_t> counter_num_instructions_;

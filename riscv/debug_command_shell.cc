@@ -35,6 +35,7 @@
 #include "mpact/sim/generic/type_helpers.h"
 #include "re2/re2.h"
 #include "riscv/riscv_debug_interface.h"
+#include "riscv/riscv_top.h"
 #include "riscv/stoull_wrapper.h"
 
 namespace mpact {
@@ -83,6 +84,7 @@ DebugCommandShell::DebugCommandShell()
       disable_action_n_re_{R"(\s*action\s+disable\s+\*(\d+)\s*)"},
       clear_action_n_re_{R"(\s*action\s+clear\s+\*(\d+)\s*)"},
       clear_all_action_re_{R"(\s*action\s+clear-all\s*)"},
+      branch_trace_re_{R"(\s*branch-trace\s*)"},
       exec_re_{R"(\s*exec\s+(.+)\s*)"},
       empty_re_{R"(\s*(?:\#.*)?)"},
       help_re_{R"(\s*help\s*)"} {
@@ -151,6 +153,8 @@ DebugCommandShell::DebugCommandShell()
   action clear #<N>                - clear action point with index N.
   action clear-all                 - clear all action points.
   action                           - list action points.
+  branch-trace                     - list the control flow change (includes
+                                     interrupts) w/out repetitions due to loops.
   exec    NAME                     - load commands from file 'NAME' and execute
                                      each line as a command. Lines starting with
                                      a '#' are treated as comments.
@@ -997,6 +1001,52 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
     }
     if (RE2::FullMatch(line_view, *clear_all_action_re_)) {
       os << ClearAllActionPoints();
+      continue;
+    }
+
+    // branch-trace.
+    // This prints out a list of the last "branch trace size" pairs of <from,
+    // to> control flow changes (including interrupts), with no repetitions for
+    // loops.
+    if (RE2::FullMatch(line_view, *branch_trace_re_)) {
+      // Get the index of the head of the queue.
+      auto head_result =
+          core_access_[current_core_].debug_interface->ReadRegister(
+              "$branch_trace_head");
+      if (!head_result.ok()) {
+        os << "Error: " << head_result.status().message() << "\n";
+        continue;
+      }
+      // Adjust by one, as the head points to the most recent valid entry.
+      auto head = head_result.value() + 1;
+      // Get the branch trace data buffer.
+      auto result =
+          core_access_[current_core_].debug_interface->GetRegisterDataBuffer(
+              "$branch_trace");
+      if (!result.ok()) {
+        os << "Error: " << result.status().message() << "\n";
+        continue;
+      }
+      auto *db = result.value();
+      // Check for null data buffer.
+      if (db == nullptr) {
+        os << "Error: register '$branch_trace' has no data buffer\n";
+        os.flush();
+        continue;
+      }
+      // Get a span for the branch trace.
+      auto trace_span = db->Get<BranchTraceEntry>();
+      auto size = trace_span.size();
+      os << absl::StrFormat("     %-8s      %-8s     %8s\n", "From", "To",
+                            "Count");
+      for (int i = 0; i < size; ++i) {
+        auto index = (head + i) % size;
+        auto [from, to, count] = trace_span[index];
+        // Ignore 0 -> 0 entries. Those are the initial values.
+        if (count == 0) continue;
+        os << absl::StrFormat("   0x%08x -> 0x%08x     %8u\n", from, to, count);
+      }
+      os.flush();
       continue;
     }
 

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "riscv/riscv64gzb_vec_encoding.h"
+#include "riscv/riscv32gzb_vec_encoding.h"
 
 #include <cstdint>
 
@@ -21,28 +21,28 @@
 #include "mpact/sim/generic/simple_resource.h"
 #include "mpact/sim/generic/simple_resource_operand.h"
 #include "mpact/sim/generic/type_helpers.h"
-#include "riscv/riscv64gvzb_bin_decoder.h"
-#include "riscv/riscv64gvzb_decoder.h"
-#include "riscv/riscv64gvzb_enums.h"
+#include "riscv/riscv32gvzb_bin_decoder.h"
+#include "riscv/riscv32gvzb_decoder.h"
+#include "riscv/riscv32gvzb_enums.h"
 #include "riscv/riscv_encoding_common.h"
 #include "riscv/riscv_getters.h"
-#include "riscv/riscv_getters_rv64.h"
+#include "riscv/riscv_getters_rv32.h"
 #include "riscv/riscv_getters_vector.h"
 #include "riscv/riscv_getters_zba.h"
-#include "riscv/riscv_getters_zbb64.h"
+#include "riscv/riscv_getters_zbb32.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
 
-namespace mpact::sim::riscv::isa64gvzb {
+namespace mpact::sim::riscv::isa32gvzb {
 
 using ::mpact::sim::generic::operator*;  // NOLINT: clang-tidy false positive.
 
-RiscV64GZBVecEncoding::RiscV64GZBVecEncoding(RiscVState *state)
+RiscV32GZBVecEncoding::RiscV32GZBVecEncoding(RiscVState *state)
     : state_(state),
       inst_word_(0),
       opcode_(OpcodeEnum::kNone),
       format_(FormatEnum::kNone) {
-  resource_pool_ = new generic::SimpleResourcePool("RiscV64GVZB", 128);
+  resource_pool_ = new generic::SimpleResourcePool("RiscV32GVZB", 128);
   resource_delay_line_ =
       state_->CreateAndAddDelayLine<generic::SimpleResourceDelayLine>(8);
   // Initialize getters.
@@ -55,20 +55,24 @@ RiscV64GZBVecEncoding::RiscV64GZBVecEncoding(RiscVState *state)
       *ComplexResourceEnum::kNone,
       [](int latency, int end) { return nullptr; });
   // Add the operand getters for the base instruction set.
-  AddRiscVSourceGetters<SourceOpEnum, Extractors, RV64Register, RVFpRegister>(
+  AddRiscVSourceGetters<SourceOpEnum, Extractors, RV32Register, RVFpRegister>(
       source_op_getters_, this);
-  AddRiscVDestGetters<DestOpEnum, Extractors, RV64Register, RVFpRegister>(
+  AddRiscVDestGetters<DestOpEnum, Extractors, RV32Register, RVFpRegister>(
       dest_op_getters_, this);
   AddRiscVSimpleResourceGetters<SimpleResourceEnum, Extractors>(
       simple_resource_getters_, this);
-  // Add operand getters for 64 bit version not in the base instruction set.
-  AddRiscV64SourceGetters<SourceOpEnum, Extractors, RV64Register, RVFpRegister>(
+  // Add operand getters for 32 bit version not in the base instruction set.
+  AddRiscV32SourceGetters<SourceOpEnum, Extractors, RV32Register, RVFpRegister>(
       source_op_getters_, this);
+  AddRiscV32DestGetters<DestOpEnum, Extractors, RV32Register, RVFpRegister>(
+      dest_op_getters_, this);
+  AddRiscV32SimpleResourceGetters<SimpleResourceEnum, Extractors>(
+      simple_resource_getters_, this);
   // Add the common Zba operand getters.
-  AddRiscVZbaSourceGetters<SourceOpEnum, Extractors, RV64Register,
+  AddRiscVZbaSourceGetters<SourceOpEnum, Extractors, RV32Register,
                            RVFpRegister>(source_op_getters_, this);
-  // Add operand getters for the 64 bit Zbb instructions.
-  AddRiscVZbb64SourceGetters<SourceOpEnum, Extractors, RV64Register,
+  // Add operand getters for the 32 bit Zbb instructions.
+  AddRiscVZbb32SourceGetters<SourceOpEnum, Extractors, RV32Register,
                              RVFpRegister>(source_op_getters_, this);
   // Add vector operand getters.
   AddRiscVVectorSourceGetters<SourceOpEnum, Extractors, RVVectorRegister>(
@@ -94,12 +98,12 @@ RiscV64GZBVecEncoding::RiscV64GZBVecEncoding(RiscVState *state)
   }
 }
 
-RiscV64GZBVecEncoding::~RiscV64GZBVecEncoding() { delete resource_pool_; }
+RiscV32GZBVecEncoding::~RiscV32GZBVecEncoding() { delete resource_pool_; }
 
-void RiscV64GZBVecEncoding::ParseInstruction(uint32_t inst_word) {
+void RiscV32GZBVecEncoding::ParseInstruction(uint32_t inst_word) {
   inst_word_ = inst_word;
   if ((inst_word_ & 0x3) == 3) {
-    auto [opcode, format] = DecodeRiscV64GVZBInst32WithFormat(inst_word_);
+    auto [opcode, format] = DecodeRiscV32GVZBWithFormat(inst_word_);
     opcode_ = opcode;
     format_ = format;
     return;
@@ -110,7 +114,7 @@ void RiscV64GZBVecEncoding::ParseInstruction(uint32_t inst_word) {
   format_ = format;
 }
 
-ResourceOperandInterface *RiscV64GZBVecEncoding::GetComplexResourceOperand(
+ResourceOperandInterface *RiscV32GZBVecEncoding::GetComplexResourceOperand(
     SlotEnum, int, OpcodeEnum, ComplexResourceEnum resource, int begin,
     int end) {
   int index = static_cast<int>(resource);
@@ -122,7 +126,7 @@ ResourceOperandInterface *RiscV64GZBVecEncoding::GetComplexResourceOperand(
   return (iter->second)(begin, end);
 }
 
-ResourceOperandInterface *RiscV64GZBVecEncoding::GetSimpleResourceOperand(
+ResourceOperandInterface *RiscV32GZBVecEncoding::GetSimpleResourceOperand(
     SlotEnum, int, OpcodeEnum, SimpleResourceVector &resource_vec, int end) {
   if (resource_vec.empty()) return nullptr;
   auto *resource_set = resource_pool_->CreateResourceSet();
@@ -145,7 +149,7 @@ ResourceOperandInterface *RiscV64GZBVecEncoding::GetSimpleResourceOperand(
   return op;
 }
 
-DestinationOperandInterface *RiscV64GZBVecEncoding::GetDestination(
+DestinationOperandInterface *RiscV32GZBVecEncoding::GetDestination(
     SlotEnum, int, OpcodeEnum opcode, DestOpEnum dest_op, int dest_no,
     int latency) {
   int index = static_cast<int>(dest_op);
@@ -159,7 +163,7 @@ DestinationOperandInterface *RiscV64GZBVecEncoding::GetDestination(
   return (iter->second)(latency);
 }
 
-SourceOperandInterface *RiscV64GZBVecEncoding::GetSource(SlotEnum, int,
+SourceOperandInterface *RiscV32GZBVecEncoding::GetSource(SlotEnum, int,
                                                          OpcodeEnum opcode,
                                                          SourceOpEnum source_op,
                                                          int source_no) {
@@ -174,4 +178,4 @@ SourceOperandInterface *RiscV64GZBVecEncoding::GetSource(SlotEnum, int,
   return (iter->second)();
 }
 
-}  // namespace mpact::sim::riscv::isa64gvzb
+}  // namespace mpact::sim::riscv::isa32gvzb

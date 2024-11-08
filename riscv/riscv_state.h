@@ -372,6 +372,9 @@ class RiscVState : public ArchState {
     is_interrupt_available_ = false;
   }
 
+  void set_branch(bool value) { branch_ = value; }
+  bool branch() const { return branch_; }
+
   // Getters for select CSRs.
   RiscVMStatus *mstatus() const { return mstatus_; }
   RiscVMIsa *misa() const { return misa_; }
@@ -421,6 +424,8 @@ class RiscVState : public ArchState {
   InterruptCode available_interrupt_code_ = InterruptCode::kNone;
   // By default, execute in machine mode.
   PrivilegeMode privilege_mode_ = PrivilegeMode::kMachine;
+  // Flag set on branch instructions.
+  bool branch_ = false;
   // Handles to frequently used CSRs.
   RiscVMStatus *mstatus_ = nullptr;
   RiscVMIsa *misa_ = nullptr;

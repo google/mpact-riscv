@@ -221,7 +221,7 @@ void RiscVFSqrt(const Instruction *instruction) {
 
 // If either operand is NaN return the other.
 void RiscVFMin(const Instruction *instruction) {
-  RiscVBinaryOp<FPRegister, float, float>(
+  RiscVBinaryNaNBoxOp<FPRegister::ValueType, float, float>(
       instruction, [instruction](float a, float b) -> float {
         if (FPTypeInfo<float>::IsSNaN(a) || FPTypeInfo<float>::IsSNaN(b)) {
           auto *db = instruction->Destination(1)->AllocateDataBuffer();
@@ -236,7 +236,9 @@ void RiscVFMin(const Instruction *instruction) {
           }
           return b;
         }
-        if (FPTypeInfo<float>::IsNaN(b)) return a;
+        if (FPTypeInfo<float>::IsNaN(b)) {
+          return a;
+        }
         // If both are zero, return the negative zero if there is one.
         if ((a == 0.0) && (b == 0.0)) return (std::signbit(a)) ? a : b;
         return (a > b) ? b : a;
@@ -245,7 +247,7 @@ void RiscVFMin(const Instruction *instruction) {
 
 // If either operand is NaN return the other.
 void RiscVFMax(const Instruction *instruction) {
-  RiscVBinaryOp<FPRegister, float, float>(
+  RiscVBinaryNaNBoxOp<FPRegister::ValueType, float, float>(
       instruction, [instruction](float a, float b) -> float {
         if (FPTypeInfo<float>::IsSNaN(a) || FPTypeInfo<float>::IsSNaN(b)) {
           auto *db = instruction->Destination(1)->AllocateDataBuffer();

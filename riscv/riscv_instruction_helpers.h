@@ -281,10 +281,8 @@ inline Argument GetNaNBoxedSource(const Instruction *instruction, int arg) {
   if (sizeof(RegValue) <= sizeof(Argument)) {
     return generic::GetInstructionSource<Argument>(instruction, arg);
   } else {
-    using SInt = typename std::make_signed<RegValue>::type;
     using UInt = typename std::make_unsigned<RegValue>::type;
-    SInt val = generic::GetInstructionSource<SInt>(instruction, arg);
-    UInt uval = static_cast<UInt>(val);
+    UInt uval = generic::GetInstructionSource<UInt>(instruction, arg);
     UInt mask = std::numeric_limits<UInt>::max() << (sizeof(Argument) * 8);
     if (((mask & uval) != mask)) {
       return *reinterpret_cast<const Argument *>(
@@ -346,6 +344,8 @@ static inline void BranchConditional(
     UIntType target = offset + instruction->address();
     auto *db = instruction->Destination(0)->AllocateDataBuffer();
     db->SetSubmit<UIntType>(0, target);
+    auto state = static_cast<RiscVState *>(instruction->state());
+    state->set_branch(true);
   }
 }
 
@@ -583,8 +583,6 @@ inline void RiscVBinaryFloatNaNBoxOp(
     std::function<Result(Argument, Argument)> operation) {
   Argument lhs = GetNaNBoxedSource<Register, Argument>(instruction, 0);
   Argument rhs = GetNaNBoxedSource<Register, Argument>(instruction, 1);
-  // Argument lhs = generic::GetInstructionSource<Argument>(instruction, 0);
-  // Argument rhs = generic::GetInstructionSource<Argument>(instruction, 1);
 
   // Get the rounding mode.
   int rm_value = generic::GetInstructionSource<int>(instruction, 2);

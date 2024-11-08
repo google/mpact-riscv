@@ -24,10 +24,22 @@ isa RiscV32GV {
   slots { riscv32gv; }
 }
 
-#include "riscv/riscv32g.isa"
+isa RiscV32GVZB {
+  namespace mpact::sim::riscv::isa32gvzb;
+  slots { riscv32gvzb; }
+}
+
+#include "riscv/riscv32gzb.isa"
 #include "riscv/riscv_vector.isa"
 
 slot riscv32gv : riscv32g, riscv_vector {
+  default size = 4;
+  default opcode =
+    disasm: "Illegal instruction at 0x%(@:08x)",
+    semfunc: "&RiscVIllegalInstruction";
+}
+
+slot riscv32gvzb : riscv32gzb, riscv_vector {
   default size = 4;
   default opcode =
     disasm: "Illegal instruction at 0x%(@:08x)",
