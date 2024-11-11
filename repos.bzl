@@ -22,7 +22,7 @@ def mpact_riscv_repos():
     if not native.existing_rule("com_google_mpact-sim"):
         http_archive(
             name = "com_google_mpact-sim",
-            sha256 = "a828b06a60456532c935ff758172d17c67328a6af7162a516829b7086526fca5",
-            strip_prefix = "mpact-sim-b6a9e784f67db5621be4b2198c4f175bb7ea0c3c",
-            url = "https://github.com/google/mpact-sim/archive/b6a9e784f67db5621be4b2198c4f175bb7ea0c3c.tar.gz",
+            sha256 = "046acbbd3d57c3fb1aadfd8ff1c61feedd07903e6172b0f794e8848b319f9dac",
+            strip_prefix = "mpact-sim-5740a19f32bc55da4ef08bbbee603cd13a2fdd50",
+            url = "https://github.com/google/mpact-sim/archive/5740a19f32bc55da4ef08bbbee603cd13a2fdd50.tar.gz",
         )
