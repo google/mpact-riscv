@@ -48,13 +48,13 @@ config_setting(
 )
 
 config_setting(
-    name = "darwin_arm64_cpu",
-    values = {"cpu": "darwin_arm64"},
+    name = "aarch64",
+    values = {"cpu": "aarch64"},
 )
 
 config_setting(
-    name = "aarch64",
-    values = {"cpu": "aarch64"},
+    name = "darwin_arm64_cpu",
+    values = {"cpu": "darwin_arm64"},
 )
 
 cc_library(
@@ -106,25 +106,39 @@ cc_library(
 
 cc_library(
     name = "riscv_fp_state",
-    srcs = [
-        "riscv_fp_state.cc",
-    ] + select({
-        "arm_cpu": ["riscv_fp_host_arm.cc"],
-        "aarch64": ["riscv_fp_host_arm.cc"],
-        "darwin_arm64_cpu": ["riscv_fp_host_arm.cc"],
-        "//conditions:default": ["riscv_fp_host_x86.cc"],
+    srcs = select({
+        "arm_cpu": [
+            "riscv_fp_host_arm.cc",
+            "riscv_fp_state.cc",
+        ],
+        "aarch64": [
+            "riscv_fp_host_arm.cc",
+            "riscv_fp_state.cc",
+        ],
+        "darwin_arm64_cpu": [
+            "riscv_fp_host_arm.cc",
+            "riscv_fp_state.cc",
+        ],
+        "//conditions:default": [
+            "riscv_fp_host_x86.cc",
+            "riscv_fp_state.cc",
+        ],
     }),
     hdrs = [
         "riscv_fp_host.h",
         "riscv_fp_info.h",
         "riscv_fp_state.h",
     ],
-    copts = [
-        "-O3",
-        "-ffp-model=strict",
-    ] + select({
-        "darwin_arm64_cpu": [],
-        "//conditions:default": ["-fprotect-parens"],
+    copts = select({
+        "darwin_arm64_cpu": [
+            "-O3",
+            "-ffp-model=strict",
+        ],
+        "//conditions:default": [
+            "-O3",
+            "-ffp-model=strict",
+            "-fprotect-parens",
+        ],
     }),
     deps = [
         ":riscv_state",
@@ -158,12 +172,16 @@ cc_library(
         "riscv_zicond_instructions.h",
         "riscv_zicsr_instructions.h",
     ],
-    copts = [
-        "-O3",
-        "-ffp-model=strict",
-    ] + select({
-        "darwin_arm64_cpu": [],
-        "//conditions:default": ["-fprotect-parens"],
+    copts = select({
+        "darwin_arm64_cpu": [
+            "-O3",
+            "-ffp-model=strict",
+        ],
+        "//conditions:default": [
+            "-O3",
+            "-ffp-model=strict",
+            "-fprotect-parens",
+        ],
     }),
     deps = [
         ":riscv_fp_state",
@@ -231,12 +249,16 @@ cc_library(
         "riscv_vector_reduction_instructions.h",
         "riscv_vector_unary_instructions.h",
     ],
-    copts = [
-        "-O3",
-        "-ffp-model=strict",
-    ] + select({
-        "darwin_arm64_cpu": [],
-        "//conditions:default": ["-fprotect-parens"],
+    copts = select({
+        "darwin_arm64_cpu": [
+            "-O3",
+            "-ffp-model=strict",
+        ],
+        "//conditions:default": [
+            "-O3",
+            "-ffp-model=strict",
+            "-fprotect-parens",
+        ],
     }),
     deps = [
         ":riscv_fp_state",

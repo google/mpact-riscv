@@ -16,11 +16,6 @@
 
 package(default_applicable_licenses = ["//:license"])
 
-config_setting(
-    name = "darwin_arm64_cpu",
-    values = {"cpu": "darwin_arm64"},
-)
-
 cc_library(
     name = "riscv_vector_instructions_test_base",
     testonly = True,
@@ -169,11 +164,12 @@ cc_test(
     name = "riscv_d_instructions_test",
     size = "small",
     srcs = ["riscv_d_instructions_test.cc"],
-    copts = [
-        "-ffp-model=strict",
-    ] + select({
-        "darwin_arm64_cpu": [],
-        "//conditions:default": ["-fprotect-parens"],
+    copts = select({
+        "darwin_arm64_cpu": ["-ffp-model=strict"],
+        "//conditions:default": [
+            "-ffp-model=strict",
+            "-fprotect-parens",
+        ],
     }),
     tags = ["not_run:arm"],
     deps = [
@@ -190,11 +186,12 @@ cc_test(
     name = "riscv_f_instructions_test",
     size = "small",
     srcs = ["riscv_f_instructions_test.cc"],
-    copts = [
-        "-ffp-model=strict",
-    ] + select({
-        "darwin_arm64_cpu": [],
-        "//conditions:default": ["-fprotect-parens"],
+    copts = select({
+        "darwin_arm64_cpu": ["-ffp-model=strict"],
+        "//conditions:default": [
+            "-ffp-model=strict",
+            "-fprotect-parens",
+        ],
     }),
     tags = ["not_run:arm"],
     deps = [
@@ -546,11 +543,12 @@ cc_test(
     srcs = [
         "riscv_vector_fp_unary_instructions_test.cc",
     ],
-    copts = [
-        "-ffp-model=strict",
-    ] + select({
-        "darwin_arm64_cpu": [],
-        "//conditions:default": ["-fprotect-parens"],
+    copts = select({
+        "darwin_arm64_cpu": ["-ffp-model=strict"],
+        "//conditions:default": [
+            "-ffp-model=strict",
+            "-fprotect-parens",
+        ],
     }),
     deps = [
         ":riscv_vector_fp_test_utilities",
@@ -574,11 +572,12 @@ cc_test(
     srcs = [
         "riscv_vector_fp_instructions_test.cc",
     ],
-    copts = [
-        "-ffp-model=strict",
-    ] + select({
-        "darwin_arm64_cpu": [],
-        "//conditions:default": ["-fprotect-parens"],
+    copts = select({
+        "darwin_arm64_cpu": ["-ffp-model=strict"],
+        "//conditions:default": [
+            "-ffp-model=strict",
+            "-fprotect-parens",
+        ],
     }),
     deps = [
         ":riscv_vector_fp_test_utilities",
@@ -602,11 +601,12 @@ cc_test(
     srcs = [
         "riscv_vector_fp_compare_instructions_test.cc",
     ],
-    copts = [
-        "-ffp-model=strict",
-    ] + select({
-        "darwin_arm64_cpu": [],
-        "//conditions:default": ["-fprotect-parens"],
+    copts = select({
+        "darwin_arm64_cpu": ["-ffp-model=strict"],
+        "//conditions:default": [
+            "-ffp-model=strict",
+            "-fprotect-parens",
+        ],
     }),
     deps = [
         ":riscv_vector_fp_test_utilities",
@@ -628,11 +628,12 @@ cc_test(
     srcs = [
         "riscv_vector_fp_reduction_instructions_test.cc",
     ],
-    copts = [
-        "-ffp-model=strict",
-    ] + select({
-        "darwin_arm64_cpu": [],
-        "//conditions:default": ["-fprotect-parens"],
+    copts = select({
+        "darwin_arm64_cpu": ["-ffp-model=strict"],
+        "//conditions:default": [
+            "-ffp-model=strict",
+            "-fprotect-parens",
+        ],
     }),
     deps = [
         ":riscv_vector_fp_test_utilities",
@@ -873,4 +874,19 @@ cc_test(
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
         "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
+)
+
+config_setting(
+    name = "arm_cpu",
+    values = {"cpu": "arm"},
+)
+
+config_setting(
+    name = "aarch64",
+    values = {"cpu": "aarch64"},
+)
+
+config_setting(
+    name = "darwin_arm64_cpu",
+    values = {"cpu": "darwin_arm64"},
 )
