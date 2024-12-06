@@ -823,6 +823,9 @@ slot riscv32c {
       resources: {next_pc, crs2, rd : rd[0..]},
       disasm: "add", "%rd, %rd, %crs2",
       semfunc: "&RV32::RiscVIAdd";
+    cadd_hint{},
+      disasm: "cadd_hint",
+      semfunc: "&RiscVINop";
     cand{: c3rs1, c3rs2 : c3rs1},
       resources: {next_pc, c3rs1, c3rs2 : c3rs1[0..]},
       disasm: "and", "%c3rs1, %c3rs1, %c3rs2",

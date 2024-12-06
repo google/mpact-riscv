@@ -436,6 +436,7 @@ instruction group RiscVCInst16[16] : Inst16Format {
   cebreak   : CR : func4 == 0b1001, rs1 == 0, rs2 == 0, op == 0b10;
   cjalr     : CR : func4 == 0b1001, rs1 != 0, rs2 == 0, op == 0b10;
   cadd      : CR : func4 == 0b1001, rs1 != 0, rs2 != 0, op == 0b10;
+  cadd_hint : CR : func4 == 0b1001, rs1 == 0,rs2 != 0, op == 0b10;
   cfsdsp    : CSS: func3 == 0b101, op == 0b10;
   cswsp     : CSS: func3 == 0b110, op == 0b10;
   cfswsp    : CSS: func3 == 0b111, op == 0b10;
