@@ -30,6 +30,7 @@ namespace {
 
 using ::mpact::sim::riscv::RiscV32SimpleCsr;
 using ::mpact::sim::riscv::RiscVCsrEnum;
+using ::mpact::sim::riscv::RiscVShadowCsr;
 using ::mpact::sim::riscv::RiscVState;
 using ::mpact::sim::riscv::RiscVXlen;
 using ::mpact::sim::util::FlatDemandMemory;
@@ -122,6 +123,27 @@ TEST_F(RiscV32CsrTest, CsrSet) {
   EXPECT_EQ(state_->csr_set()->GetCsr(0xffff).status().code(),
             absl::StatusCode::kNotFound);
   delete csr;
+}
+
+// Test that the shadow csr constructs properly and with the expected values.
+TEST_F(RiscV32CsrTest, ShadowCsrConstruction) {
+  auto *csr0 = new RiscV32SimpleCsr(kCsrName0, RiscVCsrEnum::kMScratch,
+                                    kDeadBeef, state_);
+  EXPECT_EQ(csr0->name(), kCsrName0);
+  EXPECT_EQ(csr0->index(), static_cast<int>(RiscVCsrEnum::kMScratch));
+
+  auto *csr1 = new RiscVShadowCsr<uint32_t>(
+      kCsrName1, RiscVCsrEnum::kUScratch, kReadMask, kWriteMask, state_, csr0);
+  EXPECT_EQ(csr1->name(), kCsrName1);
+  EXPECT_EQ(csr1->index(), static_cast<int>(RiscVCsrEnum::kUScratch));
+  EXPECT_EQ(csr1->read_mask(), kReadMask);
+  EXPECT_EQ(csr1->write_mask(), kWriteMask);
+
+  EXPECT_EQ(csr1->AsUint32(), csr0->AsUint32() & kReadMask);
+  csr1->Write(kAllOnes);
+  EXPECT_EQ(csr0->AsUint32(), kDeadBeef | (kAllOnes & kWriteMask));
+  delete csr0;
+  delete csr1;
 }
 
 }  // namespace
