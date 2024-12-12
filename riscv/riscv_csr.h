@@ -69,11 +69,11 @@ enum class RiscVCsrEnum {
   kTime = 0xc01,
   kInstret = 0xc02,
 
+  // Ignoring perf monitoring counters for now.
+
   kCycleH = 0xc80,
   kTimeH = 0xc81,
   kInstretH = 0x82,
-
-  // Ignoring perf monitoring counters for now.
 
   // Ignoring high bits of perf monitoring counters for now.
 
@@ -388,94 +388,6 @@ class RiscVSimpleCsr : public RiscVCsrInterface {
   RiscVCsrClearBitsDb *clear_bits_target_;
 };
 
-// The shadow csr class is used to implement a more restricted view of another
-// CSR, for instance, making a read-only view version of a CSR that may be
-// accessible at lower privilege levels.
-template <typename T>
-class RiscVShadowCsr : public RiscVCsrInterface {
- public:
-  RiscVShadowCsr(std::string name, RiscVCsrEnum index, T read_mask,
-                 T write_mask, ArchState *state, RiscVCsrInterface *csr)
-      : RiscVCsrInterface(name, static_cast<uint64_t>(index), state),
-        csr_(csr),
-        read_mask_(read_mask),
-        write_mask_(write_mask),
-        write_target_(new RiscVCsrWriteDb(this)),
-        set_bits_target_(new RiscVCsrSetBitsDb(this)),
-        clear_bits_target_(new RiscVCsrClearBitsDb(this)) {}
-  RiscVShadowCsr() = delete;
-  RiscVShadowCsr(const RiscVShadowCsr &) = delete;
-  RiscVShadowCsr &operator=(const RiscVShadowCsr &) = delete;
-
-  ~RiscVShadowCsr() override {
-    delete write_target_;
-    delete set_bits_target_;
-    delete clear_bits_target_;
-  }
-
-  // Return the value, modified as per read mask.
-  uint32_t AsUint32() override {
-    return static_cast<uint32_t>(static_cast<T>(csr_->AsUint32()) & read_mask_);
-  }
-  uint64_t AsUint64() override {
-    return static_cast<uint64_t>(static_cast<T>(csr_->AsUint64()) & read_mask_);
-  }
-  // Write the value, modified as per write mask.
-  void Write(uint32_t value) override {
-    if (write_mask_ != 0) {
-      csr_->Write((static_cast<T>(csr_->GetUint32()) & ~write_mask_) |
-                  (static_cast<T>(value) & write_mask_));
-    }
-  }
-  void Write(uint64_t value) override {
-    if (write_mask_ != 0) {
-      csr_->Write((static_cast<T>(csr_->GetUint64()) & ~write_mask_) |
-                  (static_cast<T>(value) & write_mask_));
-    }
-  }
-  // Set the bits that are set in value, leave other bits unchanged.
-  // Set the bits specified in the value. Don't change the other bits.
-  void SetBits(uint32_t value) override { Write(GetUint32() | value); }
-  void SetBits(uint64_t value) override { Write(GetUint64() | value); }
-  // Clear the bits specified in the value. Don't change the other bits.
-  void ClearBits(uint32_t value) override { Write(GetUint32() & ~value); }
-  void ClearBits(uint64_t value) override { Write(GetUint64() & ~value); }
-  // Return the value, ignoring the read mask.
-  uint32_t GetUint32() override { return csr_->GetUint32(); }
-  uint64_t GetUint64() override { return csr_->GetUint64(); }
-  // Sets the value, ignoring the write mask.
-  void Set(uint32_t value) override { csr_->Set(static_cast<T>(value)); }
-  void Set(uint64_t value) override { csr_->Set(static_cast<T>(value)); }
-  // Size of value.
-  size_t size() const override { return sizeof(T); }
-  // Set to reset value.
-  void Reset() override { /* Empty. */ }
-  // Operand creation interface.
-  generic::SourceOperandInterface *CreateSourceOperand() override;
-  generic::DestinationOperandInterface *CreateSetDestinationOperand(
-      int latency, std::string op_name) override;
-  generic::DestinationOperandInterface *CreateClearDestinationOperand(
-      int latency, std::string op_name) override;
-  generic::DestinationOperandInterface *CreateWriteDestinationOperand(
-      int latency, std::string op_name) override;
-
-  RiscVCsrWriteDb *write_target() const { return write_target_; }
-  RiscVCsrSetBitsDb *set_bits_target() const { return set_bits_target_; }
-  RiscVCsrClearBitsDb *clear_bits_target() const { return clear_bits_target_; }
-
-  RiscVCsrInterface *csr() const { return csr_; }
-  T read_mask() const { return read_mask_; }
-  T write_mask() const { return write_mask_; }
-
- private:
-  RiscVCsrInterface *csr_;
-  T read_mask_;
-  T write_mask_;
-  RiscVCsrWriteDb *write_target_;
-  RiscVCsrSetBitsDb *set_bits_target_;
-  RiscVCsrClearBitsDb *clear_bits_target_;
-};
-
 using RiscV32SimpleCsr = RiscVSimpleCsr<uint32_t>;
 using RiscV64SimpleCsr = RiscVSimpleCsr<uint64_t>;
 
@@ -606,35 +518,6 @@ RiscVSimpleCsr<T>::CreateWriteDestinationOperand(int latency,
 
 template <typename T>
 generic::SourceOperandInterface *RiscVSimpleCsr<T>::CreateSourceOperand() {
-  return new RiscVCsrSourceOperand(this);
-}
-
-template <typename T>
-generic::DestinationOperandInterface *
-RiscVShadowCsr<T>::CreateSetDestinationOperand(int latency,
-                                               std::string op_name) {
-  return new RiscVCsrDestinationOperand(this, this->set_bits_target(), latency,
-                                        op_name);
-}
-
-template <typename T>
-generic::DestinationOperandInterface *
-RiscVShadowCsr<T>::CreateClearDestinationOperand(int latency,
-                                                 std::string op_name) {
-  return new RiscVCsrDestinationOperand(this, this->clear_bits_target(),
-                                        latency, op_name);
-}
-
-template <typename T>
-generic::DestinationOperandInterface *
-RiscVShadowCsr<T>::CreateWriteDestinationOperand(int latency,
-                                                 std::string op_name) {
-  return new RiscVCsrDestinationOperand(this, this->write_target(), latency,
-                                        op_name);
-}
-
-template <typename T>
-generic::SourceOperandInterface *RiscVShadowCsr<T>::CreateSourceOperand() {
   return new RiscVCsrSourceOperand(this);
 }
 

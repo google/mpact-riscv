@@ -144,7 +144,7 @@ void RiscVTop::Initialize() {
         << "Failed to register opcode counter";
   }
 
-  // Connect counters to minstret(h) and mcycle(h) CSRs.
+  // Connect counters to instret(h) and mcycle(h) CSRs.
   auto csr_res = state_->csr_set()->GetCsr("minstret");
   CHECK_OK(csr_res.status()) << "Failed to get minstret CSR";
   if (state_->xlen() == RiscVXlen::RV32) {
@@ -169,13 +169,11 @@ void RiscVTop::Initialize() {
         reinterpret_cast<RiscVCounterCsrHigh<RiscVState> *>(csr_res.value());
     mcycleh->set_counter(&counter_num_cycles_);
   } else {
-    // Minstret.
-    csr_res = state_->csr_set()->GetCsr("minstret");
+    // Minstret/minstreth.
     auto *minstret = reinterpret_cast<RiscVCounterCsr<uint64_t, RiscVState> *>(
         csr_res.value());
     minstret->set_counter(&counter_num_instructions_);
-    // Mcycle
-    csr_res = state_->csr_set()->GetCsr("mcycle");
+    // Mcycle/mcycleh.
     auto *mcycle = reinterpret_cast<RiscVCounterCsr<uint64_t, RiscVState> *>(
         csr_res.value());
     mcycle->set_counter(&counter_num_cycles_);

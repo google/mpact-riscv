@@ -234,23 +234,23 @@ void CreateCsrs(RiscVState *state, std::vector<RiscVCsrInterface *> &csr_vec) {
   auto *minstret = CreateCsr<RiscVCounterCsr<T, RiscVState>>(
       state, csr_vec, "minstret", RiscVCsrEnum ::kMInstret, state);
   CHECK_NE(minstret, nullptr);
-  RiscVCsrInterface *minstreth = nullptr;
   if (sizeof(T) == sizeof(uint32_t)) {
-    minstreth = CreateCsr<RiscVCounterCsrHigh<RiscVState>>(
-        state, csr_vec, "minstreth", RiscVCsrEnum::kMInstretH, state,
-        reinterpret_cast<RiscVCounterCsr<uint32_t, RiscVState> *>(minstret));
-    CHECK_NE(minstreth, nullptr);
+    CHECK_NE(CreateCsr<RiscVCounterCsrHigh<RiscVState>>(
+                 state, csr_vec, "minstreth", RiscVCsrEnum::kMInstretH, state,
+                 reinterpret_cast<RiscVCounterCsr<uint32_t, RiscVState> *>(
+                     minstret)),
+             nullptr);
   }
   // mcycle/mcycleh
   auto *mcycle = CreateCsr<RiscVCounterCsr<T, RiscVState>>(
       state, csr_vec, "mcycle", RiscVCsrEnum::kMCycle, state);
   CHECK_NE(mcycle, nullptr);
-  RiscVCsrInterface *mcycleh = nullptr;
   if (sizeof(T) == sizeof(uint32_t)) {
-    mcycleh = CreateCsr<RiscVCounterCsrHigh<RiscVState>>(
-        state, csr_vec, "mcycleh", RiscVCsrEnum::kMCycleH, state,
-        reinterpret_cast<RiscVCounterCsr<uint32_t, RiscVState> *>(mcycle));
-    CHECK_NE(mcycleh, nullptr);
+    CHECK_NE(
+        CreateCsr<RiscVCounterCsrHigh<RiscVState>>(
+            state, csr_vec, "mcycleh", RiscVCsrEnum::kMCycleH, state,
+            reinterpret_cast<RiscVCounterCsr<uint32_t, RiscVState> *>(mcycle)),
+        nullptr);
   }
 
   // Hypervisor level CSRs
@@ -317,29 +317,6 @@ void CreateCsrs(RiscVState *state, std::vector<RiscVCsrInterface *> &csr_vec) {
            nullptr);
 
   // User level CSRs
-
-  // instret/instreth
-  CHECK_NE(CreateCsr<RiscVShadowCsr<T>>(
-               state, csr_vec, "instret", RiscVCsrEnum ::kInstret,
-               std::numeric_limits<T>::max(), 0, state, minstret),
-           nullptr);
-  if (sizeof(T) == sizeof(uint32_t)) {
-    CHECK_NE(CreateCsr<RiscVShadowCsr<T>>(
-                 state, csr_vec, "instreth", RiscVCsrEnum::kInstretH,
-                 std::numeric_limits<T>::max(), 0, state, minstreth),
-             nullptr);
-  }
-  // cycle/cycleh
-  CHECK_NE(CreateCsr<RiscVShadowCsr<T>>(
-               state, csr_vec, "cycle", RiscVCsrEnum::kCycle,
-               std::numeric_limits<T>::max(), 0, state, mcycle),
-           nullptr);
-  if (sizeof(T) == sizeof(uint32_t)) {
-    CHECK_NE(CreateCsr<RiscVShadowCsr<T>>(
-                 state, csr_vec, "cycleh", RiscVCsrEnum::kCycleH,
-                 std::numeric_limits<T>::max(), 0, state, mcycleh),
-             nullptr);
-  }
 
   // ustatus
   CHECK_NE(CreateCsr<RiscVSimpleCsr<T>>(
