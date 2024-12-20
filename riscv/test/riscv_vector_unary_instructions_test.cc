@@ -160,6 +160,23 @@ TEST_F(RiscVVectorUnaryInstructionsTest, VmvFromScalar) {
     ConfigureVectorUnit(vtype, vlen);
     // Test 10 different values.
     for (int i = 0; i < 10; i++) {
+      // Set the vector register to known values.
+      for (int v = 0; v < vlen; v++) {
+        switch (byte_sew) {
+          case 1:
+            vreg_[kVs2]->data_buffer()->Set<int8_t>(v, v);
+            break;
+          case 2:
+            vreg_[kVs2]->data_buffer()->Set<int16_t>(v, v);
+            break;
+          case 4:
+            vreg_[kVs2]->data_buffer()->Set<int32_t>(v, v);
+            break;
+          case 8:
+            vreg_[kVs2]->data_buffer()->Set<int64_t>(v, v);
+            break;
+        }
+      }
       auto value = RandomValue<SignedXregType>();
       SetRegisterValues<SignedXregType>({{kRs1Name, value}});
       instruction_->Execute();
@@ -167,18 +184,30 @@ TEST_F(RiscVVectorUnaryInstructionsTest, VmvFromScalar) {
         case 1:
           EXPECT_EQ(vreg_[kVs2]->data_buffer()->Get<int8_t>(0),
                     static_cast<int8_t>(value));
+          for (int v = 1; v < vlen; v++) {
+            EXPECT_EQ(vreg_[kVs2]->data_buffer()->Get<int8_t>(v), v);
+          }
           break;
         case 2:
           EXPECT_EQ(vreg_[kVs2]->data_buffer()->Get<int16_t>(0),
                     static_cast<int16_t>(value));
+          for (int v = 1; v < vlen; v++) {
+            EXPECT_EQ(vreg_[kVs2]->data_buffer()->Get<int16_t>(v), v);
+          }
           break;
         case 4:
           EXPECT_EQ(vreg_[kVs2]->data_buffer()->Get<int32_t>(0),
                     static_cast<int32_t>(value));
+          for (int v = 1; v < vlen; v++) {
+            EXPECT_EQ(vreg_[kVs2]->data_buffer()->Get<int32_t>(v), v);
+          }
           break;
         case 8:
           EXPECT_EQ(vreg_[kVs2]->data_buffer()->Get<int64_t>(0),
                     static_cast<int64_t>(value));
+          for (int v = 1; v < vlen; v++) {
+            EXPECT_EQ(vreg_[kVs2]->data_buffer()->Get<int64_t>(v), v);
+          }
           break;
       }
     }

@@ -15,10 +15,7 @@
 #include "riscv/riscv_vector_unary_instructions.h"
 
 #include <cstdint>
-#include <cstring>
 #include <functional>
-#include <optional>
-#include <type_traits>
 
 #include "absl/log/log.h"
 #include "absl/strings/str_cat.h"
@@ -77,8 +74,7 @@ void VmvFromScalar(Instruction *inst) {
   if (rv_vector->vstart()) return;
   if (rv_vector->vector_length() == 0) return;
   int sew = rv_vector->selected_element_width();
-  auto *dest_db = inst->Destination(0)->AllocateDataBuffer();
-  std::memset(dest_db->raw_ptr(), 0, dest_db->size<uint8_t>());
+  auto *dest_db = inst->Destination(0)->CopyDataBuffer();
   switch (sew) {
     case 1:
       dest_db->Set<int8_t>(0, generic::GetInstructionSource<int8_t>(inst, 0));
