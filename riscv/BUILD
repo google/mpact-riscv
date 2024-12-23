@@ -1208,6 +1208,27 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "riscv_plic",
+    srcs = [
+        "riscv_plic.cc",
+    ],
+    hdrs = [
+        "riscv_plic.h",
+    ],
+    deps = [
+        "@com_google_absl//absl/container:btree",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/numeric:bits",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
+        "@com_googlesource_code_re2//:re2",
+    ],
+)
+
 cc_binary(
     name = "rv32g_test_sim",
     srcs = [

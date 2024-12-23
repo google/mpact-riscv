@@ -18,6 +18,7 @@
 #include <cstdint>
 
 #include "mpact/sim/generic/counters.h"
+#include "mpact/sim/generic/counters_base.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/ref_count.h"

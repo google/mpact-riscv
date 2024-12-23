@@ -727,6 +727,21 @@ cc_test(
 )
 
 cc_test(
+    name = "riscv_plic_test",
+    size = "small",
+    srcs = [
+        "riscv_plic_test.cc",
+    ],
+    deps = [
+        "//riscv:riscv_plic",
+        "@com_google_absl//absl/log:check",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_googlesource_code_re2//:re2",
+    ],
+)
+
+cc_test(
     name = "librenode_mpact_riscv32.so_test",
     size = "small",
     srcs = ["librenode_mpact_riscv32_so_test.cc"],
