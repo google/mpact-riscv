@@ -46,11 +46,11 @@ decoder RVM23 {
   };
 }
 
-#include "riscv/riscv32g.bin_fmt"
-#include "riscv/riscv32zb.bin_fmt"
-#include "riscv/riscv_zc.bin_fmt"
-#include "riscv/riscv_zhintpause.bin_fmt"
-#include "riscv/riscv_zicbop.bin_fmt"
-#include "riscv/riscv_zicond.bin_fmt"
-#include "riscv/riscv_zihintntl.bin_fmt"
-#include "riscv/riscv_zimop.bin_fmt"
+#include "riscv32g.bin_fmt"
+#include "riscv32zb.bin_fmt"
+#include "riscv_zc.bin_fmt"
+#include "riscv_zhintpause.bin_fmt"
+#include "riscv_zicbop.bin_fmt"
+#include "riscv_zicond.bin_fmt"
+#include "riscv_zihintntl.bin_fmt"
+#include "riscv_zimop.bin_fmt"

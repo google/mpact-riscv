@@ -19,7 +19,7 @@ includes {
   #include "riscv/riscv_bitmanip_instructions.h"
 }
 
-#include "riscv/riscv32zb.isa"
+#include "riscv32zb.isa"
 
 disasm widths = {-18};
 

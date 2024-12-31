@@ -24,5 +24,5 @@ decoder RiscV32GZB {
   RiscV32GZBInst16 = {RiscVCInst16};
 }
 
-#include "riscv/riscv32g.bin_fmt"
-#include "riscv/riscv32zb.bin_fmt"
+#include "riscv32g.bin_fmt"
+#include "riscv32zb.bin_fmt"
