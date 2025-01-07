@@ -228,7 +228,7 @@ class RiscVFPCompareInstructionsTest
     Vs2 vs2_value[vs2_size * 8];
     auto vs2_span = Span<Vs2>(vs2_value);
     AppendVectorRegisterOperands({kVs2}, {});
-    AppendRegisterOperands({kFs1Name}, {});
+    AppendRegisterOperands<Fs1>({kFs1Name}, {});
     AppendVectorRegisterOperands({kVmask}, {kVd});
     // Initialize input values.
     FillArrayWithRandomValues<Vs2>(vs2_span);

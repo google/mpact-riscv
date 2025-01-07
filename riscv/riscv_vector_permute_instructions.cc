@@ -15,8 +15,11 @@
 #include "riscv/riscv_vector_permute_instructions.h"
 
 #include <algorithm>
+#include <cstdint>
 
 #include "absl/log/log.h"
+#include "absl/strings/str_cat.h"
+#include "absl/types/span.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/instruction.h"
 #include "riscv/riscv_register.h"

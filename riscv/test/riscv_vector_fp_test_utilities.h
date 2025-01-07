@@ -628,7 +628,7 @@ class RiscVFPInstructionsTestBase
     Vs2 vs2_value[vs2_size * 8];
     auto vs2_span = Span<Vs2>(vs2_value);
     AppendVectorRegisterOperands({kVs2}, {kVd});
-    AppendRegisterOperands({kFs1Name}, {});
+    AppendRegisterOperands<Fs1>({kFs1Name}, {});
     auto *flag_op = rv_fp_->fflags()->CreateSetDestinationOperand(0, "fflags");
     instruction_->AppendDestination(flag_op);
     AppendVectorRegisterOperands({kVmask}, {});
@@ -797,7 +797,7 @@ class RiscVFPInstructionsTestBase
     Vs2 vs2_value[vs2_size * 8];
     auto vs2_span = Span<Vs2>(vs2_value);
     AppendVectorRegisterOperands({kVs2}, {kVd});
-    AppendRegisterOperands({kFs1Name}, {});
+    AppendRegisterOperands<Fs1>({kFs1Name}, {});
     AppendVectorRegisterOperands({kVmask}, {});
     SetVectorRegisterValues<uint8_t>(
         {{kVmaskName, Span<const uint8_t>(kA5Mask)}});

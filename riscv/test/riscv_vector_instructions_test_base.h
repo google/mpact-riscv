@@ -180,6 +180,7 @@ class RiscVVectorInstructionsTestBase : public testing::Test {
 
   // Creates source and destination scalar register operands for the registers
   // named in the two vectors and append them to the given instruction.
+  template <typename T>
   void AppendRegisterOperands(Instruction *inst,
                               const std::vector<std::string> &sources,
                               const std::vector<std::string> &destinations) {
@@ -195,9 +196,10 @@ class RiscVVectorInstructionsTestBase : public testing::Test {
 
   // Creates source and destination scalar register operands for the registers
   // named in the two vectors and append them to the default instruction.
+  template <typename T>
   void AppendRegisterOperands(const std::vector<std::string> &sources,
                               const std::vector<std::string> &destinations) {
-    AppendRegisterOperands(instruction_, sources, destinations);
+    AppendRegisterOperands<T>(instruction_, sources, destinations);
   }
 
   // Returns the value of the named vector register.
@@ -564,7 +566,7 @@ class RiscVVectorInstructionsTestBase : public testing::Test {
     Vs2 vs2_value[vs2_size * 8];
     auto vs2_span = Span<Vs2>(vs2_value);
     AppendVectorRegisterOperands({kVs2}, {});
-    AppendRegisterOperands({kRs1Name}, {});
+    AppendRegisterOperands<Rs1>({kRs1Name}, {});
     AppendVectorRegisterOperands({kVmask}, {kVd});
     // Initialize input values.
     FillArrayWithRandomValues<Vs2>(vs2_span);
@@ -833,7 +835,7 @@ class RiscVVectorInstructionsTestBase : public testing::Test {
     Vs2 vs2_value[vs2_size * 8];
     auto vs2_span = Span<Vs2>(vs2_value);
     AppendVectorRegisterOperands({kVs2}, {});
-    AppendRegisterOperands({kRs1Name}, {});
+    AppendRegisterOperands<Rs1>({kRs1Name}, {});
     AppendVectorRegisterOperands({kVd, kVmask}, {kVd});
     // Initialize input values.
     FillArrayWithRandomValues<Vd>(vd_span);
@@ -1090,7 +1092,7 @@ class RiscVVectorInstructionsTestBase : public testing::Test {
     Vs2 vs2_value[vs2_size * 8];
     auto vs2_span = Span<Vs2>(vs2_value);
     AppendVectorRegisterOperands({kVs2}, {});
-    AppendRegisterOperands({kRs1Name}, {});
+    AppendRegisterOperands<Rs1>({kRs1Name}, {});
     AppendVectorRegisterOperands({kVmask}, {kVd});
     // Initialize input values.
     FillArrayWithRandomValues<Vs2>(vs2_span);

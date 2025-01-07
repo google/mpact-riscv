@@ -14,6 +14,8 @@
 
 #include "riscv/riscv_vector_permute_instructions.h"
 
+#include <cstdint>
+
 #include "absl/random/random.h"
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/instruction.h"
@@ -208,7 +210,7 @@ TEST_F(RiscVVectorPermuteInstructionsTest, VrgatherVV64) {
 TEST_F(RiscVVectorPermuteInstructionsTest, VrgatherVS8) {
   SetSemanticFunction(&Vrgather);
   AppendVectorRegisterOperands({kVs2}, {});
-  AppendRegisterOperands({kRs1Name}, {});
+  AppendRegisterOperands<RV32Register>({kRs1Name}, {});
   AppendVectorRegisterOperands({kVmask}, {kVd});
   VrgatherVSHelper<uint8_t>(this, instruction_);
 }
@@ -216,7 +218,7 @@ TEST_F(RiscVVectorPermuteInstructionsTest, VrgatherVS8) {
 TEST_F(RiscVVectorPermuteInstructionsTest, VrgatherVS16) {
   SetSemanticFunction(&Vrgather);
   AppendVectorRegisterOperands({kVs2}, {});
-  AppendRegisterOperands({kRs1Name}, {});
+  AppendRegisterOperands<RV32Register>({kRs1Name}, {});
   AppendVectorRegisterOperands({kVmask}, {kVd});
   VrgatherVSHelper<uint16_t>(this, instruction_);
 }
@@ -224,7 +226,7 @@ TEST_F(RiscVVectorPermuteInstructionsTest, VrgatherVS16) {
 TEST_F(RiscVVectorPermuteInstructionsTest, VrgatherVS32) {
   SetSemanticFunction(&Vrgather);
   AppendVectorRegisterOperands({kVs2}, {});
-  AppendRegisterOperands({kRs1Name}, {});
+  AppendRegisterOperands<RV32Register>({kRs1Name}, {});
   AppendVectorRegisterOperands({kVmask}, {kVd});
   VrgatherVSHelper<uint32_t>(this, instruction_);
 }
@@ -232,7 +234,7 @@ TEST_F(RiscVVectorPermuteInstructionsTest, VrgatherVS32) {
 TEST_F(RiscVVectorPermuteInstructionsTest, VrgatherVS64) {
   SetSemanticFunction(&Vrgather);
   AppendVectorRegisterOperands({kVs2}, {});
-  AppendRegisterOperands({kRs1Name}, {});
+  AppendRegisterOperands<RV32Register>({kRs1Name}, {});
   AppendVectorRegisterOperands({kVmask}, {kVd});
   VrgatherVSHelper<uint64_t>(this, instruction_);
 }
@@ -347,7 +349,7 @@ void SlideHelper(RiscVVectorPermuteInstructionsTest *tester, Instruction *inst,
 TEST_F(RiscVVectorPermuteInstructionsTest, Vslideup8) {
   SetSemanticFunction(&Vslideup);
   AppendVectorRegisterOperands({kVs2}, {});
-  AppendRegisterOperands({kRs1Name}, {});
+  AppendRegisterOperands<RV32Register>({kRs1Name}, {});
   AppendVectorRegisterOperands({kVmask}, {kVd});
   SlideHelper<uint8_t>(this, instruction_, /*is_slide_up*/ true);
 }
@@ -355,7 +357,7 @@ TEST_F(RiscVVectorPermuteInstructionsTest, Vslideup8) {
 TEST_F(RiscVVectorPermuteInstructionsTest, Vslideup16) {
   SetSemanticFunction(&Vslideup);
   AppendVectorRegisterOperands({kVs2}, {});
-  AppendRegisterOperands({kRs1Name}, {});
+  AppendRegisterOperands<RV32Register>({kRs1Name}, {});
   AppendVectorRegisterOperands({kVmask}, {kVd});
   SlideHelper<uint16_t>(this, instruction_, /*is_slide_up*/ true);
 }
@@ -363,7 +365,7 @@ TEST_F(RiscVVectorPermuteInstructionsTest, Vslideup16) {
 TEST_F(RiscVVectorPermuteInstructionsTest, Vslideup32) {
   SetSemanticFunction(&Vslideup);
   AppendVectorRegisterOperands({kVs2}, {});
-  AppendRegisterOperands({kRs1Name}, {});
+  AppendRegisterOperands<RV32Register>({kRs1Name}, {});
   AppendVectorRegisterOperands({kVmask}, {kVd});
   SlideHelper<uint32_t>(this, instruction_, /*is_slide_up*/ true);
 }
@@ -371,7 +373,7 @@ TEST_F(RiscVVectorPermuteInstructionsTest, Vslideup32) {
 TEST_F(RiscVVectorPermuteInstructionsTest, Vslideup64) {
   SetSemanticFunction(&Vslideup);
   AppendVectorRegisterOperands({kVs2}, {});
-  AppendRegisterOperands({kRs1Name}, {});
+  AppendRegisterOperands<RV32Register>({kRs1Name}, {});
   AppendVectorRegisterOperands({kVmask}, {kVd});
   SlideHelper<uint64_t>(this, instruction_, /*is_slide_up*/ true);
 }
@@ -380,7 +382,7 @@ TEST_F(RiscVVectorPermuteInstructionsTest, Vslideup64) {
 TEST_F(RiscVVectorPermuteInstructionsTest, Vslidedown8) {
   SetSemanticFunction(&Vslidedown);
   AppendVectorRegisterOperands({kVs2}, {});
-  AppendRegisterOperands({kRs1Name}, {});
+  AppendRegisterOperands<RV32Register>({kRs1Name}, {});
   AppendVectorRegisterOperands({kVmask}, {kVd});
   SlideHelper<uint8_t>(this, instruction_, /*is_slide_up*/ false);
 }
@@ -388,7 +390,7 @@ TEST_F(RiscVVectorPermuteInstructionsTest, Vslidedown8) {
 TEST_F(RiscVVectorPermuteInstructionsTest, Vslidedown16) {
   SetSemanticFunction(&Vslidedown);
   AppendVectorRegisterOperands({kVs2}, {});
-  AppendRegisterOperands({kRs1Name}, {});
+  AppendRegisterOperands<RV32Register>({kRs1Name}, {});
   AppendVectorRegisterOperands({kVmask}, {kVd});
   SlideHelper<uint16_t>(this, instruction_, /*is_slide_up*/ false);
 }
@@ -396,7 +398,7 @@ TEST_F(RiscVVectorPermuteInstructionsTest, Vslidedown16) {
 TEST_F(RiscVVectorPermuteInstructionsTest, Vslidedown32) {
   SetSemanticFunction(&Vslidedown);
   AppendVectorRegisterOperands({kVs2}, {});
-  AppendRegisterOperands({kRs1Name}, {});
+  AppendRegisterOperands<RV32Register>({kRs1Name}, {});
   AppendVectorRegisterOperands({kVmask}, {kVd});
   SlideHelper<uint32_t>(this, instruction_, /*is_slide_up*/ false);
 }
@@ -404,7 +406,7 @@ TEST_F(RiscVVectorPermuteInstructionsTest, Vslidedown32) {
 TEST_F(RiscVVectorPermuteInstructionsTest, Vslidedown64) {
   SetSemanticFunction(&Vslidedown);
   AppendVectorRegisterOperands({kVs2}, {});
-  AppendRegisterOperands({kRs1Name}, {});
+  AppendRegisterOperands<RV32Register>({kRs1Name}, {});
   AppendVectorRegisterOperands({kVmask}, {kVd});
   SlideHelper<uint64_t>(this, instruction_, /*is_slide_up*/ false);
 }
@@ -486,7 +488,7 @@ void Slide1Helper(RiscVVectorPermuteInstructionsTest *tester, Instruction *inst,
 TEST_F(RiscVVectorPermuteInstructionsTest, Vslide1up8) {
   SetSemanticFunction(&Vslide1up);
   AppendVectorRegisterOperands({kVs2}, {});
-  AppendRegisterOperands({kRs1Name}, {});
+  AppendRegisterOperands<RV32Register>({kRs1Name}, {});
   AppendVectorRegisterOperands({kVmask}, {kVd});
   Slide1Helper<uint8_t>(this, instruction_, /*is_slide_up*/ true);
 }
@@ -494,7 +496,7 @@ TEST_F(RiscVVectorPermuteInstructionsTest, Vslide1up8) {
 TEST_F(RiscVVectorPermuteInstructionsTest, Vslide1up16) {
   SetSemanticFunction(&Vslide1up);
   AppendVectorRegisterOperands({kVs2}, {});
-  AppendRegisterOperands({kRs1Name}, {});
+  AppendRegisterOperands<RV32Register>({kRs1Name}, {});
   AppendVectorRegisterOperands({kVmask}, {kVd});
   Slide1Helper<uint16_t>(this, instruction_, /*is_slide_up*/ true);
 }
@@ -502,7 +504,7 @@ TEST_F(RiscVVectorPermuteInstructionsTest, Vslide1up16) {
 TEST_F(RiscVVectorPermuteInstructionsTest, Vslide1up32) {
   SetSemanticFunction(&Vslide1up);
   AppendVectorRegisterOperands({kVs2}, {});
-  AppendRegisterOperands({kRs1Name}, {});
+  AppendRegisterOperands<RV32Register>({kRs1Name}, {});
   AppendVectorRegisterOperands({kVmask}, {kVd});
   Slide1Helper<uint32_t>(this, instruction_, /*is_slide_up*/ true);
 }
@@ -510,7 +512,7 @@ TEST_F(RiscVVectorPermuteInstructionsTest, Vslide1up32) {
 TEST_F(RiscVVectorPermuteInstructionsTest, Vslide1up64) {
   SetSemanticFunction(&Vslide1up);
   AppendVectorRegisterOperands({kVs2}, {});
-  AppendRegisterOperands({kRs1Name}, {});
+  AppendRegisterOperands<RV32Register>({kRs1Name}, {});
   AppendVectorRegisterOperands({kVmask}, {kVd});
   Slide1Helper<uint64_t>(this, instruction_, /*is_slide_up*/ true);
 }
@@ -518,7 +520,7 @@ TEST_F(RiscVVectorPermuteInstructionsTest, Vslide1up64) {
 TEST_F(RiscVVectorPermuteInstructionsTest, Vslide1down8) {
   SetSemanticFunction(&Vslide1down);
   AppendVectorRegisterOperands({kVs2}, {});
-  AppendRegisterOperands({kRs1Name}, {});
+  AppendRegisterOperands<RV32Register>({kRs1Name}, {});
   AppendVectorRegisterOperands({kVmask}, {kVd});
   Slide1Helper<uint8_t>(this, instruction_, /*is_slide_up*/ false);
 }
@@ -526,7 +528,7 @@ TEST_F(RiscVVectorPermuteInstructionsTest, Vslide1down8) {
 TEST_F(RiscVVectorPermuteInstructionsTest, Vslide1down16) {
   SetSemanticFunction(&Vslide1down);
   AppendVectorRegisterOperands({kVs2}, {});
-  AppendRegisterOperands({kRs1Name}, {});
+  AppendRegisterOperands<RV32Register>({kRs1Name}, {});
   AppendVectorRegisterOperands({kVmask}, {kVd});
   Slide1Helper<uint16_t>(this, instruction_, /*is_slide_up*/ false);
 }
@@ -534,7 +536,7 @@ TEST_F(RiscVVectorPermuteInstructionsTest, Vslide1down16) {
 TEST_F(RiscVVectorPermuteInstructionsTest, Vslide1down32) {
   SetSemanticFunction(&Vslide1down);
   AppendVectorRegisterOperands({kVs2}, {});
-  AppendRegisterOperands({kRs1Name}, {});
+  AppendRegisterOperands<RV32Register>({kRs1Name}, {});
   AppendVectorRegisterOperands({kVmask}, {kVd});
   Slide1Helper<uint32_t>(this, instruction_, /*is_slide_up*/ false);
 }
@@ -542,7 +544,7 @@ TEST_F(RiscVVectorPermuteInstructionsTest, Vslide1down32) {
 TEST_F(RiscVVectorPermuteInstructionsTest, Vslide1down64) {
   SetSemanticFunction(&Vslide1down);
   AppendVectorRegisterOperands({kVs2}, {});
-  AppendRegisterOperands({kRs1Name}, {});
+  AppendRegisterOperands<RV32Register>({kRs1Name}, {});
   AppendVectorRegisterOperands({kVmask}, {kVd});
   Slide1Helper<uint64_t>(this, instruction_, /*is_slide_up*/ false);
 }

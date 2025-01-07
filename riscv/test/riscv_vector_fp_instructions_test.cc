@@ -330,7 +330,7 @@ class RiscVFPInstructionsTest
     auto vs2_span = Span<Vs2>(vs2_value);
     auto vd_span = Span<Vd>(vd_value);
     AppendVectorRegisterOperands({kVs2}, {kVd});
-    AppendRegisterOperands({kFs1Name}, {});
+    AppendRegisterOperands<RVFpRegister>({kFs1Name}, {});
     AppendVectorRegisterOperands({kVd, kVmask}, {kVd});
     SetVectorRegisterValues<uint8_t>(
         {{kVmaskName, Span<const uint8_t>(kA5Mask)}});

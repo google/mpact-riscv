@@ -101,7 +101,7 @@ class RiscVVectorUnaryInstructionsTest
 // Test move vector element 0 to scalar register.
 TEST_F(RiscVVectorUnaryInstructionsTest, VmvToScalar) {
   SetSemanticFunction(&VmvToScalar);
-  AppendRegisterOperands({}, {kRs1Name});
+  AppendRegisterOperands<RV32Register>({}, {kRs1Name});
   AppendVectorRegisterOperands({kVs2}, {});
   for (int byte_sew : {1, 2, 4, 8}) {
     int vlen = kVectorLengthInBytes / byte_sew;
@@ -151,7 +151,7 @@ TEST_F(RiscVVectorUnaryInstructionsTest, VmvToScalar) {
 // Test move scalar to vector element 0.
 TEST_F(RiscVVectorUnaryInstructionsTest, VmvFromScalar) {
   SetSemanticFunction(&VmvFromScalar);
-  AppendRegisterOperands({kRs1Name}, {});
+  AppendRegisterOperands<RV32Register>({kRs1Name}, {});
   AppendVectorRegisterOperands({}, {kVs2});
   for (int byte_sew : {1, 2, 4, 8}) {
     int vlen = kVectorLengthInBytes / byte_sew;
@@ -219,7 +219,7 @@ TEST_F(RiscVVectorUnaryInstructionsTest, Vcpop) {
   uint32_t vtype = (kSewSettingsByByteSize[1] << 3) | kLmulSettingByLogSize[7];
   SetSemanticFunction(&Vcpop);
   AppendVectorRegisterOperands({kVs2, kVmask}, {});
-  AppendRegisterOperands({}, {kRdName});
+  AppendRegisterOperands<RV32Register>({}, {kRdName});
   for (int vlen : {1, 8, 32, 48, 127, 200}) {
     ConfigureVectorUnit(vtype, vlen);
     // All 1s for mask and vector.
@@ -240,7 +240,7 @@ TEST_F(RiscVVectorUnaryInstructionsTest, Vcpop) {
 TEST_F(RiscVVectorUnaryInstructionsTest, Vfirst) {
   SetSemanticFunction(&Vfirst);
   AppendVectorRegisterOperands({kVs2, kVmask}, {});
-  AppendRegisterOperands({}, {kRdName});
+  AppendRegisterOperands<RV32Register>({}, {kRdName});
   uint8_t reg_value[kVectorLengthInBytes];
   // Set vtype to byte vector, and vector lmul to 8.
   uint32_t vtype = (kSewSettingsByByteSize[1] << 3) | kLmulSettingByLogSize[7];
