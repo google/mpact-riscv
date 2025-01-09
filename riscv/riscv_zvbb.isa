@@ -1,0 +1,103 @@
+// Copyright 2025 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// This file contains the ISA description of the RiscV zvbb extention
+// instructions.
+
+isa ZVBB {
+  namespace mpact::sim::riscv::zvbb;
+  slots {
+    riscv_zvbb;
+  }
+}
+
+// First disasm field is 18 char wide and left justified.
+disasm widths = {-18};
+
+#include "riscv/riscv_vector.isa"
+
+slot riscv_zvkb {
+  includes {
+    #include "riscv/riscv_vector_basic_bit_manipulation_instructions.h"
+  }
+  default size = 4;
+  default latency = 0;
+  default opcode =
+    disasm: "Unimplemented instruction at 0x%(@:08x)",
+    semfunc: "&RV32VUnimplementedInstruction";
+  opcodes {
+    vandn_vv{: vs2, vs1, vmask : vd},
+      disasm: "vandn.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vandn";
+    vandn_vx{: vs2, rs1, vmask : vd},
+      disasm: "vandn.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vandn";
+    vbrev8_v{: vs2, vmask : vd},
+      disasm: "vbrev8.v", "%vd, %vs2, %vmask",
+      semfunc: "&Vbrev8";
+    vrev8_v{: vs2, vmask : vd},
+      disasm: "vrev8.v", "%vd, %vs2, %vmask",
+      semfunc: "&Vrev8";
+    vrol_vv{: vs2, vs1, vmask : vd},
+      disasm: "vrol.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vrol";
+    vrol_vx{: vs2, rs1, vmask : vd},
+      disasm: "vrol.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vrol";
+    vror_vv{: vs2, vs1, vmask : vd},
+      disasm: "vror.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vror";
+    vror_vx{: vs2, rs1, vmask : vd},
+      disasm: "vror.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vror";
+    vror_vi{: vs2, uimm6, vmask : vd},
+      disasm: "vror.vi", "%vd, %vs2, %uimm6, %vmask",
+      semfunc: "&Vror";
+  }
+}
+
+slot riscv_zvbb : riscv_zvkb {
+  includes {
+    #include "riscv/riscv_vector_basic_bit_manipulation_instructions.h"
+  }
+  default size = 4;
+  default latency = 0;
+  default opcode =
+    disasm: "Unimplemented instruction at 0x%(@:08x)",
+    semfunc: "&RV32VUnimplementedInstruction";
+  opcodes {
+    vbrev_v{: vs2, vmask : vd},
+      disasm: "vbrev.v", "%vd, %vs2, %vmask",
+      semfunc: "&Vbrev";
+    vclz_v{: vs2, vmask : vd},
+      disasm: "vclz.v", "%vd, %vs2, %vmask",
+      semfunc: "&Vclz";
+    vctz_v{: vs2, vmask : vd},
+      disasm: "vctz.v", "%vd, %vs2, %vmask",
+      semfunc: "&Vctz";
+    vcpop_v{: vs2, vmask : vd},
+      disasm: "vcpop.v", "%vd, %vs2, %vmask",
+      semfunc: "&VectorVcpop";
+    vwsll_vv{: vs2, vs1, vmask : vd},
+      disasm: "vwsll.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vwsll";
+    vwsll_vx{: vs2, rs1, vmask : vd},
+      disasm: "vwsll.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vwsll";
+    vwsll_vi{: vs2, uimm5, vmask : vd},
+      disasm: "vwsll.vi", "%vd, %vs2, %uimm5, %vmask",
+      semfunc: "&Vwsll";
+  }
+}
+

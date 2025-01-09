@@ -308,6 +308,30 @@ cc_library(
     ],
 )
 
+# TODO(julianmb): Remove this target once there is a rva23_instructions target.
+cc_library(
+    name = "riscv_vector_basic_bit_manipulation_instructions",
+    srcs = [
+        "riscv_vector_basic_bit_manipulation_instructions.cc",
+    ],
+    hdrs = [
+        "riscv_vector_basic_bit_manipulation_instructions.h",
+        "riscv_vector_instruction_helpers.h",
+    ],
+    copts = [
+        "-O3",
+        "-ffp-model=strict",
+    ],
+    deps = [
+        ":riscv_state",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/numeric:bits",
+        "@com_google_absl//absl/types:span",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
+    ],
+)
+
 mpact_isa_decoder(
     name = "riscv32g_isa",
     src = "riscv32g.isa",
@@ -606,6 +630,35 @@ mpact_bin_fmt_decoder(
     ],
 )
 
+mpact_isa_decoder(
+    name = "zvbb_isa",
+    src = "riscv_zvbb.isa",
+    includes = [
+        "riscv_vector.isa",
+    ],
+    isa_name = "ZVBB",
+    prefix = "zvbb",
+    deps = [
+        ":riscv_v",
+        ":riscv_vector_basic_bit_manipulation_instructions",
+        "@com_google_absl//absl/functional:bind_front",
+    ],
+)
+
+mpact_bin_fmt_decoder(
+    name = "zvbb_bin_fmt",
+    src = "riscv_zvbb.bin_fmt",
+    decoder_name = "ZVBB",
+    includes = [
+        "riscv32g.bin_fmt",
+        "riscv_vector.bin_fmt",
+    ],
+    prefix = "zvbb",
+    deps = [
+        ":zvbb_isa",
+    ],
+)
+
 cc_library(
     name = "riscv32g_decoder",
     srcs = [
@@ -644,6 +697,7 @@ cc_library(
         "riscv_getters_zba.h",
         "riscv_getters_zbb32.h",
         "riscv_getters_zbb64.h",
+        "riscv_getters_zvbb.h",
     ],
     deps = [
         ":riscv_encoding_common",
@@ -854,6 +908,41 @@ cc_library(
         ":riscv_encoding_common",
         ":riscv_getters",
         ":riscv_state",
+        "@com_google_absl//absl/base",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/functional:any_invocable",
+        "@com_google_absl//absl/functional:bind_front",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/types:span",
+        "@com_google_mpact-sim//mpact/sim/generic:arch_state",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:program_error",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
+    ],
+)
+
+cc_library(
+    name = "zvbb_decoder",
+    srcs = [
+        "zvbb_decoder.cc",
+        "zvbb_encoding.cc",
+    ],
+    hdrs = [
+        "zvbb_decoder.h",
+        "zvbb_encoding.h",
+    ],
+    copts = ["-O3"],
+    deps = [
+        ":riscv_encoding_common",
+        ":riscv_getters",
+        ":riscv_state",
+        ":riscv_vector_basic_bit_manipulation_instructions",
+        ":zvbb_bin_fmt",
+        ":zvbb_isa",
         "@com_google_absl//absl/base",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/functional:any_invocable",

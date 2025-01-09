@@ -334,6 +334,23 @@ cc_test(
 )
 
 cc_test(
+    name = "zvbb_encoding_test",
+    size = "small",
+    srcs = [
+        "zvbb_encoding_test.cc",
+    ],
+    deps = [
+        "//riscv:riscv32g_bitmanip_decoder",
+        "//riscv:riscv_state",
+        "//riscv:zvbb_decoder",
+        "//riscv:zvbb_isa",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
+    ],
+)
+
+cc_test(
     name = "riscv32_htif_semihost_test",
     size = "small",
     srcs = [
@@ -888,6 +905,24 @@ cc_test(
         "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
         "@com_google_mpact-sim//mpact/sim/util/memory",
+    ],
+)
+
+cc_test(
+    name = "riscv_vector_basic_bit_manipulation_instructions_test",
+    size = "small",
+    srcs = [
+        "riscv_vector_basic_bit_manipulation_test.cc",
+    ],
+    deps = [
+        ":riscv_vector_instructions_test_base",
+        "//riscv:riscv_state",
+        "//riscv:riscv_v",
+        "//riscv:riscv_vector_basic_bit_manipulation_instructions",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
     ],
 )
 

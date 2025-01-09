@@ -1,0 +1,47 @@
+// Copyright 2025 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#include "riscv/riscv32g.bin_fmt"
+#include "riscv/riscv_vector.bin_fmt"
+
+decoder ZVBB {
+  namespace mpact::sim::riscv::zvbb;
+  opcode_enum = "OpcodeEnum";
+  includes {
+    #include "riscv/zvbb_decoder.h"
+  }
+  RiscVZvbbInst32 = { RiscVZvkbInst32, RiscVBasicBitInst32 };
+}
+
+instruction group RiscVZvkbInst32[32] : VArith {
+  vandn_vv : VArith : func6 == 0b000'001, func3 == 0b000, opcode == 0b101'0111;
+  vandn_vx : VArith : func6 == 0b000'001, func3 == 0b100, opcode == 0b101'0111;
+  vbrev8_v : VArith : func6 == 0b010'010, func3 == 0b010, opcode == 0b101'0111, vs1 == 0b01'000;
+  vrev8_v  : VArith : func6 == 0b010'010, func3 == 0b010, opcode == 0b101'0111, vs1 == 0b01'001;
+  vrol_vv  : VArith : func6 == 0b010'101, func3 == 0b000, opcode == 0b101'0111;
+  vrol_vx  : VArith : func6 == 0b010'101, func3 == 0b100, opcode == 0b101'0111;
+  vror_vv  : VArith : func6 == 0b010'100, func3 == 0b000, opcode == 0b101'0111;
+  vror_vx  : VArith : func6 == 0b010'100, func3 == 0b100, opcode == 0b101'0111;
+  vror_vi  : VArith : func5 == 0b01010, func3 == 0b011, opcode == 0b101'0111;
+}
+
+instruction group RiscVBasicBitInst32[32] : VArith {
+  vbrev_v : VArith : func6 == 0b010'010, func3 == 0b010, opcode == 0b101'0111, vs1 == 0b01'010;
+  vclz_v  : VArith : func6 == 0b010'010, func3 == 0b010, opcode == 0b101'0111, vs1 == 0b01'100;
+  vctz_v  : VArith : func6 == 0b010'010, func3 == 0b010, opcode == 0b101'0111, vs1 == 0b01'101;
+  vcpop_v : VArith : func6 == 0b010'010, func3 == 0b010, opcode == 0b101'0111, vs1 == 0b01'110;
+  vwsll_vv : VArith : func6 == 0b110'101, func3 == 0b000, opcode == 0b101'0111;
+  vwsll_vx : VArith : func6 == 0b110'101, func3 == 0b100, opcode == 0b101'0111;
+  vwsll_vi : VArith : func6 == 0b110'101, func3 == 0b011, opcode == 0b101'0111;
+}

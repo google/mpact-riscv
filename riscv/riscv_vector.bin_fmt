@@ -43,6 +43,8 @@ format VArith[32] : Inst32Format {
     unsigned opcode[7];
   overlays:
     unsigned uimm5[5] = vs1;
+    unsigned uimm6[6] = func6[0], vs1;
+    unsigned func5[5] = func6[5..1];
     signed simm5[5] = vs1;
     unsigned rd[5] = vd;
     unsigned rs1[5] = vs1;
