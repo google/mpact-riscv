@@ -130,10 +130,11 @@ inline void VrolVVHelper(RiscVVectorBasicBitManipulationTest *tester) {
   tester->BinaryOpTestHelperVV<T, T, T>(
       absl::StrCat("Vrol", sizeof(T) * 8, "vv"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T vs1) -> T {
-        T rotate_mask = sizeof(T) * 8 - 1;
-        T rotate_amount = (vs1 & rotate_mask);
-        return (vs2 << rotate_amount) |
-               (vs2 >> (sizeof(T) * 8 - rotate_amount));
+        T bitsize = sizeof(T) * 8;
+        T shift_mask = bitsize - 1;
+        uint8_t shiftl_amount = vs1 & shift_mask;
+        uint8_t shiftr_amount = (bitsize - shiftl_amount) & shift_mask;
+        return (vs2 << shiftl_amount) | (vs2 >> shiftr_amount);
       });
 }
 
@@ -145,10 +146,11 @@ inline void VrolVXHelper(RiscVVectorBasicBitManipulationTest *tester) {
   tester->BinaryOpTestHelperVX<T, T, T>(
       absl::StrCat("Vrol", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T rs1) -> T {
-        T rotate_mask = sizeof(T) * 8 - 1;
-        T rotate_amount = (rs1 & rotate_mask);
-        return (vs2 << rotate_amount) |
-               (vs2 >> (sizeof(T) * 8 - rotate_amount));
+        T bitsize = sizeof(T) * 8;
+        T shift_mask = bitsize - 1;
+        uint8_t shiftl_amount = rs1 & shift_mask;
+        uint8_t shiftr_amount = (bitsize - shiftl_amount) & shift_mask;
+        return (vs2 << shiftl_amount) | (vs2 >> shiftr_amount);
       });
 }
 
@@ -160,10 +162,11 @@ inline void VrorVVHelper(RiscVVectorBasicBitManipulationTest *tester) {
   tester->BinaryOpTestHelperVV<T, T, T>(
       absl::StrCat("Vror", sizeof(T) * 8, "vv"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T vs1) -> T {
-        T rotate_mask = sizeof(T) * 8 - 1;
-        T rotate_amount = (vs1 & rotate_mask);
-        return (vs2 >> rotate_amount) |
-               (vs2 << (sizeof(T) * 8 - rotate_amount));
+        T bitsize = sizeof(T) * 8;
+        T shift_mask = bitsize - 1;
+        uint8_t shiftr_amount = vs1 & shift_mask;
+        uint8_t shiftl_amount = (bitsize - shiftr_amount) & shift_mask;
+        return (vs2 << shiftl_amount) | (vs2 >> shiftr_amount);
       });
 }
 
@@ -175,10 +178,11 @@ inline void VrorVXHelper(RiscVVectorBasicBitManipulationTest *tester) {
   tester->BinaryOpTestHelperVV<T, T, T>(
       absl::StrCat("Vror", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T rs1) -> T {
-        T rotate_mask = sizeof(T) * 8 - 1;
-        T rotate_amount = (rs1 & rotate_mask);
-        return (vs2 >> rotate_amount) |
-               (vs2 << (sizeof(T) * 8 - rotate_amount));
+        T bitsize = sizeof(T) * 8;
+        T shift_mask = bitsize - 1;
+        uint8_t shiftr_amount = rs1 & shift_mask;
+        uint8_t shiftl_amount = (bitsize - shiftr_amount) & shift_mask;
+        return (vs2 << shiftl_amount) | (vs2 >> shiftr_amount);
       });
 }
 
@@ -190,10 +194,11 @@ inline void VrorVIHelper(RiscVVectorBasicBitManipulationTest *tester) {
   tester->BinaryOpTestHelperVV<T, T, T>(
       absl::StrCat("Vror", sizeof(T) * 8, "vi"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T imm) -> T {
-        T rotate_mask = sizeof(T) * 8 - 1;
-        T rotate_amount = (imm & rotate_mask);
-        return (vs2 >> rotate_amount) |
-               (vs2 << (sizeof(T) * 8 - rotate_amount));
+        T bitsize = sizeof(T) * 8;
+        T shift_mask = bitsize - 1;
+        uint8_t shiftr_amount = imm & shift_mask;
+        uint8_t shiftl_amount = (bitsize - shiftr_amount) & shift_mask;
+        return (vs2 << shiftl_amount) | (vs2 >> shiftr_amount);
       });
 }
 
@@ -262,7 +267,7 @@ inline void VwsllVVHelper(RiscVVectorBasicBitManipulationTest *tester) {
       absl::StrCat("Vwsll", sizeof(T) * 8, "vv"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T vs1) -> WT {
         T shift_mask = 2 * 8 * sizeof(T) - 1;
-        T shift_amount = (vs1 & shift_mask);
+        T shift_amount = vs1 & shift_mask;
         return static_cast<WT>(vs2) << shift_amount;
       });
 }
@@ -277,7 +282,7 @@ inline void VwsllVXHelper(RiscVVectorBasicBitManipulationTest *tester) {
       absl::StrCat("Vwsll", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T rs1) -> WT {
         T shift_mask = 2 * 8 * sizeof(T) - 1;
-        T shift_amount = (rs1 & shift_mask);
+        T shift_amount = rs1 & shift_mask;
         return static_cast<WT>(vs2) << shift_amount;
       });
 }
@@ -292,7 +297,7 @@ inline void VwsllVIHelper(RiscVVectorBasicBitManipulationTest *tester) {
       absl::StrCat("Vwsll", sizeof(T) * 8, "vi"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T imm) -> WT {
         T shift_mask = 2 * 8 * sizeof(T) - 1;
-        T shift_amount = (imm & shift_mask);
+        T shift_amount = imm & shift_mask;
         return static_cast<WT>(vs2) << shift_amount;
       });
 }
