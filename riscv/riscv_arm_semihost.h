@@ -15,6 +15,7 @@
 #ifndef MPACT_RISCV_RISCV_RISCV_ARM_SEMIHOST_H_
 #define MPACT_RISCV_RISCV_RISCV_ARM_SEMIHOST_H_
 
+#include <cstdint>
 #include <functional>
 
 #include "absl/container/flat_hash_map.h"

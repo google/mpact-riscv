@@ -238,7 +238,9 @@ absl::Status RiscVArmSemihost::SysException(uint64_t parameter, uint64_t *) {
     LOG(ERROR) << "Program exit not caught in ARM semihosting - no callback";
     return absl::NotFoundError("Exit callback not valid in ARM semihosting");
   }
-  LOG(ERROR) << "Exceptions other than ApplicationExit are not implemented";
+  LOG(ERROR) << absl::StrCat(
+      "Exception ", absl::Hex(param_value), " other than ApplicationExit (",
+      absl::Hex(kAdpStoppedApplicationExit), ") are not implemented");
   return absl::UnimplementedError(
       "Exceptions other than ApplicationExit are not implemented");
 }

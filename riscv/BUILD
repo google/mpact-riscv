@@ -862,6 +862,56 @@ cc_library(
 )
 
 cc_library(
+    name = "riscv64g_encoder",
+    srcs = [
+        "riscv64g_bin_encoder_interface.cc",
+        "riscv_bin_setters.cc",
+    ],
+    hdrs = [
+        "riscv64g_bin_encoder_interface.h",
+        "riscv_bin_setters.h",
+    ],
+    deps = [
+        ":riscv64g_bin_fmt",
+        ":riscv64g_isa",
+        ":riscv_getters",
+        ":riscv_state",
+        "@com_google_absl//absl/base:no_destructor",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/functional:any_invocable",
+        "@com_google_absl//absl/log:check",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
+        "@com_google_mpact-sim//mpact/sim/util/asm",
+        "@com_googlesource_code_re2//:re2",
+    ],
+)
+
+cc_binary(
+    name = "riscv64g_as",
+    srcs = ["riscv64g_as_main.cc"],
+    copts = ["-O3"],
+    deps = [
+        ":riscv64g_bin_fmt",
+        ":riscv64g_encoder",
+        ":riscv64g_isa",
+        "@com_github_serge1_elfio//:elfio",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/flags:parse",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/log:check",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
+        "@com_google_mpact-sim//mpact/sim/util/asm",
+        "@com_google_mpact-sim//mpact/sim/util/asm:simple_assembler",
+        "@com_googlesource_code_re2//:re2",
+    ],
+)
+
+cc_library(
     name = "riscv64g_vec_decoder",
     srcs = [
         "riscv64g_vec_decoder.cc",

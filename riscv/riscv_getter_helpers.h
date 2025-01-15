@@ -63,6 +63,16 @@ inline void Insert(M &map, E entry, G getter) {
   }
 }
 
+template <typename M, typename E1, typename E2, typename G>
+inline void Insert(M &map, E1 entry1, E2 entry2, G getter) {
+  auto key = std::tie(entry1, entry2);
+  if (!map.contains(key)) {
+    map.insert(std::make_pair(key, getter));
+  } else {
+    map.at(key) = getter;
+  }
+}
+
 // Generic helper functions to create register operands.
 template <typename RegType>
 inline DestinationOperandInterface *GetRegisterDestinationOp(RiscVState *state,
