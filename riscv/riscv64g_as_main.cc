@@ -33,6 +33,7 @@
 #include "mpact/sim/util/asm/opcode_assembler_interface.h"
 #include "mpact/sim/util/asm/resolver_interface.h"
 #include "mpact/sim/util/asm/simple_assembler.h"
+#include "re2/re2.h"
 #include "riscv/riscv64g_bin_encoder_interface.h"
 #include "riscv/riscv64g_encoder.h"
 
@@ -49,16 +50,28 @@ using ::mpact::sim::generic::operator*;  // NOLINT(misc-unused-using-decls)
 using ::mpact::sim::util::assembler::OpcodeAssemblerInterface;
 using ::mpact::sim::util::assembler::RelocationInfo;
 using ::mpact::sim::util::assembler::ResolverInterface;
+using AddSymbolCallback =
+    ::mpact::sim::util::assembler::OpcodeAssemblerInterface::AddSymbolCallback;
 
 // This class implements the byte oriented OpcodeAssemblerInterface, converting
-// from the bit interface provided by the SlotMatcher interface.
+// from the bit interface provided by the SlotMatcher interface. Since there is
+// only one slot in the RiscV64G ISA, only one slot matcher is needed.
 class RiscV64GAssembler : public OpcodeAssemblerInterface {
  public:
-  RiscV64GAssembler(Riscv64gSlotMatcher* matcher) : matcher_(matcher) {};
+  RiscV64GAssembler(Riscv64gSlotMatcher* matcher)
+      : label_re_("^(\\S+)\\s*:"), matcher_(matcher) {};
   ~RiscV64GAssembler() override = default;
   absl::Status Encode(uint64_t address, absl::string_view text,
+                      AddSymbolCallback add_symbol_callback,
                       ResolverInterface* resolver, std::vector<uint8_t>& bytes,
                       std::vector<RelocationInfo>& relocations) override {
+    // First check to see if there is a label, if so, add it to the symbol table
+    // with the current address.
+    std::string label;
+    if (RE2::Consume(&text, label_re_, &label)) {
+      auto status = add_symbol_callback(label, address, 0, STT_NOTYPE, 0, 0);
+      if (!status.ok()) return status;
+    }
     auto res = matcher_->Encode(address, text, 0, resolver, relocations);
     if (!res.status().ok()) return res.status();
     auto [value, size] = res.value();
@@ -74,6 +87,7 @@ class RiscV64GAssembler : public OpcodeAssemblerInterface {
   }
 
  private:
+  RE2 label_re_;
   Riscv64gSlotMatcher* matcher_;
 };
 
@@ -114,9 +128,11 @@ int main(int argc, char* argv[]) {
   RiscV64GAssembler riscv_64g_assembler(&matcher);
   CHECK_OK(matcher.Initialize());
   // Instantiate the assembler.
-  SimpleAssembler assembler("#", ELFCLASS64, ELFOSABI_LINUX, EM_RISCV,
-                            &riscv_64g_assembler);
-  // Set the appropriate ELF flags.
+  SimpleAssembler assembler("#", ELFCLASS64, &riscv_64g_assembler);
+  // Set up the abi and the machine type.
+  assembler.writer().set_os_abi(ELFOSABI_LINUX);
+  assembler.writer().set_machine(EM_RISCV);
+  // Set the appropriate ELF header flags.
   assembler.writer().set_flags(*RiscVElfFlags::kRiscvTso |
                                *RiscVElfFlags::kRiscvRvc);
   // Perform the first pass of parsing the assembly code.
