@@ -230,21 +230,6 @@ class RiscVState : public ArchState {
     return std::make_pair(AddRegister<RegisterType>(name), true);
   }
 
-  // Specialization for RiscV vector registers.
-  template <>
-  std::pair<RVVectorRegister *, bool> GetRegister<RVVectorRegister>(
-      absl::string_view name) {
-    int vector_byte_width = vector_register_width();
-    if (vector_byte_width == 0) return std::make_pair(nullptr, false);
-    auto ptr = registers()->find(std::string(name));
-    if (ptr != registers()->end())
-      return std::make_pair(static_cast<RVVectorRegister *>(ptr->second),
-                            false);
-    // Create a new register and return a pointer to the object.
-    return std::make_pair(
-        AddRegister<RVVectorRegister>(name, vector_byte_width), true);
-  }
-
   // Add register alias.
   template <typename RegisterType>
   absl::Status AddRegisterAlias(absl::string_view current_name,
@@ -447,6 +432,20 @@ class RiscVState : public ArchState {
   generic::SimpleCounter<int64_t> counter_interrupts_taken_;
   generic::SimpleCounter<int64_t> counter_interrupt_returns_;
 };
+
+// Specialization for RiscV vector registers.
+template <>
+inline std::pair<RVVectorRegister *, bool>
+RiscVState::GetRegister<RVVectorRegister>(absl::string_view name) {
+  int vector_byte_width = vector_register_width();
+  if (vector_byte_width == 0) return std::make_pair(nullptr, false);
+  auto ptr = registers()->find(std::string(name));
+  if (ptr != registers()->end())
+    return std::make_pair(static_cast<RVVectorRegister *>(ptr->second), false);
+  // Create a new register and return a pointer to the object.
+  return std::make_pair(AddRegister<RVVectorRegister>(name, vector_byte_width),
+                        true);
+}
 
 }  // namespace riscv
 }  // namespace sim
