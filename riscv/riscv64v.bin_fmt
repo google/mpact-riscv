@@ -39,7 +39,7 @@ decoder RiscV64GVZB {
   RiscVCInst16;
 }
 
-#include "riscv/riscv32zb.bin_fmt"
-#include "riscv/riscv64g.bin_fmt"
-#include "riscv/riscv64zb.bin_fmt"
-#include "riscv/riscv_vector.bin_fmt"
+#include "riscv32zb.bin_fmt"
+#include "riscv64g.bin_fmt"
+#include "riscv64zb.bin_fmt"
+#include "riscv_vector.bin_fmt"

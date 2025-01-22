@@ -25,7 +25,7 @@ isa ZVBB {
 // First disasm field is 18 char wide and left justified.
 disasm widths = {-18};
 
-#include "riscv/riscv_vector.isa"
+#include "riscv_vector.isa"
 
 slot riscv_zvkb {
   includes {

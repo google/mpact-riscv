@@ -19,8 +19,8 @@ isa RiscV64GZB {
   }
 }
 
-#include "riscv/riscv64g.isa"
-#include "riscv/riscv64zb.isa"
+#include "riscv64g.isa"
+#include "riscv64zb.isa"
 
 slot riscv64gzb : riscv64g, riscv64_zba , riscv64_zbb, riscv64_zbb_imm,
                   riscv64_zbc, riscv64_zbs, riscv64_zbs_imm {

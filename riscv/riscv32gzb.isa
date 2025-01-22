@@ -19,8 +19,8 @@ isa RiscV32GZB {
   }
 }
 
-#include "riscv/riscv32g.isa"
-#include "riscv/riscv32zb.isa"
+#include "riscv32g.isa"
+#include "riscv32zb.isa"
 
 slot riscv32gzb : riscv32g, riscv32_zba, riscv32_zbb, riscv32_zbb_imm,
                   riscv32_zbc, riscv32_zbs, riscv32_zbs_imm {

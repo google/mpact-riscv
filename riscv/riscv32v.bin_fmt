@@ -37,6 +37,6 @@ decoder RiscV32GVZB {
   // Keep this separate (different base format).
   RiscVCInst16;
 }
-#include "riscv/riscv32zb.bin_fmt"
-#include "riscv/riscv32g.bin_fmt"
-#include "riscv/riscv_vector.bin_fmt"
+#include "riscv32zb.bin_fmt"
+#include "riscv32g.bin_fmt"
+#include "riscv_vector.bin_fmt"

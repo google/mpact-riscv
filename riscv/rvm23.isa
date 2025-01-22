@@ -19,15 +19,15 @@ isa RVM23 {
   }
 }
 
-#include "riscv/riscv32g.isa"
-#include "riscv/riscv32zb.isa"
-#include "riscv/riscv_vector.isa"
-#include "riscv/riscv_zc.isa"
-#include "riscv/riscv_zicbop.isa"
-#include "riscv/riscv_zicond.isa"
-#include "riscv/riscv_zimop.isa"
-#include "riscv/riscv_zhintpause.isa"
-#include "riscv/riscv_zihintntl.isa"
+#include "riscv32g.isa"
+#include "riscv32zb.isa"
+#include "riscv_vector.isa"
+#include "riscv_zc.isa"
+#include "riscv_zicbop.isa"
+#include "riscv_zicond.isa"
+#include "riscv_zimop.isa"
+#include "riscv_zhintpause.isa"
+#include "riscv_zihintntl.isa"
 
 slot rvm23 :
   riscv32i,
