@@ -17,10 +17,13 @@
 
 #include <cstdint>
 #include <functional>
+#include <string>
+#include <vector>
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/log.h"
 #include "absl/status/status.h"
+#include "absl/strings/str_cat.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/util/memory/memory_interface.h"
@@ -68,7 +71,17 @@ class RiscVArmSemihost {
   void OnEBreak(const Instruction *inst);
   // Return true if the instruction is a semihosting call.
   bool IsSemihostingCall(const Instruction *inst);
+  // Set the command line string.
+  void SetCmdLine(const std::vector<char *> &argv) {
+    cmd_line_.clear();
+    std::string sep;
+    for (const auto &arg : argv) {
+      absl::StrAppend(&cmd_line_, sep, arg);
+      sep = " ";
+    }
+  }
 
+  // Setters.
   void set_exit_callback(std::function<void()> cb) { exit_callback_ = cb; }
   void set_exception_callback(std::function<void(uint64_t)> cb) {
     exception_callback_ = cb;
@@ -144,13 +157,14 @@ class RiscVArmSemihost {
   generic::DataBuffer *db2_;      // 2 word data buffer.
   generic::DataBuffer *db3_;      // 3 word data buffer.
   generic::DataBuffer *db4_;      // 4 word data buffer.
-  // Memory interfaces to use to access intstruction and data memory.
+  // Memory interfaces to use to access instruction and data memory.
   util::MemoryInterface *i_memory_if_;
   util::MemoryInterface *d_memory_if_;
   // Map from opcode to semihosting function.
   absl::flat_hash_map<uint64_t, SemihostOperation> semihost_operations_;
   // Map of target file descriptors to host file descriptors.
   absl::flat_hash_map<int, int> fd_map_;
+  std::string cmd_line_;
 };
 
 }  // namespace riscv

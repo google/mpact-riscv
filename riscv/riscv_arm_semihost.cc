@@ -21,6 +21,7 @@
 #include <cerrno>
 #include <cstdint>
 #include <cstdio>
+#include <cstring>
 #include <limits>
 #include <string>
 #include <utility>
@@ -247,7 +248,7 @@ absl::Status RiscVArmSemihost::SysException(uint64_t parameter, uint64_t *) {
 
 // Return the length of a file given by the file descriptor.
 absl::Status RiscVArmSemihost::SysFlen(uint64_t parameter, uint64_t *ret_val) {
-  // Load the targete file descriptor.
+  // Load the targeted file descriptor.
   d_memory_if_->Load(parameter, db1_, nullptr, nullptr);
   int target_fd = is_32_bit_ ? static_cast<int>(db1_->Get<uint32_t>(0))
                              : static_cast<int>(db1_->Get<uint64_t>(0));
@@ -273,8 +274,29 @@ absl::Status RiscVArmSemihost::SysFlen(uint64_t parameter, uint64_t *ret_val) {
 // Currently unimplemented. Will implement if there is a demand.
 absl::Status RiscVArmSemihost::SysGetCmdline(uint64_t parameter,
                                              uint64_t *ret_val) {
-  return absl::UnimplementedError("SysGetCmdline not implemented");
-  // TODO: Complete implementation.
+  d_memory_if_->Load(parameter, db2_, nullptr, nullptr);
+  uint64_t buffer_address = is_32_bit_
+                                ? static_cast<uint64_t>(db2_->Get<uint32_t>(0))
+                                : static_cast<uint64_t>(db2_->Get<uint64_t>(0));
+  size_t buffer_len = is_32_bit_ ? static_cast<size_t>(db2_->Get<uint32_t>(1))
+                                 : static_cast<size_t>(db2_->Get<uint64_t>(1));
+  if (buffer_len <= cmd_line_.size()) {
+    *ret_val = -1ULL;
+    return absl::OkStatus();
+  }
+  auto *db = db_factory_.Allocate<uint8_t>(cmd_line_.size() + 1);
+  std::memcpy(db->raw_ptr(), cmd_line_.c_str(), cmd_line_.size());
+  db->Set<uint8_t>(cmd_line_.size(), 0);
+  d_memory_if_->Store(buffer_address, db);
+  db->DecRef();
+  if (is_32_bit_) {
+    db2_->Set<uint32_t>(1, static_cast<uint32_t>(cmd_line_.size()));
+  } else {
+    db2_->Set<uint64_t>(1, cmd_line_.size());
+  }
+  d_memory_if_->Store(parameter, db2_);
+  *ret_val = cmd_line_.size();
+  return absl::OkStatus();
 }
 
 // Returns 0 information indicating that the call doesn't provide this info.

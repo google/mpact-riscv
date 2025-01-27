@@ -231,17 +231,15 @@ int main(int argc, char **argv) {
     std::cerr << "Only one semihosting mechanism can be specified" << std::endl;
   }
 
-  if (arg_vec.size() > 2) {
-    std::cerr << "Only a single input file allowed" << std::endl;
-    return -1;
-  }
+  // Erase the simulator executable from arg_vec.
+  arg_vec.erase(arg_vec.begin());
 
   bool quiet = absl::GetFlag(FLAGS_quiet);
   if (quiet) {
     absl::SetMinLogLevel(absl::LogSeverityAtLeast::kError);
   }
 
-  std::string full_file_name = arg_vec[1];
+  std::string full_file_name = arg_vec[0];
   std::string file_name =
       full_file_name.substr(full_file_name.find_last_of('/') + 1);
   std::string file_basename = file_name.substr(0, file_name.find_first_of('.'));
@@ -442,6 +440,7 @@ int main(int argc, char **argv) {
     // Add ARM semihosting.
     arm_semihost = new RiscVArmSemihost(RiscVArmSemihost::BitWidth::kWord32,
                                         memory, memory);
+    arm_semihost->SetCmdLine(arg_vec);
     riscv_top.state()->AddEbreakHandler(
         [arm_semihost](const Instruction *inst) -> bool {
           if (arm_semihost->IsSemihostingCall(inst)) {
@@ -517,7 +516,7 @@ int main(int argc, char **argv) {
   std::fstream proto_file(proto_file_name.c_str(), std::ios_base::out);
   std::string serialized;
   if (!proto_file.good() || !google::protobuf::TextFormat::PrintToString(
-                                *component_proto.get(), &serialized)) {
+                                *component_proto, &serialized)) {
     LOG(ERROR) << "Failed to write proto to file";
   } else {
     proto_file << serialized;
