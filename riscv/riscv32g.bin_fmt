@@ -267,6 +267,7 @@ instruction group RiscVGInst32[32] : Inst32Format {
   csrrwi_nr: IType  : func3 == 0b101, rd == 0,  opcode == 0b111'0011;
   csrrsi_nw: IType  : func3 == 0b110, rs1 == 0, opcode == 0b111'0011;
   csrrci_nw: IType  : func3 == 0b111, rs1 == 0, opcode == 0b111'0011;
+  unimp    : IType  : func3 == 0b001, rs1 == 0, rd == 0, opcode == 0b111'0011;
   // RiscV32 Privileged instructions.
   uret    : Inst32Format  : bits == 0b000'0000'00010'00000'000'00000, opcode == 0b111'0011;
   sret    : Inst32Format  : bits == 0b000'1000'00010'00000'000'00000, opcode == 0b111'0011;
@@ -440,4 +441,5 @@ instruction group RiscVCInst16[16] : Inst16Format {
   cfsdsp    : CSS: func3 == 0b101, op == 0b10;
   cswsp     : CSS: func3 == 0b110, op == 0b10;
   cfswsp    : CSS: func3 == 0b111, op == 0b10;
+  cunimp   : Inst16Format : func3 == 0b000, bits == 0b000'0000'0000, op == 0b00;
 };

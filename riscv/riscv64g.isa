@@ -278,6 +278,9 @@ slot riscv64i {
     ebreak{},
       disasm: "ebreak",
       semfunc: "&RiscVIEbreak";
+    unimp{},
+      disasm: "unimp",
+      semfunc: "&RiscVIUnimplemented";
   }
 }
 
@@ -1039,5 +1042,9 @@ slot riscv64c {
       disasm: "c.ebreak",
       resources: {next_pc},
       semfunc: "&RiscVIEbreak";
+    cunimp{},
+      disasm: "c.unimp",
+      resources: {next_pc},
+      semfunc: "&RiscVIUnimplemented";
   }
 }

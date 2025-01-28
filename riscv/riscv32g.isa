@@ -212,6 +212,9 @@ slot riscv32i {
     ebreak{},
       disasm: "ebreak",
       semfunc: "&RiscVIEbreak";
+    unimp{},
+      disasm: "unimp",
+      semfunc: "&RiscVIUnimplemented";
   }
 }
 
@@ -850,6 +853,10 @@ slot riscv32c {
       disasm: "ebreak",
       resources: {next_pc},
       semfunc: "&RiscVIEbreak";
+    cunimp{},
+      disasm: "unimp",
+      resources: {next_pc},
+      semfunc: "&RiscVIUnimplemented";
   }
 }
 

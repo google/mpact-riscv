@@ -547,6 +547,21 @@ void RiscVISb(const Instruction *instruction) {
 
 }  // namespace RV64
 
+void RiscVIUnimplemented(const Instruction *instruction) {
+  auto *state = static_cast<RiscVState *>(instruction->state());
+  // Get instruction word, as it needs to be used as trap value.
+  uint64_t address = instruction->address();
+  auto db = state->db_factory()->Allocate<uint32_t>(1);
+  state->LoadMemory(instruction, address, db, nullptr, nullptr);
+  uint32_t inst_word = db->Get<uint32_t>(0);
+  db->DecRef();
+  // See if the instruction is interpreted as 32 or 16 bit instruction.
+  if ((inst_word & 0b11) != 0b11) inst_word &= 0xffff;
+  state->Trap(/*is_interrupt=*/false, /*trap_value=*/inst_word,
+              *ExceptionCode::kIllegalInstruction,
+              /*epc=*/instruction->address(), instruction);
+}
+
 void RiscVIFence(const Instruction *instruction) {
   int pred = generic::GetInstructionSource<uint32_t>(instruction, 0) & 0xf;
   int succ = generic::GetInstructionSource<uint32_t>(instruction, 1) & 0xf;

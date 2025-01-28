@@ -184,6 +184,12 @@ void RiscVISb(const Instruction *instruction);
 
 }  // namespace RV64
 
+// Unimplemented instruction. This is executed when either the unimp or the
+// c.unimp instructions are issued. The instruction takes an unknown instruction
+// exception, but does not print a log message.
+// The instruction does not take any operands.
+void RiscVIUnimplemented(const Instruction *instruction);
+
 // The Fence instruction takes two source operands, the 4 bit values of the
 // predecessor and successor sets.
 void RiscVIFence(const Instruction *instruction);

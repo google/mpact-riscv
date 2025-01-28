@@ -388,7 +388,7 @@ TEST_F(RiscV32GEncodingTest, ZicsrOpcodes) {
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32g, 0), OpcodeEnum::kCsrrs);
   enc_->ParseInstruction(SetRd(SetRs1(kCsrc, kRdValue), kRdValue));
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32g, 0), OpcodeEnum::kCsrrc);
-  enc_->ParseInstruction(kCsrw);
+  enc_->ParseInstruction(SetRs1(kCsrw, kRdValue));
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32g, 0), OpcodeEnum::kCsrrwNr);
   enc_->ParseInstruction(kCsrs);
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32g, 0), OpcodeEnum::kCsrrsNw);
@@ -406,6 +406,8 @@ TEST_F(RiscV32GEncodingTest, ZicsrOpcodes) {
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32g, 0), OpcodeEnum::kCsrrsiNw);
   enc_->ParseInstruction(kCsrci);
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32g, 0), OpcodeEnum::kCsrrciNw);
+  enc_->ParseInstruction(kCsrw);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32g, 0), OpcodeEnum::kUnimp);
 }
 
 TEST_F(RiscV32GEncodingTest, RV32MOpcodes) {
@@ -638,6 +640,8 @@ TEST_F(RiscV32GEncodingTest, RV32COpcodes) {
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32g, 0), OpcodeEnum::kCnop);
   enc_->ParseInstruction(kCebreak);
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32g, 0), OpcodeEnum::kCebreak);
+  enc_->ParseInstruction(0x0000);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32g, 0), OpcodeEnum::kCunimp);
 }
 
 TEST_F(RiscV32GEncodingTest, RV32PrivilegedOpcodes) {
