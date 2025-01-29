@@ -406,7 +406,7 @@ TEST_F(RiscV32GEncodingTest, ZicsrOpcodes) {
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32g, 0), OpcodeEnum::kCsrrsiNw);
   enc_->ParseInstruction(kCsrci);
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32g, 0), OpcodeEnum::kCsrrciNw);
-  enc_->ParseInstruction(kCsrw);
+  enc_->ParseInstruction(kCsrw | 0xc00'00000);
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32g, 0), OpcodeEnum::kUnimp);
 }
 

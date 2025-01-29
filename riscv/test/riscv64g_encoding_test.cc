@@ -448,6 +448,8 @@ TEST_F(RiscV64GEncodingTest, ZicsrOpcodes) {
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv64g, 0), OpcodeEnum::kCsrrsiNw);
   enc_->ParseInstruction(kCsrci);
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv64g, 0), OpcodeEnum::kCsrrciNw);
+  enc_->ParseInstruction(kCsrw | 0xc00'00000);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv64g, 0), OpcodeEnum::kUnimp);
 }
 
 TEST_F(RiscV64GEncodingTest, RV64MOpcodes) {
@@ -680,6 +682,8 @@ TEST_F(RiscV64GEncodingTest, RV64COpcodes) {
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv64g, 0), OpcodeEnum::kCnop);
   enc_->ParseInstruction(kCebreak);
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv64g, 0), OpcodeEnum::kCebreak);
+  enc_->ParseInstruction(0x0000);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv64g, 0), OpcodeEnum::kCunimp);
 }
 
 TEST_F(RiscV64GEncodingTest, RV64PrivilegedOpcodes) {

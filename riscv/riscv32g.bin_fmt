@@ -251,12 +251,12 @@ instruction group RiscVGInst32[32] : Inst32Format {
   fcvt_dw  : RType  : func7 == 0b110'1001, rs2 == 0, opcode == 0b101'0011;
   fcvt_dwu : RType  : func7 == 0b110'1001, rs2 == 1, opcode == 0b101'0011;
   // RiscV32 CSR manipulation instructions.
-  csrrw    : IType  : func3 == 0b001, rd != 0,  opcode == 0b111'0011;
+  csrrw    : IType  : func3 == 0b001, u_imm12 != 0b1100'0000'0000, rd != 0,  opcode == 0b111'0011;
   csrrs    : IType  : func3 == 0b010, rs1 != 0, rd != 0, opcode == 0b111'0011;
   csrrc    : IType  : func3 == 0b011, rs1 != 0, rd != 0, opcode == 0b111'0011;
   csrrs_nr : IType  : func3 == 0b010, rs1 != 0, rd == 0, opcode == 0b111'0011;
   csrrc_nr : IType  : func3 == 0b011, rs1 != 0, rd == 0, opcode == 0b111'0011;
-  csrrw_nr : IType  : func3 == 0b001, rd == 0,  opcode == 0b111'0011;
+  csrrw_nr : IType  : func3 == 0b001, u_imm12 != 0b1100'0000'0000, rd == 0,  opcode == 0b111'0011;
   csrrs_nw : IType  : func3 == 0b010, rs1 == 0, opcode == 0b111'0011;
   csrrc_nw : IType  : func3 == 0b011, rs1 == 0, opcode == 0b111'0011;
   csrrwi   : IType  : func3 == 0b101, rd != 0,  opcode == 0b111'0011;
@@ -267,7 +267,7 @@ instruction group RiscVGInst32[32] : Inst32Format {
   csrrwi_nr: IType  : func3 == 0b101, rd == 0,  opcode == 0b111'0011;
   csrrsi_nw: IType  : func3 == 0b110, rs1 == 0, opcode == 0b111'0011;
   csrrci_nw: IType  : func3 == 0b111, rs1 == 0, opcode == 0b111'0011;
-  unimp    : IType  : func3 == 0b001, rs1 == 0, rd == 0, opcode == 0b111'0011;
+  unimp    : IType  : func3 == 0b001, u_imm12 == 0b1100'0000'0000, rs1 == 0, rd == 0, opcode == 0b111'0011;
   // RiscV32 Privileged instructions.
   uret    : Inst32Format  : bits == 0b000'0000'00010'00000'000'00000, opcode == 0b111'0011;
   sret    : Inst32Format  : bits == 0b000'1000'00010'00000'000'00000, opcode == 0b111'0011;
