@@ -695,7 +695,7 @@ T GetRoundingBit(int rounding_mode, T rounding_bits, int size) {
     case 0:  // Round-to-nearest-up (add +0.5 lsb)
       if (size < 2) return 0;
       return (rounding_bits >> (size - 2)) & 0b1;
-    case 1: {  // Round-to-nearest-event
+    case 1: {  // Round-to-nearest-even
       T v_d_minus_1 = (size < 2) ? 0 : (rounding_bits >> (size - 2)) & 0b1;
       T v_d = (size == 0) ? 0 : (rounding_bits >> (size - 1)) & 0b1;
       T v_d_minus_2_0 = (size < 3)
