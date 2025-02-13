@@ -794,6 +794,9 @@ slot riscv32c {
       resources: {next_pc, rd : rd[0..]},
       disasm: "addi", "%rd, %rd, %I_ci_imm6",
       semfunc: "&RV32::RiscVIAdd";
+    caddi_hint{},
+      disasm: "caddi_hint",
+      semfunc: "&RiscVINop";
     caddi16sp{: x2, I_ci_imm6x16 : x2},
       resources: {next_pc, x2 : x2[0..]},
       disasm: "addi", "%x2, %x2, %(I_ci_imm6x16:d)",

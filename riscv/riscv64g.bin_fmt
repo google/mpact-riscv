@@ -477,6 +477,7 @@ instruction group RiscVCInst16[16] : Inst16Format {
   csd       : CS : func3 == 0b111, op == 0b00;
   cnop      : CI : func3 == 0b000, imm1 == 0, rs1 == 0, imm5 == 0, op == 0b01;
   caddi     : CI : func3 == 0b000, imm6 != 0, rd != 0, op == 0b01;
+  caddi_hint: CI : func3 == 0b000, imm6 == 0, rd != 0, op == 0b01;
   caddiw    : CI : func3 == 0b001, rs1 != 0, op == 0b01;
   cli       : CI : func3 == 0b010, rd != 0, op == 0b01;
   caddi16sp : CI : func3 == 0b011, rd == 2, ci_imm10 != 0, op == 0b01;

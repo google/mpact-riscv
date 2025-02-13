@@ -971,6 +971,10 @@ slot riscv64c {
       resources: {next_pc, rd : rd[0..]},
       disasm: "c.addi", "%rd, %rd, %I_ci_imm6",
       semfunc: "&RV64::RiscVIAdd";
+    caddi_hint{: rd, I_ci_imm6 : rd},
+      resources: {next_pc, rd : rd[0..]},
+      disasm: "caddi_hint",
+      semfunc: "&RiscVINop";
     caddiw{: rd, I_ci_imm6 : rd},
       resources: {next_pc, rd : rd[0..]},
       disasm: "c.addiw", "%rd, %rd, %I_ci_imm6",
