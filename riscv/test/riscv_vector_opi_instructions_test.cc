@@ -86,6 +86,8 @@ using ::mpact::sim::riscv::test::kVd;
 using ::mpact::sim::riscv::test::kVectorLengthInBytes;
 using ::mpact::sim::riscv::test::kVs2;
 
+using RVScalarRegister = RV32Register;
+
 class RiscVVectorInstructionsTest : public RiscVVectorInstructionsTestBase {};
 
 // Each instruction is tested for each element width, and for vector-vector
@@ -125,7 +127,7 @@ TEST_F(RiscVVectorInstructionsTest, Vadd64VV) {
 TEST_F(RiscVVectorInstructionsTest, Vadd8VX) {
   SetSemanticFunction(&Vadd);
 
-  BinaryOpTestHelperVX<uint8_t, uint8_t, uint8_t>(
+  BinaryOpTestHelperVX<uint8_t, uint8_t, uint8_t, RVScalarRegister>(
       "Vadd8", /*sew*/ 8, instruction_,
       [](uint8_t val0, uint8_t val1) -> uint8_t {
         return val0 + static_cast<uint8_t>(val1);
@@ -134,21 +136,21 @@ TEST_F(RiscVVectorInstructionsTest, Vadd8VX) {
 
 TEST_F(RiscVVectorInstructionsTest, Vadd16VX) {
   SetSemanticFunction(&Vadd);
-  BinaryOpTestHelperVX<uint16_t, uint16_t, uint16_t>(
+  BinaryOpTestHelperVX<uint16_t, uint16_t, uint16_t, RVScalarRegister>(
       "Vadd16", /*sew*/ 16, instruction_,
       [](uint16_t val0, uint16_t val1) -> uint16_t { return val0 + val1; });
 }
 
 TEST_F(RiscVVectorInstructionsTest, Vadd32VX) {
   SetSemanticFunction(&Vadd);
-  BinaryOpTestHelperVX<uint32_t, uint32_t, uint32_t>(
+  BinaryOpTestHelperVX<uint32_t, uint32_t, uint32_t, RVScalarRegister>(
       "Vadd32", /*sew*/ 32, instruction_,
       [](uint32_t val0, uint32_t val1) -> uint32_t { return val0 + val1; });
 }
 
 TEST_F(RiscVVectorInstructionsTest, Vadd64VX) {
   SetSemanticFunction(&Vadd);
-  BinaryOpTestHelperVX<uint64_t, uint64_t, uint64_t>(
+  BinaryOpTestHelperVX<uint64_t, uint64_t, uint64_t, RVScalarRegister>(
       "Vadd64", /*sew*/ 64, instruction_,
       [](uint64_t val0, uint64_t val1) -> uint64_t { return val0 + val1; });
 }
@@ -186,28 +188,28 @@ TEST_F(RiscVVectorInstructionsTest, Vsub64VV) {
 // Vector-scalar.
 TEST_F(RiscVVectorInstructionsTest, Vsub8VX) {
   SetSemanticFunction(&Vsub);
-  BinaryOpTestHelperVX<uint8_t, uint8_t, uint8_t>(
+  BinaryOpTestHelperVX<uint8_t, uint8_t, uint8_t, RVScalarRegister>(
       "Vsub8", /*sew*/ 8, instruction_,
       [](uint8_t val0, uint8_t val1) -> uint8_t { return val0 - val1; });
 }
 
 TEST_F(RiscVVectorInstructionsTest, Vsub16VX) {
   SetSemanticFunction(&Vsub);
-  BinaryOpTestHelperVX<uint16_t, uint16_t, uint16_t>(
+  BinaryOpTestHelperVX<uint16_t, uint16_t, uint16_t, RVScalarRegister>(
       "Vsub16", /*sew*/ 16, instruction_,
       [](uint16_t val0, uint16_t val1) -> uint16_t { return val0 - val1; });
 }
 
 TEST_F(RiscVVectorInstructionsTest, Vsub32VX) {
   SetSemanticFunction(&Vsub);
-  BinaryOpTestHelperVX<uint32_t, uint32_t, uint32_t>(
+  BinaryOpTestHelperVX<uint32_t, uint32_t, uint32_t, RVScalarRegister>(
       "Vsub32", /*sew*/ 32, instruction_,
       [](uint32_t val0, uint32_t val1) -> uint32_t { return val0 - val1; });
 }
 
 TEST_F(RiscVVectorInstructionsTest, Vsub64VX) {
   SetSemanticFunction(&Vsub);
-  BinaryOpTestHelperVX<uint64_t, uint64_t, uint64_t>(
+  BinaryOpTestHelperVX<uint64_t, uint64_t, uint64_t, RVScalarRegister>(
       "Vsub64", /*sew*/ 64, instruction_,
       [](uint64_t val0, uint64_t val1) -> uint64_t { return val0 - val1; });
 }
@@ -216,28 +218,28 @@ TEST_F(RiscVVectorInstructionsTest, Vsub64VX) {
 // Vector-Scalar only.
 TEST_F(RiscVVectorInstructionsTest, Vrsub8VX) {
   SetSemanticFunction(&Vrsub);
-  BinaryOpTestHelperVX<uint8_t, uint8_t, uint8_t>(
+  BinaryOpTestHelperVX<uint8_t, uint8_t, uint8_t, RVScalarRegister>(
       "Vrsub8", /*sew*/ 8, instruction_,
       [](uint8_t val0, uint8_t val1) -> uint8_t { return val1 - val0; });
 }
 
 TEST_F(RiscVVectorInstructionsTest, Vrsub16VX) {
   SetSemanticFunction(&Vrsub);
-  BinaryOpTestHelperVX<uint16_t, uint16_t, uint16_t>(
+  BinaryOpTestHelperVX<uint16_t, uint16_t, uint16_t, RVScalarRegister>(
       "Vrsub16", /*sew*/ 16, instruction_,
       [](uint16_t val0, uint16_t val1) -> uint16_t { return val1 - val0; });
 }
 
 TEST_F(RiscVVectorInstructionsTest, Vrsub32VX) {
   SetSemanticFunction(&Vrsub);
-  BinaryOpTestHelperVX<uint32_t, uint32_t, uint32_t>(
+  BinaryOpTestHelperVX<uint32_t, uint32_t, uint32_t, RVScalarRegister>(
       "Vrsub32", /*sew*/ 32, instruction_,
       [](uint32_t val0, uint32_t val1) -> uint32_t { return val1 - val0; });
 }
 
 TEST_F(RiscVVectorInstructionsTest, Vrsub64VX) {
   SetSemanticFunction(&Vrsub);
-  BinaryOpTestHelperVX<uint64_t, uint64_t, uint64_t>(
+  BinaryOpTestHelperVX<uint64_t, uint64_t, uint64_t, RVScalarRegister>(
       "Vrsub64", /*sew*/ 64, instruction_,
       [](uint64_t val0, uint64_t val1) -> uint64_t { return val1 - val0; });
 }
@@ -280,7 +282,7 @@ TEST_F(RiscVVectorInstructionsTest, Vand64VV) {
 TEST_F(RiscVVectorInstructionsTest, Vand8VX) {
   SetSemanticFunction(&Vand);
 
-  BinaryOpTestHelperVX<uint8_t, uint8_t, uint8_t>(
+  BinaryOpTestHelperVX<uint8_t, uint8_t, uint8_t, RVScalarRegister>(
       "Vand8", /*sew*/ 8, instruction_,
       [](uint8_t val0, uint8_t val1) -> uint8_t { return val0 & val1; });
 }
@@ -288,7 +290,7 @@ TEST_F(RiscVVectorInstructionsTest, Vand8VX) {
 TEST_F(RiscVVectorInstructionsTest, Vand16VX) {
   SetSemanticFunction(&Vand);
 
-  BinaryOpTestHelperVX<uint16_t, uint16_t, uint16_t>(
+  BinaryOpTestHelperVX<uint16_t, uint16_t, uint16_t, RVScalarRegister>(
       "Vand16", /*sew*/ 16, instruction_,
       [](uint16_t val0, uint16_t val1) -> uint16_t { return val0 & val1; });
 }
@@ -296,7 +298,7 @@ TEST_F(RiscVVectorInstructionsTest, Vand16VX) {
 TEST_F(RiscVVectorInstructionsTest, Vand32VX) {
   SetSemanticFunction(&Vand);
 
-  BinaryOpTestHelperVX<uint32_t, uint32_t, uint32_t>(
+  BinaryOpTestHelperVX<uint32_t, uint32_t, uint32_t, RVScalarRegister>(
       "Vand32", /*sew*/ 32, instruction_,
       [](uint32_t val0, uint32_t val1) -> uint32_t { return val0 & val1; });
 }
@@ -304,7 +306,7 @@ TEST_F(RiscVVectorInstructionsTest, Vand32VX) {
 TEST_F(RiscVVectorInstructionsTest, Vand64VX) {
   SetSemanticFunction(&Vand);
 
-  BinaryOpTestHelperVX<uint64_t, uint64_t, uint64_t>(
+  BinaryOpTestHelperVX<uint64_t, uint64_t, uint64_t, RVScalarRegister>(
       "Vand64", /*sew*/ 64, instruction_,
       [](uint64_t val0, uint64_t val1) -> uint64_t { return val0 & val1; });
 }
@@ -347,7 +349,7 @@ TEST_F(RiscVVectorInstructionsTest, Vor64VV) {
 TEST_F(RiscVVectorInstructionsTest, Vor8VX) {
   SetSemanticFunction(&Vor);
 
-  BinaryOpTestHelperVX<uint8_t, uint8_t, uint8_t>(
+  BinaryOpTestHelperVX<uint8_t, uint8_t, uint8_t, RVScalarRegister>(
       "Vor8", /*sew*/ 8, instruction_,
       [](uint8_t val0, uint8_t val1) -> uint8_t { return val0 | val1; });
 }
@@ -355,7 +357,7 @@ TEST_F(RiscVVectorInstructionsTest, Vor8VX) {
 TEST_F(RiscVVectorInstructionsTest, Vor16VX) {
   SetSemanticFunction(&Vor);
 
-  BinaryOpTestHelperVX<uint16_t, uint16_t, uint16_t>(
+  BinaryOpTestHelperVX<uint16_t, uint16_t, uint16_t, RVScalarRegister>(
       "Vor16", /*sew*/ 16, instruction_,
       [](uint16_t val0, uint16_t val1) -> uint16_t { return val0 | val1; });
 }
@@ -363,7 +365,7 @@ TEST_F(RiscVVectorInstructionsTest, Vor16VX) {
 TEST_F(RiscVVectorInstructionsTest, Vor32VX) {
   SetSemanticFunction(&Vor);
 
-  BinaryOpTestHelperVX<uint32_t, uint32_t, uint32_t>(
+  BinaryOpTestHelperVX<uint32_t, uint32_t, uint32_t, RVScalarRegister>(
       "Vor32", /*sew*/ 32, instruction_,
       [](uint32_t val0, uint32_t val1) -> uint32_t { return val0 | val1; });
 }
@@ -371,7 +373,7 @@ TEST_F(RiscVVectorInstructionsTest, Vor32VX) {
 TEST_F(RiscVVectorInstructionsTest, Vor64VX) {
   SetSemanticFunction(&Vor);
 
-  BinaryOpTestHelperVX<uint64_t, uint64_t, uint64_t>(
+  BinaryOpTestHelperVX<uint64_t, uint64_t, uint64_t, RVScalarRegister>(
       "Vor64", /*sew*/ 64, instruction_,
       [](uint64_t val0, uint64_t val1) -> uint64_t { return val0 | val1; });
 }
@@ -413,7 +415,7 @@ TEST_F(RiscVVectorInstructionsTest, Vxor64VV) {
 TEST_F(RiscVVectorInstructionsTest, Vxor8VX) {
   SetSemanticFunction(&Vxor);
 
-  BinaryOpTestHelperVX<uint8_t, uint8_t, uint8_t>(
+  BinaryOpTestHelperVX<uint8_t, uint8_t, uint8_t, RVScalarRegister>(
       "Vxor8", /*sew*/ 8, instruction_,
       [](uint8_t val0, uint8_t val1) -> uint8_t { return val0 ^ val1; });
 }
@@ -421,7 +423,7 @@ TEST_F(RiscVVectorInstructionsTest, Vxor8VX) {
 TEST_F(RiscVVectorInstructionsTest, Vxor16VX) {
   SetSemanticFunction(&Vxor);
 
-  BinaryOpTestHelperVX<uint16_t, uint16_t, uint16_t>(
+  BinaryOpTestHelperVX<uint16_t, uint16_t, uint16_t, RVScalarRegister>(
       "Vxor16", /*sew*/ 16, instruction_,
       [](uint16_t val0, uint16_t val1) -> uint16_t { return val0 ^ val1; });
 }
@@ -429,7 +431,7 @@ TEST_F(RiscVVectorInstructionsTest, Vxor16VX) {
 TEST_F(RiscVVectorInstructionsTest, Vxor32VX) {
   SetSemanticFunction(&Vxor);
 
-  BinaryOpTestHelperVX<uint32_t, uint32_t, uint32_t>(
+  BinaryOpTestHelperVX<uint32_t, uint32_t, uint32_t, RVScalarRegister>(
       "Vxor32", /*sew*/ 32, instruction_,
       [](uint32_t val0, uint32_t val1) -> uint32_t { return val0 ^ val1; });
 }
@@ -437,7 +439,7 @@ TEST_F(RiscVVectorInstructionsTest, Vxor32VX) {
 TEST_F(RiscVVectorInstructionsTest, Vxor64VX) {
   SetSemanticFunction(&Vxor);
 
-  BinaryOpTestHelperVX<uint64_t, uint64_t, uint64_t>(
+  BinaryOpTestHelperVX<uint64_t, uint64_t, uint64_t, RVScalarRegister>(
       "Vxor64", /*sew*/ 64, instruction_,
       [](uint64_t val0, uint64_t val1) -> uint64_t { return val0 ^ val1; });
 }
@@ -488,7 +490,7 @@ TEST_F(RiscVVectorInstructionsTest, Vsll64VV) {
 TEST_F(RiscVVectorInstructionsTest, Vsll8VX) {
   SetSemanticFunction(&Vsll);
 
-  BinaryOpTestHelperVX<uint8_t, uint8_t, uint8_t>(
+  BinaryOpTestHelperVX<uint8_t, uint8_t, uint8_t, RVScalarRegister>(
       "Vsll8", /*sew*/ 8, instruction_,
       [](uint8_t val0, uint8_t val1) -> uint8_t {
         return val0 << (val1 & 0b111);
@@ -498,7 +500,7 @@ TEST_F(RiscVVectorInstructionsTest, Vsll8VX) {
 TEST_F(RiscVVectorInstructionsTest, Vsll16VX) {
   SetSemanticFunction(&Vsll);
 
-  BinaryOpTestHelperVX<uint16_t, uint16_t, uint16_t>(
+  BinaryOpTestHelperVX<uint16_t, uint16_t, uint16_t, RVScalarRegister>(
       "Vsll16", /*sew*/ 16, instruction_,
       [](uint16_t val0, uint16_t val1) -> uint16_t {
         return val0 << (val1 & 0b1111);
@@ -508,7 +510,7 @@ TEST_F(RiscVVectorInstructionsTest, Vsll16VX) {
 TEST_F(RiscVVectorInstructionsTest, Vsll32VX) {
   SetSemanticFunction(&Vsll);
 
-  BinaryOpTestHelperVX<uint32_t, uint32_t, uint32_t>(
+  BinaryOpTestHelperVX<uint32_t, uint32_t, uint32_t, RVScalarRegister>(
       "Vsll32", /*sew*/ 32, instruction_,
       [](uint32_t val0, uint32_t val1) -> uint32_t {
         return val0 << (val1 & 0b1'1111);
@@ -518,7 +520,7 @@ TEST_F(RiscVVectorInstructionsTest, Vsll32VX) {
 TEST_F(RiscVVectorInstructionsTest, Vsll64VX) {
   SetSemanticFunction(&Vsll);
 
-  BinaryOpTestHelperVX<uint64_t, uint64_t, uint64_t>(
+  BinaryOpTestHelperVX<uint64_t, uint64_t, uint64_t, RVScalarRegister>(
       "Vsll64", /*sew*/ 64, instruction_,
       [](uint64_t val0, uint64_t val1) -> uint64_t {
         return val0 << (val1 & 0b11'1111);
@@ -571,7 +573,7 @@ TEST_F(RiscVVectorInstructionsTest, Vsrl64VV) {
 TEST_F(RiscVVectorInstructionsTest, Vsrl8VX) {
   SetSemanticFunction(&Vsrl);
 
-  BinaryOpTestHelperVX<uint8_t, uint8_t, uint8_t>(
+  BinaryOpTestHelperVX<uint8_t, uint8_t, uint8_t, RVScalarRegister>(
       "Vsrl8", /*sew*/ 8, instruction_,
       [](uint8_t val0, uint8_t val1) -> uint8_t {
         return val0 >> (val1 & 0b111);
@@ -581,7 +583,7 @@ TEST_F(RiscVVectorInstructionsTest, Vsrl8VX) {
 TEST_F(RiscVVectorInstructionsTest, Vsrl16VX) {
   SetSemanticFunction(&Vsrl);
 
-  BinaryOpTestHelperVX<uint16_t, uint16_t, uint16_t>(
+  BinaryOpTestHelperVX<uint16_t, uint16_t, uint16_t, RVScalarRegister>(
       "Vsrl16", /*sew*/ 16, instruction_,
       [](uint16_t val0, uint16_t val1) -> uint16_t {
         return val0 >> (val1 & 0b1111);
@@ -591,7 +593,7 @@ TEST_F(RiscVVectorInstructionsTest, Vsrl16VX) {
 TEST_F(RiscVVectorInstructionsTest, Vsrl32VX) {
   SetSemanticFunction(&Vsrl);
 
-  BinaryOpTestHelperVX<uint32_t, uint32_t, uint32_t>(
+  BinaryOpTestHelperVX<uint32_t, uint32_t, uint32_t, RVScalarRegister>(
       "Vsrl32", /*sew*/ 32, instruction_,
       [](uint32_t val0, uint32_t val1) -> uint32_t {
         return val0 >> (val1 & 0b1'1111);
@@ -601,7 +603,7 @@ TEST_F(RiscVVectorInstructionsTest, Vsrl32VX) {
 TEST_F(RiscVVectorInstructionsTest, Vsrl64VX) {
   SetSemanticFunction(&Vsrl);
 
-  BinaryOpTestHelperVX<uint64_t, uint64_t, uint64_t>(
+  BinaryOpTestHelperVX<uint64_t, uint64_t, uint64_t, RVScalarRegister>(
       "Vsrl64", /*sew*/ 64, instruction_,
       [](uint64_t val0, uint64_t val1) -> uint64_t {
         return val0 >> (val1 & 0b11'1111);
@@ -654,7 +656,7 @@ TEST_F(RiscVVectorInstructionsTest, Vsra64VV) {
 TEST_F(RiscVVectorInstructionsTest, Vsra8VX) {
   SetSemanticFunction(&Vsra);
 
-  BinaryOpTestHelperVX<uint8_t, int8_t, uint8_t>(
+  BinaryOpTestHelperVX<uint8_t, int8_t, uint8_t, RVScalarRegister>(
       "Vsra8", /*sew*/ 8, instruction_,
       [](int8_t val0, uint8_t val1) -> int8_t {
         return val0 >> (val1 & 0b111);
@@ -664,7 +666,7 @@ TEST_F(RiscVVectorInstructionsTest, Vsra8VX) {
 TEST_F(RiscVVectorInstructionsTest, Vsra16VX) {
   SetSemanticFunction(&Vsra);
 
-  BinaryOpTestHelperVX<uint16_t, int16_t, uint16_t>(
+  BinaryOpTestHelperVX<uint16_t, int16_t, uint16_t, RVScalarRegister>(
       "Vsra16", /*sew*/ 16, instruction_,
       [](int16_t val0, uint16_t val1) -> int16_t {
         return val0 >> (val1 & 0b1111);
@@ -674,7 +676,7 @@ TEST_F(RiscVVectorInstructionsTest, Vsra16VX) {
 TEST_F(RiscVVectorInstructionsTest, Vsra32VX) {
   SetSemanticFunction(&Vsra);
 
-  BinaryOpTestHelperVX<uint32_t, int32_t, uint32_t>(
+  BinaryOpTestHelperVX<uint32_t, int32_t, uint32_t, RVScalarRegister>(
       "Vsra32", /*sew*/ 32, instruction_,
       [](int32_t val0, uint32_t val1) -> int32_t {
         return val0 >> (val1 & 0b1'1111);
@@ -684,7 +686,7 @@ TEST_F(RiscVVectorInstructionsTest, Vsra32VX) {
 TEST_F(RiscVVectorInstructionsTest, Vsra64VX) {
   SetSemanticFunction(&Vsra);
 
-  BinaryOpTestHelperVX<uint64_t, int64_t, uint64_t>(
+  BinaryOpTestHelperVX<uint64_t, int64_t, uint64_t, RVScalarRegister>(
       "Vsll64", /*sew*/ 64, instruction_,
       [](int64_t val0, uint64_t val1) -> int64_t {
         return val0 >> (val1 & 0b11'1111);
@@ -727,7 +729,7 @@ TEST_F(RiscVVectorInstructionsTest, Vnsrl32VV) {
 TEST_F(RiscVVectorInstructionsTest, Vnsrl8VX) {
   SetSemanticFunction(&Vnsrl);
 
-  BinaryOpTestHelperVX<uint8_t, uint16_t, uint8_t>(
+  BinaryOpTestHelperVX<uint8_t, uint16_t, uint8_t, RVScalarRegister>(
       "Vsra8", /*sew*/ 8, instruction_,
       [](uint16_t val0, uint8_t val1) -> uint8_t {
         return static_cast<uint8_t>(val0 >> (val1 & 0b1111));
@@ -737,7 +739,7 @@ TEST_F(RiscVVectorInstructionsTest, Vnsrl8VX) {
 TEST_F(RiscVVectorInstructionsTest, Vnsrl16VX) {
   SetSemanticFunction(&Vnsrl);
 
-  BinaryOpTestHelperVX<uint16_t, uint32_t, uint16_t>(
+  BinaryOpTestHelperVX<uint16_t, uint32_t, uint16_t, RVScalarRegister>(
       "Vsll16", /*sew*/ 16, instruction_,
       [](uint32_t val0, uint16_t val1) -> uint16_t {
         return static_cast<uint16_t>(val0 >> (val1 & 0b1'1111));
@@ -747,7 +749,7 @@ TEST_F(RiscVVectorInstructionsTest, Vnsrl16VX) {
 TEST_F(RiscVVectorInstructionsTest, Vnsrl32VX) {
   SetSemanticFunction(&Vnsrl);
 
-  BinaryOpTestHelperVX<uint32_t, uint64_t, uint32_t>(
+  BinaryOpTestHelperVX<uint32_t, uint64_t, uint32_t, RVScalarRegister>(
       "Vsll32", /*sew*/ 32, instruction_,
       [](uint64_t val0, uint32_t val1) -> uint32_t {
         return static_cast<uint32_t>(val0 >> (val1 & 0b11'1111));
@@ -790,7 +792,7 @@ TEST_F(RiscVVectorInstructionsTest, Vnsra32VV) {
 TEST_F(RiscVVectorInstructionsTest, Vnsra8VX) {
   SetSemanticFunction(&Vnsra);
 
-  BinaryOpTestHelperVX<uint8_t, uint16_t, uint8_t>(
+  BinaryOpTestHelperVX<uint8_t, uint16_t, uint8_t, RVScalarRegister>(
       "Vsra8", /*sew*/ 8, instruction_,
       [](int16_t val0, uint8_t val1) -> uint8_t {
         return static_cast<uint8_t>(val0 >> (val1 & 0b1111));
@@ -800,7 +802,7 @@ TEST_F(RiscVVectorInstructionsTest, Vnsra8VX) {
 TEST_F(RiscVVectorInstructionsTest, Vnsra16VX) {
   SetSemanticFunction(&Vnsra);
 
-  BinaryOpTestHelperVX<uint16_t, uint32_t, uint16_t>(
+  BinaryOpTestHelperVX<uint16_t, uint32_t, uint16_t, RVScalarRegister>(
       "Vsll16", /*sew*/ 16, instruction_,
       [](int32_t val0, uint16_t val1) -> uint16_t {
         return static_cast<uint16_t>(val0 >> (val1 & 0b1'1111));
@@ -810,7 +812,7 @@ TEST_F(RiscVVectorInstructionsTest, Vnsra16VX) {
 TEST_F(RiscVVectorInstructionsTest, Vnsra32VX) {
   SetSemanticFunction(&Vnsra);
 
-  BinaryOpTestHelperVX<uint32_t, uint64_t, uint32_t>(
+  BinaryOpTestHelperVX<uint32_t, uint64_t, uint32_t, RVScalarRegister>(
       "Vsll32", /*sew*/ 32, instruction_,
       [](int64_t val0, uint32_t val1) -> uint32_t {
         return static_cast<uint32_t>(val0 >> (val1 & 0b11'1111));
@@ -854,7 +856,7 @@ TEST_F(RiscVVectorInstructionsTest, Vminu64VV) {
 // Vector-Scalar
 TEST_F(RiscVVectorInstructionsTest, Vminu8VX) {
   SetSemanticFunction(&Vminu);
-  BinaryOpTestHelperVX<uint8_t, uint8_t, uint8_t>(
+  BinaryOpTestHelperVX<uint8_t, uint8_t, uint8_t, RVScalarRegister>(
       "Vminu8", /*sew*/ 8, instruction_,
       [](uint8_t val0, uint8_t val1) -> uint8_t {
         return (val0 < val1) ? val0 : val1;
@@ -862,7 +864,7 @@ TEST_F(RiscVVectorInstructionsTest, Vminu8VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vminu16VX) {
   SetSemanticFunction(&Vminu);
-  BinaryOpTestHelperVX<uint16_t, uint16_t, uint16_t>(
+  BinaryOpTestHelperVX<uint16_t, uint16_t, uint16_t, RVScalarRegister>(
       "Vminu16", /*sew*/ 16, instruction_,
       [](uint16_t val0, uint16_t val1) -> uint16_t {
         return (val0 < val1) ? val0 : val1;
@@ -870,7 +872,7 @@ TEST_F(RiscVVectorInstructionsTest, Vminu16VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vminu32VX) {
   SetSemanticFunction(&Vminu);
-  BinaryOpTestHelperVX<uint32_t, uint32_t, uint32_t>(
+  BinaryOpTestHelperVX<uint32_t, uint32_t, uint32_t, RVScalarRegister>(
       "Vminu32", /*sew*/ 32, instruction_,
       [](uint32_t val0, uint32_t val1) -> uint32_t {
         return (val0 < val1) ? val0 : val1;
@@ -878,7 +880,7 @@ TEST_F(RiscVVectorInstructionsTest, Vminu32VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vminu64VX) {
   SetSemanticFunction(&Vminu);
-  BinaryOpTestHelperVX<uint64_t, uint64_t, uint64_t>(
+  BinaryOpTestHelperVX<uint64_t, uint64_t, uint64_t, RVScalarRegister>(
       "Vminu64", /*sew*/ 64, instruction_,
       [](uint64_t val0, uint64_t val1) -> uint64_t {
         return (val0 < val1) ? val0 : val1;
@@ -921,14 +923,14 @@ TEST_F(RiscVVectorInstructionsTest, Vmin64VV) {
 // Vector-Scalar
 TEST_F(RiscVVectorInstructionsTest, Vmin8VX) {
   SetSemanticFunction(&Vmin);
-  BinaryOpTestHelperVX<int8_t, int8_t, int8_t>(
+  BinaryOpTestHelperVX<int8_t, int8_t, int8_t, RVScalarRegister>(
       "Vmin8", /*sew*/ 8, instruction_, [](int8_t val0, int8_t val1) -> int8_t {
         return (val0 < val1) ? val0 : val1;
       });
 }
 TEST_F(RiscVVectorInstructionsTest, Vmin16VX) {
   SetSemanticFunction(&Vmin);
-  BinaryOpTestHelperVX<int16_t, int16_t, int16_t>(
+  BinaryOpTestHelperVX<int16_t, int16_t, int16_t, RVScalarRegister>(
       "Vmin16", /*sew*/ 16, instruction_,
       [](int16_t val0, int16_t val1) -> int16_t {
         return (val0 < val1) ? val0 : val1;
@@ -936,7 +938,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmin16VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmin32VX) {
   SetSemanticFunction(&Vmin);
-  BinaryOpTestHelperVX<int32_t, int32_t, int32_t>(
+  BinaryOpTestHelperVX<int32_t, int32_t, int32_t, RVScalarRegister>(
       "Vmin32", /*sew*/ 32, instruction_,
       [](int32_t val0, int32_t val1) -> int32_t {
         return (val0 < val1) ? val0 : val1;
@@ -944,7 +946,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmin32VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmin64VX) {
   SetSemanticFunction(&Vmin);
-  BinaryOpTestHelperVX<int64_t, int64_t, int64_t>(
+  BinaryOpTestHelperVX<int64_t, int64_t, int64_t, RVScalarRegister>(
       "Vmin64", /*sew*/ 64, instruction_,
       [](int64_t val0, int64_t val1) -> int64_t {
         return (val0 < val1) ? val0 : val1;
@@ -988,7 +990,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmaxu64VV) {
 // Vector-Scalar.
 TEST_F(RiscVVectorInstructionsTest, Vmaxu8VX) {
   SetSemanticFunction(&Vmaxu);
-  BinaryOpTestHelperVX<uint8_t, uint8_t, uint8_t>(
+  BinaryOpTestHelperVX<uint8_t, uint8_t, uint8_t, RVScalarRegister>(
       "Vmaxu8", /*sew*/ 8, instruction_,
       [](uint8_t val0, uint8_t val1) -> uint8_t {
         return (val0 > val1) ? val0 : val1;
@@ -996,7 +998,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmaxu8VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmaxu16VX) {
   SetSemanticFunction(&Vmaxu);
-  BinaryOpTestHelperVX<uint16_t, uint16_t, uint16_t>(
+  BinaryOpTestHelperVX<uint16_t, uint16_t, uint16_t, RVScalarRegister>(
       "Vmaxu16", /*sew*/ 16, instruction_,
       [](uint16_t val0, uint16_t val1) -> uint16_t {
         return (val0 > val1) ? val0 : val1;
@@ -1004,7 +1006,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmaxu16VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmaxu32VX) {
   SetSemanticFunction(&Vmaxu);
-  BinaryOpTestHelperVX<uint32_t, uint32_t, uint32_t>(
+  BinaryOpTestHelperVX<uint32_t, uint32_t, uint32_t, RVScalarRegister>(
       "Vmaxu32", /*sew*/ 32, instruction_,
       [](uint32_t val0, uint32_t val1) -> uint32_t {
         return (val0 > val1) ? val0 : val1;
@@ -1012,7 +1014,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmaxu32VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmaxu64VX) {
   SetSemanticFunction(&Vmaxu);
-  BinaryOpTestHelperVX<uint64_t, uint64_t, uint64_t>(
+  BinaryOpTestHelperVX<uint64_t, uint64_t, uint64_t, RVScalarRegister>(
       "Vmaxu64", /*sew*/ 64, instruction_,
       [](uint64_t val0, uint64_t val1) -> uint64_t {
         return (val0 > val1) ? val0 : val1;
@@ -1054,14 +1056,14 @@ TEST_F(RiscVVectorInstructionsTest, Vmax64VV) {
 // Vector-Scalar
 TEST_F(RiscVVectorInstructionsTest, Vmax8VX) {
   SetSemanticFunction(&Vmax);
-  BinaryOpTestHelperVX<int8_t, int8_t, int8_t>(
+  BinaryOpTestHelperVX<int8_t, int8_t, int8_t, RVScalarRegister>(
       "Vmin8", /*sew*/ 8, instruction_, [](int8_t val0, int8_t val1) -> int8_t {
         return (val0 > val1) ? val0 : val1;
       });
 }
 TEST_F(RiscVVectorInstructionsTest, Vmax16VX) {
   SetSemanticFunction(&Vmax);
-  BinaryOpTestHelperVX<int16_t, int16_t, int16_t>(
+  BinaryOpTestHelperVX<int16_t, int16_t, int16_t, RVScalarRegister>(
       "Vmin16", /*sew*/ 16, instruction_,
       [](int16_t val0, int16_t val1) -> int16_t {
         return (val0 > val1) ? val0 : val1;
@@ -1069,7 +1071,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmax16VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmax32VX) {
   SetSemanticFunction(&Vmax);
-  BinaryOpTestHelperVX<int32_t, int32_t, int32_t>(
+  BinaryOpTestHelperVX<int32_t, int32_t, int32_t, RVScalarRegister>(
       "Vmin32", /*sew*/ 32, instruction_,
       [](int32_t val0, int32_t val1) -> int32_t {
         return (val0 > val1) ? val0 : val1;
@@ -1077,7 +1079,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmax32VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmax64VX) {
   SetSemanticFunction(&Vmax);
-  BinaryOpTestHelperVX<int64_t, int64_t, int64_t>(
+  BinaryOpTestHelperVX<int64_t, int64_t, int64_t, RVScalarRegister>(
       "Vmin64", /*sew*/ 64, instruction_,
       [](int64_t val0, int64_t val1) -> int64_t {
         return (val0 > val1) ? val0 : val1;
@@ -1123,7 +1125,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmseq64VV) {
 // Vector-Scalar.
 TEST_F(RiscVVectorInstructionsTest, Vmseq8VX) {
   SetSemanticFunction(&Vmseq);
-  BinaryMaskOpTestHelperVX<uint8_t, uint8_t>(
+  BinaryMaskOpTestHelperVX<uint8_t, uint8_t, RVScalarRegister>(
       "Vmseq8", /*sew*/ 8, instruction_,
       [](uint8_t val0, uint8_t val1) -> uint8_t {
         return (val0 == val1) ? 1 : 0;
@@ -1131,7 +1133,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmseq8VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmseq16VX) {
   SetSemanticFunction(&Vmseq);
-  BinaryMaskOpTestHelperVX<uint16_t, uint16_t>(
+  BinaryMaskOpTestHelperVX<uint16_t, uint16_t, RVScalarRegister>(
       "Vmseq16", /*sew*/ 16, instruction_,
       [](uint16_t val0, uint16_t val1) -> uint8_t {
         return (val0 == val1) ? 1 : 0;
@@ -1139,7 +1141,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmseq16VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmseq32VX) {
   SetSemanticFunction(&Vmseq);
-  BinaryMaskOpTestHelperVX<uint32_t, uint32_t>(
+  BinaryMaskOpTestHelperVX<uint32_t, uint32_t, RVScalarRegister>(
       "Vmseq32", /*sew*/ 32, instruction_,
       [](uint32_t val0, uint32_t val1) -> uint8_t {
         return (val0 == val1) ? 1 : 0;
@@ -1147,7 +1149,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmseq32VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmseq64VX) {
   SetSemanticFunction(&Vmseq);
-  BinaryMaskOpTestHelperVX<uint64_t, uint64_t>(
+  BinaryMaskOpTestHelperVX<uint64_t, uint64_t, RVScalarRegister>(
       "Vmseq64", /*sew*/ 64, instruction_,
       [](uint64_t val0, uint64_t val1) -> uint8_t {
         return (val0 == val1) ? 1 : 0;
@@ -1191,7 +1193,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmsne64VV) {
 // Vector-Scalar.
 TEST_F(RiscVVectorInstructionsTest, Vmsne8VX) {
   SetSemanticFunction(&Vmsne);
-  BinaryMaskOpTestHelperVX<uint8_t, uint8_t>(
+  BinaryMaskOpTestHelperVX<uint8_t, uint8_t, RVScalarRegister>(
       "Vmsne8", /*sew*/ 8, instruction_,
       [](uint8_t val0, uint8_t val1) -> uint8_t {
         return (val0 != val1) ? 1 : 0;
@@ -1199,7 +1201,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmsne8VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmsne16VX) {
   SetSemanticFunction(&Vmsne);
-  BinaryMaskOpTestHelperVX<uint16_t, uint16_t>(
+  BinaryMaskOpTestHelperVX<uint16_t, uint16_t, RVScalarRegister>(
       "Vmsne16", /*sew*/ 16, instruction_,
       [](uint16_t val0, uint16_t val1) -> uint8_t {
         return (val0 != val1) ? 1 : 0;
@@ -1207,7 +1209,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmsne16VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmsne32VX) {
   SetSemanticFunction(&Vmsne);
-  BinaryMaskOpTestHelperVX<uint32_t, uint32_t>(
+  BinaryMaskOpTestHelperVX<uint32_t, uint32_t, RVScalarRegister>(
       "Vmsne32", /*sew*/ 32, instruction_,
       [](uint32_t val0, uint32_t val1) -> uint8_t {
         return (val0 != val1) ? 1 : 0;
@@ -1215,7 +1217,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmsne32VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmsne64VX) {
   SetSemanticFunction(&Vmsne);
-  BinaryMaskOpTestHelperVX<uint64_t, uint64_t>(
+  BinaryMaskOpTestHelperVX<uint64_t, uint64_t, RVScalarRegister>(
       "Vmsne64", /*sew*/ 64, instruction_,
       [](uint64_t val0, uint64_t val1) -> uint8_t {
         return (val0 != val1) ? 1 : 0;
@@ -1259,7 +1261,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmsltu64VV) {
 // Vector-Scalar.
 TEST_F(RiscVVectorInstructionsTest, Vmsltu8VX) {
   SetSemanticFunction(&Vmsltu);
-  BinaryMaskOpTestHelperVX<uint8_t, uint8_t>(
+  BinaryMaskOpTestHelperVX<uint8_t, uint8_t, RVScalarRegister>(
       "Vmsltu8", /*sew*/ 8, instruction_,
       [](uint8_t val0, uint8_t val1) -> uint8_t {
         return (val0 < val1) ? 1 : 0;
@@ -1267,7 +1269,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmsltu8VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmsltu16VX) {
   SetSemanticFunction(&Vmsltu);
-  BinaryMaskOpTestHelperVX<uint16_t, uint16_t>(
+  BinaryMaskOpTestHelperVX<uint16_t, uint16_t, RVScalarRegister>(
       "Vmsltu16", /*sew*/ 16, instruction_,
       [](uint16_t val0, uint16_t val1) -> uint8_t {
         return (val0 < val1) ? 1 : 0;
@@ -1275,7 +1277,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmsltu16VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmsltu32VX) {
   SetSemanticFunction(&Vmsltu);
-  BinaryMaskOpTestHelperVX<uint32_t, uint32_t>(
+  BinaryMaskOpTestHelperVX<uint32_t, uint32_t, RVScalarRegister>(
       "Vmsltu32", /*sew*/ 32, instruction_,
       [](uint32_t val0, uint32_t val1) -> uint8_t {
         return (val0 < val1) ? 1 : 0;
@@ -1283,7 +1285,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmsltu32VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmsltu64VX) {
   SetSemanticFunction(&Vmsltu);
-  BinaryMaskOpTestHelperVX<uint64_t, uint64_t>(
+  BinaryMaskOpTestHelperVX<uint64_t, uint64_t, RVScalarRegister>(
       "Vmsltu64", /*sew*/ 64, instruction_,
       [](uint64_t val0, uint64_t val1) -> uint8_t {
         return (val0 < val1) ? 1 : 0;
@@ -1327,7 +1329,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmslt64VV) {
 // Vector-Scalar.
 TEST_F(RiscVVectorInstructionsTest, Vmslt8VX) {
   SetSemanticFunction(&Vmslt);
-  BinaryMaskOpTestHelperVX<int8_t, int8_t>(
+  BinaryMaskOpTestHelperVX<int8_t, int8_t, RVScalarRegister>(
       "Vmslt8", /*sew*/ 8, instruction_,
       [](int8_t val0, int8_t val1) -> uint8_t {
         return (val0 < val1) ? 1 : 0;
@@ -1335,7 +1337,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmslt8VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmslt16VX) {
   SetSemanticFunction(&Vmslt);
-  BinaryMaskOpTestHelperVX<int16_t, int16_t>(
+  BinaryMaskOpTestHelperVX<int16_t, int16_t, RVScalarRegister>(
       "Vmslt16", /*sew*/ 16, instruction_,
       [](int16_t val0, int16_t val1) -> uint8_t {
         return (val0 < val1) ? 1 : 0;
@@ -1343,7 +1345,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmslt16VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmslt32VX) {
   SetSemanticFunction(&Vmslt);
-  BinaryMaskOpTestHelperVX<int32_t, int32_t>(
+  BinaryMaskOpTestHelperVX<int32_t, int32_t, RVScalarRegister>(
       "Vmslt32", /*sew*/ 32, instruction_,
       [](int32_t val0, int32_t val1) -> uint8_t {
         return (val0 < val1) ? 1 : 0;
@@ -1351,7 +1353,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmslt32VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmslt64VX) {
   SetSemanticFunction(&Vmslt);
-  BinaryMaskOpTestHelperVX<int64_t, int64_t>(
+  BinaryMaskOpTestHelperVX<int64_t, int64_t, RVScalarRegister>(
       "Vmslt64", /*sew*/ 64, instruction_,
       [](int64_t val0, int64_t val1) -> uint8_t {
         return (val0 < val1) ? 1 : 0;
@@ -1395,7 +1397,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmsleu64VV) {
 // Vector-Scalar.
 TEST_F(RiscVVectorInstructionsTest, Vmsleu8VX) {
   SetSemanticFunction(&Vmsleu);
-  BinaryMaskOpTestHelperVX<uint8_t, uint8_t>(
+  BinaryMaskOpTestHelperVX<uint8_t, uint8_t, RVScalarRegister>(
       "Vmsleu8", /*sew*/ 8, instruction_,
       [](uint8_t val0, uint8_t val1) -> uint8_t {
         return (val0 <= val1) ? 1 : 0;
@@ -1403,7 +1405,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmsleu8VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmsleu16VX) {
   SetSemanticFunction(&Vmsleu);
-  BinaryMaskOpTestHelperVX<uint16_t, uint16_t>(
+  BinaryMaskOpTestHelperVX<uint16_t, uint16_t, RVScalarRegister>(
       "Vmsleu16", /*sew*/ 16, instruction_,
       [](uint16_t val0, uint16_t val1) -> uint8_t {
         return (val0 <= val1) ? 1 : 0;
@@ -1411,7 +1413,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmsleu16VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmsleu32VX) {
   SetSemanticFunction(&Vmsleu);
-  BinaryMaskOpTestHelperVX<uint32_t, uint32_t>(
+  BinaryMaskOpTestHelperVX<uint32_t, uint32_t, RVScalarRegister>(
       "Vmsleu32", /*sew*/ 32, instruction_,
       [](uint32_t val0, uint32_t val1) -> uint8_t {
         return (val0 <= val1) ? 1 : 0;
@@ -1419,7 +1421,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmsleu32VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmsleu64VX) {
   SetSemanticFunction(&Vmsleu);
-  BinaryMaskOpTestHelperVX<uint64_t, uint64_t>(
+  BinaryMaskOpTestHelperVX<uint64_t, uint64_t, RVScalarRegister>(
       "Vmsleu64", /*sew*/ 64, instruction_,
       [](uint64_t val0, uint64_t val1) -> uint8_t {
         return (val0 <= val1) ? 1 : 0;
@@ -1463,7 +1465,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmsle64VV) {
 // Vector-Scalar.
 TEST_F(RiscVVectorInstructionsTest, Vmsle8VX) {
   SetSemanticFunction(&Vmsle);
-  BinaryMaskOpTestHelperVX<int8_t, int8_t>(
+  BinaryMaskOpTestHelperVX<int8_t, int8_t, RVScalarRegister>(
       "Vmsle8", /*sew*/ 8, instruction_,
       [](int8_t val0, int8_t val1) -> uint8_t {
         return (val0 <= val1) ? 1 : 0;
@@ -1471,7 +1473,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmsle8VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmsle16VX) {
   SetSemanticFunction(&Vmsle);
-  BinaryMaskOpTestHelperVX<int16_t, int16_t>(
+  BinaryMaskOpTestHelperVX<int16_t, int16_t, RVScalarRegister>(
       "Vmsle16", /*sew*/ 16, instruction_,
       [](int16_t val0, int16_t val1) -> uint8_t {
         return (val0 <= val1) ? 1 : 0;
@@ -1479,7 +1481,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmsle16VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmsle32VX) {
   SetSemanticFunction(&Vmsle);
-  BinaryMaskOpTestHelperVX<int32_t, int32_t>(
+  BinaryMaskOpTestHelperVX<int32_t, int32_t, RVScalarRegister>(
       "Vmsle32", /*sew*/ 32, instruction_,
       [](int32_t val0, int32_t val1) -> uint8_t {
         return (val0 <= val1) ? 1 : 0;
@@ -1487,7 +1489,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmsle32VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmsle64VX) {
   SetSemanticFunction(&Vmsle);
-  BinaryMaskOpTestHelperVX<int64_t, int64_t>(
+  BinaryMaskOpTestHelperVX<int64_t, int64_t, RVScalarRegister>(
       "Vmsle64", /*sew*/ 64, instruction_,
       [](int64_t val0, int64_t val1) -> uint8_t {
         return (val0 <= val1) ? 1 : 0;
@@ -1498,7 +1500,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmsle64VX) {
 // Vector-Vector.
 TEST_F(RiscVVectorInstructionsTest, Vmsgtu8VX) {
   SetSemanticFunction(&Vmsgtu);
-  BinaryMaskOpTestHelperVX<uint8_t, uint8_t>(
+  BinaryMaskOpTestHelperVX<uint8_t, uint8_t, RVScalarRegister>(
       "Vmsgtu8", /*sew*/ 8, instruction_,
       [](uint8_t val0, uint8_t val1) -> uint8_t {
         return (val0 > val1) ? 1 : 0;
@@ -1506,7 +1508,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmsgtu8VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmsgtu16VX) {
   SetSemanticFunction(&Vmsgtu);
-  BinaryMaskOpTestHelperVX<uint16_t, uint16_t>(
+  BinaryMaskOpTestHelperVX<uint16_t, uint16_t, RVScalarRegister>(
       "Vmsgtu16", /*sew*/ 16, instruction_,
       [](uint16_t val0, uint16_t val1) -> uint8_t {
         return (val0 > val1) ? 1 : 0;
@@ -1514,7 +1516,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmsgtu16VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmsgtu32VX) {
   SetSemanticFunction(&Vmsgtu);
-  BinaryMaskOpTestHelperVX<uint32_t, uint32_t>(
+  BinaryMaskOpTestHelperVX<uint32_t, uint32_t, RVScalarRegister>(
       "Vmsgtu32", /*sew*/ 32, instruction_,
       [](uint32_t val0, uint32_t val1) -> uint8_t {
         return (val0 > val1) ? 1 : 0;
@@ -1522,7 +1524,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmsgtu32VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmsgtu64VX) {
   SetSemanticFunction(&Vmsgtu);
-  BinaryMaskOpTestHelperVX<uint64_t, uint64_t>(
+  BinaryMaskOpTestHelperVX<uint64_t, uint64_t, RVScalarRegister>(
       "Vmsgtuk64", /*sew*/ 64, instruction_,
       [](uint64_t val0, uint64_t val1) -> uint8_t {
         return (val0 > val1) ? 1 : 0;
@@ -1533,7 +1535,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmsgtu64VX) {
 // Vector-Scalar.
 TEST_F(RiscVVectorInstructionsTest, Vmsgt8VX) {
   SetSemanticFunction(&Vmsgt);
-  BinaryMaskOpTestHelperVX<int8_t, int8_t>(
+  BinaryMaskOpTestHelperVX<int8_t, int8_t, RVScalarRegister>(
       "Vmsgt8", /*sew*/ 8, instruction_,
       [](int8_t val0, int8_t val1) -> uint8_t {
         return (val0 > val1) ? 1 : 0;
@@ -1541,7 +1543,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmsgt8VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmsgt16VX) {
   SetSemanticFunction(&Vmsgt);
-  BinaryMaskOpTestHelperVX<int16_t, int16_t>(
+  BinaryMaskOpTestHelperVX<int16_t, int16_t, RVScalarRegister>(
       "Vmsgt16", /*sew*/ 16, instruction_,
       [](int16_t val0, int16_t val1) -> uint8_t {
         return (val0 > val1) ? 1 : 0;
@@ -1549,7 +1551,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmsgt16VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmsgt32VX) {
   SetSemanticFunction(&Vmsgt);
-  BinaryMaskOpTestHelperVX<int32_t, int32_t>(
+  BinaryMaskOpTestHelperVX<int32_t, int32_t, RVScalarRegister>(
       "Vmsgt32", /*sew*/ 32, instruction_,
       [](int32_t val0, int32_t val1) -> uint8_t {
         return (val0 > val1) ? 1 : 0;
@@ -1557,7 +1559,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmsgt32VX) {
 }
 TEST_F(RiscVVectorInstructionsTest, Vmsgt64VX) {
   SetSemanticFunction(&Vmsgt);
-  BinaryMaskOpTestHelperVX<int64_t, int64_t>(
+  BinaryMaskOpTestHelperVX<int64_t, int64_t, RVScalarRegister>(
       "Vmsgt64", /*sew*/ 64, instruction_,
       [](int64_t val0, int64_t val1) -> uint8_t {
         return (val0 > val1) ? 1 : 0;
@@ -1598,22 +1600,22 @@ TEST_F(RiscVVectorInstructionsTest, Vsaddu64VV) {
 // Vector-Scalar
 TEST_F(RiscVVectorInstructionsTest, Vsaddu8VX) {
   SetSemanticFunction(&Vsaddu);
-  BinaryOpTestHelperVX<uint8_t, uint8_t, uint8_t>(
+  BinaryOpTestHelperVX<uint8_t, uint8_t, uint8_t, RVScalarRegister>(
       "Vsaddu8", /*sew*/ 8, instruction_, VsadduHelper<uint8_t>);
 }
 TEST_F(RiscVVectorInstructionsTest, Vsaddu16VX) {
   SetSemanticFunction(&Vsaddu);
-  BinaryOpTestHelperVX<uint16_t, uint16_t, uint16_t>(
+  BinaryOpTestHelperVX<uint16_t, uint16_t, uint16_t, RVScalarRegister>(
       "Vsaddu16", /*sew*/ 16, instruction_, VsadduHelper<uint16_t>);
 }
 TEST_F(RiscVVectorInstructionsTest, Vsaddu32VX) {
   SetSemanticFunction(&Vsaddu);
-  BinaryOpTestHelperVX<uint32_t, uint32_t, uint32_t>(
+  BinaryOpTestHelperVX<uint32_t, uint32_t, uint32_t, RVScalarRegister>(
       "Vsaddu32", /*sew*/ 32, instruction_, VsadduHelper<uint32_t>);
 }
 TEST_F(RiscVVectorInstructionsTest, Vsaddu64VX) {
   SetSemanticFunction(&Vsaddu);
-  BinaryOpTestHelperVX<uint64_t, uint64_t, uint64_t>(
+  BinaryOpTestHelperVX<uint64_t, uint64_t, uint64_t, RVScalarRegister>(
       "Vsaddu64", /*sew*/ 64, instruction_, VsadduHelper<uint64_t>);
 }
 
@@ -1659,22 +1661,22 @@ TEST_F(RiscVVectorInstructionsTest, Vsadd64VV) {
 // Vector-Scalar
 TEST_F(RiscVVectorInstructionsTest, Vsadd8VX) {
   SetSemanticFunction(&Vsadd);
-  BinaryOpTestHelperVX<int8_t, int8_t, int8_t>(
+  BinaryOpTestHelperVX<int8_t, int8_t, int8_t, RVScalarRegister>(
       "Vsadd8", /*sew*/ 8, instruction_, VsaddHelper<int8_t>);
 }
 TEST_F(RiscVVectorInstructionsTest, Vsadd16VX) {
   SetSemanticFunction(&Vsadd);
-  BinaryOpTestHelperVX<int16_t, int16_t, int16_t>(
+  BinaryOpTestHelperVX<int16_t, int16_t, int16_t, RVScalarRegister>(
       "Vsadd16", /*sew*/ 16, instruction_, VsaddHelper<int16_t>);
 }
 TEST_F(RiscVVectorInstructionsTest, Vsadd32VX) {
   SetSemanticFunction(&Vsadd);
-  BinaryOpTestHelperVX<int32_t, int32_t, int32_t>(
+  BinaryOpTestHelperVX<int32_t, int32_t, int32_t, RVScalarRegister>(
       "Vsadd32", /*sew*/ 32, instruction_, VsaddHelper<int32_t>);
 }
 TEST_F(RiscVVectorInstructionsTest, Vsadd64VX) {
   SetSemanticFunction(&Vsadd);
-  BinaryOpTestHelperVX<int64_t, int64_t, int64_t>(
+  BinaryOpTestHelperVX<int64_t, int64_t, int64_t, RVScalarRegister>(
       "Vsadd64", /*sew*/ 64, instruction_, VsaddHelper<int64_t>);
 }
 
@@ -1713,22 +1715,22 @@ TEST_F(RiscVVectorInstructionsTest, Vssubu64VV) {
 // Vector-Scalar
 TEST_F(RiscVVectorInstructionsTest, Vssubu8VX) {
   SetSemanticFunction(&Vssubu);
-  BinaryOpTestHelperVX<uint8_t, uint8_t, uint8_t>(
+  BinaryOpTestHelperVX<uint8_t, uint8_t, uint8_t, RVScalarRegister>(
       "Vssubu8", /*sew*/ 8, instruction_, SsubuHelper<uint8_t>);
 }
 TEST_F(RiscVVectorInstructionsTest, Vssubu16VX) {
   SetSemanticFunction(&Vssubu);
-  BinaryOpTestHelperVX<uint16_t, uint16_t, uint16_t>(
+  BinaryOpTestHelperVX<uint16_t, uint16_t, uint16_t, RVScalarRegister>(
       "Vssubu16", /*sew*/ 16, instruction_, SsubuHelper<uint16_t>);
 }
 TEST_F(RiscVVectorInstructionsTest, Vssubu32VX) {
   SetSemanticFunction(&Vssubu);
-  BinaryOpTestHelperVX<uint32_t, uint32_t, uint32_t>(
+  BinaryOpTestHelperVX<uint32_t, uint32_t, uint32_t, RVScalarRegister>(
       "Vssubu32", /*sew*/ 32, instruction_, SsubuHelper<uint32_t>);
 }
 TEST_F(RiscVVectorInstructionsTest, Vssubu64VX) {
   SetSemanticFunction(&Vssubu);
-  BinaryOpTestHelperVX<uint64_t, uint64_t, uint64_t>(
+  BinaryOpTestHelperVX<uint64_t, uint64_t, uint64_t, RVScalarRegister>(
       "Vssubu64", /*sew*/ 64, instruction_, SsubuHelper<uint64_t>);
 }
 
@@ -1769,22 +1771,22 @@ TEST_F(RiscVVectorInstructionsTest, Vssub64VV) {
 // Vector-Scalar
 TEST_F(RiscVVectorInstructionsTest, Vssub8VX) {
   SetSemanticFunction(&Vssub);
-  BinaryOpTestHelperVX<int8_t, int8_t, int8_t>(
+  BinaryOpTestHelperVX<int8_t, int8_t, int8_t, RVScalarRegister>(
       "Vssub8", /*sew*/ 8, instruction_, VssubHelper<int8_t>);
 }
 TEST_F(RiscVVectorInstructionsTest, Vssub16VX) {
   SetSemanticFunction(&Vssub);
-  BinaryOpTestHelperVX<int16_t, int16_t, int16_t>(
+  BinaryOpTestHelperVX<int16_t, int16_t, int16_t, RVScalarRegister>(
       "Vssub16", /*sew*/ 16, instruction_, VssubHelper<int16_t>);
 }
 TEST_F(RiscVVectorInstructionsTest, Vssub32VX) {
   SetSemanticFunction(&Vssub);
-  BinaryOpTestHelperVX<int32_t, int32_t, int32_t>(
+  BinaryOpTestHelperVX<int32_t, int32_t, int32_t, RVScalarRegister>(
       "Vssub32", /*sew*/ 32, instruction_, VssubHelper<int32_t>);
 }
 TEST_F(RiscVVectorInstructionsTest, Vssub64VX) {
   SetSemanticFunction(&Vssub);
-  BinaryOpTestHelperVX<int64_t, int64_t, int64_t>(
+  BinaryOpTestHelperVX<int64_t, int64_t, int64_t, RVScalarRegister>(
       "Vssub64", /*sew*/ 64, instruction_, VssubHelper<int64_t>);
 }
 
@@ -1818,22 +1820,22 @@ TEST_F(RiscVVectorInstructionsTest, Vadc64VV) {
 // Vector-Scalar.
 TEST_F(RiscVVectorInstructionsTest, Vadc8VX) {
   SetSemanticFunction(&Vadc);
-  BinaryOpWithMaskTestHelperVX<uint8_t, uint8_t, uint8_t>(
+  BinaryOpWithMaskTestHelperVX<uint8_t, uint8_t, uint8_t, RVScalarRegister>(
       "Vadc", /*sew*/ 8, instruction_, VadcHelper<uint8_t>);
 }
 TEST_F(RiscVVectorInstructionsTest, Vadc16VX) {
   SetSemanticFunction(&Vadc);
-  BinaryOpWithMaskTestHelperVX<uint16_t, uint16_t, uint16_t>(
+  BinaryOpWithMaskTestHelperVX<uint16_t, uint16_t, uint16_t, RVScalarRegister>(
       "Vadc", /*sew*/ 16, instruction_, VadcHelper<uint16_t>);
 }
 TEST_F(RiscVVectorInstructionsTest, Vadc32VX) {
   SetSemanticFunction(&Vadc);
-  BinaryOpWithMaskTestHelperVX<uint32_t, uint32_t, uint32_t>(
+  BinaryOpWithMaskTestHelperVX<uint32_t, uint32_t, uint32_t, RVScalarRegister>(
       "Vadc", /*sew*/ 32, instruction_, VadcHelper<uint32_t>);
 }
 TEST_F(RiscVVectorInstructionsTest, Vadc64VX) {
   SetSemanticFunction(&Vadc);
-  BinaryOpWithMaskTestHelperVX<uint64_t, uint64_t, uint64_t>(
+  BinaryOpWithMaskTestHelperVX<uint64_t, uint64_t, uint64_t, RVScalarRegister>(
       "Vadc", /*sew*/ 64, instruction_, VadcHelper<uint64_t>);
 }
 
@@ -1873,22 +1875,22 @@ TEST_F(RiscVVectorInstructionsTest, Vmadc64VV) {
 // Vector-Scalar.
 TEST_F(RiscVVectorInstructionsTest, Vmadc8VX) {
   SetSemanticFunction(&Vmadc);
-  BinaryMaskOpWithMaskTestHelperVX<uint8_t, uint8_t>(
+  BinaryMaskOpWithMaskTestHelperVX<uint8_t, uint8_t, RVScalarRegister>(
       "Vmadc", /*sew*/ 8, instruction_, VmadcHelper<uint8_t>);
 }
 TEST_F(RiscVVectorInstructionsTest, Vmadc16VX) {
   SetSemanticFunction(&Vmadc);
-  BinaryMaskOpWithMaskTestHelperVX<uint16_t, uint16_t>(
+  BinaryMaskOpWithMaskTestHelperVX<uint16_t, uint16_t, RVScalarRegister>(
       "Vmadc", /*sew*/ 16, instruction_, VmadcHelper<uint16_t>);
 }
 TEST_F(RiscVVectorInstructionsTest, Vmadc32VX) {
   SetSemanticFunction(&Vmadc);
-  BinaryMaskOpWithMaskTestHelperVX<uint32_t, uint32_t>(
+  BinaryMaskOpWithMaskTestHelperVX<uint32_t, uint32_t, RVScalarRegister>(
       "Vmadc", /*sew*/ 32, instruction_, VmadcHelper<uint32_t>);
 }
 TEST_F(RiscVVectorInstructionsTest, Vmadc64VX) {
   SetSemanticFunction(&Vmadc);
-  BinaryMaskOpWithMaskTestHelperVX<uint64_t, uint64_t>(
+  BinaryMaskOpWithMaskTestHelperVX<uint64_t, uint64_t, RVScalarRegister>(
       "Vmadc", /*sew*/ 64, instruction_, VmadcHelper<uint64_t>);
 }
 
@@ -1921,22 +1923,22 @@ TEST_F(RiscVVectorInstructionsTest, Vsbc64VV) {
 // Vector-Scalar.
 TEST_F(RiscVVectorInstructionsTest, Vsbc8VX) {
   SetSemanticFunction(&Vsbc);
-  BinaryOpWithMaskTestHelperVX<uint8_t, uint8_t, uint8_t>(
+  BinaryOpWithMaskTestHelperVX<uint8_t, uint8_t, uint8_t, RVScalarRegister>(
       "Vsbc", /*sew*/ 8, instruction_, VsbcHelper<uint8_t>);
 }
 TEST_F(RiscVVectorInstructionsTest, Vsbc16VX) {
   SetSemanticFunction(&Vsbc);
-  BinaryOpWithMaskTestHelperVX<uint16_t, uint16_t, uint16_t>(
+  BinaryOpWithMaskTestHelperVX<uint16_t, uint16_t, uint16_t, RVScalarRegister>(
       "Vsbc", /*sew*/ 16, instruction_, VsbcHelper<uint16_t>);
 }
 TEST_F(RiscVVectorInstructionsTest, Vsbc32VX) {
   SetSemanticFunction(&Vsbc);
-  BinaryOpWithMaskTestHelperVX<uint32_t, uint32_t, uint32_t>(
+  BinaryOpWithMaskTestHelperVX<uint32_t, uint32_t, uint32_t, RVScalarRegister>(
       "Vsbc", /*sew*/ 32, instruction_, VsbcHelper<uint32_t>);
 }
 TEST_F(RiscVVectorInstructionsTest, Vsbc64VX) {
   SetSemanticFunction(&Vsbc);
-  BinaryOpWithMaskTestHelperVX<uint64_t, uint64_t, uint64_t>(
+  BinaryOpWithMaskTestHelperVX<uint64_t, uint64_t, uint64_t, RVScalarRegister>(
       "Vsbc", /*sew*/ 64, instruction_, VsbcHelper<uint64_t>);
 }
 
@@ -1972,22 +1974,22 @@ TEST_F(RiscVVectorInstructionsTest, Vmsbc64VV) {
 // Vector-Scalar.
 TEST_F(RiscVVectorInstructionsTest, Vmsbc8VX) {
   SetSemanticFunction(&Vmsbc);
-  BinaryMaskOpWithMaskTestHelperVX<uint8_t, uint8_t>(
+  BinaryMaskOpWithMaskTestHelperVX<uint8_t, uint8_t, RVScalarRegister>(
       "Vmsbc", /*sew*/ 8, instruction_, VmsbcHelper<uint8_t>);
 }
 TEST_F(RiscVVectorInstructionsTest, Vmsbc16VX) {
   SetSemanticFunction(&Vmsbc);
-  BinaryMaskOpWithMaskTestHelperVX<uint16_t, uint16_t>(
+  BinaryMaskOpWithMaskTestHelperVX<uint16_t, uint16_t, RVScalarRegister>(
       "Vmsbc", /*sew*/ 16, instruction_, VmsbcHelper<uint16_t>);
 }
 TEST_F(RiscVVectorInstructionsTest, Vmsbc32VX) {
   SetSemanticFunction(&Vmsbc);
-  BinaryMaskOpWithMaskTestHelperVX<uint32_t, uint32_t>(
+  BinaryMaskOpWithMaskTestHelperVX<uint32_t, uint32_t, RVScalarRegister>(
       "Vmsbc", /*sew*/ 32, instruction_, VmsbcHelper<uint32_t>);
 }
 TEST_F(RiscVVectorInstructionsTest, Vmsbc64VX) {
   SetSemanticFunction(&Vmsbc);
-  BinaryMaskOpWithMaskTestHelperVX<uint64_t, uint64_t>(
+  BinaryMaskOpWithMaskTestHelperVX<uint64_t, uint64_t, RVScalarRegister>(
       "Vmsbc", /*sew*/ 64, instruction_, VmsbcHelper<uint64_t>);
 }
 
@@ -2020,22 +2022,22 @@ TEST_F(RiscVVectorInstructionsTest, Vmerge64VV) {
 // Vector-Scalar.
 TEST_F(RiscVVectorInstructionsTest, Vmerge8VX) {
   SetSemanticFunction(&Vmerge);
-  BinaryOpWithMaskTestHelperVX<uint8_t, uint8_t, uint8_t>(
+  BinaryOpWithMaskTestHelperVX<uint8_t, uint8_t, uint8_t, RVScalarRegister>(
       "Vmerge", /*sew*/ 8, instruction_, VmergeHelper<uint8_t>);
 }
 TEST_F(RiscVVectorInstructionsTest, Vmerge16VX) {
   SetSemanticFunction(&Vmerge);
-  BinaryOpWithMaskTestHelperVX<uint16_t, uint16_t, uint16_t>(
+  BinaryOpWithMaskTestHelperVX<uint16_t, uint16_t, uint16_t, RVScalarRegister>(
       "Vmerge", /*sew*/ 16, instruction_, VmergeHelper<uint16_t>);
 }
 TEST_F(RiscVVectorInstructionsTest, Vmerge32VX) {
   SetSemanticFunction(&Vmerge);
-  BinaryOpWithMaskTestHelperVX<uint32_t, uint32_t, uint32_t>(
+  BinaryOpWithMaskTestHelperVX<uint32_t, uint32_t, uint32_t, RVScalarRegister>(
       "mergec", /*sew*/ 32, instruction_, VmergeHelper<uint32_t>);
 }
 TEST_F(RiscVVectorInstructionsTest, Vmerge64VX) {
   SetSemanticFunction(&Vmerge);
-  BinaryOpWithMaskTestHelperVX<uint64_t, uint64_t, uint64_t>(
+  BinaryOpWithMaskTestHelperVX<uint64_t, uint64_t, uint64_t, RVScalarRegister>(
       "Vmerge", /*sew*/ 64, instruction_, VmergeHelper<uint64_t>);
 }
 
@@ -2127,7 +2129,7 @@ void VssrVXWrapper(absl::string_view base_name, Instruction *inst,
   // Iterate across rounding modes.
   for (int rm = 0; rm < 4; rm++) {
     tester->rv_vector()->set_vxrm(rm);
-    tester->BinaryOpTestHelperVX<T, T, T>(
+    tester->BinaryOpTestHelperVX<T, T, T, RVScalarRegister>(
         absl::StrCat("Vssrl_", rm), /*sew*/ sizeof(T) * 8, inst,
         [rm, tester](T vs2, T vs1) -> T {
           return VssrHelper<T>(tester, vs2, vs1, rm);

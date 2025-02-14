@@ -410,7 +410,7 @@ void RiscV32GEncoding::InitializeDestinationOperandGetters() {
   dest_op_getters_.insert(
       std::make_pair(static_cast<int>(DestOpEnum::kC3rd), [this](int latency) {
         int num = encoding::inst16_format::ExtractClRd(inst_word_);
-        return GetRegisterDestinationOp<RVFpRegister>(
+        return GetRegisterDestinationOp<RV32Register>(
             state_, absl::StrCat(RiscVState::kXregPrefix, num), latency);
       }));
   dest_op_getters_.insert(
@@ -450,7 +450,7 @@ void RiscV32GEncoding::InitializeDestinationOperandGetters() {
                          return GetRegisterDestinationOp<RV32Register>(
                              state_, "X0Dest", 0, xreg_alias_[0]);
                        } else {
-                         return GetRegisterDestinationOp<RVFpRegister>(
+                         return GetRegisterDestinationOp<RV32Register>(
                              state_, absl::StrCat(RiscVState::kXregPrefix, num),
                              latency, xreg_alias_[num]);
                        }

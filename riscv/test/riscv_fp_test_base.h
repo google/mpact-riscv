@@ -439,7 +439,16 @@ class RiscVFPInstructionTestBase : public testing::Test {
     const std::string kRdName = absl::StrCat(reg_prefixes[1], 5);
     // This is used for the rounding mode operand.
     const std::string kRmName = absl::StrCat("x", 10);
-    AppendRegisterOperands<RVFpRegister>({kR1Name}, {kRdName});
+    if (kR1Name[0] == 'x') {
+      AppendRegisterOperands<RV32Register>({kR1Name}, {});
+    } else {
+      AppendRegisterOperands<RVFpRegister>({kR1Name}, {});
+    }
+    if (kRdName[0] == 'x') {
+      AppendRegisterOperands<RV32Register>({}, {kRdName});
+    } else {
+      AppendRegisterOperands<RVFpRegister>({}, {kRdName});
+    }
     AppendRegisterOperands<RV32Register>({kRmName}, {});
     FillArrayWithRandomFPValues<LHS>(lhs_span);
     using LhsInt = typename FPTypeInfo<LHS>::IntType;
@@ -491,7 +500,16 @@ class RiscVFPInstructionTestBase : public testing::Test {
     const std::string kRdName = absl::StrCat(reg_prefixes[1], 5);
     // This is used for the rounding mode operand.
     const std::string kRmName = absl::StrCat("x", 10);
-    AppendRegisterOperands<RVFpRegister>({kR1Name, kRmName}, {kRdName});
+    if (kR1Name[0] == 'x') {
+      AppendRegisterOperands<RV32Register>({kR1Name}, {});
+    } else {
+      AppendRegisterOperands<RVFpRegister>({kR1Name}, {});
+    }
+    if (kRdName[0] == 'x') {
+      AppendRegisterOperands<RV32Register>({}, {kRdName});
+    } else {
+      AppendRegisterOperands<RVFpRegister>({}, {kRdName});
+    }
     AppendRegisterOperands<RV32Register>({kRmName}, {});
     auto *flag_op = rv_fp_->fflags()->CreateSetDestinationOperand(0, "fflags");
     instruction_->AppendDestination(flag_op);
@@ -557,7 +575,21 @@ class RiscVFPInstructionTestBase : public testing::Test {
     const std::string kRdName = absl::StrCat(reg_prefixes[2], 5);
     // This is used for the rounding mode operand.
     const std::string kRmName = absl::StrCat("x", 10);
-    AppendRegisterOperands<RVFpRegister>({kR1Name, kR2Name}, {kRdName});
+    if (kR1Name[0] == 'x') {
+      AppendRegisterOperands<RV32Register>({kR1Name}, {});
+    } else {
+      AppendRegisterOperands<RVFpRegister>({kR1Name}, {});
+    }
+    if (kR2Name[0] == 'x') {
+      AppendRegisterOperands<RV32Register>({kR2Name}, {});
+    } else {
+      AppendRegisterOperands<RVFpRegister>({kR2Name}, {});
+    }
+    if (kRdName[0] == 'x') {
+      AppendRegisterOperands<RV32Register>({}, {kRdName});
+    } else {
+      AppendRegisterOperands<RVFpRegister>({}, {kRdName});
+    }
     AppendRegisterOperands<RV32Register>({kRmName}, {});
     auto *flag_op = rv_fp_->fflags()->CreateSetDestinationOperand(0, "fflags");
     instruction_->AppendDestination(flag_op);
@@ -620,7 +652,21 @@ class RiscVFPInstructionTestBase : public testing::Test {
     const std::string kRdName = absl::StrCat(reg_prefixes[2], 5);
     // This is used for the rounding mode operand.
     const std::string kRmName = absl::StrCat("x", 10);
-    AppendRegisterOperands<RVFpRegister>({kR1Name, kR2Name}, {kRdName});
+    if (kR1Name[0] == 'x') {
+      AppendRegisterOperands<RV32Register>({kR1Name}, {});
+    } else {
+      AppendRegisterOperands<RVFpRegister>({kR1Name}, {});
+    }
+    if (kR2Name[0] == 'x') {
+      AppendRegisterOperands<RV32Register>({kR2Name}, {});
+    } else {
+      AppendRegisterOperands<RVFpRegister>({kR2Name}, {});
+    }
+    if (kRdName[0] == 'x') {
+      AppendRegisterOperands<RV32Register>({}, {kRdName});
+    } else {
+      AppendRegisterOperands<RVFpRegister>({}, {kRdName});
+    }
     AppendRegisterOperands<RV32Register>({kRmName}, {});
     auto *flag_op = rv_fp_->fflags()->CreateSetDestinationOperand(0, "fflags");
     instruction_->AppendDestination(flag_op);
@@ -690,8 +736,26 @@ class RiscVFPInstructionTestBase : public testing::Test {
     const std::string kRdName = absl::StrCat(reg_prefixes[3], 5);
     // This is used for the rounding mode operand.
     const std::string kRmName = absl::StrCat("x", 10);
-    AppendRegisterOperands<RVFpRegister>({kR1Name, kR2Name, kR3Name},
-                                         {kRdName});
+    if (kR1Name[0] == 'x') {
+      AppendRegisterOperands<RV32Register>({kR1Name}, {});
+    } else {
+      AppendRegisterOperands<RVFpRegister>({kR1Name}, {});
+    }
+    if (kR2Name[0] == 'x') {
+      AppendRegisterOperands<RV32Register>({kR2Name}, {});
+    } else {
+      AppendRegisterOperands<RVFpRegister>({kR2Name}, {});
+    }
+    if (kR3Name[0] == 'x') {
+      AppendRegisterOperands<RV32Register>({kR3Name}, {});
+    } else {
+      AppendRegisterOperands<RVFpRegister>({kR3Name}, {});
+    }
+    if (kRdName[0] == 'x') {
+      AppendRegisterOperands<RV32Register>({}, {kRdName});
+    } else {
+      AppendRegisterOperands<RVFpRegister>({}, {kRdName});
+    }
     AppendRegisterOperands<RV32Register>({kRmName}, {});
     FillArrayWithRandomFPValues<LHS>(lhs_span);
     FillArrayWithRandomFPValues<MHS>(mhs_span);
@@ -753,8 +817,26 @@ class RiscVFPInstructionTestBase : public testing::Test {
     const std::string kRdName = absl::StrCat(reg_prefixes[3], 5);
     // This is used for the rounding mode operand.
     const std::string kRmName = absl::StrCat("x", 10);
-    AppendRegisterOperands<RVFpRegister>({kR1Name, kR2Name, kR3Name},
-                                         {kRdName});
+    if (kR1Name[0] == 'x') {
+      AppendRegisterOperands<RV32Register>({kR1Name}, {});
+    } else {
+      AppendRegisterOperands<RVFpRegister>({kR1Name}, {});
+    }
+    if (kR2Name[0] == 'x') {
+      AppendRegisterOperands<RV32Register>({kR2Name}, {});
+    } else {
+      AppendRegisterOperands<RVFpRegister>({kR2Name}, {});
+    }
+    if (kR3Name[0] == 'x') {
+      AppendRegisterOperands<RV32Register>({kR3Name}, {});
+    } else {
+      AppendRegisterOperands<RVFpRegister>({kR3Name}, {});
+    }
+    if (kRdName[0] == 'x') {
+      AppendRegisterOperands<RV32Register>({}, {kRdName});
+    } else {
+      AppendRegisterOperands<RVFpRegister>({}, {kRdName});
+    }
     AppendRegisterOperands<RV32Register>({kRmName}, {});
     auto *flag_op = rv_fp_->fflags()->CreateSetDestinationOperand(0, "fflags");
     instruction_->AppendDestination(flag_op);

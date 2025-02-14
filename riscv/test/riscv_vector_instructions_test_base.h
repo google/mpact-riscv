@@ -185,11 +185,11 @@ class RiscVVectorInstructionsTestBase : public testing::Test {
                               const std::vector<std::string> &sources,
                               const std::vector<std::string> &destinations) {
     for (auto &reg_name : sources) {
-      auto *reg = state_->GetRegister<RV32Register>(reg_name).first;
+      auto *reg = state_->GetRegister<T>(reg_name).first;
       inst->AppendSource(reg->CreateSourceOperand());
     }
     for (auto &reg_name : destinations) {
-      auto *reg = state_->GetRegister<RV32Register>(reg_name).first;
+      auto *reg = state_->GetRegister<T>(reg_name).first;
       inst->AppendDestination(reg->CreateDestinationOperand(0));
     }
   }
@@ -548,7 +548,7 @@ class RiscVVectorInstructionsTestBase : public testing::Test {
 
   // Helper function for testing vector-scalar/immediate instructions that use
   // the value of the mask bit.
-  template <typename Vd, typename Vs2, typename Rs1>
+  template <typename Vd, typename Vs2, typename Rs1, typename ScalarReg>
   void BinaryOpWithMaskTestHelperVX(
       absl::string_view name, int sew, Instruction *inst,
       std::function<Vd(Vs2, Rs1, bool)> operation) {
@@ -566,7 +566,7 @@ class RiscVVectorInstructionsTestBase : public testing::Test {
     Vs2 vs2_value[vs2_size * 8];
     auto vs2_span = Span<Vs2>(vs2_value);
     AppendVectorRegisterOperands({kVs2}, {});
-    AppendRegisterOperands<Rs1>({kRs1Name}, {});
+    AppendRegisterOperands<ScalarReg>({kRs1Name}, {});
     AppendVectorRegisterOperands({kVmask}, {kVd});
     // Initialize input values.
     FillArrayWithRandomValues<Vs2>(vs2_span);
@@ -663,10 +663,10 @@ class RiscVVectorInstructionsTestBase : public testing::Test {
 
   // Templated helper function that tests vector-scalar instructions that do
   // not use the value of the mask bit.
-  template <typename Vd, typename Vs2, typename Vs1>
+  template <typename Vd, typename Vs2, typename Vs1, typename ScalarReg>
   void BinaryOpTestHelperVX(absl::string_view name, int sew, Instruction *inst,
                             std::function<Vd(Vs2, Vs1)> operation) {
-    BinaryOpWithMaskTestHelperVX<Vd, Vs2, Vs1>(
+    BinaryOpWithMaskTestHelperVX<Vd, Vs2, Vs1, ScalarReg>(
         name, sew, inst, [operation](Vs2 vs2, Vs1 vs1, bool mask_value) -> Vd {
           if (mask_value) {
             return operation(vs2, vs1);
@@ -814,7 +814,7 @@ class RiscVVectorInstructionsTestBase : public testing::Test {
 
   // Helper function for testing vector-scalar/immediate instructions that use
   // the value of the mask bit.
-  template <typename Vd, typename Vs2, typename Rs1>
+  template <typename Vd, typename Vs2, typename Rs1, typename ScalarReg>
   void TernaryOpWithMaskTestHelperVX(
       absl::string_view name, int sew, Instruction *inst,
       std::function<Vd(Vs2, Rs1, Vd, bool)> operation) {
@@ -835,7 +835,7 @@ class RiscVVectorInstructionsTestBase : public testing::Test {
     Vs2 vs2_value[vs2_size * 8];
     auto vs2_span = Span<Vs2>(vs2_value);
     AppendVectorRegisterOperands({kVs2}, {});
-    AppendRegisterOperands<Rs1>({kRs1Name}, {});
+    AppendRegisterOperands<ScalarReg>({kRs1Name}, {});
     AppendVectorRegisterOperands({kVd, kVmask}, {kVd});
     // Initialize input values.
     FillArrayWithRandomValues<Vd>(vd_span);
@@ -945,10 +945,10 @@ class RiscVVectorInstructionsTestBase : public testing::Test {
 
   // Templated helper function that tests vector-scalar instructions that do
   // not use the value of the mask bit.
-  template <typename Vd, typename Vs2, typename Rs1>
+  template <typename Vd, typename Vs2, typename Rs1, typename ScalarReg>
   void TernaryOpTestHelperVX(absl::string_view name, int sew, Instruction *inst,
                              std::function<Vd(Vs2, Rs1, Vd)> operation) {
-    TernaryOpWithMaskTestHelperVX<Vd, Vs2, Rs1>(
+    TernaryOpWithMaskTestHelperVX<Vd, Vs2, Rs1, ScalarReg>(
         name, sew, inst,
         [operation](Vs2 vs2, Rs1 rs1, Vd vd, bool mask_value) -> Vd {
           if (mask_value) {
@@ -1075,7 +1075,7 @@ class RiscVVectorInstructionsTestBase : public testing::Test {
 
   // Helper function for testing mask vector-scalar/immediate instructions that
   // use the mask bit.
-  template <typename Vs2, typename Rs1>
+  template <typename Vs2, typename Rs1, typename ScalarReg>
   void BinaryMaskOpWithMaskTestHelperVX(
       absl::string_view name, int sew, Instruction *inst,
       std::function<uint8_t(Vs2, Rs1, bool)> operation) {
@@ -1092,7 +1092,7 @@ class RiscVVectorInstructionsTestBase : public testing::Test {
     Vs2 vs2_value[vs2_size * 8];
     auto vs2_span = Span<Vs2>(vs2_value);
     AppendVectorRegisterOperands({kVs2}, {});
-    AppendRegisterOperands<Rs1>({kRs1Name}, {});
+    AppendRegisterOperands<ScalarReg>({kRs1Name}, {});
     AppendVectorRegisterOperands({kVmask}, {kVd});
     // Initialize input values.
     FillArrayWithRandomValues<Vs2>(vs2_span);
@@ -1172,11 +1172,11 @@ class RiscVVectorInstructionsTestBase : public testing::Test {
 
   // Helper function for testing mask vector-vector instructions that do not
   // use the mask bit.
-  template <typename Vs2, typename Vs1>
+  template <typename Vs2, typename Vs1, typename ScalarReg>
   void BinaryMaskOpTestHelperVX(absl::string_view name, int sew,
                                 Instruction *inst,
                                 std::function<uint8_t(Vs2, Vs1)> operation) {
-    BinaryMaskOpWithMaskTestHelperVX<Vs2, Vs1>(
+    BinaryMaskOpWithMaskTestHelperVX<Vs2, Vs1, ScalarReg>(
         name, sew, inst,
         [operation](Vs2 vs2, Vs1 vs1, bool mask_value) -> uint8_t {
           if (mask_value) {

@@ -43,6 +43,8 @@ using ::mpact::sim::riscv::Vror;
 using ::mpact::sim::riscv::Vwsll;
 using ::mpact::sim::riscv::test::RiscVVectorInstructionsTestBase;
 
+using RVScalarRegister = ::mpact::sim::riscv::RV32Register;
+
 class RiscVVectorBasicBitManipulationTest
     : public RiscVVectorInstructionsTestBase {};
 
@@ -61,7 +63,7 @@ inline void VandnVVHelper(RiscVVectorBasicBitManipulationTest *tester) {
 template <typename T>
 inline void VandnVXHelper(RiscVVectorBasicBitManipulationTest *tester) {
   tester->SetSemanticFunction(&Vandn);
-  tester->BinaryOpTestHelperVX<T, T, T>(
+  tester->BinaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vandn", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T rs1) -> T { return ~rs1 & vs2; });
 }
@@ -143,7 +145,7 @@ inline void VrolVVHelper(RiscVVectorBasicBitManipulationTest *tester) {
 template <typename T>
 inline void VrolVXHelper(RiscVVectorBasicBitManipulationTest *tester) {
   tester->SetSemanticFunction(&Vrol);
-  tester->BinaryOpTestHelperVX<T, T, T>(
+  tester->BinaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vrol", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T rs1) -> T {
         T bitsize = sizeof(T) * 8;
@@ -278,7 +280,7 @@ template <typename T>
 inline void VwsllVXHelper(RiscVVectorBasicBitManipulationTest *tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwsll);
-  tester->BinaryOpTestHelperVV<WT, T, T>(
+  tester->BinaryOpTestHelperVX<WT, T, T, RVScalarRegister>(
       absl::StrCat("Vwsll", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T rs1) -> WT {
         T shift_mask = 2 * 8 * sizeof(T) - 1;

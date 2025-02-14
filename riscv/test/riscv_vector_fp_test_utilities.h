@@ -607,7 +607,7 @@ class RiscVFPInstructionsTestBase
 
   // Floating point test needs to ensure to use the fp special values (inf,
   // NaN etc.) during testing, not just random values.
-  template <typename Vd, typename Vs2, typename Fs1>
+  template <typename Vd, typename Vs2, typename Fs1, typename ScalarReg>
   void BinaryOpWithFflagsFPTestHelperVX(
       absl::string_view name, int sew, Instruction *inst, int delta_position,
       std::function<std::tuple<Vd, uint32_t>(Vs2, Fs1)> operation) {
@@ -628,7 +628,7 @@ class RiscVFPInstructionsTestBase
     Vs2 vs2_value[vs2_size * 8];
     auto vs2_span = Span<Vs2>(vs2_value);
     AppendVectorRegisterOperands({kVs2}, {kVd});
-    AppendRegisterOperands<Fs1>({kFs1Name}, {});
+    AppendRegisterOperands<ScalarReg>({kFs1Name}, {});
     auto *flag_op = rv_fp_->fflags()->CreateSetDestinationOperand(0, "fflags");
     instruction_->AppendDestination(flag_op);
     AppendVectorRegisterOperands({kVmask}, {});
@@ -776,7 +776,7 @@ class RiscVFPInstructionsTestBase
   // Floating point test needs to ensure to use the fp special values (inf,
   // NaN etc.) during testing, not just random values. This function handles
   // vector scalar instructions.
-  template <typename Vd, typename Vs2, typename Fs1>
+  template <typename Vd, typename Vs2, typename Fs1, typename ScalarReg>
   void BinaryOpFPWithMaskTestHelperVX(
       absl::string_view name, int sew, Instruction *inst, int delta_position,
       std::function<Vd(Vs2, Fs1, bool)> operation) {
@@ -797,7 +797,7 @@ class RiscVFPInstructionsTestBase
     Vs2 vs2_value[vs2_size * 8];
     auto vs2_span = Span<Vs2>(vs2_value);
     AppendVectorRegisterOperands({kVs2}, {kVd});
-    AppendRegisterOperands<Fs1>({kFs1Name}, {});
+    AppendRegisterOperands<ScalarReg>({kFs1Name}, {});
     AppendVectorRegisterOperands({kVmask}, {});
     SetVectorRegisterValues<uint8_t>(
         {{kVmaskName, Span<const uint8_t>(kA5Mask)}});
@@ -930,11 +930,11 @@ class RiscVFPInstructionsTestBase
 
   // Templated helper function that tests FP vector-scalar instructions that do
   // not use the value of the mask bit.
-  template <typename Vd, typename Vs2, typename Vs1>
+  template <typename Vd, typename Vs2, typename Vs1, typename ScalarReg>
   void BinaryOpFPTestHelperVX(absl::string_view name, int sew,
                               Instruction *inst, int delta_position,
                               std::function<Vd(Vs2, Vs1)> operation) {
-    BinaryOpFPWithMaskTestHelperVX<Vd, Vs2, Vs1>(
+    BinaryOpFPWithMaskTestHelperVX<Vd, Vs2, Vs1, ScalarReg>(
         name, sew, inst, delta_position,
         [operation](Vs2 vs2, Vs1 vs1, bool mask_value) -> Vd {
           if (mask_value) {

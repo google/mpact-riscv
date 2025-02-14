@@ -14,25 +14,21 @@
 
 #include "riscv/riscv_vector_opm_instructions.h"
 
-#include <algorithm>
 #include <cstdint>
 #include <functional>
 #include <ios>
-#include <limits>
-#include <optional>
-#include <string>
 #include <type_traits>
 #include <vector>
 
 #include "absl/base/casts.h"
 #include "absl/log/check.h"
 #include "absl/numeric/int128.h"
-#include "absl/random/random.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/instruction.h"
-#include "riscv/riscv_vector_state.h"
+#include "mpact/sim/generic/type_helpers.h"
+#include "riscv/riscv_register.h"
 #include "riscv/test/riscv_vector_instructions_test_base.h"
 
 namespace {
@@ -40,6 +36,7 @@ namespace {
 using Instruction = ::mpact::sim::generic::Instruction;
 using ::mpact::sim::generic::WideType;
 using ::mpact::sim::riscv::test::RiscVVectorInstructionsTestBase;
+using RVScalarRegister = ::mpact::sim::riscv::RV32Register;
 
 using ::mpact::sim::riscv::Vaadd;
 using ::mpact::sim::riscv::Vaaddu;
@@ -192,7 +189,7 @@ inline void VaadduVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 template <typename T>
 inline void VaadduVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->SetSemanticFunction(&Vaaddu);
-  tester->BinaryOpTestHelperVX<T, T, T>(
+  tester->BinaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vaaddu", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [tester](T val0, T val1) -> T {
         return VaaddHelper(tester, val0, val1);
@@ -235,7 +232,7 @@ inline void VaaddVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 template <typename T>
 inline void VaaddVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->SetSemanticFunction(&Vaadd);
-  tester->BinaryOpTestHelperVX<T, T, T>(
+  tester->BinaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vaaddu", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [tester](T val0, T val1) -> T {
         return VaaddHelper(tester, val0, val1);
@@ -277,7 +274,7 @@ inline void VasubuVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 template <typename T>
 inline void VasubuVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->SetSemanticFunction(&Vasubu);
-  tester->BinaryOpTestHelperVX<T, T, T>(
+  tester->BinaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vasubu", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [tester](T val0, T val1) -> T {
         return VasubHelper(tester, val0, val1);
@@ -319,7 +316,7 @@ inline void VasubVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 template <typename T>
 inline void VasubVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->SetSemanticFunction(&Vasub);
-  tester->BinaryOpTestHelperVX<T, T, T>(
+  tester->BinaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vasub", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [tester](T val0, T val1) -> T {
         return VasubHelper(tester, val0, val1);
@@ -413,7 +410,7 @@ inline void VdivuVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 template <typename T>
 inline void VdivuVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->SetSemanticFunction(&Vdivu);
-  tester->BinaryOpTestHelperVX<T, T, T>(
+  tester->BinaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vdivu", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T vs1) -> T {
         if (vs1 == 0) return ~vs1;
@@ -457,7 +454,7 @@ inline void VdivVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 template <typename T>
 inline void VdivVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->SetSemanticFunction(&Vdiv);
-  tester->BinaryOpTestHelperVX<T, T, T>(
+  tester->BinaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vdiv", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T vs1) -> T {
         if (vs1 == 0) return ~vs1;
@@ -501,7 +498,7 @@ inline void VremuVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 template <typename T>
 inline void VremuVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->SetSemanticFunction(&Vremu);
-  tester->BinaryOpTestHelperVX<T, T, T>(
+  tester->BinaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vremu", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T vs1) -> T {
         if (vs1 == 0) return vs2;
@@ -545,7 +542,7 @@ inline void VremVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 template <typename T>
 inline void VremVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->SetSemanticFunction(&Vrem);
-  tester->BinaryOpTestHelperVX<T, T, T>(
+  tester->BinaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vrem", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T vs1) -> T {
         if (vs1 == 0) return vs2;
@@ -591,7 +588,7 @@ inline void VmulhuVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 template <typename T>
 inline void VmulhuVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->SetSemanticFunction(&Vmulhu);
-  tester->BinaryOpTestHelperVX<T, T, T>(
+  tester->BinaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vmulhu", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T vs1) -> T {
         absl::uint128 vs2_w = static_cast<absl::uint128>(vs2);
@@ -640,7 +637,7 @@ inline void VmulhVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 template <typename T>
 inline void VmulhVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->SetSemanticFunction(&Vmulh);
-  tester->BinaryOpTestHelperVX<T, T, T>(
+  tester->BinaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vmulh", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T vs1) -> T {
         absl::int128 vs2_w = static_cast<absl::int128>(vs2);
@@ -688,7 +685,7 @@ template <typename T>
 inline void VmulVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vmul);
-  tester->BinaryOpTestHelperVX<T, T, T>(
+  tester->BinaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vmul", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T vs1) -> T {
         return static_cast<T>(static_cast<WT>(vs2) * static_cast<WT>(vs1));
@@ -736,7 +733,7 @@ template <typename T>
 inline void VmulhsuVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   using ST = typename std::make_signed<T>::type;
   tester->SetSemanticFunction(&Vmulhsu);
-  tester->BinaryOpTestHelperVX<T, ST, T>(
+  tester->BinaryOpTestHelperVX<T, ST, T, RVScalarRegister>(
       absl::StrCat("Vmulhsu", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](ST vs2, T vs1) -> T {
         absl::int128 vs2_w = static_cast<absl::int128>(vs2);
@@ -789,7 +786,7 @@ inline void VmaddVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 template <typename T>
 inline void VmaddVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->SetSemanticFunction(&Vmadd);
-  tester->TernaryOpTestHelperVX<T, T, T>(
+  tester->TernaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vmadd", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T vs1, T vd) {
         if (sizeof(T) < 4) {
@@ -846,7 +843,7 @@ inline void VnmsubVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 template <typename T>
 inline void VnmsubVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->SetSemanticFunction(&Vnmsub);
-  tester->TernaryOpTestHelperVX<T, T, T>(
+  tester->TernaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vnmsub", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T vs1, T vd) {
         if (sizeof(T) < 4) {
@@ -903,7 +900,7 @@ inline void VmaccVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 template <typename T>
 inline void VmaccVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->SetSemanticFunction(&Vmacc);
-  tester->TernaryOpTestHelperVX<T, T, T>(
+  tester->TernaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vmacc", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T vs1, T vd) {
         if (sizeof(T) < 4) {
@@ -960,7 +957,7 @@ inline void VnmsacVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 template <typename T>
 inline void VnmsacVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   tester->SetSemanticFunction(&Vnmsac);
-  tester->TernaryOpTestHelperVX<T, T, T>(
+  tester->TernaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vnmsac", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T vs1, T vd) {
         if (sizeof(T) < 4) {
@@ -1012,7 +1009,7 @@ template <typename T>
 inline void VwadduVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwaddu);
-  tester->BinaryOpTestHelperVX<WT, T, T>(
+  tester->BinaryOpTestHelperVX<WT, T, T, RVScalarRegister>(
       absl::StrCat("Vwaddu", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T vs1) -> WT {
         return static_cast<WT>(vs2) + static_cast<WT>(vs1);
@@ -1055,7 +1052,7 @@ template <typename T>
 inline void VwsubuVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwsubu);
-  tester->BinaryOpTestHelperVX<WT, T, T>(
+  tester->BinaryOpTestHelperVX<WT, T, T, RVScalarRegister>(
       absl::StrCat("Vwsubu", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T vs1) -> WT {
         return static_cast<WT>(vs2) - static_cast<WT>(vs1);
@@ -1098,7 +1095,7 @@ template <typename T>
 inline void VwaddVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwadd);
-  tester->BinaryOpTestHelperVX<WT, T, T>(
+  tester->BinaryOpTestHelperVX<WT, T, T, RVScalarRegister>(
       absl::StrCat("Vwadd", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T vs1) -> WT {
         return static_cast<WT>(vs2) + static_cast<WT>(vs1);
@@ -1144,7 +1141,7 @@ template <typename T>
 inline void VwsubVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwsub);
-  tester->BinaryOpTestHelperVX<WT, T, T>(
+  tester->BinaryOpTestHelperVX<WT, T, T, RVScalarRegister>(
       absl::StrCat("Vwsub", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T vs1) -> WT {
         WT vs2_w = vs2;
@@ -1189,7 +1186,7 @@ template <typename T>
 inline void VwadduwVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwadduw);
-  tester->BinaryOpTestHelperVX<WT, WT, T>(
+  tester->BinaryOpTestHelperVX<WT, WT, T, RVScalarRegister>(
       absl::StrCat("Vwadduw", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(),
       [](WT vs2, T vs1) -> WT { return vs2 + static_cast<WT>(vs1); });
@@ -1230,7 +1227,7 @@ template <typename T>
 inline void VwsubuwVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwsubuw);
-  tester->BinaryOpTestHelperVX<WT, WT, T>(
+  tester->BinaryOpTestHelperVX<WT, WT, T, RVScalarRegister>(
       absl::StrCat("Vwsubuw", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(),
       [](WT vs2, T vs1) -> WT { return vs2 - static_cast<WT>(vs1); });
@@ -1271,7 +1268,7 @@ template <typename T>
 inline void VwaddwVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwaddw);
-  tester->BinaryOpTestHelperVX<WT, WT, T>(
+  tester->BinaryOpTestHelperVX<WT, WT, T, RVScalarRegister>(
       absl::StrCat("Vwaddw", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(),
       [](WT vs2, T vs1) -> WT { return vs2 + static_cast<WT>(vs1); });
@@ -1312,7 +1309,7 @@ template <typename T>
 inline void VwsubwVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwsubw);
-  tester->BinaryOpTestHelperVX<WT, WT, T>(
+  tester->BinaryOpTestHelperVX<WT, WT, T, RVScalarRegister>(
       absl::StrCat("Vwsubw", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(),
       [](WT vs2, T vs1) -> WT { return vs2 - static_cast<WT>(vs1); });
@@ -1354,7 +1351,7 @@ template <typename T>
 inline void VwmuluVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwmulu);
-  tester->BinaryOpTestHelperVX<WT, T, T>(
+  tester->BinaryOpTestHelperVX<WT, T, T, RVScalarRegister>(
       absl::StrCat("Vwmulu", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T vs1) -> WT {
         return static_cast<WT>(vs2) * static_cast<WT>(vs1);
@@ -1397,7 +1394,7 @@ template <typename T>
 inline void VwmulVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwmul);
-  tester->BinaryOpTestHelperVX<WT, T, T>(
+  tester->BinaryOpTestHelperVX<WT, T, T, RVScalarRegister>(
       absl::StrCat("Vwmul", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T vs1) -> WT {
         return static_cast<WT>(vs2) * static_cast<WT>(vs1);
@@ -1442,7 +1439,7 @@ inline void VwmulsuVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   using WT = typename WideType<T>::type;
   using UT = typename std::make_unsigned<T>::type;
   tester->SetSemanticFunction(&Vwmulsu);
-  tester->BinaryOpTestHelperVX<WT, T, T>(
+  tester->BinaryOpTestHelperVX<WT, T, T, RVScalarRegister>(
       absl::StrCat("Vwmulsu", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, UT vs1) -> WT {
         return static_cast<WT>(vs2) * static_cast<WT>(vs1);
@@ -1485,7 +1482,7 @@ template <typename T>
 inline void VwmaccuVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwmaccu);
-  tester->TernaryOpTestHelperVX<WT, T, T>(
+  tester->TernaryOpTestHelperVX<WT, T, T, RVScalarRegister>(
       absl::StrCat("Vwmaccu", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T vs1, WT vd) {
         return static_cast<WT>(vs2) * static_cast<WT>(vs1) + vd;
@@ -1531,7 +1528,7 @@ template <typename T>
 inline void VwmaccVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwmacc);
-  tester->TernaryOpTestHelperVX<WT, T, T>(
+  tester->TernaryOpTestHelperVX<WT, T, T, RVScalarRegister>(
       absl::StrCat("Vwmacc", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, T vs1, WT vd) -> WT {
         WT vs1_w = vs1;
@@ -1584,7 +1581,7 @@ inline void VwmaccusVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   using WT = typename WideType<T>::type;
   using UT = typename std::make_unsigned<T>::type;
   tester->SetSemanticFunction(&Vwmaccus);
-  tester->TernaryOpTestHelperVX<WT, T, UT>(
+  tester->TernaryOpTestHelperVX<WT, T, UT, RVScalarRegister>(
       absl::StrCat("Vwmaccus", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](T vs2, UT vs1, WT vd) -> WT {
         using UWT = typename std::make_unsigned<WT>::type;
@@ -1637,7 +1634,7 @@ inline void VwmaccsuVXHelper(RiscVVectorOpmInstructionsTest *tester) {
   using WT = typename WideType<T>::type;
   using UT = typename std::make_unsigned<T>::type;
   tester->SetSemanticFunction(&Vwmaccsu);
-  tester->TernaryOpTestHelperVX<WT, UT, T>(
+  tester->TernaryOpTestHelperVX<WT, UT, T, RVScalarRegister>(
       absl::StrCat("Vwmaccsu", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
       tester->instruction(), [](UT vs2, T vs1, WT vd) -> WT {
         using UWT = typename std::make_unsigned<WT>::type;
