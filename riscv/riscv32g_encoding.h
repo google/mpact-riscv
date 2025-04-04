@@ -20,6 +20,8 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/functional/any_invocable.h"
+#include "mpact/sim/generic/operand_interface.h"
+#include "mpact/sim/generic/resource_operand_interface.h"
 #include "mpact/sim/generic/simple_resource.h"
 #include "mpact/sim/generic/simple_resource_operand.h"
 #include "riscv/riscv32g_decoder.h"
@@ -30,6 +32,14 @@ namespace mpact {
 namespace sim {
 namespace riscv {
 namespace isa32 {
+
+using ::mpact::sim::generic::DestinationOperandInterface;
+using ::mpact::sim::generic::PredicateOperandInterface;
+using ::mpact::sim::generic::ResourceOperandInterface;
+using ::mpact::sim::generic::SimpleResource;
+using ::mpact::sim::generic::SimpleResourceDelayLine;
+using ::mpact::sim::generic::SimpleResourcePool;
+using ::mpact::sim::generic::SourceOperandInterface;
 
 // This class provides the interface between the generated instruction decoder
 // framework (which is agnostic of the actual bit representation of
@@ -101,7 +111,7 @@ class RiscV32GEncoding : public RiscV32GEncodingBase {
   }
 
   // Getter.
-  generic::SimpleResourcePool *resource_pool() const { return resource_pool_; }
+  SimpleResourcePool *resource_pool() const { return resource_pool_; }
 
   const SourceOpGetterMap &source_op_getters() { return source_op_getters_; }
   const DestOpGetterMap &dest_op_getters() { return dest_op_getters_; }
@@ -134,8 +144,8 @@ class RiscV32GEncoding : public RiscV32GEncodingBase {
   RiscVState *state_;
   uint32_t inst_word_;
   OpcodeEnum opcode_;
-  generic::SimpleResourceDelayLine *resource_delay_line_ = nullptr;
-  generic::SimpleResourcePool *resource_pool_ = nullptr;
+  SimpleResourceDelayLine *resource_delay_line_ = nullptr;
+  SimpleResourcePool *resource_pool_ = nullptr;
 };
 
 }  // namespace isa32
