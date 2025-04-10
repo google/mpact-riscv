@@ -683,8 +683,7 @@ absl::Status RiscVTop::SetSwBreakpoint(uint64_t address) {
 absl::Status RiscVTop::ClearSwBreakpoint(uint64_t address) {
   // Don't try if the simulator is running.
   if (run_status_ != RunStatus::kHalted) {
-    return absl::FailedPreconditionError(
-        "ClearSwBreakpoing: Core must be halted");
+    return absl::FailedPreconditionError("ClearSwt: Core must be halted");
   }
   if (rv_breakpoint_manager_ == nullptr) {
     return absl::InternalError("Breakpoints are not enabled");
