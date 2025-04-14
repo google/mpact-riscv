@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "riscv/riscv32g.bin_fmt"
-#include "riscv/riscv_vector.bin_fmt"
+#include "riscv32g.bin_fmt"
+#include "riscv_vector.bin_fmt"
 
 decoder ZVBB {
   namespace mpact::sim::riscv::zvbb;
