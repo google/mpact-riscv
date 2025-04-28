@@ -378,6 +378,50 @@ cc_test(
     ],
 )
 
+cc_library(
+    name = "zfh_decoder",
+    testonly = True,
+    srcs = [
+        "zfh_encoding.cc",
+    ],
+    hdrs = [
+        "riscv_getters_zfh.h",
+        "zfh_encoding.h",
+    ],
+    copts = ["-O3"],
+    deps = [
+        "//riscv:riscv_encoding_common",
+        "//riscv:riscv_getters",
+        "//riscv:riscv_state",
+        "//riscv:zfh_bin_fmt",
+        "//riscv:zfh_isa",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/strings",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
+    ],
+)
+
+cc_test(
+    name = "zfh_encoding_test",
+    size = "small",
+    srcs = [
+        "zfh_encoding_test.cc",
+    ],
+    deps = [
+        ":zfh_decoder",
+        "//riscv:riscv_state",
+        "//riscv:zfh_isa",
+        "@com_google_absl//absl/random",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_mpact-sim//mpact/sim/generic:arch_state",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
+    ],
+)
+
 cc_test(
     name = "riscv32_htif_semihost_test",
     size = "small",

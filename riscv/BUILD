@@ -697,6 +697,32 @@ mpact_bin_fmt_decoder(
     ],
 )
 
+mpact_isa_decoder(
+    name = "zfh_isa",
+    src = "riscv_zfh.isa",
+    includes = [],
+    isa_name = "ZFH",
+    prefix = "zfh",
+    deps = [
+        ":riscv_g",
+        ":riscv_zfh_instructions",
+        "@com_google_absl//absl/functional:bind_front",
+    ],
+)
+
+mpact_bin_fmt_decoder(
+    name = "zfh_bin_fmt",
+    src = "riscv_zfh.bin_fmt",
+    decoder_name = "ZFH",
+    includes = [
+        "riscv32g.bin_fmt",
+    ],
+    prefix = "zfh",
+    deps = [
+        ":zfh_isa",
+    ],
+)
+
 cc_library(
     name = "riscv32g_decoder",
     srcs = [
