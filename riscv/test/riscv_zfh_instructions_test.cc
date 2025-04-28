@@ -38,6 +38,9 @@
 #include "riscv/riscv_register.h"
 #include "riscv/test/riscv_fp_test_base.h"
 
+// This file contains the unit tests for the RiscV ZFH extension instructions.
+// Testing is focused on the instruction semantic functions.
+
 namespace {
 
 using ::mpact::sim::generic::operator*;  // NOLINT: is used below.
@@ -53,6 +56,7 @@ using ::mpact::sim::riscv::RiscVZfhCvtSh;
 using ::mpact::sim::riscv::RiscVZfhFlhChild;
 using ::mpact::sim::riscv::RiscVZfhFMvhx;
 using ::mpact::sim::riscv::RV32Register;
+using ::mpact::sim::riscv::RV64Register;
 using ::mpact::sim::riscv::RVFpRegister;
 using ::mpact::sim::riscv::RV32::RiscVILhu;
 using ::mpact::sim::riscv::RV32::RiscVZfhFMvxh;
@@ -66,6 +70,50 @@ const int kRoundingModeRoundTowardsZero =
     static_cast<int>(FPRoundingMode::kRoundTowardsZero);
 const int kRoundingModeRoundDown = static_cast<int>(FPRoundingMode::kRoundDown);
 const int kRoundingModeRoundUp = static_cast<int>(FPRoundingMode::kRoundUp);
+
+class RVZfhInstructionTestBase : public RiscVFPInstructionTestBase {
+ protected:
+  template <typename AddressType, typename ValueType>
+  void SetupMemory(AddressType, ValueType);
+
+  template <typename ReturnType, typename IntegerRegister>
+  ReturnType LoadHalfHelper(typename IntegerRegister::ValueType, int16_t);
+};
+
+template <typename AddressType, typename ValueType>
+void RVZfhInstructionTestBase::SetupMemory(AddressType address,
+                                           ValueType value) {
+  DataBuffer *mem_db = state_->db_factory()->Allocate<ValueType>(1);
+  mem_db->Set<ValueType>(0, value);
+  state_->StoreMemory(instruction_, address, mem_db);
+  mem_db->DecRef();
+}
+
+template <typename ReturnType, typename IntegerRegister>
+ReturnType RVZfhInstructionTestBase::LoadHalfHelper(
+    typename IntegerRegister::ValueType base, int16_t offset) {
+  // Technically the offset for FL* is a 12 bit signed integer but we'll use 16
+  // bits for testing.
+  const std::string kRs1Name("x1");
+  const std::string kFrdName("f5");
+  AppendRegisterOperands<IntegerRegister>({kRs1Name}, {});
+  AppendRegisterOperands<RVFpRegister>(child_instruction_, {}, {kFrdName});
+
+  ImmediateOperand<int16_t> *offset_source_operand =
+      new ImmediateOperand<int16_t>(offset);
+  instruction_->AppendSource(offset_source_operand);
+
+  SetRegisterValues<typename IntegerRegister::ValueType, IntegerRegister>(
+      {{kRs1Name, static_cast<IntegerRegister::ValueType>(base)}});
+  SetRegisterValues<uint64_t, RVFpRegister>({{kFrdName, 0}});
+
+  instruction_->Execute(nullptr);
+
+  ReturnType observed_val = state_->GetRegister<RVFpRegister>(kFrdName)
+                                .first->data_buffer()
+                                ->template Get<ReturnType>(0);
+  return observed_val;
+}
 
 // A source operand that is used to set the rounding mode. This is less
 // confusing than using a register source operand since the rounding mode is
@@ -104,7 +152,7 @@ class TestRoundingModeSourceOperand
   FPRoundingMode rounding_mode_;
 };
 
-class RV32ZfhInstructionTest : public RiscVFPInstructionTestBase {
+class RV32ZfhInstructionTest : public RVZfhInstructionTestBase {
  protected:
   // Test conversion instructions. The instance variable semantic_function_ is
   // used to set the semantic function for the instruction and should be set
@@ -146,12 +194,6 @@ class RV32ZfhInstructionTest : public RiscVFPInstructionTestBase {
   template <FPRoundingMode rm>
   void RoundingPointTest(uint16_t);
 
-  template <typename T>
-  void SetupMemory(uint64_t, T);
-
-  template <typename T, typename IntegerRegister>
-  T LoadHalfHelper(uint64_t, int16_t);
-
   Instruction::SemanticFunction semantic_function_ = nullptr;
 };
 
@@ -191,37 +233,6 @@ void RV32ZfhInstructionTest::RoundingConversionTestHelper(
       << " with rounding mode: " << static_cast<int>(rm);
 }
 
-template <typename T>
-void RV32ZfhInstructionTest::SetupMemory(uint64_t address, T value) {
-  DataBuffer *mem_db = state_->db_factory()->Allocate<T>(1);
-  mem_db->Set<T>(0, value);
-  state_->StoreMemory(instruction_, address, mem_db);
-  mem_db->DecRef();
-}
-
-template <typename T, typename IntegerRegister>
-T RV32ZfhInstructionTest::LoadHalfHelper(uint64_t base, int16_t offset) {
-  const std::string kRs1Name("x1");
-  const std::string kFrdName("f5");
-  AppendRegisterOperands<IntegerRegister>({kRs1Name}, {});
-  AppendRegisterOperands<RVFpRegister>(child_instruction_, {}, {kFrdName});
-
-  ImmediateOperand<int16_t> *offset_source_operand =
-      new ImmediateOperand<int16_t>(offset);
-  instruction_->AppendSource(offset_source_operand);
-
-  SetRegisterValues<typename IntegerRegister::ValueType, IntegerRegister>(
-      {{kRs1Name, static_cast<IntegerRegister::ValueType>(base)}});
-  SetRegisterValues<uint32_t, RVFpRegister>({{kFrdName, 0}});
-
-  instruction_->Execute(nullptr);
-
-  T observed_val = state_->GetRegister<RVFpRegister>(kFrdName)
-                       .first->data_buffer()
-                       ->template Get<T>(0);
-  return observed_val;
-}
-
 // Test the FP16 load instruction. The semantic functions should match the isa
 // file.
 TEST_F(RV32ZfhInstructionTest, RiscVFlh) {
@@ -229,7 +240,7 @@ TEST_F(RV32ZfhInstructionTest, RiscVFlh) {
   SetChildInstruction();
   SetChildSemanticFunction(&RiscVZfhFlhChild);
 
-  SetupMemory<uint16_t>(0xFF, 0xBEEF);
+  SetupMemory<uint32_t, uint16_t>(0xFF, 0xBEEF);
 
   HalfFP observed_val =
       LoadHalfHelper<HalfFP, RV32Register>(/* base */ 0x0, /* offset */ 0xFF);
@@ -243,7 +254,7 @@ TEST_F(RV32ZfhInstructionTest, RiscVFlh_float_nanbox) {
   SetChildInstruction();
   SetChildSemanticFunction(&RiscVZfhFlhChild);
 
-  SetupMemory<uint16_t>(0xFF, 0xBEEF);
+  SetupMemory<uint32_t, uint16_t>(0xFF, 0xBEEF);
 
   float observed_val =
       LoadHalfHelper<float, RV32Register>(/* base */ 0xFF, /* offset */ 0);
@@ -257,7 +268,7 @@ TEST_F(RV32ZfhInstructionTest, RiscVFlh_double_nanbox) {
   SetChildInstruction();
   SetChildSemanticFunction(&RiscVZfhFlhChild);
 
-  SetupMemory<uint16_t>(0xFF, 0xBEEF);
+  SetupMemory<uint32_t, uint16_t>(0xFF, 0xBEEF);
 
   double observed_val = LoadHalfHelper<double, RV32Register>(
       /* base */ 0x0100, /* offset */ -1);
@@ -551,6 +562,64 @@ TEST_F(RV32ZfhInstructionTest, RiscVZfhCvtHs_strict_zeros) {
   actual_n0 = ConversionHelper<HalfFP, float, kRoundingModeRoundUp>(neg_zero);
   EXPECT_EQ(absl::bit_cast<uint16_t>(actual_p0), expected_p0);
   EXPECT_EQ(absl::bit_cast<uint16_t>(actual_n0), expected_n0);
+}
+
+class RV64ZfhInstructionTest : public RVZfhInstructionTestBase {};
+
+// Move half precision from a float register to an integer register. The IEEE754
+// encoding is preserved in the integer register.
+TEST_F(RV64ZfhInstructionTest, RiscVZfhFMvxh) {
+  SetSemanticFunction(&mpact::sim::riscv::RV64::RiscVZfhFMvxh);
+  UnaryOpFPTestHelper<uint64_t, HalfFP>(
+      "fmv.x.h", instruction_, {"f", "x"}, 32, [](HalfFP half_fp) -> uint64_t {
+        bool sign = 1 & (half_fp.value >> (FPTypeInfo<HalfFP>::kBitSize - 1));
+        // Fill the upper XLEN-16 bits with the sign bit as per the spec.
+        uint64_t result = sign ? 0xFFFF'FFFF'FFFF'0000 : 0;
+        result |= static_cast<uint64_t>(half_fp.value);
+        return result;
+      });
+}
+
+// Test the FP16 load instruction. The semantic functions should match the isa
+// file.
+TEST_F(RV64ZfhInstructionTest, RiscVFlh) {
+  SetSemanticFunction(&RiscVILhu);
+  SetChildInstruction();
+  SetChildSemanticFunction(&RiscVZfhFlhChild);
+
+  SetupMemory<uint64_t, uint16_t>(0xFF, 0xBEEF);
+
+  HalfFP observed_val =
+      LoadHalfHelper<HalfFP, RV64Register>(/* base */ 0x0, /* offset */ 0xFF);
+  EXPECT_EQ(observed_val.value, 0xBEEF);
+}
+
+// Test the FP16 load instruction. When looking at the register contents as a
+// float, it should be NaN.
+TEST_F(RV64ZfhInstructionTest, RiscVFlh_float_nanbox) {
+  SetSemanticFunction(&RiscVILhu);
+  SetChildInstruction();
+  SetChildSemanticFunction(&RiscVZfhFlhChild);
+
+  SetupMemory<uint64_t, uint16_t>(0xFF, 0xBEEF);
+
+  float observed_val =
+      LoadHalfHelper<float, RV64Register>(/* base */ 0xFF, /* offset */ 0);
+  EXPECT_TRUE(std::isnan(observed_val));
+}
+
+// Test the FP16 load instruction. When looking at the register contents as a
+// double, it should be NaN.
+TEST_F(RV64ZfhInstructionTest, RiscVFlh_double_nanbox) {
+  SetSemanticFunction(&RiscVILhu);
+  SetChildInstruction();
+  SetChildSemanticFunction(&RiscVZfhFlhChild);
+
+  SetupMemory<uint64_t, uint16_t>(0xFF, 0xBEEF);
+
+  double observed_val = LoadHalfHelper<double, RV64Register>(
+      /* base */ 0x0100, /* offset */ -1);
+  EXPECT_TRUE(std::isnan(observed_val));
 }
 
 }  // namespace

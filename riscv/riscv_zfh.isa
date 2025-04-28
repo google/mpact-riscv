@@ -84,3 +84,28 @@ slot riscv32_zfh_min: riscv_zfh_min {
   }
 }
 
+slot riscv64_zfh_min: riscv_zfh_min {
+  includes {
+    #include "riscv/riscv_i_instructions.h"
+    #include "riscv/riscv_zfh_instructions.h"
+  }
+  default size = 4;
+  default latency = 0;
+  default opcode =
+    disasm: "Unimplemented instruction at 0x%(@:08x)",
+    semfunc: "&RV32VUnimplementedInstruction";
+  opcodes {
+    flh{(: rs1, I_imm12 : ), (: : frd)},
+      resources: {next_pc, rs1 : frd[0..]},
+      semfunc: "&RV64::RiscVILhu", "&RV64::RiscVZfhFlhChild",  // new
+      disasm: "flh", "%frd, %I_imm12(%rs1)";
+    fsh{: rs1, S_imm12, frs2},
+      resources: {next_pc, rs1, frs2},
+      semfunc: "&RV64::RiscVISh",  // new
+      disasm: "fsh", "%frs2, %S_imm12(%rs1)";
+    fmv_xh{: frs1 : rd},
+      resources: {next_pc, frs1 : rd[0..]},
+      semfunc: "&RV64::RiscVZfhFMvxh",  // new
+      disasm: "fmv.x.h", "%rd, %frs1";
+  }
+}

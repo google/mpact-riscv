@@ -147,6 +147,21 @@ void RiscVZfhFMvxh(const Instruction *instruction) {
 
 }  // namespace RV32
 
+namespace RV64 {
+// Move a half precision value from a float register to a 32 bit integer
+// register.
+void RiscVZfhFMvxh(const Instruction *instruction) {
+  RiscVUnaryFloatOp<uint64_t, HalfFP>(instruction, [](HalfFP a) -> uint64_t {
+    if (FPTypeInfo<HalfFP>::SignBit(a)) {
+      // Repeat the sign bit for negative values.
+      return 0xFFFF'FFFF'FFFF'0000 | a.value;
+    }
+    return static_cast<uint64_t>(a.value);
+  });
+}
+
+}  // namespace RV64
+
 void RiscVZfhFlhChild(const Instruction *instruction) {
   using FPUInt = typename FPTypeInfo<HalfFP>::UIntType;
   LoadContext *context = static_cast<LoadContext *>(instruction->context());
