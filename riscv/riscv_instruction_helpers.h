@@ -483,7 +483,8 @@ inline void RiscVUnaryFloatNaNBoxOp(const Instruction *instruction,
     ScopedFPStatus set_fp_status(rv_fp->host_fp_interface(), rm_value);
     dest_value = operation(lhs);
   }
-  if (std::isnan(dest_value) && std::signbit(dest_value)) {
+  if (FPTypeInfo<Result>::IsNaN(dest_value) &&
+      FPTypeInfo<Result>::SignBit(dest_value)) {
     ResUint res_value = *reinterpret_cast<ResUint *>(&dest_value);
     res_value &= FPTypeInfo<Result>::kInfMask;
     dest_value = *reinterpret_cast<Result *>(&res_value);
@@ -601,7 +602,7 @@ inline void RiscVBinaryFloatNaNBoxOp(
     ScopedFPStatus fp_status(rv_fp->host_fp_interface(), rm_value);
     dest_value = operation(lhs, rhs);
   }
-  if (std::isnan(dest_value)) {
+  if (FPTypeInfo<Result>::IsNaN(dest_value)) {
     *reinterpret_cast<typename FPTypeInfo<Result>::UIntType *>(&dest_value) =
         FPTypeInfo<Result>::kCanonicalNaN;
   }
