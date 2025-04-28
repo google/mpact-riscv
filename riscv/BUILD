@@ -327,6 +327,49 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "riscv_zfh_instructions",
+    srcs = select({
+        "//third_party/bazel_platforms/cpu:aarch64": [
+            "riscv_zfh_instructions.cc",
+            "riscv_zfh_instructions_arm.cc",
+        ],
+        "//conditions:default": [
+            "riscv_zfh_instructions.cc",
+            "riscv_zfh_instructions_x86.cc",
+        ],
+    }),
+    hdrs = [
+        "riscv_instruction_helpers.h",
+        "riscv_zfh_instructions.h",
+    ],
+    copts = select({
+        "//third_party/bazel_platforms/cpu:aarch64": [
+            "-O3",
+            "-ffp-model=strict",
+        ],
+        "//buildenv/platforms/settings:macos_aarch64": [
+            "-O3",
+            "-ffp-model=strict",
+        ],
+        "//conditions:default": [
+            "-ffp-model=strict",
+            "-O3",
+            "-mf16c",
+        ],
+    }),
+    deps = [
+        ":riscv_fp_state",
+        ":riscv_state",
+        "@com_google_absl//absl/base",
+        "@com_google_absl//absl/log",
+        "@com_google_mpact-sim//mpact/sim/generic:arch_state",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
+    ],
+)
+
 mpact_isa_decoder(
     name = "riscv32g_isa",
     src = "riscv32g.isa",

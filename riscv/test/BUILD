@@ -57,6 +57,7 @@ cc_library(
     deps = [
         "//riscv:riscv_fp_state",
         "//riscv:riscv_state",
+        "@com_google_absl//absl/base",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/random",
         "@com_google_absl//absl/strings",
@@ -201,6 +202,32 @@ cc_test(
         "//riscv:riscv_g",
         "//riscv:riscv_state",
         "@com_google_googletest//:gtest_main",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
+    ],
+)
+
+cc_test(
+    name = "riscv_zfh_instructions_test",
+    size = "small",
+    srcs = ["riscv_zfh_instructions_test.cc"],
+    copts = select({
+        "darwin_arm64_cpu": ["-ffp-model=strict"],
+        "//conditions:default": [
+            "-ffp-model=strict",
+            "-fprotect-parens",
+        ],
+    }),
+    tags = ["not_run:arm"],
+    deps = [
+        ":riscv_fp_test_base",
+        "//riscv:riscv_fp_state",
+        "//riscv:riscv_g",
+        "//riscv:riscv_state",
+        "//riscv:riscv_zfh_instructions",
+        "@com_google_absl//absl/base",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
         "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
     ],

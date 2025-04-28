@@ -1,0 +1,86 @@
+// Copyright 2025 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// This file contains the ISA description of the RiscV ZFH extention
+// instructions.
+
+isa ZFH {
+  namespace mpact::sim::riscv::zfh;
+  slots {
+    riscv32_zfh_min;
+  }
+}
+
+// First disasm field is 18 char wide and left justified.
+disasm widths = {-18};
+
+slot riscv_zfh_min {
+  includes {
+    #include "riscv/riscv_zfh_instructions.h"
+  }
+  default size = 4;
+  default latency = 0;
+  default opcode =
+    disasm: "Unimplemented instruction at 0x%(@:08x)",
+    semfunc: "&RV32VUnimplementedInstruction";
+  opcodes {
+    fmv_hx{: rs1 : frd},
+      resources: {next_pc, rs1 : frd[0..]},
+      semfunc: "&RiscVZfhFMvhx",
+      disasm: "fmv.h.x", "%frd, %rs1";
+    fcvt_sh{: frs1, rm : frd, fflags},
+      resources: {next_pc, frs1 : frd[0..]},
+      semfunc: "&RiscVZfhCvtSh",
+      disasm: "fcvt.s.h", "%frd, %frs1";
+    fcvt_hs{: frs1, rm : frd, fflags},
+      resources: {next_pc, frs1 : frd[0..]},
+      semfunc: "&RiscVZfhCvtHs",
+      disasm: "fcvt.h.s", "%frd, %frs1";
+    fcvt_dh{: frs1, rm : frd, fflags},
+      resources: {next_pc, frs1 : frd[0..]},
+      semfunc: "&RiscVZfhCvtDh",
+      disasm: "fcvt.d.h", "%frd, %frs1";
+    fcvt_hd{: frs1, rm : frd, fflags},
+      resources: {next_pc, frs1 : frd[0..]},
+      semfunc: "&RiscVZfhCvtHd",
+      disasm: "fcvt.h.d", "%frd, %frs1";
+  }
+}
+
+slot riscv32_zfh_min: riscv_zfh_min {
+  includes {
+    #include "riscv/riscv_i_instructions.h"
+    #include "riscv/riscv_zfh_instructions.h"
+  }
+  default size = 4;
+  default latency = 0;
+  default opcode =
+    disasm: "Unimplemented instruction at 0x%(@:08x)",
+    semfunc: "&RV32VUnimplementedInstruction";
+  opcodes {
+    flh{(: rs1, I_imm12 : ), (: : frd)},
+      resources: {next_pc, rs1 : frd[0..]},
+      semfunc: "&RV32::RiscVILhu", "&RiscVZfhFlhChild",
+      disasm: "flh", "%frd, %I_imm12(%rs1)";
+    fsh{: rs1, S_imm12, frs2},
+      resources: {next_pc, rs1, frs2},
+      semfunc: "&RV32::RiscVISh",
+      disasm: "fsh", "%frs2, %S_imm12(%rs1)";
+    fmv_xh{: frs1 : rd},
+      resources: {next_pc, frs1 : rd[0..]},
+      semfunc: "&RV32::RiscVZfhFMvxh",
+      disasm: "fmv.x.h", "%rd, %frs1";
+  }
+}
+

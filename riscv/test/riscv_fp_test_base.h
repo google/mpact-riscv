@@ -15,6 +15,10 @@
 #ifndef MPACT_RISCV_RISCV_TEST_RISCV_FP_TEST_BASE_H_
 #define MPACT_RISCV_RISCV_TEST_RISCV_FP_TEST_BASE_H_
 
+#include <sys/stat.h>
+#include <sys/types.h>
+
+#include <cassert>
 #include <cmath>
 #include <cstdint>
 #include <functional>
@@ -25,6 +29,7 @@
 #include <type_traits>
 #include <vector>
 
+#include "absl/base/casts.h"
 #include "absl/log/log.h"
 #include "absl/random/random.h"
 #include "absl/strings/str_cat.h"
@@ -48,9 +53,8 @@ namespace test {
 using ::mpact::sim::generic::ConvertHalfToSingle;
 using ::mpact::sim::generic::FloatingPointToString;
 using ::mpact::sim::generic::HalfFP;
-using ::mpact::sim::generic::IsMpactFp;
-
 using ::mpact::sim::generic::Instruction;
+using ::mpact::sim::generic::IsMpactFp;
 using ::mpact::sim::riscv::FPRoundingMode;
 using ::mpact::sim::util::FlatDemandMemory;
 
@@ -100,7 +104,7 @@ struct FPTypeInfo<float> {
   static const IntType kCanonicalNaN = 0x7fc0'0000ULL;
   static bool IsNaN(T value) { return std::isnan(value); }
   static bool IsQNaN(T value) {
-    IntType uint_val = *reinterpret_cast<IntType *>(&value);
+    IntType uint_val = absl::bit_cast<IntType>(value);
     return IsNaN(value) && (((1ULL << (kSigSize - 1)) & uint_val) != 0);
   }
   static bool IsInf(T value) { return std::isinf(value); }
@@ -128,7 +132,7 @@ struct FPTypeInfo<double> {
   static const IntType kCanonicalNaN = 0x7ff8'0000'0000'0000ULL;
   static bool IsNaN(T value) { return std::isnan(value); }
   static bool IsQNaN(T value) {
-    IntType uint_val = *reinterpret_cast<IntType *>(&value);
+    IntType uint_val = absl::bit_cast<IntType>(value);
     return IsNaN(value) && (((1ULL << (kSigSize - 1)) & uint_val) != 0);
   }
   static bool IsInf(T value) { return std::isinf(value); }
@@ -161,7 +165,7 @@ struct FPTypeInfo<HalfFP> {
     return (exp == (1 << kExpSize) - 1) && (sig != 0);
   }
   static bool IsQNaN(T value) {
-    IntType uint_val = *reinterpret_cast<IntType *>(&value);
+    IntType uint_val = absl::bit_cast<IntType>(value);
     IntType significand_msb = (uint_val >> (kSigSize - 1)) & 1;
     return IsNaN(value) && (significand_msb != 0);
   }
@@ -181,8 +185,7 @@ typename FPTypeInfo<T>::IntType VfclassVHelper(T val) {
     case FP_INFINITE:
       return std::signbit(val) ? 1 : 1 << 7;
     case FP_NAN: {
-      auto uint_val =
-          *reinterpret_cast<typename FPTypeInfo<T>::IntType *>(&val);
+      auto uint_val = absl::bit_cast<typename FPTypeInfo<T>::IntType>(val);
       bool quiet_nan = (uint_val >> (FPTypeInfo<T>::kSigSize - 1)) & 1;
       return quiet_nan ? 1 << 9 : 1 << 8;
     }
@@ -210,8 +213,8 @@ inline void FPCompare<float>(float op, float reg, int delta_position,
                              absl::string_view str) {
   using T = float;
   using UInt = typename FPTypeInfo<T>::IntType;
-  UInt u_op = *reinterpret_cast<UInt *>(&op);
-  UInt u_reg = *reinterpret_cast<UInt *>(&reg);
+  UInt u_op = absl::bit_cast<UInt>(op);
+  UInt u_reg = absl::bit_cast<UInt>(reg);
   if (!std::isnan(op) && !std::isinf(op) &&
       delta_position < FPTypeInfo<T>::kSigSize) {
     T delta;
@@ -219,12 +222,12 @@ inline void FPCompare<float>(float op, float reg, int delta_position,
     if (exp > delta_position) {
       exp -= delta_position;
       UInt udelta = exp << FPTypeInfo<T>::kSigSize;
-      delta = *reinterpret_cast<T *>(&udelta);
+      delta = absl::bit_cast<T>(udelta);
     } else {
       // Becomes a denormal
       int diff = delta_position - exp;
       UInt udelta = 1ULL << (FPTypeInfo<T>::kSigSize - 1 - diff);
-      delta = *reinterpret_cast<T *>(&udelta);
+      delta = absl::bit_cast<T>(udelta);
     }
     EXPECT_THAT(reg, testing::NanSensitiveFloatNear(op, delta))
         << str << "  op: " << std::hex << u_op << "  reg: " << std::hex
@@ -241,8 +244,8 @@ inline void FPCompare<double>(double op, double reg, int delta_position,
                               absl::string_view str) {
   using T = double;
   using UInt = typename FPTypeInfo<T>::IntType;
-  UInt u_op = *reinterpret_cast<UInt *>(&op);
-  UInt u_reg = *reinterpret_cast<UInt *>(&reg);
+  UInt u_op = absl::bit_cast<UInt>(op);
+  UInt u_reg = absl::bit_cast<UInt>(reg);
   if (!std::isnan(op) && !std::isinf(op) &&
       delta_position < FPTypeInfo<T>::kSigSize) {
     T delta;
@@ -250,12 +253,12 @@ inline void FPCompare<double>(double op, double reg, int delta_position,
     if (exp > delta_position) {
       exp -= delta_position;
       UInt udelta = exp << FPTypeInfo<T>::kSigSize;
-      delta = *reinterpret_cast<T *>(&udelta);
+      delta = absl::bit_cast<T>(udelta);
     } else {
       // Becomes a denormal
       int diff = delta_position - exp;
       UInt udelta = 1ULL << (FPTypeInfo<T>::kSigSize - 1 - diff);
-      delta = *reinterpret_cast<T *>(&udelta);
+      delta = absl::bit_cast<T>(udelta);
     }
     EXPECT_THAT(reg, testing::NanSensitiveDoubleNear(op, delta))
         << str << "  op: " << std::hex << u_op << "  reg: " << std::hex
@@ -320,7 +323,7 @@ inline typename std::enable_if<internal::LessSize<S, D>::value, D>::type NaNBox(
   using SInt = typename FPTypeInfo<S>::IntType;
   SInt sval = absl::bit_cast<SInt>(value);
   D dval = (~static_cast<D>(0) << (sizeof(S) * 8)) | sval;
-  return *reinterpret_cast<D *>(&dval);
+  return absl::bit_cast<D>(dval);
 }
 
 // This version does a straight copy - as the data types are the same size.
@@ -466,8 +469,8 @@ class RiscVFPInstructionTestBase : public testing::Test {
                              1ULL << FPTypeInfo<T>::kSigSize);
     UInt value = (sign & 1) << (FPTypeInfo<T>::kBitSize - 1) |
                  (exp << FPTypeInfo<T>::kSigSize) | sig;
-    T val = *reinterpret_cast<T *>(&value);
-    return val;
+    return absl::bit_cast<T>(value);
+    ;
   }
 
   // This method uses random values for each field in the fp number.
@@ -523,7 +526,8 @@ class RiscVFPInstructionTestBase : public testing::Test {
       for (int rm : {0, 1, 2, 3, 4}) {
         rv_fp_->SetRoundingMode(static_cast<FPRoundingMode>(rm));
         SetRegisterValues<int, RV32Register>({{kRmName, rm}});
-        SetRegisterValues<R, DestRegisterType>({{kRdName, 0}});
+        SetRegisterValues<DestRegisterType::ValueType, DestRegisterType>(
+            {{kRdName, 0}});
 
         inst->Execute(nullptr);
 
@@ -592,7 +596,8 @@ class RiscVFPInstructionTestBase : public testing::Test {
         rv_fp_->SetRoundingMode(static_cast<FPRoundingMode>(rm));
         rv_fp_->fflags()->Write(static_cast<uint32_t>(0));
         SetRegisterValues<int, RV32Register>({{kRmName, rm}, {}});
-        SetRegisterValues<R, DestRegisterType>({{kRdName, 0}});
+        SetRegisterValues<DestRegisterType::ValueType, DestRegisterType>(
+            {{kRdName, 0}});
 
         inst->Execute(nullptr);
         auto instruction_fflags = rv_fp_->fflags()->GetUint32();
@@ -611,8 +616,8 @@ class RiscVFPInstructionTestBase : public testing::Test {
             op_val, reg_val, delta_position,
             absl::StrCat(name, "  ", i, ": ",
                          FloatingPointToString<LHS>(lhs_span[i]), " rm: ", rm));
-        auto lhs_uint = *reinterpret_cast<LhsInt *>(&lhs_span[i]);
-        auto op_val_uint = *reinterpret_cast<RInt *>(&op_val);
+        LhsInt lhs_uint = absl::bit_cast<LhsInt>(lhs_span[i]);
+        RInt op_val_uint = absl::bit_cast<RInt>(op_val);
         EXPECT_EQ(test_operation_fflags, instruction_fflags)
             << name << "(" << FloatingPointToString<LHS>(lhs_span[i]) << ")  "
             << std::hex << name << "(0x" << lhs_uint
@@ -776,8 +781,8 @@ class RiscVFPInstructionTestBase : public testing::Test {
                      absl::StrCat(name, "  ", i, ": ",
                                   FloatingPointToString<LHS>(lhs_span[i]), "  ",
                                   FloatingPointToString<RHS>(rhs_span[i])));
-        auto lhs_uint = *reinterpret_cast<LhsUInt *>(&lhs_span[i]);
-        auto rhs_uint = *reinterpret_cast<RhsUInt *>(&rhs_span[i]);
+        LhsUInt lhs_uint = absl::bit_cast<LhsUInt>(lhs_span[i]);
+        RhsUInt rhs_uint = absl::bit_cast<RhsUInt>(rhs_span[i]);
         EXPECT_EQ(test_operation_fflags, instruction_fflags)
             << std::hex << name << "(" << lhs_uint << ", " << rhs_uint << ")";
       }
@@ -992,7 +997,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
       auto constexpr kSigSize = FPTypeInfo<From>::kSigSize;
       auto constexpr kSigMask = FPTypeInfo<From>::kSigMask;
       auto constexpr kBitSize = FPTypeInfo<From>::kBitSize;
-      FromUint val_u = *reinterpret_cast<FromUint *>(&val);
+      FromUint val_u = absl::bit_cast<FromUint>(val);
       FromUint exp = kExpMask & val_u;
       const bool sign = (val_u & (1ULL << (kBitSize - 1))) != 0;
       int exp_value = exp >> kSigSize;
@@ -1151,6 +1156,485 @@ class RiscVFPInstructionTestBase : public testing::Test {
   RiscVFPState *rv_fp_;
   absl::BitGen bitgen_;
 };
+
+namespace internal {
+
+template <typename T>
+struct UnsignedToFpType {};
+
+template <>
+struct UnsignedToFpType<uint16_t> {
+  using FpType = HalfFP;
+};
+
+template <>
+struct UnsignedToFpType<uint32_t> {
+  using FpType = float;
+};
+
+template <>
+struct UnsignedToFpType<uint64_t> {
+  using FpType = double;
+};
+
+template <typename T>
+double ToDouble(T input) {
+  using IntType = typename FPTypeInfo<T>::IntType;
+  using FpType = typename internal::UnsignedToFpType<IntType>::FpType;
+
+  IntType uint_val = absl::bit_cast<IntType>(input);
+  FpType fp_val = absl::bit_cast<FpType>(uint_val);
+  if (FPTypeInfo<FpType>::IsNaN(fp_val)) {
+    return std::numeric_limits<double>::quiet_NaN();
+  } else if (FPTypeInfo<FpType>::IsInf(fp_val)) {
+    return std::numeric_limits<double>::infinity();
+  }
+  IntType exp =
+      (uint_val & FPTypeInfo<FpType>::kExpMask) >> FPTypeInfo<FpType>::kSigSize;
+  IntType sig = uint_val & FPTypeInfo<FpType>::kSigMask;
+  int32_t unbiased_exponent =
+      exp ? static_cast<int32_t>(exp) - FPTypeInfo<FpType>::kExpBias
+          : 1 - static_cast<int32_t>(FPTypeInfo<FpType>::kExpBias);
+
+  double exponent_factor = std::pow(2.0, unbiased_exponent);
+  double significand_factor = static_cast<double>(sig);
+  double precision_factor =
+      std::pow(2.0, -static_cast<int32_t>(FPTypeInfo<FpType>::kSigSize));
+  double implicit_bit_adjustment = exp ? 1.0 : 0.0;
+  double sign_factor =
+      std::pow(-1.0, uint_val >> (FPTypeInfo<FpType>::kBitSize - 1));
+  return ((significand_factor * precision_factor) + implicit_bit_adjustment) *
+         exponent_factor * sign_factor;
+}
+
+// sign, lsb, guard, round, sticky --- rm = 0
+inline constexpr int kRoundToNearestTable[] = {
+    0, /*00000*/
+    0, /*00001*/
+    0, /*00010*/
+    0, /*00011*/
+    0, /*00100*/
+    1, /*00101*/
+    1, /*00110*/
+    1, /*00111*/
+    0, /*01000*/
+    0, /*01001*/
+    0, /*01010*/
+    0, /*01011*/
+    1, /*01100*/
+    1, /*01101*/
+    1, /*01110*/
+    1, /*01111*/
+    0, /*10000*/
+    0, /*10001*/
+    0, /*10010*/
+    0, /*10011*/
+    0, /*10100*/
+    1, /*10101*/
+    1, /*10110*/
+    1, /*10111*/
+    0, /*11000*/
+    0, /*11001*/
+    0, /*11010*/
+    0, /*11011*/
+    1, /*11100*/
+    1, /*11101*/
+    1, /*11110*/
+    1, /*11111*/
+};
+// sign, lsb, guard, round, sticky --- rm = 1
+inline constexpr int kRoundTowardsZeroTable[] = {
+    0, /*00000*/
+    0, /*00001*/
+    0, /*00010*/
+    0, /*00011*/
+    0, /*00100*/
+    0, /*00101*/
+    0, /*00110*/
+    0, /*00111*/
+    0, /*01000*/
+    0, /*01001*/
+    0, /*01010*/
+    0, /*01011*/
+    0, /*01100*/
+    0, /*01101*/
+    0, /*01110*/
+    0, /*01111*/
+    0, /*10000*/
+    0, /*10001*/
+    0, /*10010*/
+    0, /*10011*/
+    0, /*10100*/
+    0, /*10101*/
+    0, /*10110*/
+    0, /*10111*/
+    0, /*11000*/
+    0, /*11001*/
+    0, /*11010*/
+    0, /*11011*/
+    0, /*11100*/
+    0, /*11101*/
+    0, /*11110*/
+    0, /*11111*/
+};
+// sign, lsb, guard, round, sticky --- rm = 2
+inline constexpr int kRoundDownTable[] = {
+    0, /*00000*/
+    0, /*00001*/
+    0, /*00010*/
+    0, /*00011*/
+    0, /*00100*/
+    0, /*00101*/
+    0, /*00110*/
+    0, /*00111*/
+    0, /*01000*/
+    0, /*01001*/
+    0, /*01010*/
+    0, /*01011*/
+    0, /*01100*/
+    0, /*01101*/
+    0, /*01110*/
+    0, /*01111*/
+    0, /*10000*/
+    1, /*10001*/
+    1, /*10010*/
+    1, /*10011*/
+    1, /*10100*/
+    1, /*10101*/
+    1, /*10110*/
+    1, /*10111*/
+    0, /*11000*/
+    1, /*11001*/
+    1, /*11010*/
+    1, /*11011*/
+    1, /*11100*/
+    1, /*11101*/
+    1, /*11110*/
+    1, /*11111*/
+};
+// sign, lsb, guard, round, sticky --- rm = 3
+inline constexpr int kRoundUpTable[] = {
+    0, /*00000*/
+    1, /*00001*/
+    1, /*00010*/
+    1, /*00011*/
+    1, /*00100*/
+    1, /*00101*/
+    1, /*00110*/
+    1, /*00111*/
+    0, /*01000*/
+    1, /*01001*/
+    1, /*01010*/
+    1, /*01011*/
+    1, /*01100*/
+    1, /*01101*/
+    1, /*01110*/
+    1, /*01111*/
+    0, /*10000*/
+    0, /*10001*/
+    0, /*10010*/
+    0, /*10011*/
+    0, /*10100*/
+    0, /*10101*/
+    0, /*10110*/
+    0, /*10111*/
+    0, /*11000*/
+    0, /*11001*/
+    0, /*11010*/
+    0, /*11011*/
+    0, /*11100*/
+    0, /*11101*/
+    0, /*11110*/
+    0, /*11111*/
+};
+
+}  // namespace internal
+
+template <typename T>
+class FpConversionsTestHelper {
+  using IntType = typename FPTypeInfo<T>::IntType;
+  using FpType = typename internal::UnsignedToFpType<IntType>::FpType;
+
+ public:
+  // The conversion helper can be used with a float in its floating point format
+  // or with its unsigned integer representation.
+  FpConversionsTestHelper(T value) : fflags_(0) {
+    if constexpr (std::is_same_v<T, IntType>) {
+      unsigned_value_ = value;
+      fp_value_ = absl::bit_cast<FpType>(unsigned_value_);
+    } else if constexpr (std::is_same_v<T, FpType>) {
+      fp_value_ = value;
+      unsigned_value_ = absl::bit_cast<IntType>(fp_value_);
+    }
+  }
+
+  template <typename U>
+  U Convert(FPRoundingMode rm = FPRoundingMode::kRoundToNearest);
+
+  template <typename U>
+  U ConvertWithFlags(uint32_t &fflags,
+                     FPRoundingMode rm = FPRoundingMode::kRoundToNearest) {
+    fflags_ = 0;
+    U ret = Convert<U>(rm);
+    fflags = fflags_;
+    return ret;
+  }
+
+ protected:
+  FpType fp_value_;
+  IntType unsigned_value_;
+  uint32_t fflags_;
+
+  bool sign() {
+    return (unsigned_value_ & (1ULL << (FPTypeInfo<FpType>::kBitSize - 1))) !=
+           0;
+  }
+
+  template <typename IntReturnType, typename FpReturnType>
+  void NarrowingConversionMakeExponentAndSignificand(FPRoundingMode,
+                                                     IntReturnType &,
+                                                     IntReturnType &);
+
+  template <typename IntReturnType, typename FpReturnType>
+  IntReturnType NarrowingConversionHandleInfinity(FPRoundingMode);
+
+  template <typename IntReturnType, typename FpReturnType>
+  IntReturnType NarrowingConversion(FPRoundingMode);
+
+  template <typename U>
+  U RoundingRightShift(U value, int32_t shift_amt, FPRoundingMode rm) {
+    bool guard = 0;
+    bool round = 0;
+    bool sticky = 0;
+    for (int i = 0; i < shift_amt; ++i) {
+      sticky |= round;
+      round = guard;
+      guard = value & 1;
+      value >>= 1;
+    }
+
+    bool lsb = value & 1;
+    uint8_t key = sign() << 4 | lsb << 3 | guard << 2 | round << 1 | sticky;
+    value += GetRoundingTable(rm)[key];
+    return value;
+  }
+
+  const int *GetRoundingTable(FPRoundingMode rm) {
+    switch (rm) {
+      case FPRoundingMode::kRoundToNearest:
+        return static_cast<const int *>(internal::kRoundToNearestTable);
+      case FPRoundingMode::kRoundTowardsZero:
+        return static_cast<const int *>(internal::kRoundTowardsZeroTable);
+      case FPRoundingMode::kRoundDown:
+        return static_cast<const int *>(internal::kRoundDownTable);
+      case FPRoundingMode::kRoundUp:
+        return static_cast<const int *>(internal::kRoundUpTable);
+      default:
+        return static_cast<const int *>(internal::kRoundToNearestTable);
+    }
+  }
+};  // class FpConversionsTestHelper
+
+template <typename T>
+template <typename U>
+U FpConversionsTestHelper<T>::Convert(FPRoundingMode rm) {
+  using IntReturnType = typename FPTypeInfo<U>::IntType;
+  using FpReturnType =
+      typename internal::UnsignedToFpType<IntReturnType>::FpType;
+
+  if constexpr (std::is_same_v<U, IntType>) {
+    return unsigned_value_;
+  } else if constexpr (std::is_same_v<U, FpType>) {
+    return fp_value_;
+  }
+
+  if (FPTypeInfo<FpType>::IsNaN(fp_value_) &&
+      !FPTypeInfo<FpType>::IsQNaN(fp_value_)) {
+    fflags_ |= static_cast<uint32_t>(FPExceptions::kInvalidOp);
+  }
+
+  if (FPTypeInfo<FpType>::IsNaN(fp_value_)) {
+    return absl::bit_cast<U>(FPTypeInfo<FpReturnType>::kCanonicalNaN);
+  } else if (FPTypeInfo<FpType>::kPosInf == unsigned_value_) {
+    return absl::bit_cast<U>(FPTypeInfo<FpReturnType>::kPosInf);
+  } else if (FPTypeInfo<FpType>::kNegInf == unsigned_value_) {
+    return absl::bit_cast<U>(FPTypeInfo<FpReturnType>::kNegInf);
+  } else if (FPTypeInfo<FpType>::kPosZero == unsigned_value_) {
+    return absl::bit_cast<U>(FPTypeInfo<FpReturnType>::kPosZero);
+  } else if (FPTypeInfo<FpType>::kNegZero == unsigned_value_) {
+    return absl::bit_cast<U>(FPTypeInfo<FpReturnType>::kNegZero);
+  }
+
+  if constexpr (std::numeric_limits<IntReturnType>::digits >
+                std::numeric_limits<IntType>::digits) {
+    // The return type is larger so the conversion is simple.
+    FpReturnType mantissa = static_cast<FpReturnType>(
+        unsigned_value_ & FPTypeInfo<FpType>::kSigMask);
+    FpReturnType precision_factor =
+        std::pow(2.0, -static_cast<FpReturnType>(FPTypeInfo<FpType>::kSigSize));
+    IntType biased_exponent =
+        (unsigned_value_ & FPTypeInfo<FpType>::kExpMask) >>
+        FPTypeInfo<FpType>::kSigSize;
+    int32_t unbiased_exponent =
+        (biased_exponent ? static_cast<int32_t>(biased_exponent) : 1) -
+        FPTypeInfo<FpType>::kExpBias;
+
+    // Use the formula from the IEEE754 section 3.4 that details moving from
+    // the binary format to the number being represented.
+    FpReturnType implicit_bit_adjustment = biased_exponent ? 1.0 : 0.0;
+    FpReturnType exponent_factor = std::pow(2.0, unbiased_exponent);
+    FpReturnType unsigned_result =
+        ((mantissa * precision_factor) + implicit_bit_adjustment) *
+        exponent_factor;
+    IntReturnType result = absl::bit_cast<IntReturnType>(unsigned_result) |
+                           (static_cast<IntReturnType>(sign())
+                            << (FPTypeInfo<FpReturnType>::kBitSize - 1));
+    return absl::bit_cast<U>(result);
+  }
+
+  // If the return type is smaller then call through to the narrowing
+  // conversion.
+  return absl::bit_cast<U>(
+      NarrowingConversion<IntReturnType, FpReturnType>(rm));
+}
+
+template <typename T>
+template <typename IntReturnType, typename FpReturnType>
+void FpConversionsTestHelper<T>::NarrowingConversionMakeExponentAndSignificand(
+    FPRoundingMode rm, IntReturnType &out_exponent,
+    IntReturnType &out_significand) {
+  int32_t e_max = FPTypeInfo<FpReturnType>::kExpBias;
+  int32_t e_min = 1 - e_max;
+  IntType in_exponent = (unsigned_value_ & FPTypeInfo<FpType>::kExpMask) >>
+                        FPTypeInfo<FpType>::kSigSize;
+  IntType in_significand = unsigned_value_ & FPTypeInfo<FpType>::kSigMask;
+  // Add the implicit bit to the significand.
+  if (in_exponent) {
+    in_significand |= 1ULL << FPTypeInfo<FpType>::kSigSize;
+  }
+  int32_t exponent_bias_diff =
+      FPTypeInfo<FpType>::kExpBias - FPTypeInfo<FpReturnType>::kExpBias;
+  int32_t unbiased_exponent =
+      static_cast<int32_t>(in_exponent) - FPTypeInfo<FpType>::kExpBias;
+  int32_t significand_size_diff =
+      FPTypeInfo<FpType>::kSigSize - FPTypeInfo<FpReturnType>::kSigSize;
+
+  if (unbiased_exponent < e_min) {
+    // The destination float will be subnormal.
+    out_exponent = 0;
+    int shift_amt = significand_size_diff + (e_min - unbiased_exponent);
+    out_significand = RoundingRightShift(in_significand, shift_amt, rm);
+  } else if (unbiased_exponent > e_max) {
+    // The destination float will be infinity.
+    out_exponent = FPTypeInfo<FpReturnType>::kExpMask >>
+                   FPTypeInfo<FpReturnType>::kSigSize;
+    out_significand = 0;
+  } else {
+    // The destination float will be normal.
+    out_exponent = in_exponent - exponent_bias_diff;
+    out_significand =
+        RoundingRightShift(in_significand & FPTypeInfo<FpType>::kSigMask,
+                           significand_size_diff, rm);
+  }
+  // Rounding can cause the significand to overflow. Remask and increment the
+  // exponent to fix.
+  if ((out_significand & FPTypeInfo<FpReturnType>::kSigMask) !=
+      out_significand) {
+    out_exponent =
+        std::min(out_exponent + 1, FPTypeInfo<FpReturnType>::kExpMask >>
+                                       FPTypeInfo<FpReturnType>::kSigSize);
+    out_significand &= FPTypeInfo<FpReturnType>::kSigMask;
+  }
+}
+
+template <typename T>
+template <typename IntReturnType, typename FpReturnType>
+IntReturnType FpConversionsTestHelper<T>::NarrowingConversionHandleInfinity(
+    FPRoundingMode rm) {
+  IntReturnType out_uint = sign() ? FPTypeInfo<FpReturnType>::kNegInf
+                                  : FPTypeInfo<FpReturnType>::kPosInf;
+  int32_t e_max = FPTypeInfo<FpReturnType>::kExpBias;
+  double fp_value_double = internal::ToDouble(fp_value_);
+  double largest_non_inf_double = internal::ToDouble<IntReturnType>(
+      (sign() ? FPTypeInfo<FpReturnType>::kNegInf - 1
+              : FPTypeInfo<FpReturnType>::kPosInf - 1));
+  // To handle the cases near infinity, we need to consider what the
+  // conversion would have been if the exponent was unbounded.
+  double first_out_of_range_double =
+      std::pow(2.0, e_max + 1) * std::pow(-1.0, sign());
+
+  // Figure out if the input is closer to the largest non-inf or the unbounded
+  // number.
+  double distance_to_largest_non_inf =
+      std::abs(fp_value_double - largest_non_inf_double);
+  double distance_to_first_out_of_range =
+      std::abs(fp_value_double - first_out_of_range_double);
+  switch (rm) {
+    case FPRoundingMode::kRoundToNearest:
+      if (distance_to_largest_non_inf < distance_to_first_out_of_range) {
+        out_uint = sign() ? FPTypeInfo<FpReturnType>::kNegInf - 1
+                          : FPTypeInfo<FpReturnType>::kPosInf - 1;
+      }
+      break;
+    case FPRoundingMode::kRoundTowardsZero:
+      out_uint = sign() ? FPTypeInfo<FpReturnType>::kNegInf - 1
+                        : FPTypeInfo<FpReturnType>::kPosInf - 1;
+      break;
+    case FPRoundingMode::kRoundDown:
+      out_uint = sign() ? FPTypeInfo<FpReturnType>::kNegInf
+                        : FPTypeInfo<FpReturnType>::kPosInf - 1;
+      break;
+    case FPRoundingMode::kRoundUp:
+      out_uint = sign() ? FPTypeInfo<FpReturnType>::kNegInf - 1
+                        : FPTypeInfo<FpReturnType>::kPosInf;
+      break;
+    default:
+      break;
+  }
+  fflags_ |= static_cast<uint32_t>(FPExceptions::kOverflow);
+  fflags_ |= static_cast<uint32_t>(FPExceptions::kInexact);
+  return out_uint;
+}
+
+template <typename T>
+template <typename IntReturnType, typename FpReturnType>
+IntReturnType FpConversionsTestHelper<T>::NarrowingConversion(
+    FPRoundingMode rm) {
+  int32_t e_min = 1 - FPTypeInfo<FpReturnType>::kExpBias;
+  IntReturnType out_exponent = 0;
+  IntReturnType out_significand = 0;
+  NarrowingConversionMakeExponentAndSignificand<IntReturnType, FpReturnType>(
+      rm, out_exponent, out_significand);
+
+  IntReturnType out_uint = sign() ? FPTypeInfo<FpReturnType>::kNegZero
+                                  : FPTypeInfo<FpReturnType>::kPosZero;
+  out_uint |= out_significand & FPTypeInfo<FpReturnType>::kSigMask;
+  out_uint |= (out_exponent << FPTypeInfo<FpReturnType>::kSigSize) &
+              FPTypeInfo<FpReturnType>::kExpMask;
+
+  if (out_uint == FPTypeInfo<FpReturnType>::kPosInf ||
+      out_uint == FPTypeInfo<FpReturnType>::kNegInf) {
+    // Handle rounding and flags for infinity.
+    out_uint =
+        NarrowingConversionHandleInfinity<IntReturnType, FpReturnType>(rm);
+  } else {
+    // Handle the flags not related to infinity.
+    double fp_value_double = internal::ToDouble<FpType>(fp_value_);
+    double result = internal::ToDouble<IntReturnType>(out_uint);
+
+    if (result != fp_value_double) {
+      double b_emin = std::pow(2.0, e_min);
+      if (std::abs(result) <= b_emin || std::abs(fp_value_double) <= b_emin) {
+        fflags_ |= static_cast<uint32_t>(FPExceptions::kUnderflow);
+      }
+      fflags_ |= static_cast<uint32_t>(FPExceptions::kInexact);
+    }
+  }
+  return out_uint;
+}
+
+template <typename T>
+FpConversionsTestHelper(T) -> FpConversionsTestHelper<T>;
 
 }  // namespace test
 }  // namespace riscv
