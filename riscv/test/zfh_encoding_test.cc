@@ -75,6 +75,14 @@ constexpr uint32_t kFcvtHs = 0b0100010'00000'00000'000'00000'1010011;
 constexpr uint32_t kFcvtDh = 0b0100001'00010'00000'000'00000'1010011;
 //                             func7  |     | rs1 |rm | rd  | opcode
 constexpr uint32_t kFcvtHd = 0b0100010'00001'00000'000'00000'1010011;
+//                            func7  | rs2 | rs1 |rm | rd  | opcode
+constexpr uint32_t kFaddH = 0b0000010'00000'00000'000'00000'1010011;
+//                            func7  | rs2 | rs1 |rm | rd  | opcode
+constexpr uint32_t kFsubH = 0b0000110'00000'00000'000'00000'1010011;
+//                            func7  | rs2 | rs1 |rm | rd  | opcode
+constexpr uint32_t kFmulH = 0b0001010'00000'00000'000'00000'1010011;
+//                            func7  | rs2 | rs1 |rm | rd  | opcode
+constexpr uint32_t kFdivH = 0b0001110'00000'00000'000'00000'1010011;
 
 class ZfhEncodingTest : public testing::Test {
  protected:
@@ -407,5 +415,81 @@ TEST_F(ZfhEncodingTest, FcvtHd_frd) {
 TEST_F(ZfhEncodingTest, FcvtHd_rm) {
   FloatRmHelper(kFcvtHd, OpcodeEnum::kFcvtHd);
 }
+
+TEST_F(ZfhEncodingTest, FaddH) {
+  enc_->ParseInstruction(kFaddH);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32Zfh, 0), OpcodeEnum::kFaddH);
+}
+
+TEST_F(ZfhEncodingTest, FaddH_frs1) {
+  FloatFrs1Helper(kFaddH, OpcodeEnum::kFaddH);
+}
+
+TEST_F(ZfhEncodingTest, FaddH_frs2) {
+  FloatFrs2Helper(kFaddH, OpcodeEnum::kFaddH);
+}
+
+TEST_F(ZfhEncodingTest, FaddH_frd) {
+  FloatFrdHelper(kFaddH, OpcodeEnum::kFaddH);
+}
+
+TEST_F(ZfhEncodingTest, FaddH_rm) { FloatRmHelper(kFaddH, OpcodeEnum::kFaddH); }
+
+TEST_F(ZfhEncodingTest, FsubH) {
+  enc_->ParseInstruction(kFsubH);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32Zfh, 0), OpcodeEnum::kFsubH);
+}
+
+TEST_F(ZfhEncodingTest, FsubH_frs1) {
+  FloatFrs1Helper(kFsubH, OpcodeEnum::kFsubH);
+}
+
+TEST_F(ZfhEncodingTest, FsubH_frs2) {
+  FloatFrs2Helper(kFsubH, OpcodeEnum::kFsubH);
+}
+
+TEST_F(ZfhEncodingTest, FsubH_frd) {
+  FloatFrdHelper(kFsubH, OpcodeEnum::kFsubH);
+}
+
+TEST_F(ZfhEncodingTest, FsubH_rm) { FloatRmHelper(kFsubH, OpcodeEnum::kFsubH); }
+
+TEST_F(ZfhEncodingTest, FmulH) {
+  enc_->ParseInstruction(kFmulH);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32Zfh, 0), OpcodeEnum::kFmulH);
+}
+
+TEST_F(ZfhEncodingTest, FmulH_frs1) {
+  FloatFrs1Helper(kFmulH, OpcodeEnum::kFmulH);
+}
+
+TEST_F(ZfhEncodingTest, FmulH_frs2) {
+  FloatFrs2Helper(kFmulH, OpcodeEnum::kFmulH);
+}
+
+TEST_F(ZfhEncodingTest, FmulH_frd) {
+  FloatFrdHelper(kFmulH, OpcodeEnum::kFmulH);
+}
+
+TEST_F(ZfhEncodingTest, FmulH_rm) { FloatRmHelper(kFmulH, OpcodeEnum::kFmulH); }
+
+TEST_F(ZfhEncodingTest, FdivH) {
+  enc_->ParseInstruction(kFdivH);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32Zfh, 0), OpcodeEnum::kFdivH);
+}
+
+TEST_F(ZfhEncodingTest, FdivH_frs1) {
+  FloatFrs1Helper(kFdivH, OpcodeEnum::kFdivH);
+}
+
+TEST_F(ZfhEncodingTest, FdivH_frs2) {
+  FloatFrs2Helper(kFdivH, OpcodeEnum::kFdivH);
+}
+
+TEST_F(ZfhEncodingTest, FdivH_frd) {
+  FloatFrdHelper(kFdivH, OpcodeEnum::kFdivH);
+}
+
+TEST_F(ZfhEncodingTest, FdivH_rm) { FloatRmHelper(kFdivH, OpcodeEnum::kFdivH); }
 
 }  // namespace

@@ -32,4 +32,8 @@ instruction group RiscVZfhminInst32[32] : Inst32Format {
   fcvt_hs : RType : func7 == 0b0100010, rs2 == 0b00000, opcode == 0b1010011;
   fcvt_dh : RType : func7 == 0b0100001, rs2 == 0b00010, opcode == 0b1010011;
   fcvt_hd : RType : func7 == 0b0100010, rs2 == 0b00001, opcode == 0b1010011;
+  fadd_h  : RType : func7 == 0b0000010, opcode == 0b1010011;
+  fsub_h  : RType : func7 == 0b0000110, opcode == 0b1010011;
+  fmul_h  : RType : func7 == 0b0001010, opcode == 0b1010011;
+  fdiv_h  : RType : func7 == 0b0001110, opcode == 0b1010011;
 };
