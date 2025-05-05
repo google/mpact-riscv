@@ -14,6 +14,10 @@
 
 #include "riscv/riscv_zfh_instructions.h"
 
+#include <sys/types.h>
+
+#include <cassert>
+#include <cmath>
 #include <cstdint>
 #include <functional>
 #include <limits>
@@ -27,6 +31,7 @@
 #include "riscv/riscv_csr.h"
 #include "riscv/riscv_fp_host.h"
 #include "riscv/riscv_fp_info.h"
+#include "riscv/riscv_fp_state.h"
 #include "riscv/riscv_instruction_helpers.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
@@ -36,6 +41,8 @@ namespace sim {
 namespace riscv {
 
 using HalfFP = ::mpact::sim::generic::HalfFP;
+using ::mpact::sim::generic::IsMpactFp;
+using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 using ::mpact::sim::generic::IsMpactFp;
 
 namespace {
@@ -209,6 +216,76 @@ inline HalfFP ConvertToHalfFP(double input_value, FPRoundingMode rm,
   return ConvertDoubleToHalfFP(input_value, rm, fflags);
 }
 
+template <typename Argument, typename IntermediateType>
+void RiscVZfhBinaryHelper(
+    const Instruction *instruction,
+    std::function<IntermediateType(IntermediateType, IntermediateType)>
+        operation) {
+  RiscVFPState *rv_fp =
+      static_cast<RiscVState *>(instruction->state())->rv_fp();
+  int rm_value = generic::GetInstructionSource<int>(instruction, 2);
+
+  // If the rounding mode is dynamic, read it from the current state.
+  if (rm_value == *FPRoundingMode::kDynamic) {
+    if (!rv_fp->rounding_mode_valid()) {
+      LOG(ERROR) << "Invalid rounding mode";
+      return;
+    }
+    rm_value = *(rv_fp->GetRoundingMode());
+  }
+  FPRoundingMode rm = static_cast<FPRoundingMode>(rm_value);
+  RiscVCsrDestinationOperand *fflags_dest =
+      static_cast<RiscVCsrDestinationOperand *>(instruction->Destination(1));
+  uint32_t fflags = fflags_dest->GetRiscVCsr()->GetUint32();
+  bool arguments_contain_snan = false;
+  IntermediateType b_emin =
+      std::pow(2.0, 1 - FPTypeInfo<IntermediateType>::kExpBias);
+  IntermediateType result;
+  RiscVBinaryFloatNaNBoxOp<RVFpRegister::ValueType, HalfFP, Argument>(
+      instruction,
+      [&operation, &arguments_contain_snan, &fflags, rv_fp, &rm, &result](
+          Argument a, Argument b) -> HalfFP {
+        IntermediateType a_f;
+        IntermediateType b_f;
+        if (FPTypeInfo<Argument>::IsSNaN(a)) {
+          a_f = absl::bit_cast<IntermediateType>(
+              FPTypeInfo<IntermediateType>::kPosInf | 1);
+          arguments_contain_snan = true;
+        } else {
+          a_f = ConvertFromHalfFP<IntermediateType>(a, fflags);
+        }
+        if (FPTypeInfo<Argument>::IsSNaN(b)) {
+          b_f = absl::bit_cast<IntermediateType>(
+              FPTypeInfo<IntermediateType>::kPosInf | 1);
+          arguments_contain_snan = true;
+        } else {
+          b_f = ConvertFromHalfFP<IntermediateType>(b, fflags);
+        }
+        if (zfh_internal::UseHostFlagsForConversion()) {
+          result = operation(a_f, b_f);
+        } else {
+          ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface(), rm);
+          result = operation(a_f, b_f);
+        }
+        if (!zfh_internal::UseHostFlagsForConversion()) {
+          fflags |= rv_fp->fflags()->GetUint32();
+        }
+        return ConvertToHalfFP(result, rm, fflags);
+      });
+  if (arguments_contain_snan) {
+    fflags_dest->GetRiscVCsr()->SetBits(*FPExceptions::kInvalidOp);
+  }
+  if (!zfh_internal::UseHostFlagsForConversion()) {
+    fflags_dest->GetRiscVCsr()->Write(fflags);
+  }
+  // When the result is less than b_emin before rounding we need to set the
+  // underflow flag.
+  if ((fflags_dest->GetRiscVCsr()->GetUint32() & *FPExceptions::kInexact) &&
+      result != 0 && std::abs(result) < b_emin) {
+    fflags_dest->GetRiscVCsr()->SetBits(*FPExceptions::kUnderflow);
+  }
+}
+
 }  // namespace
 
 namespace RV32 {
@@ -299,6 +376,30 @@ void RiscVZfhCvtHd(const Instruction *instruction) {
       instruction, [](double a, FPRoundingMode rm, uint32_t &fflags) -> HalfFP {
         return ConvertToHalfFP(a, rm, fflags);
       });
+}
+
+// Add two half precision values. Do the calculation in single precision.
+void RiscVZfhFadd(const Instruction *instruction) {
+  RiscVZfhBinaryHelper<HalfFP, float>(
+      instruction, [](float a, float b) -> float { return a + b; });
+}
+
+// Subtract two half precision values. Do the calculation in single precision.
+void RiscVZfhFsub(const Instruction *instruction) {
+  RiscVZfhBinaryHelper<HalfFP, float>(
+      instruction, [](float a, float b) -> float { return a - b; });
+}
+
+// Multiply two half precision values. Do the calculation in single precision.
+void RiscVZfhFmul(const Instruction *instruction) {
+  RiscVZfhBinaryHelper<HalfFP, float>(
+      instruction, [](float a, float b) -> float { return a * b; });
+}
+
+// Divide two half precision values. Do the calculation in single precision.
+void RiscVZfhFdiv(const Instruction *instruction) {
+  RiscVZfhBinaryHelper<HalfFP, float>(
+      instruction, [](float a, float b) -> float { return a / b; });
 }
 
 // TODO(b/409778536): Factor out generic unimplemented instruction semantic

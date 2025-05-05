@@ -681,7 +681,8 @@ class RiscVFPInstructionTestBase : public testing::Test {
       for (int rm : {0, 1, 2, 3, 4}) {
         rv_fp_->SetRoundingMode(static_cast<FPRoundingMode>(rm));
         SetRegisterValues<int, RV32Register>({{kRmName, rm}});
-        SetRegisterValues<R, DestRegisterType>({{kRdName, 0}});
+        SetRegisterValues<DestRegisterType::ValueType, DestRegisterType>(
+            {{kRdName, 0}});
 
         inst->Execute(nullptr);
 
@@ -761,7 +762,8 @@ class RiscVFPInstructionTestBase : public testing::Test {
         rv_fp_->SetRoundingMode(static_cast<FPRoundingMode>(rm));
         rv_fp_->fflags()->Write(static_cast<uint32_t>(0));
         SetRegisterValues<int, RV32Register>({{kRmName, rm}, {}});
-        SetRegisterValues<R, DestRegisterType>({{kRdName, 0}});
+        SetRegisterValues<DestRegisterType::ValueType, DestRegisterType>(
+            {{kRdName, 0}});
 
         inst->Execute(nullptr);
 
@@ -780,11 +782,13 @@ class RiscVFPInstructionTestBase : public testing::Test {
         FPCompare<R>(op_val, reg_val, delta_position,
                      absl::StrCat(name, "  ", i, ": ",
                                   FloatingPointToString<LHS>(lhs_span[i]), "  ",
-                                  FloatingPointToString<RHS>(rhs_span[i])));
+                                  FloatingPointToString<RHS>(rhs_span[i]),
+                                  " (rm: ", rm, ") "));
         LhsUInt lhs_uint = absl::bit_cast<LhsUInt>(lhs_span[i]);
         RhsUInt rhs_uint = absl::bit_cast<RhsUInt>(rhs_span[i]);
         EXPECT_EQ(test_operation_fflags, instruction_fflags)
-            << std::hex << name << "(" << lhs_uint << ", " << rhs_uint << ")";
+            << std::hex << name << "(" << lhs_uint << ", " << rhs_uint << ")"
+            << " rm: " << rm;
       }
     }
   }
@@ -937,7 +941,8 @@ class RiscVFPInstructionTestBase : public testing::Test {
         rv_fp_->SetRoundingMode(static_cast<FPRoundingMode>(rm));
         rv_fp_->fflags()->Write(static_cast<uint32_t>(0));
         SetRegisterValues<int, RV32Register>({{kRmName, rm}});
-        SetRegisterValues<R, DestRegisterType>({{kRdName, 0}});
+        SetRegisterValues<DestRegisterType::ValueType, DestRegisterType>(
+            {{kRdName, 0}});
 
         inst->Execute(nullptr);
         // Get the fflags for the instruction execution.
@@ -1376,7 +1381,7 @@ class FpConversionsTestHelper {
                      FPRoundingMode rm = FPRoundingMode::kRoundToNearest) {
     fflags_ = 0;
     U ret = Convert<U>(rm);
-    fflags = fflags_;
+    fflags |= fflags_;
     return ret;
   }
 
@@ -1454,8 +1459,13 @@ U FpConversionsTestHelper<T>::Convert(FPRoundingMode rm) {
   }
 
   if (FPTypeInfo<FpType>::IsNaN(fp_value_)) {
-    return absl::bit_cast<U>(FPTypeInfo<FpReturnType>::kCanonicalNaN);
-  } else if (FPTypeInfo<FpType>::kPosInf == unsigned_value_) {
+    IntReturnType return_bits =
+        sign() ? 1ULL << (FPTypeInfo<FpReturnType>::kBitSize - 1) : 0;
+    return_bits |= FPTypeInfo<FpReturnType>::kCanonicalNaN;
+    return absl::bit_cast<U>(return_bits);
+  }
+
+  if (FPTypeInfo<FpType>::kPosInf == unsigned_value_) {
     return absl::bit_cast<U>(FPTypeInfo<FpReturnType>::kPosInf);
   } else if (FPTypeInfo<FpType>::kNegInf == unsigned_value_) {
     return absl::bit_cast<U>(FPTypeInfo<FpReturnType>::kNegInf);
@@ -1624,7 +1634,7 @@ IntReturnType FpConversionsTestHelper<T>::NarrowingConversion(
 
     if (result != fp_value_double) {
       double b_emin = std::pow(2.0, e_min);
-      if (std::abs(result) <= b_emin || std::abs(fp_value_double) <= b_emin) {
+      if (std::abs(result) < b_emin || std::abs(fp_value_double) < b_emin) {
         fflags_ |= static_cast<uint32_t>(FPExceptions::kUnderflow);
       }
       fflags_ |= static_cast<uint32_t>(FPExceptions::kInexact);

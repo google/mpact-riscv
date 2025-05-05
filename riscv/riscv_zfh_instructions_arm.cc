@@ -164,17 +164,6 @@ HalfFP SoftConvertToHalfFP(T input_value, FPRoundingMode rm, uint32_t &fflags) {
     }
   }
 
-  // Handle flags for the specific underflow case.
-  if (unbounded_half_exponent < 0 ||
-      (unbounded_half_exponent == 0 && fres2 != ftmp)) {
-    fflags |= static_cast<uint32_t>(FPExceptions::kUnderflow);
-  }
-
-  // Handle flags for the specific inexact case.
-  if (fres2 != ftmp) {
-    fflags |= static_cast<uint32_t>(FPExceptions::kInexact);
-  }
-
   // Construct the half float.
   half_fp.value = half_mantissa |
                   (half_exponent << FPTypeInfo<HalfFP>::kSigSize) |
@@ -191,11 +180,17 @@ HalfFP SoftConvertToHalfFP(T input_value, FPRoundingMode rm, uint32_t &fflags) {
   T reconstructed_value = ((trailing_significand_float * precision_factor) +
                            implicit_bit_adjustment) *
                           exponent_factor * sign_factor;
+  bool exact_conversion = reconstructed_value == input_value;
 
-  if (reconstructed_value == input_value) {
-    // Clear the flags for exact conversions.
-    fflags &= ~(static_cast<uint32_t>(FPExceptions::kUnderflow) |
-                static_cast<uint32_t>(FPExceptions::kInexact));
+  // Handle flags for the specific underflow case.
+  if (!exact_conversion && (unbounded_half_exponent < 0 ||
+                            (unbounded_half_exponent == 0 && fres2 != ftmp))) {
+    fflags |= static_cast<uint32_t>(FPExceptions::kUnderflow);
+  }
+
+  // Handle flags for the specific inexact case.
+  if (!exact_conversion && (fres2 != ftmp)) {
+    fflags |= static_cast<uint32_t>(FPExceptions::kInexact);
   }
   return half_fp;
 }

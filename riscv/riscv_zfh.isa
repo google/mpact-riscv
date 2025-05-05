@@ -18,7 +18,7 @@
 isa ZFH {
   namespace mpact::sim::riscv::zfh;
   slots {
-    riscv32_zfh_min;
+    riscv32_zfh;
   }
 }
 
@@ -97,15 +97,44 @@ slot riscv64_zfh_min: riscv_zfh_min {
   opcodes {
     flh{(: rs1, I_imm12 : ), (: : frd)},
       resources: {next_pc, rs1 : frd[0..]},
-      semfunc: "&RV64::RiscVILhu", "&RV64::RiscVZfhFlhChild",  // new
+      semfunc: "&RV64::RiscVILhu", "&RV64::RiscVZfhFlhChild",
       disasm: "flh", "%frd, %I_imm12(%rs1)";
     fsh{: rs1, S_imm12, frs2},
       resources: {next_pc, rs1, frs2},
-      semfunc: "&RV64::RiscVISh",  // new
+      semfunc: "&RV64::RiscVISh",
       disasm: "fsh", "%frs2, %S_imm12(%rs1)";
     fmv_xh{: frs1 : rd},
       resources: {next_pc, frs1 : rd[0..]},
-      semfunc: "&RV64::RiscVZfhFMvxh",  // new
+      semfunc: "&RV64::RiscVZfhFMvxh",
       disasm: "fmv.x.h", "%rd, %frs1";
+  }
+}
+
+slot riscv32_zfh : riscv32_zfh_min {
+  includes {
+    #include "riscv/riscv_zfh_instructions.h"
+  }
+  default size = 4;
+  default latency = 0;
+  default opcode =
+    disasm: "Unimplemented instruction at 0x%(@:08x)",
+    semfunc: "&RV32VUnimplementedInstruction";
+  opcodes {
+    fadd_h{: frs1, frs2, rm : frd, fflags},
+      resources: {next_pc, frs1, frs2 : frd[0..]},
+      semfunc: "&RiscVZfhFadd",
+      disasm: "fadd.h", "%frd, %frs1, %frs2";
+    fsub_h{: frs1, frs2, rm : frd, fflags},
+      resources: {next_pc, frs1, frs2 : frd[0..]},
+      semfunc: "&RiscVZfhFsub",
+      disasm: "fsub.h", "%frd, %frs1, %frs2";
+    fmul_h{: frs1, frs2, rm : frd, fflags},
+      resources: {next_pc, frs1, frs2 : frd[0..]},
+      semfunc: "&RiscVZfhFmul",
+      disasm: "fmul.h", "%frd, %frs1, %frs2";
+    fdiv_h{: frs1, frs2, rm : frd, fflags},
+      resources: {next_pc, frs1, frs2 : frd[0..]},
+      semfunc: "&RiscVZfhFdiv",
+      disasm: "fdiv.h", "%frd, %frs1, %frs2";
   }
 }

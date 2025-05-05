@@ -119,7 +119,7 @@ void ZfhEncodingTest::ScalarRs1Helper(uint32_t binary_instruction,
     uint32_t rs1_adjustment = static_cast<uint32_t>(rs1_index) << rs1_offset;
     enc_->ParseInstruction(base_instruction | rs1_adjustment);
     std::unique_ptr<SourceOperandInterface> src(enc_->GetSource(
-        SlotEnum::kRiscv32ZfhMin, 0, opcode_enum, SourceOpEnum::kRs1, 0));
+        SlotEnum::kRiscv32Zfh, 0, opcode_enum, SourceOpEnum::kRs1, 0));
 
     // Pull the value from the source operand and compare it to the expected
     // value.
@@ -148,7 +148,7 @@ void ZfhEncodingTest::FloatFrdHelper(uint32_t binary_instruction,
     enc_->ParseInstruction(base_instruction | frd_adjustment);
     std::unique_ptr<RegisterDestinationOperand<RVFpRegister>> dst(
         static_cast<RegisterDestinationOperand<RVFpRegister> *>(
-            enc_->GetDestination(SlotEnum::kRiscv32ZfhMin, 0, opcode_enum,
+            enc_->GetDestination(SlotEnum::kRiscv32Zfh, 0, opcode_enum,
                                  DestOpEnum::kFrd, 0, 0)));
 
     // Pull the value from the destination operand and compare it to the
@@ -179,7 +179,7 @@ void ZfhEncodingTest::FloatSourceHelper(uint32_t binary_instruction,
     // Parse the instruction and get the source operand.
     enc_->ParseInstruction(base_instruction | src_adjustment);
     std::unique_ptr<SourceOperandInterface> src(enc_->GetSource(
-        SlotEnum::kRiscv32ZfhMin, 0, opcode_enum, source_op_enum, 0));
+        SlotEnum::kRiscv32Zfh, 0, opcode_enum, source_op_enum, 0));
 
     // Pull the value from the source operand and compare it to the expected
     // value.
@@ -205,9 +205,8 @@ void ZfhEncodingTest::FloatRmHelper(uint32_t binary_instruction,
   for (int rm = 0; rm <= 6; ++rm) {
     uint32_t rm_adjustment = rm << 12;
     enc_->ParseInstruction(kFcvtSh | rm_adjustment);
-    std::unique_ptr<SourceOperandInterface> src(
-        enc_->GetSource(SlotEnum::kRiscv32ZfhMin, 0, OpcodeEnum::kFcvtSh,
-                        SourceOpEnum::kRm, 0));
+    std::unique_ptr<SourceOperandInterface> src(enc_->GetSource(
+        SlotEnum::kRiscv32Zfh, 0, OpcodeEnum::kFcvtSh, SourceOpEnum::kRm, 0));
     EXPECT_EQ(src->AsUint32(0), rm);
   }
 }
@@ -251,7 +250,7 @@ TEST_F(ZfhEncodingTest, ComplexResources) {
 
 TEST_F(ZfhEncodingTest, Flh) {
   enc_->ParseInstruction(kFlh);
-  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32ZfhMin, 0), OpcodeEnum::kFlh);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32Zfh, 0), OpcodeEnum::kFlh);
 }
 
 TEST_F(ZfhEncodingTest, Flh_imm12) {
@@ -264,7 +263,7 @@ TEST_F(ZfhEncodingTest, Flh_imm12) {
     enc_->ParseInstruction(kFlh | imm_adjustment);
     std::unique_ptr<ImmediateOperand<int32_t>> src(
         static_cast<ImmediateOperand<int32_t> *>(
-            enc_->GetSource(SlotEnum::kRiscv32ZfhMin, 0, OpcodeEnum::kFlh,
+            enc_->GetSource(SlotEnum::kRiscv32Zfh, 0, OpcodeEnum::kFlh,
                             SourceOpEnum::kIImm12, 0)));
     EXPECT_EQ(src->AsInt32(0), expected_imm);
   }
@@ -276,7 +275,7 @@ TEST_F(ZfhEncodingTest, Flh_frd) { FloatFrdHelper(kFlh, OpcodeEnum::kFlh); }
 
 TEST_F(ZfhEncodingTest, Fsh) {
   enc_->ParseInstruction(kFsh);
-  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32ZfhMin, 0), OpcodeEnum::kFsh);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32Zfh, 0), OpcodeEnum::kFsh);
 }
 
 TEST_F(ZfhEncodingTest, Fsh_imm12) {
@@ -290,7 +289,7 @@ TEST_F(ZfhEncodingTest, Fsh_imm12) {
     enc_->ParseInstruction(kFsh | imm_adjustment);
     std::unique_ptr<ImmediateOperand<int32_t>> src(
         static_cast<ImmediateOperand<int32_t> *>(
-            enc_->GetSource(SlotEnum::kRiscv32ZfhMin, 0, OpcodeEnum::kFsh,
+            enc_->GetSource(SlotEnum::kRiscv32Zfh, 0, OpcodeEnum::kFsh,
                             SourceOpEnum::kSImm12, 0)));
     EXPECT_EQ(src->AsInt32(0), expected_imm);
   }
@@ -302,7 +301,7 @@ TEST_F(ZfhEncodingTest, Fsh_frs2) { FloatFrs2Helper(kFsh, OpcodeEnum::kFsh); }
 
 TEST_F(ZfhEncodingTest, FmvXh) {
   enc_->ParseInstruction(kFmvXh);
-  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32ZfhMin, 0), OpcodeEnum::kFmvXh);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32Zfh, 0), OpcodeEnum::kFmvXh);
 }
 
 TEST_F(ZfhEncodingTest, FmvXh_frs1) {
@@ -320,8 +319,8 @@ TEST_F(ZfhEncodingTest, FmvXh_rd) {
     enc_->ParseInstruction(kFmvXh | rd_adjustment);
     std::unique_ptr<RegisterDestinationOperand<RVXRegister>> dst(
         static_cast<RegisterDestinationOperand<RVXRegister> *>(
-            enc_->GetDestination(SlotEnum::kRiscv32ZfhMin, 0,
-                                 OpcodeEnum::kFmvXh, DestOpEnum::kRd, 0, 0)));
+            enc_->GetDestination(SlotEnum::kRiscv32Zfh, 0, OpcodeEnum::kFmvXh,
+                                 DestOpEnum::kRd, 0, 0)));
     uint32_t observed_value =
         dst->GetRegister()->data_buffer()->Get<uint32_t>(0);
     EXPECT_EQ(observed_value, expected_value);
@@ -330,7 +329,7 @@ TEST_F(ZfhEncodingTest, FmvXh_rd) {
 
 TEST_F(ZfhEncodingTest, FmvHx) {
   enc_->ParseInstruction(kFmvHx);
-  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32ZfhMin, 0), OpcodeEnum::kFmvHx);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32Zfh, 0), OpcodeEnum::kFmvHx);
 }
 
 TEST_F(ZfhEncodingTest, FmvHx_rs1) {
@@ -343,7 +342,7 @@ TEST_F(ZfhEncodingTest, FmvHx_frd) {
 
 TEST_F(ZfhEncodingTest, FcvtSh) {
   enc_->ParseInstruction(kFcvtSh);
-  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32ZfhMin, 0), OpcodeEnum::kFcvtSh);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32Zfh, 0), OpcodeEnum::kFcvtSh);
 }
 
 TEST_F(ZfhEncodingTest, FcvtSh_frs1) {
@@ -360,7 +359,7 @@ TEST_F(ZfhEncodingTest, FcvtSh_rm) {
 
 TEST_F(ZfhEncodingTest, FcvtHs) {
   enc_->ParseInstruction(kFcvtHs);
-  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32ZfhMin, 0), OpcodeEnum::kFcvtHs);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32Zfh, 0), OpcodeEnum::kFcvtHs);
 }
 
 TEST_F(ZfhEncodingTest, FcvtHs_frs1) {
@@ -377,7 +376,7 @@ TEST_F(ZfhEncodingTest, FcvtHs_rm) {
 
 TEST_F(ZfhEncodingTest, FcvtDh) {
   enc_->ParseInstruction(kFcvtDh);
-  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32ZfhMin, 0), OpcodeEnum::kFcvtDh);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32Zfh, 0), OpcodeEnum::kFcvtDh);
 }
 
 TEST_F(ZfhEncodingTest, FcvtDh_frs1) {
@@ -394,7 +393,7 @@ TEST_F(ZfhEncodingTest, FcvtDh_rm) {
 
 TEST_F(ZfhEncodingTest, FcvtHd) {
   enc_->ParseInstruction(kFcvtHd);
-  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32ZfhMin, 0), OpcodeEnum::kFcvtHd);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32Zfh, 0), OpcodeEnum::kFcvtHd);
 }
 
 TEST_F(ZfhEncodingTest, FcvtHd_frs1) {

@@ -33,6 +33,7 @@
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/operand_interface.h"
 #include "mpact/sim/generic/type_helpers.h"
+#include "riscv/riscv_fp_host.h"
 #include "riscv/riscv_fp_info.h"
 #include "riscv/riscv_i_instructions.h"
 #include "riscv/riscv_register.h"
@@ -53,11 +54,16 @@ using ::mpact::sim::riscv::RiscVZfhCvtDh;
 using ::mpact::sim::riscv::RiscVZfhCvtHd;
 using ::mpact::sim::riscv::RiscVZfhCvtHs;
 using ::mpact::sim::riscv::RiscVZfhCvtSh;
+using ::mpact::sim::riscv::RiscVZfhFadd;
+using ::mpact::sim::riscv::RiscVZfhFdiv;
 using ::mpact::sim::riscv::RiscVZfhFlhChild;
+using ::mpact::sim::riscv::RiscVZfhFmul;
 using ::mpact::sim::riscv::RiscVZfhFMvhx;
+using ::mpact::sim::riscv::RiscVZfhFsub;
 using ::mpact::sim::riscv::RV32Register;
 using ::mpact::sim::riscv::RV64Register;
 using ::mpact::sim::riscv::RVFpRegister;
+using ::mpact::sim::riscv::RVXRegister;
 using ::mpact::sim::riscv::RV32::RiscVILhu;
 using ::mpact::sim::riscv::RV32::RiscVZfhFMvxh;
 using ::mpact::sim::riscv::test::FpConversionsTestHelper;
@@ -562,6 +568,118 @@ TEST_F(RV32ZfhInstructionTest, RiscVZfhCvtHs_strict_zeros) {
   actual_n0 = ConversionHelper<HalfFP, float, kRoundingModeRoundUp>(neg_zero);
   EXPECT_EQ(absl::bit_cast<uint16_t>(actual_p0), expected_p0);
   EXPECT_EQ(absl::bit_cast<uint16_t>(actual_n0), expected_n0);
+}
+
+// Add half precision values. Generate the expected result by using a natively
+// supported float datatype for the operation.
+TEST_F(RV32ZfhInstructionTest, RiscVZfhFadd) {
+  SetSemanticFunction(&RiscVZfhFadd);
+  BinaryOpWithFflagsFPTestHelper<HalfFP, HalfFP, HalfFP>(
+      "fadd.h", instruction_, {"f", "f", "f"}, 32,
+      [this](HalfFP a, HalfFP b) -> std::tuple<HalfFP, uint32_t> {
+        FPRoundingMode rm = rv_fp_->GetRoundingMode();
+        uint32_t fflags = 0;
+        double a_f =
+            FpConversionsTestHelper(a).ConvertWithFlags<double>(fflags);
+        double b_f =
+            FpConversionsTestHelper(b).ConvertWithFlags<double>(fflags);
+        HalfFP result =
+            FpConversionsTestHelper(a_f + b_f).ConvertWithFlags<HalfFP>(fflags,
+                                                                        rm);
+        // inf + -inf, -inf + inf are both invalid.
+        if (std::isinf(a_f) && std::isinf(b_f) && a.value != b.value) {
+          fflags |= static_cast<uint32_t>(
+              mpact::sim::riscv::FPExceptions::kInvalidOp);
+          result.value = FPTypeInfo<HalfFP>::kCanonicalNaN;
+        }
+        return std::make_tuple(result, fflags);
+      });
+}
+
+// Subtract half precision values. Generate the expected result by using a
+// natively supported float datatype for the operation.
+TEST_F(RV32ZfhInstructionTest, RiscVZfhFsub) {
+  SetSemanticFunction(&RiscVZfhFsub);
+  BinaryOpWithFflagsFPTestHelper<HalfFP, HalfFP, HalfFP>(
+      "fsub.h", instruction_, {"f", "f", "f"}, 32,
+      [this](HalfFP a, HalfFP b) -> std::tuple<HalfFP, uint32_t> {
+        FPRoundingMode rm = rv_fp_->GetRoundingMode();
+        uint32_t fflags = 0;
+        double a_f =
+            FpConversionsTestHelper(a).ConvertWithFlags<double>(fflags);
+        double b_f =
+            FpConversionsTestHelper(b).ConvertWithFlags<double>(fflags);
+        HalfFP result =
+            FpConversionsTestHelper(a_f - b_f).ConvertWithFlags<HalfFP>(fflags,
+                                                                        rm);
+        // inf - inf and -inf - -inf are both invalid.
+        if (std::isinf(a_f) && std::isinf(b_f) && a.value == b.value) {
+          fflags |= static_cast<uint32_t>(
+              mpact::sim::riscv::FPExceptions::kInvalidOp);
+          result.value = FPTypeInfo<HalfFP>::kCanonicalNaN;
+        }
+        return std::make_tuple(result, fflags);
+      });
+}
+
+// Multiply half precision values. Generate the expected result by using a
+// natively supported float datatype for the operation.
+TEST_F(RV32ZfhInstructionTest, RiscVZfhFmul) {
+  SetSemanticFunction(&RiscVZfhFmul);
+  BinaryOpWithFflagsFPTestHelper<HalfFP, HalfFP, HalfFP>(
+      "fmul.h", instruction_, {"f", "f", "f"}, 32,
+      [this](HalfFP a, HalfFP b) -> std::tuple<HalfFP, uint32_t> {
+        FPRoundingMode rm = rv_fp_->GetRoundingMode();
+        uint32_t fflags = 0;
+        double a_f =
+            FpConversionsTestHelper(a).ConvertWithFlags<double>(fflags);
+        double b_f =
+            FpConversionsTestHelper(b).ConvertWithFlags<double>(fflags);
+        HalfFP result =
+            FpConversionsTestHelper(a_f * b_f).ConvertWithFlags<HalfFP>(fflags,
+                                                                        rm);
+        // Multiplying infinity and zero is invalid.
+        if ((std::isinf(a_f) && b_f == 0) || (a_f == 0 && std::isinf(b_f))) {
+          fflags |= static_cast<uint32_t>(
+              mpact::sim::riscv::FPExceptions::kInvalidOp);
+          result.value = FPTypeInfo<HalfFP>::kCanonicalNaN;
+        }
+        return std::make_tuple(result, fflags);
+      });
+}
+
+// Divide half precision values. Generate the expected result by using a
+// natively supported float datatype for the operation.
+TEST_F(RV32ZfhInstructionTest, RiscVZfhFdiv) {
+  SetSemanticFunction(&RiscVZfhFdiv);
+  BinaryOpWithFflagsFPTestHelper<HalfFP, HalfFP, HalfFP>(
+      "fdiv.h", instruction_, {"f", "f", "f"}, 32,
+      [this](HalfFP a, HalfFP b) -> std::tuple<HalfFP, uint32_t> {
+        FPRoundingMode rm = rv_fp_->GetRoundingMode();
+        uint32_t fflags = 0;
+        double a_f =
+            FpConversionsTestHelper(a).ConvertWithFlags<double>(fflags);
+        double b_f =
+            FpConversionsTestHelper(b).ConvertWithFlags<double>(fflags);
+        HalfFP result =
+            FpConversionsTestHelper(a_f / b_f).ConvertWithFlags<HalfFP>(fflags,
+                                                                        rm);
+        if ((a_f == 0 && b_f == 0) || (std::isinf(a_f) && std::isinf(b_f))) {
+          // 0 / 0 and inf / inf are both invalid.
+          fflags |= static_cast<uint32_t>(
+              mpact::sim::riscv::FPExceptions::kInvalidOp);
+          result.value = FPTypeInfo<HalfFP>::kCanonicalNaN;
+        } else if (!FPTypeInfo<HalfFP>::IsNaN(a) &&
+                   (b.value == FPTypeInfo<HalfFP>::kPosZero ||
+                    b.value == FPTypeInfo<HalfFP>::kNegZero)) {
+          // Dividing by zero requires an exception for non-NaN dividend values.
+          result.value = ((a.value ^ b.value) & FPTypeInfo<HalfFP>::kNegZero) |
+                         (FPTypeInfo<HalfFP>::kPosInf);
+          fflags |= static_cast<uint32_t>(
+              mpact::sim::riscv::FPExceptions::kDivByZero);
+        }
+        return std::make_tuple(result, fflags);
+      });
 }
 
 class RV64ZfhInstructionTest : public RVZfhInstructionTestBase {};

@@ -90,12 +90,49 @@ void RiscVZfhCvtHd(const Instruction *instruction);
 // TODO(b/409778536): Factor out generic unimplemented instruction semantic
 //                    function.
 void RV32VUnimplementedInstruction(const Instruction *instruction);
+
 HalfFP ConvertSingleToHalfFP(float, FPRoundingMode, uint32_t &);
 HalfFP ConvertDoubleToHalfFP(double, FPRoundingMode, uint32_t &);
 
 namespace zfh_internal {
 bool UseHostFlagsForConversion();
 }  // namespace zfh_internal
+
+// Source Operands:
+//   frs1: Float Register
+//   frs2: Float Register
+//   rm: Literal Operand (rounding mode)
+// Destination Operands:
+//   frd: Float Register
+//   fflags: Accrued Exception Flags field in FCSR
+void RiscVZfhFadd(const Instruction *instruction);
+
+// Source Operands:
+//   frs1: Float Register
+//   frs2: Float Register
+//   rm: Literal Operand (rounding mode)
+// Destination Operands:
+//   frd: Float Register
+//   fflags: Accrued Exception Flags field in FCSR
+void RiscVZfhFsub(const Instruction *instruction);
+
+// Source Operands:
+//   frs1: Float Register
+//   frs2: Float Register
+//   rm: Literal Operand (rounding mode)
+// Destination Operands:
+//   frd: Float Register
+//   fflags: Accrued Exception Flags field in FCSR
+void RiscVZfhFmul(const Instruction *instruction);
+
+// Source Operands:
+//   frs1: Float Register
+//   frs2: Float Register
+//   rm: Literal Operand (rounding mode)
+// Destination Operands:
+//   frd: Float Register
+//   fflags: Accrued Exception Flags field in FCSR
+void RiscVZfhFdiv(const Instruction *instruction);
 
 }  // namespace riscv
 }  // namespace sim
