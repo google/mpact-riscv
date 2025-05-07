@@ -144,6 +144,26 @@ slot riscv32_zfh : riscv32_zfh_min {
       resources: {next_pc, frs1, frs2 : frd[0..]},
       semfunc: "&RiscVZfhFmax",
       disasm: "fmax.h", "%frd, %frs1, %frs2";
+    fsqrt_h{: frs1, rm : frd, fflags},
+      resources: {next_pc, frs1 : frd[0..]},
+      semfunc: "&RiscVZfhFsqrt",
+      disasm: "fsqrt.h", "%frd, %frs1";
+    fcvt_hw{: rs1, rm : frd, fflags},
+      resources: {next_pc, frs1 : frd[0..]},
+      semfunc: "&RV32::RiscVZfhCvtHw",
+      disasm: "fcvt.h.w", "%frd, %rs1";
+    fcvt_wh{: frs1, rm : rd, fflags},
+      resources: {next_pc, frs1 : rd[0..]},
+      semfunc: "&RV32::RiscVZfhCvtWh",
+      disasm: "fcvt.w.h", "%rd, %frs1";
+    fcvt_hwu{: rs1, rm : frd, fflags},
+      resources: {next_pc, frs1 : frd[0..]},
+      semfunc: "&RV32::RiscVZfhCvtHwu",
+      disasm: "fcvt.h.wu", "%frd, %rs1";
+    fcvt_wuh{: frs1, rm : rd, fflags},
+      resources: {next_pc, frs1 : rd[0..]},
+      semfunc: "&RV32::RiscVZfhCvtWuh",
+      disasm: "fcvt.wu.h", "%rd, %frs1";
     fsgnj_h{: frs1, frs2 : frd },
       resources: {next_pc, frs1, frs2 : frd[0..]},
       semfunc: "&RiscVZfhFsgnj",
@@ -156,5 +176,21 @@ slot riscv32_zfh : riscv32_zfh_min {
       resources: {next_pc, frs1, frs2 : frd[0..]},
       semfunc: "&RiscVZfhFsgnjx",
       disasm: "fsgnjnx.h", "%frd, %frs1, %frs2";
+    fcmpeq_h{: frs1, frs2 : rd, fflags},
+      resources: { next_pc, frs1, frs2 : rd[0..]},
+      semfunc: "&RV32::RiscVZfhFcmpeq",
+      disasm: "feq.h", "%rd, %frs1, %frs2";
+    fcmplt_h{: frs1, frs2 : rd, fflags},
+      resources: { next_pc, frs1, frs2 : rd[0..]},
+      semfunc: "&RV32::RiscVZfhFcmplt",
+      disasm: "flt.h", "%rd, %frs1, %frs2";
+    fcmple_h{: frs1, frs2 : rd, fflags},
+      resources: { next_pc, frs1, frs2 : rd[0..]},
+      semfunc: "&RV32::RiscVZfhFcmple",
+      disasm: "fle.h", "%rd, %frs1, %frs2";
+    fclass_h{: frs1 : rd},
+      resources: { next_pc, frs1 : rd[0..]},
+      semfunc: "&RV32::RiscVZfhFclass",
+      disasm: "fclass.h", "%rd, %frs1";
   }
 }

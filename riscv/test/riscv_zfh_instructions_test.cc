@@ -21,12 +21,19 @@
 #include <cassert>
 #include <cmath>
 #include <cstdint>
+#include <functional>
 #include <ios>
+#include <limits>
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include <vector>
 
 #include "absl/base/casts.h"
+#include "absl/random/distributions.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/immediate_operand.h"
@@ -64,15 +71,28 @@ using ::mpact::sim::riscv::RiscVZfhFMvhx;
 using ::mpact::sim::riscv::RiscVZfhFsgnj;
 using ::mpact::sim::riscv::RiscVZfhFsgnjn;
 using ::mpact::sim::riscv::RiscVZfhFsgnjx;
+using ::mpact::sim::riscv::RiscVZfhFsqrt;
 using ::mpact::sim::riscv::RiscVZfhFsub;
 using ::mpact::sim::riscv::RV32Register;
 using ::mpact::sim::riscv::RV64Register;
 using ::mpact::sim::riscv::RVFpRegister;
-using ::mpact::sim::riscv::RVXRegister;
+using ::mpact::sim::riscv::ScopedFPRoundingMode;
 using ::mpact::sim::riscv::RV32::RiscVILhu;
+using ::mpact::sim::riscv::RV32::RiscVZfhCvtHw;
+using ::mpact::sim::riscv::RV32::RiscVZfhCvtHwu;
+using ::mpact::sim::riscv::RV32::RiscVZfhCvtWh;
+using ::mpact::sim::riscv::RV32::RiscVZfhCvtWuh;
+using ::mpact::sim::riscv::RV32::RiscVZfhFclass;
+using ::mpact::sim::riscv::RV32::RiscVZfhFcmpeq;
+using ::mpact::sim::riscv::RV32::RiscVZfhFcmple;
+using ::mpact::sim::riscv::RV32::RiscVZfhFcmplt;
 using ::mpact::sim::riscv::RV32::RiscVZfhFMvxh;
+
+using ::mpact::sim::riscv::test::FloatingPointToString;
+using ::mpact::sim::riscv::test::FPCompare;
 using ::mpact::sim::riscv::test::FpConversionsTestHelper;
 using ::mpact::sim::riscv::test::FPTypeInfo;
+using ::mpact::sim::riscv::test::kTestValueLength;
 using ::mpact::sim::riscv::test::RiscVFPInstructionTestBase;
 
 const int kRoundingModeRoundToNearest =
@@ -89,6 +109,13 @@ class RVZfhInstructionTestBase : public RiscVFPInstructionTestBase {
 
   template <typename ReturnType, typename IntegerRegister>
   ReturnType LoadHalfHelper(typename IntegerRegister::ValueType, int16_t);
+
+  template <typename DestRegisterType, typename LhsRegisterType, typename R,
+            typename LHS>
+  void UnaryOpWithFflagsMixedTestHelper(
+      absl::string_view name, Instruction *inst,
+      absl::Span<const absl::string_view> reg_prefixes, int delta_position,
+      std::function<std::tuple<R, uint32_t>(LHS, uint32_t)> operation);
 };
 
 template <typename AddressType, typename ValueType>
@@ -124,6 +151,101 @@ ReturnType RVZfhInstructionTestBase::LoadHalfHelper(
                                 .first->data_buffer()
                                 ->template Get<ReturnType>(0);
   return observed_val;
+}
+
+// Helper for unary instructions that go between floats and integers.
+template <typename DestRegisterType, typename LhsRegisterType, typename R,
+          typename LHS>
+void RVZfhInstructionTestBase::UnaryOpWithFflagsMixedTestHelper(
+    absl::string_view name, Instruction *inst,
+    absl::Span<const absl::string_view> reg_prefixes, int delta_position,
+    std::function<std::tuple<R, uint32_t>(LHS, uint32_t)> operation) {
+  using LhsInt = typename FPTypeInfo<LHS>::IntType;
+  using RInt = typename FPTypeInfo<R>::IntType;
+  LHS lhs_values[kTestValueLength];
+  auto lhs_span = absl::Span<LHS>(lhs_values);
+  const std::string kR1Name = absl::StrCat(reg_prefixes[0], 1);
+  const std::string kRdName = absl::StrCat(reg_prefixes[1], 5);
+  // This is used for the rounding mode operand.
+  const std::string kRmName = absl::StrCat("x", 10);
+  if (kR1Name[0] == 'x') {
+    AppendRegisterOperands<RV32Register>({kR1Name}, {});
+  } else {
+    AppendRegisterOperands<RVFpRegister>({kR1Name}, {});
+  }
+  if (kRdName[0] == 'x') {
+    AppendRegisterOperands<RV32Register>({}, {kRdName});
+  } else {
+    AppendRegisterOperands<RVFpRegister>({}, {kRdName});
+  }
+  AppendRegisterOperands<RV32Register>({kRmName}, {});
+  auto *flag_op = rv_fp_->fflags()->CreateSetDestinationOperand(0, "fflags");
+  instruction_->AppendDestination(flag_op);
+  if constexpr (std::is_integral<LHS>::value) {
+    for (auto &lhs : lhs_span) {
+      lhs = absl::Uniform(absl::IntervalClosed, bitgen_,
+                          std::numeric_limits<LHS>::min(),
+                          std::numeric_limits<LHS>::max());
+    }
+    *reinterpret_cast<LHS *>(&lhs_span[0]) = 0;
+    *reinterpret_cast<LHS *>(&lhs_span[1]) = 1;
+    *reinterpret_cast<LHS *>(&lhs_span[2]) = 2;
+    *reinterpret_cast<LHS *>(&lhs_span[3]) = 4;
+    *reinterpret_cast<LHS *>(&lhs_span[4]) = 8;
+    *reinterpret_cast<LHS *>(&lhs_span[5]) = 16;
+    *reinterpret_cast<LHS *>(&lhs_span[6]) = 1024;
+    *reinterpret_cast<LHS *>(&lhs_span[7]) = 65000;
+  } else {
+    FillArrayWithRandomFPValues<LHS>(lhs_span);
+    *reinterpret_cast<LhsInt *>(&lhs_span[0]) = FPTypeInfo<LHS>::kQNaN;
+    *reinterpret_cast<LhsInt *>(&lhs_span[1]) = FPTypeInfo<LHS>::kSNaN;
+    *reinterpret_cast<LhsInt *>(&lhs_span[2]) = FPTypeInfo<LHS>::kPosInf;
+    *reinterpret_cast<LhsInt *>(&lhs_span[3]) = FPTypeInfo<LHS>::kNegInf;
+    *reinterpret_cast<LhsInt *>(&lhs_span[4]) = FPTypeInfo<LHS>::kPosZero;
+    *reinterpret_cast<LhsInt *>(&lhs_span[5]) = FPTypeInfo<LHS>::kNegZero;
+    *reinterpret_cast<LhsInt *>(&lhs_span[6]) = FPTypeInfo<LHS>::kPosDenorm;
+    *reinterpret_cast<LhsInt *>(&lhs_span[7]) = FPTypeInfo<LHS>::kNegDenorm;
+  }
+  for (int i = 0; i < kTestValueLength; i++) {
+    if constexpr (std::is_integral<LHS>::value) {
+      SetRegisterValues<LHS, LhsRegisterType>({{kR1Name, lhs_span[i]}});
+    } else {
+      SetNaNBoxedRegisterValues<LHS, LhsRegisterType>({{kR1Name, lhs_span[i]}});
+    }
+
+    for (int rm : {0, 1, 2, 3, 4}) {
+      rv_fp_->SetRoundingMode(static_cast<FPRoundingMode>(rm));
+      rv_fp_->fflags()->Write(static_cast<uint32_t>(0));
+      SetRegisterValues<int, RV32Register>({{kRmName, rm}, {}});
+      SetRegisterValues<typename DestRegisterType::ValueType, DestRegisterType>(
+          {{kRdName, 0}});
+
+      inst->Execute(nullptr);
+      auto instruction_fflags = rv_fp_->fflags()->GetUint32();
+
+      R op_val;
+      uint32_t test_operation_fflags;
+      {
+        ScopedFPRoundingMode scoped_rm(rv_fp_->host_fp_interface(), rm);
+        std::tie(op_val, test_operation_fflags) = operation(lhs_span[i], rm);
+      }
+
+      auto reg_val = state_->GetRegister<DestRegisterType>(kRdName)
+                         .first->data_buffer()
+                         ->template Get<R>(0);
+      FPCompare<R>(
+          op_val, reg_val, delta_position,
+          absl::StrCat(name, "  ", i, ": ",
+                       FloatingPointToString<LHS>(lhs_span[i]), " rm: ", rm));
+      LhsInt lhs_uint = absl::bit_cast<LhsInt>(lhs_span[i]);
+      RInt op_val_uint = absl::bit_cast<RInt>(op_val);
+      EXPECT_EQ(test_operation_fflags, instruction_fflags)
+          << name << "(" << FloatingPointToString<LHS>(lhs_span[i]) << ")  "
+          << std::hex << name << "(0x" << lhs_uint
+          << ") == " << FloatingPointToString<R>(op_val) << std::hex << "  0x"
+          << op_val_uint << " rm: " << rm;
+    }
+  }
 }
 
 // A source operand that is used to set the rounding mode. This is less
@@ -767,6 +889,7 @@ TEST_F(RV32ZfhInstructionTest, RiscVZfhFmax) {
       });
 }
 
+// Test sign injection for half precision values.
 TEST_F(RV32ZfhInstructionTest, RiscVZfhFsgnj) {
   SetSemanticFunction(&RiscVZfhFsgnj);
   BinaryOpWithFflagsFPTestHelper<HalfFP, HalfFP, HalfFP>(
@@ -781,6 +904,7 @@ TEST_F(RV32ZfhInstructionTest, RiscVZfhFsgnj) {
       });
 }
 
+// Test sign injection for half precision values with the opposite sign bit.
 TEST_F(RV32ZfhInstructionTest, RiscVZfhFsgnjn) {
   SetSemanticFunction(&RiscVZfhFsgnjn);
   BinaryOpWithFflagsFPTestHelper<HalfFP, HalfFP, HalfFP>(
@@ -795,6 +919,7 @@ TEST_F(RV32ZfhInstructionTest, RiscVZfhFsgnjn) {
       });
 }
 
+// Test sign injection for half precision values with the xor sign bit..
 TEST_F(RV32ZfhInstructionTest, RiscVZfhFsgnjx) {
   SetSemanticFunction(&RiscVZfhFsgnjx);
   BinaryOpWithFflagsFPTestHelper<HalfFP, HalfFP, HalfFP>(
@@ -806,6 +931,218 @@ TEST_F(RV32ZfhInstructionTest, RiscVZfhFsgnjx) {
         result.value |= (a.value ^ b.value) & ~(FPTypeInfo<HalfFP>::kExpMask |
                                                 FPTypeInfo<HalfFP>::kSigMask);
         return std::make_tuple(result, 0);
+      });
+}
+
+// Test square root for half precision values.
+TEST_F(RV32ZfhInstructionTest, RiscVZfhFsqrt) {
+  SetSemanticFunction(&RiscVZfhFsqrt);
+  UnaryOpWithFflagsFPTestHelper<HalfFP, HalfFP>(
+      "fsqrt.h", instruction_, {"f", "f"}, 32,
+      [](HalfFP input_half, int rm) -> std::tuple<HalfFP, uint32_t> {
+        uint32_t fflags = 0;
+        double input_double_f = FpConversionsTestHelper(input_half)
+                                    .ConvertWithFlags<double>(fflags);
+        HalfFP result;
+        if (FPTypeInfo<HalfFP>::IsNaN(input_half)) {
+          result.value = FPTypeInfo<HalfFP>::kCanonicalNaN;
+          if (!FPTypeInfo<HalfFP>::IsQNaN(input_half)) {
+            fflags |= static_cast<uint32_t>(
+                mpact::sim::riscv::FPExceptions::kInvalidOp);
+          }
+        } else if (std::isinf(input_double_f) && input_double_f > 0) {
+          result.value = FPTypeInfo<HalfFP>::kPosInf;
+        } else if (input_double_f < 0) {
+          result.value = FPTypeInfo<HalfFP>::kCanonicalNaN;
+          fflags |= static_cast<uint32_t>(
+              mpact::sim::riscv::FPExceptions::kInvalidOp);
+        } else {
+          result = FpConversionsTestHelper(std::sqrt(input_double_f))
+                       .ConvertWithFlags<HalfFP>(
+                           fflags, static_cast<FPRoundingMode>(rm));
+        }
+        return std::make_tuple(result, fflags);
+      });
+}
+
+// Test conversion from signed 32 bit integer to half precision.
+TEST_F(RV32ZfhInstructionTest, RiscVZfhCvtHw) {
+  SetSemanticFunction(&RiscVZfhCvtHw);
+  UnaryOpWithFflagsMixedTestHelper<RVFpRegister, RV32Register, HalfFP, int32_t>(
+      "fcvt.h.w", instruction_, {"x", "f"}, 32,
+      [](int32_t input_int, int rm) -> std::tuple<HalfFP, uint32_t> {
+        uint32_t fflags = 0;
+        HalfFP result = FpConversionsTestHelper(static_cast<double>(input_int))
+                            .ConvertWithFlags<HalfFP>(
+                                fflags, static_cast<FPRoundingMode>(rm));
+        return std::make_tuple(result, fflags);
+      });
+}
+
+// Test conversion from half precision to signed 32 bit integer.
+TEST_F(RV32ZfhInstructionTest, RiscVZfhCvtWh) {
+  SetSemanticFunction(&RiscVZfhCvtWh);
+  UnaryOpWithFflagsMixedTestHelper<RV32Register, RVFpRegister, int32_t, HalfFP>(
+      "fcvt.w.h", instruction_, {"f", "x"}, 32,
+      [this](HalfFP input, int rm) -> std::tuple<int32_t, uint32_t> {
+        uint32_t fflags = 0;
+        double input_double =
+            FpConversionsTestHelper(input).ConvertWithFlags<double>(fflags);
+        const int32_t val =
+            RoundToInteger<double, int32_t>(input_double, rm, fflags);
+        return std::make_tuple(val, fflags);
+      });
+}
+
+// Test conversion from unsigned 32 bit integer to half precision.
+TEST_F(RV32ZfhInstructionTest, RiscVZfhCvtHwu) {
+  SetSemanticFunction(&RiscVZfhCvtHwu);
+  UnaryOpWithFflagsMixedTestHelper<RVFpRegister, RV32Register, HalfFP,
+                                   uint32_t>(
+      "fcvt.h.wu", instruction_, {"x", "f"}, 32,
+      [](uint32_t input_int, int rm) -> std::tuple<HalfFP, uint32_t> {
+        uint32_t fflags = 0;
+        HalfFP result = FpConversionsTestHelper(static_cast<double>(input_int))
+                            .ConvertWithFlags<HalfFP>(
+                                fflags, static_cast<FPRoundingMode>(rm));
+        return std::make_tuple(result, fflags);
+      });
+}
+
+// Test conversion from half precision to unsigned 32 bit integer.
+TEST_F(RV32ZfhInstructionTest, RiscVZfhCvtWuh) {
+  SetSemanticFunction(&RiscVZfhCvtWuh);
+  UnaryOpWithFflagsMixedTestHelper<RV32Register, RVFpRegister, uint32_t,
+                                   HalfFP>(
+      "fcvt.wu.h", instruction_, {"f", "x"}, 32,
+      [this](HalfFP input, int rm) -> std::tuple<uint32_t, uint32_t> {
+        uint32_t fflags = 0;
+        double input_double =
+            FpConversionsTestHelper(input).ConvertWithFlags<double>(fflags);
+        const uint32_t val =
+            RoundToInteger<double, uint32_t>(input_double, rm, fflags);
+        return std::make_tuple(val, fflags);
+      });
+}
+
+// Test equality comparison for half precision values.
+TEST_F(RV32ZfhInstructionTest, RiscVZfhFcmpeq) {
+  SetSemanticFunction(&RiscVZfhFcmpeq);
+  BinaryOpWithFflagsFPTestHelper<uint64_t, HalfFP, HalfFP>(
+      "feq.h", instruction_, {"f", "f", "x"}, 32,
+      [](HalfFP a, HalfFP b) -> std::tuple<uint64_t, uint32_t> {
+        uint32_t fflags = 0;
+        double a_f =
+            FpConversionsTestHelper(a).ConvertWithFlags<double>(fflags);
+        double b_f =
+            FpConversionsTestHelper(b).ConvertWithFlags<double>(fflags);
+        uint64_t result = a_f == b_f ? 1 : 0;
+        if (std::isnan(a_f) || std::isnan(b_f)) {
+          result = 0;
+        }
+        return std::make_tuple(result, fflags);
+      });
+}
+
+// Test less than comparison for half precision values.
+TEST_F(RV32ZfhInstructionTest, RiscVZfhFcmplt) {
+  SetSemanticFunction(&RiscVZfhFcmplt);
+  BinaryOpWithFflagsFPTestHelper<uint64_t, HalfFP, HalfFP>(
+      "flt.h", instruction_, {"f", "f", "x"}, 32,
+      [](HalfFP a, HalfFP b) -> std::tuple<uint64_t, uint32_t> {
+        uint32_t fflags = 0;
+        double a_f =
+            FpConversionsTestHelper(a).ConvertWithFlags<double>(fflags);
+        double b_f =
+            FpConversionsTestHelper(b).ConvertWithFlags<double>(fflags);
+        uint64_t result = a_f < b_f ? 1 : 0;
+        if (std::isnan(a_f) || std::isnan(b_f)) {
+          result = 0;
+          // LT is a signaling comparison, so the invalid operation flag is
+          // set.
+          fflags |= static_cast<uint32_t>(
+              mpact::sim::riscv::FPExceptions::kInvalidOp);
+        }
+        return std::make_tuple(result, fflags);
+      });
+}
+
+// Test less than or equal to comparison for half precision values.
+TEST_F(RV32ZfhInstructionTest, RiscVZfhFcmple) {
+  SetSemanticFunction(&RiscVZfhFcmple);
+  BinaryOpWithFflagsFPTestHelper<uint64_t, HalfFP, HalfFP>(
+      "fle.h", instruction_, {"f", "f", "x"}, 32,
+      [](HalfFP a, HalfFP b) -> std::tuple<uint64_t, uint32_t> {
+        uint32_t fflags = 0;
+        double a_f =
+            FpConversionsTestHelper(a).ConvertWithFlags<double>(fflags);
+        double b_f =
+            FpConversionsTestHelper(b).ConvertWithFlags<double>(fflags);
+        uint64_t result = a_f <= b_f ? 1 : 0;
+        if (std::isnan(a_f) || std::isnan(b_f)) {
+          result = 0;
+          // LE is a signaling comparison, so the invalid operation flag is
+          // set.
+          fflags |= static_cast<uint32_t>(
+              mpact::sim::riscv::FPExceptions::kInvalidOp);
+        }
+        return std::make_tuple(result, fflags);
+      });
+}
+
+// Test classification of half precision values.
+TEST_F(RV32ZfhInstructionTest, RiscVZfhFclass) {
+  SetSemanticFunction(&RiscVZfhFclass);
+  UnaryOpWithFflagsMixedTestHelper<RV32Register, RVFpRegister, uint32_t,
+                                   HalfFP>(
+      "fclass.h", instruction_, {"f", "x"}, 32,
+      [](HalfFP input, int rm) -> std::tuple<uint32_t, uint32_t> {
+        uint16_t sign_mask =
+            ~(FPTypeInfo<HalfFP>::kExpMask | FPTypeInfo<HalfFP>::kSigMask);
+        uint16_t sign = input.value & sign_mask;
+        int shift = -1;
+
+        switch (input.value & FPTypeInfo<HalfFP>::kExpMask) {
+          case 0:
+            if (input.value & FPTypeInfo<HalfFP>::kSigMask) {
+              if (sign) {
+                shift = 2;  // Negative subnormal
+              } else {
+                shift = 5;  // Positive subnormal
+              }
+            } else {
+              if (sign) {
+                shift = 3;  // Negative zero
+              } else {
+                shift = 4;  // Positive zero
+              }
+            }
+            break;
+          case FPTypeInfo<HalfFP>::kExpMask:
+            if (input.value & FPTypeInfo<HalfFP>::kSigMask) {
+              if (FPTypeInfo<HalfFP>::IsQNaN(input)) {
+                shift = 9;  // Quiet NaN
+              } else {
+                shift = 8;  // Signaling NaN
+              }
+            } else {  // Inf
+              if (sign) {
+                shift = 0;  // Negative infinity
+              } else {
+                shift = 7;  // Positive infinity
+              }
+            }
+            break;
+          default:
+            if (sign) {
+              shift = 1;  // Negative normal
+            } else {
+              shift = 6;  // Positive normal
+            }
+            break;
+        }
+        EXPECT_GE(shift, 0) << "The test didn't set the expected result.";
+        return std::make_tuple(1 << shift, 0);
       });
 }
 

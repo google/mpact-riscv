@@ -78,7 +78,10 @@ inline void RiscVConvertFloatWithFflagsOp(const Instruction *instruction) {
   constexpr To kMin = std::numeric_limits<To>::min();
 
   From lhs = generic::GetInstructionSource<From>(instruction, 0);
-
+  using FromUint = typename FPTypeInfo<From>::UIntType;
+  FromUint lhs_u = *reinterpret_cast<FromUint *>(&lhs);
+  auto constexpr kExpMask = FPTypeInfo<From>::kExpMask;
+  auto constexpr kSigMask = FPTypeInfo<From>::kSigMask;
   uint32_t flags = 0;
   uint32_t rm = generic::GetInstructionSource<uint32_t>(instruction, 1);
   // Dynamic rounding mode will get rounding mode from the global state.
@@ -91,10 +94,13 @@ inline void RiscVConvertFloatWithFflagsOp(const Instruction *instruction) {
     rm = *rv_fp->GetRoundingMode();
   }
   To value = 0;
-  if (FPTypeInfo<From>::IsNaN(lhs)) {
+  if (FPTypeInfo<From>::IsNaN(lhs) || lhs_u == FPTypeInfo<From>::kPosInf) {
     value = std::numeric_limits<To>::max();
     flags = *FPExceptions::kInvalidOp;
-  } else if (lhs == 0.0) {
+  } else if (lhs_u == FPTypeInfo<From>::kNegInf) {
+    value = std::numeric_limits<To>::min();
+    flags = *FPExceptions::kInvalidOp;
+  } else if ((lhs_u & (kExpMask | kSigMask)) == 0) {  // lhs == 0.0
     value = 0;
   } else {
     // static_cast<>() doesn't necessarily round, so will have to force

@@ -67,22 +67,22 @@ struct DataTypeRegValue<HalfFP> {
 
 template <>
 struct DataTypeRegValue<int32_t> {
-  using type = RVXRegister::ValueType;
+  using type = RV32Register::ValueType;
 };
 
 template <>
 struct DataTypeRegValue<uint32_t> {
-  using type = RVXRegister::ValueType;
+  using type = RV32Register::ValueType;
 };
 
 template <>
 struct DataTypeRegValue<int64_t> {
-  using type = RVXRegister::ValueType;
+  using type = RV64Register::ValueType;
 };
 
 template <>
 struct DataTypeRegValue<uint64_t> {
-  using type = RVXRegister::ValueType;
+  using type = RV64Register::ValueType;
 };
 
 // Convert from half precision to single or double precision.
@@ -216,6 +216,54 @@ inline HalfFP ConvertToHalfFP(double input_value, FPRoundingMode rm,
   return ConvertDoubleToHalfFP(input_value, rm, fflags);
 }
 
+// Generic helper function enabling HalfFP operations in native datatypes.
+template <typename Result, typename Argument>
+void RiscVZfhUnaryHelper(
+    const Instruction *instruction,
+    std::function<Result(Argument, FPRoundingMode, uint32_t &)> operation) {
+  uint32_t fflags = 0;
+  RiscVFPState *rv_fp =
+      static_cast<RiscVState *>(instruction->state())->rv_fp();
+  int rm_value = generic::GetInstructionSource<int>(instruction, 1);
+
+  // If the rounding mode is dynamic, read it from the current state.
+  if (rm_value == *FPRoundingMode::kDynamic) {
+    if (!rv_fp->rounding_mode_valid()) {
+      LOG(ERROR) << "Invalid rounding mode";
+      return;
+    }
+    rm_value = *(rv_fp->GetRoundingMode());
+  }
+  FPRoundingMode rm = static_cast<FPRoundingMode>(rm_value);
+  RiscVCsrDestinationOperand *fflags_dest =
+      static_cast<RiscVCsrDestinationOperand *>(instruction->Destination(1));
+  bool arguments_contain_snan = false;
+  RiscVUnaryFloatNaNBoxOp<RVFpRegister::ValueType, RVFpRegister::ValueType,
+                          Result, Argument>(
+      instruction,
+      [rv_fp, rm, &fflags, &operation,
+       &arguments_contain_snan](Argument a) -> Result {
+        Result result;
+        if (FPTypeInfo<Argument>::IsSNaN(a)) {
+          arguments_contain_snan = true;
+        }
+        if (zfh_internal::UseHostFlagsForConversion()) {
+          result = operation(a, rm, fflags);
+        } else {
+          ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface(), rm);
+          result = operation(a, rm, fflags);
+        }
+        return result;
+      });
+  if (!zfh_internal::UseHostFlagsForConversion()) {
+    fflags_dest->GetRiscVCsr()->SetBits(fflags);
+  }
+  if (arguments_contain_snan) {
+    fflags_dest->GetRiscVCsr()->SetBits(*FPExceptions::kInvalidOp);
+  }
+}
+
+// Generic helper function enabling HalfFP operations in native datatypes.
 template <typename Argument, typename IntermediateType>
 void RiscVZfhBinaryHelper(
     const Instruction *instruction,
@@ -300,6 +348,109 @@ void RiscVZfhFMvxh(const Instruction *instruction) {
     }
     return static_cast<uint32_t>(a.value);
   });
+}
+
+// Convert from half precision to integer.
+void RiscVZfhCvtWh(const Instruction *instruction) {
+  RiscVConvertFloatWithFflagsOp<typename RV32Register::ValueType, HalfFP,
+                                int32_t>(instruction);
+}
+
+// Convert from integer to half precision.
+void RiscVZfhCvtHw(const Instruction *instruction) {
+  RiscVZfhCvtHelper<HalfFP, int32_t>(
+      instruction,
+      [](int32_t a, FPRoundingMode rm, uint32_t &fflags) -> HalfFP {
+        float input_float = static_cast<float>(a);
+        return ConvertToHalfFP(input_float, rm, fflags);
+      });
+}
+
+// Convert from unsigned integer to half precision.
+void RiscVZfhCvtHwu(const Instruction *instruction) {
+  RiscVZfhCvtHelper<HalfFP, uint32_t>(
+      instruction,
+      [](uint32_t a, FPRoundingMode rm, uint32_t &fflags) -> HalfFP {
+        float input_float = static_cast<float>(a);
+        return ConvertToHalfFP(input_float, rm, fflags);
+      });
+}
+
+// Convert from half precision to unsigned integer.
+void RiscVZfhCvtWuh(const Instruction *instruction) {
+  RiscVConvertFloatWithFflagsOp<typename RV32Register::ValueType, HalfFP,
+                                uint32_t>(instruction);
+}
+
+// Compare two half precision values for equality.
+void RiscVZfhFcmpeq(const Instruction *instruction) {
+  RiscVBinaryFloatNaNBoxOp<RVFpRegister::ValueType, uint64_t, HalfFP>(
+      instruction, [](HalfFP a, HalfFP b) -> uint64_t {
+        float a_f;
+        float b_f;
+        uint32_t unused_fflags = 0;
+        if (FPTypeInfo<HalfFP>::IsSNaN(a)) {
+          a_f = absl::bit_cast<float>(FPTypeInfo<float>::kPosInf | 1);
+        } else {
+          a_f = ConvertFromHalfFP<float>(a, unused_fflags);
+        }
+        if (FPTypeInfo<HalfFP>::IsSNaN(b)) {
+          b_f = absl::bit_cast<float>(FPTypeInfo<float>::kPosInf | 1);
+        } else {
+          b_f = ConvertFromHalfFP<float>(b, unused_fflags);
+        }
+        return a_f == b_f ? 1 : 0;
+      });
+}
+
+// Compare two half precision values for less than.
+void RiscVZfhFcmplt(const Instruction *instruction) {
+  RiscVBinaryFloatNaNBoxOp<RVFpRegister::ValueType, uint64_t, HalfFP>(
+      instruction, [](HalfFP a, HalfFP b) -> uint64_t {
+        float a_f;
+        float b_f;
+        uint32_t unused_fflags = 0;
+        if (FPTypeInfo<HalfFP>::IsNaN(a)) {
+          a_f = absl::bit_cast<float>(FPTypeInfo<float>::kPosInf | 1);
+        } else {
+          a_f = ConvertFromHalfFP<float>(a, unused_fflags);
+        }
+        if (FPTypeInfo<HalfFP>::IsNaN(b)) {
+          b_f = absl::bit_cast<float>(FPTypeInfo<float>::kPosInf | 1);
+        } else {
+          b_f = ConvertFromHalfFP<float>(b, unused_fflags);
+        }
+        return a_f < b_f ? 1 : 0;
+      });
+}
+
+// Compare two half precision values for less than or equal to.
+void RiscVZfhFcmple(const Instruction *instruction) {
+  RiscVBinaryFloatNaNBoxOp<RVFpRegister::ValueType, uint64_t, HalfFP>(
+      instruction, [](HalfFP a, HalfFP b) -> uint64_t {
+        float a_f;
+        float b_f;
+        uint32_t unused_fflags = 0;
+        if (FPTypeInfo<HalfFP>::IsNaN(a)) {
+          a_f = absl::bit_cast<float>(FPTypeInfo<float>::kPosInf | 1);
+        } else {
+          a_f = ConvertFromHalfFP<float>(a, unused_fflags);
+        }
+        if (FPTypeInfo<HalfFP>::IsNaN(b)) {
+          b_f = absl::bit_cast<float>(FPTypeInfo<float>::kPosInf | 1);
+        } else {
+          b_f = ConvertFromHalfFP<float>(b, unused_fflags);
+        }
+        return a_f <= b_f ? 1 : 0;
+      });
+}
+
+// Classify a half precision value.
+void RiscVZfhFclass(const Instruction *instruction) {
+  RiscVUnaryOp<RV32Register, uint32_t, HalfFP>(
+      instruction, [](HalfFP a) -> uint32_t {
+        return static_cast<uint32_t>(ClassifyFP(a));
+      });
 }
 
 }  // namespace RV32
@@ -436,6 +587,19 @@ void RiscVZfhFmax(const Instruction *instruction) {
                                         }
                                         return std::fmaxf(a, b);
                                       });
+}
+
+// Calculate the square root of a half precision value. Do the operation in
+// single precision and then convert back to half precision.
+void RiscVZfhFsqrt(const Instruction *instruction) {
+  RiscVZfhUnaryHelper<HalfFP, HalfFP>(
+      instruction, [](HalfFP a, FPRoundingMode rm, uint32_t &fflags) -> HalfFP {
+        float input_f = ConvertFromHalfFP<float>(a, fflags);
+        if (!std::isnan(input_f) && input_f < 0) {
+          fflags |= static_cast<uint32_t>(FPExceptions::kInvalidOp);
+        }
+        return ConvertToHalfFP(std::sqrt(input_f), rm, fflags);
+      });
 }
 
 // The result is the exponent and significand of the first source with the

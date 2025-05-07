@@ -34,6 +34,69 @@ namespace RV32 {
 // Destination Operands:
 //   rd: Integer Register
 void RiscVZfhFMvxh(const Instruction *instruction);
+
+// Source Operands:
+//   frs1: Float Register
+//   rm: Literal Operand (rounding mode)
+// Destination Operands:
+//   rd: Integer Register
+//   fflags: Accrued Exception Flags field in FCSR
+void RiscVZfhCvtWh(const Instruction *instruction);
+
+// Source Operands:
+//   rs1: Integer Register
+//   rm: Literal Operand (rounding mode)
+// Destination Operands:
+//   frd: Float Register
+//   fflags: Accrued Exception Flags field in FCSR
+void RiscVZfhCvtHw(const Instruction *instruction);
+
+// Source Operands:
+//   rs1: Integer Register
+//   rm: Literal Operand (rounding mode)
+// Destination Operands:
+//   frd: Float Register
+//   fflags: Accrued Exception Flags field in FCSR
+void RiscVZfhCvtHwu(const Instruction *instruction);
+
+// Source Operands:
+//   frs1: Float Register
+//   rm: Literal Operand (rounding mode)
+// Destination Operands:
+//   rd: Integer Register
+//   fflags: Accrued Exception Flags field in FCSR
+void RiscVZfhCvtWuh(const Instruction *instruction);
+
+// Source Operands:
+//   frs1: Float Register
+//   frs2: Float Register
+// Destination Operands:
+//   rd: Integer Register
+//   fflags: Accrued Exception Flags field in FCSR
+void RiscVZfhFcmpeq(const Instruction *instruction);
+
+// Source Operands:
+//   frs1: Float Register
+//   frs2: Float Register
+// Destination Operands:
+//   rd: Integer Register
+//   fflags: Accrued Exception Flags field in FCSR
+void RiscVZfhFcmplt(const Instruction *instruction);
+
+// Source Operands:
+//   frs1: Float Register
+//   frs2: Float Register
+// Destination Operands:
+//   rd: Integer Register
+//   fflags: Accrued Exception Flags field in FCSR
+void RiscVZfhFcmple(const Instruction *instruction);
+
+// Source Operands:
+//   frs1: Float Register
+// Destination Operands:
+//   rd: Integer Register
+void RiscVZfhFclass(const Instruction *instruction);
+
 }  // namespace RV32
 
 namespace RV64 {
@@ -172,6 +235,14 @@ void RiscVZfhFsgnjn(const Instruction *instruction);
 // Destination Operands:
 //   frd: Float Register
 void RiscVZfhFsgnjx(const Instruction *instruction);
+
+// Source Operands:
+//   frs1: Float Register
+//   rm: Literal Operand (rounding mode)
+// Destination Operands:
+//   frd: Float Register
+//   fflags: Accrued Exception Flags field in FCSR
+void RiscVZfhFsqrt(const Instruction *instruction);
 
 }  // namespace riscv
 }  // namespace sim
