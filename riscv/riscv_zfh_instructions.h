@@ -134,6 +134,45 @@ void RiscVZfhFmul(const Instruction *instruction);
 //   fflags: Accrued Exception Flags field in FCSR
 void RiscVZfhFdiv(const Instruction *instruction);
 
+// Source Operands:
+//   frs1: Float Register
+//   frs2: Float Register
+//   rm: Literal Operand (rounding mode)
+// Destination Operands:
+//   frd: Float Register
+//   fflags: Accrued Exception Flags field in FCSR
+void RiscVZfhFmin(const Instruction *instruction);
+
+// Source Operands:
+//   frs1: Float Register
+//   frs2: Float Register
+//   rm: Literal Operand (rounding mode)
+// Destination Operands:
+//   frd: Float Register
+//   fflags: Accrued Exception Flags field in FCSR
+void RiscVZfhFmax(const Instruction *instruction);
+
+// Source Operands:
+//   frs1: Float Register
+//   frs2: Float Register
+// Destination Operands:
+//   frd: Float Register
+void RiscVZfhFsgnj(const Instruction *instruction);
+
+// Source Operands:
+//   frs1: Float Register
+//   frs2: Float Register
+// Destination Operands:
+//   frd: Float Register
+void RiscVZfhFsgnjn(const Instruction *instruction);
+
+// Source Operands:
+//   frs1: Float Register
+//   frs2: Float Register
+// Destination Operands:
+//   frd: Float Register
+void RiscVZfhFsgnjx(const Instruction *instruction);
+
 }  // namespace riscv
 }  // namespace sim
 }  // namespace mpact

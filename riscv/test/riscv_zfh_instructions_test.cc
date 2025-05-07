@@ -57,8 +57,13 @@ using ::mpact::sim::riscv::RiscVZfhCvtSh;
 using ::mpact::sim::riscv::RiscVZfhFadd;
 using ::mpact::sim::riscv::RiscVZfhFdiv;
 using ::mpact::sim::riscv::RiscVZfhFlhChild;
+using ::mpact::sim::riscv::RiscVZfhFmax;
+using ::mpact::sim::riscv::RiscVZfhFmin;
 using ::mpact::sim::riscv::RiscVZfhFmul;
 using ::mpact::sim::riscv::RiscVZfhFMvhx;
+using ::mpact::sim::riscv::RiscVZfhFsgnj;
+using ::mpact::sim::riscv::RiscVZfhFsgnjn;
+using ::mpact::sim::riscv::RiscVZfhFsgnjx;
 using ::mpact::sim::riscv::RiscVZfhFsub;
 using ::mpact::sim::riscv::RV32Register;
 using ::mpact::sim::riscv::RV64Register;
@@ -679,6 +684,128 @@ TEST_F(RV32ZfhInstructionTest, RiscVZfhFdiv) {
               mpact::sim::riscv::FPExceptions::kDivByZero);
         }
         return std::make_tuple(result, fflags);
+      });
+}
+
+// Find the minimum of two half precision values. Generate the expected result
+// by using a natively supported float datatype for the operation.
+TEST_F(RV32ZfhInstructionTest, RiscVZfhFmin) {
+  SetSemanticFunction(&RiscVZfhFmin);
+  BinaryOpWithFflagsFPTestHelper<HalfFP, HalfFP, HalfFP>(
+      "fmin.h", instruction_, {"f", "f", "f"}, 32,
+      [this](HalfFP a, HalfFP b) -> std::tuple<HalfFP, uint32_t> {
+        FPRoundingMode rm = rv_fp_->GetRoundingMode();
+        uint32_t fflags = 0;
+        double a_f =
+            FpConversionsTestHelper(a).ConvertWithFlags<double>(fflags);
+        double b_f =
+            FpConversionsTestHelper(b).ConvertWithFlags<double>(fflags);
+        double min_f = 0;
+        if (a_f == 0 && b_f == 0 && (a.value != b.value)) {
+          // Special case for -0 vs +0.
+          min_f = absl::bit_cast<double>(FPTypeInfo<double>::kNegZero);
+        } else if (std::isnan(a_f) && !std::isnan(b_f)) {
+          min_f = b_f;  // pick the non-NaN value
+        } else if (!std::isnan(a_f) && std::isnan(b_f)) {
+          min_f = a_f;  // pick the non-NaN value
+        } else if (std::isnan(a_f) && std::isnan(b_f)) {
+          min_f = absl::bit_cast<double>(FPTypeInfo<double>::kCanonicalNaN);
+        } else if (std::isinf(a_f) && !std::isinf(b_f)) {
+          min_f = a_f < 0 ? a_f : b_f;  // min(+/-inf, x)
+        } else if (!std::isinf(a_f) && std::isinf(b_f)) {
+          min_f = b_f < 0 ? b_f : a_f;  // min(x, +/-inf)
+        } else {
+          if (a_f < b_f) {
+            min_f = a_f;
+          } else {
+            min_f = b_f;
+          }
+        }
+        HalfFP result =
+            FpConversionsTestHelper(min_f).ConvertWithFlags<HalfFP>(fflags, rm);
+        return std::make_tuple(result, fflags);
+      });
+}
+
+// Find the maximum of two half precision values. Generate the expected result
+// by using a natively supported float datatype for the operation.
+TEST_F(RV32ZfhInstructionTest, RiscVZfhFmax) {
+  SetSemanticFunction(&RiscVZfhFmax);
+  BinaryOpWithFflagsFPTestHelper<HalfFP, HalfFP, HalfFP>(
+      "fmax.h", instruction_, {"f", "f", "f"}, 32,
+      [this](HalfFP a, HalfFP b) -> std::tuple<HalfFP, uint32_t> {
+        FPRoundingMode rm = rv_fp_->GetRoundingMode();
+        uint32_t fflags = 0;
+        double a_f =
+            FpConversionsTestHelper(a).ConvertWithFlags<double>(fflags);
+        double b_f =
+            FpConversionsTestHelper(b).ConvertWithFlags<double>(fflags);
+        double max_f = 0;
+        if (a_f == 0 && b_f == 0 && (a.value != b.value)) {
+          // Special case for -0 vs +0.
+          max_f = absl::bit_cast<double>(FPTypeInfo<double>::kPosZero);
+        } else if (std::isnan(a_f) && !std::isnan(b_f)) {
+          max_f = b_f;  // pick the non-NaN value
+        } else if (!std::isnan(a_f) && std::isnan(b_f)) {
+          max_f = a_f;  // pick the non-NaN value
+        } else if (std::isnan(a_f) && std::isnan(b_f)) {
+          max_f = absl::bit_cast<double>(FPTypeInfo<double>::kCanonicalNaN);
+        } else if (std::isinf(a_f) && !std::isinf(b_f)) {
+          max_f = a_f > 0 ? a_f : b_f;  // max(+/-inf, x)
+        } else if (!std::isinf(a_f) && std::isinf(b_f)) {
+          max_f = b_f > 0 ? b_f : a_f;  // max(x, +/-inf)
+        } else {
+          if (a_f > b_f) {
+            max_f = a_f;
+          } else {
+            max_f = b_f;
+          }
+        }
+        HalfFP result =
+            FpConversionsTestHelper(max_f).ConvertWithFlags<HalfFP>(fflags, rm);
+        return std::make_tuple(result, fflags);
+      });
+}
+
+TEST_F(RV32ZfhInstructionTest, RiscVZfhFsgnj) {
+  SetSemanticFunction(&RiscVZfhFsgnj);
+  BinaryOpWithFflagsFPTestHelper<HalfFP, HalfFP, HalfFP>(
+      "fsgnj.h", instruction_, {"f", "f", "f"}, 32,
+      [](HalfFP a, HalfFP b) -> std::tuple<HalfFP, uint32_t> {
+        HalfFP result{.value = 0};
+        result.value |= a.value & (FPTypeInfo<HalfFP>::kExpMask |
+                                   FPTypeInfo<HalfFP>::kSigMask);
+        result.value |= b.value & ~(FPTypeInfo<HalfFP>::kExpMask |
+                                    FPTypeInfo<HalfFP>::kSigMask);
+        return std::make_tuple(result, 0);
+      });
+}
+
+TEST_F(RV32ZfhInstructionTest, RiscVZfhFsgnjn) {
+  SetSemanticFunction(&RiscVZfhFsgnjn);
+  BinaryOpWithFflagsFPTestHelper<HalfFP, HalfFP, HalfFP>(
+      "fsgnjn.h", instruction_, {"f", "f", "f"}, 32,
+      [](HalfFP a, HalfFP b) -> std::tuple<HalfFP, uint32_t> {
+        HalfFP result{.value = 0};
+        result.value |= a.value & (FPTypeInfo<HalfFP>::kExpMask |
+                                   FPTypeInfo<HalfFP>::kSigMask);
+        result.value |= (~b.value) & ~(FPTypeInfo<HalfFP>::kExpMask |
+                                       FPTypeInfo<HalfFP>::kSigMask);
+        return std::make_tuple(result, 0);
+      });
+}
+
+TEST_F(RV32ZfhInstructionTest, RiscVZfhFsgnjx) {
+  SetSemanticFunction(&RiscVZfhFsgnjx);
+  BinaryOpWithFflagsFPTestHelper<HalfFP, HalfFP, HalfFP>(
+      "fsgnjn.h", instruction_, {"f", "f", "f"}, 32,
+      [](HalfFP a, HalfFP b) -> std::tuple<HalfFP, uint32_t> {
+        HalfFP result{.value = 0};
+        result.value |= a.value & (FPTypeInfo<HalfFP>::kExpMask |
+                                   FPTypeInfo<HalfFP>::kSigMask);
+        result.value |= (a.value ^ b.value) & ~(FPTypeInfo<HalfFP>::kExpMask |
+                                                FPTypeInfo<HalfFP>::kSigMask);
+        return std::make_tuple(result, 0);
       });
 }
 

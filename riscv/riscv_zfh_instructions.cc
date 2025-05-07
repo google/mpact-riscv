@@ -402,6 +402,78 @@ void RiscVZfhFdiv(const Instruction *instruction) {
       instruction, [](float a, float b) -> float { return a / b; });
 }
 
+// Take the minimum of two half precision values. Do the operation in single
+// precision.
+void RiscVZfhFmin(const Instruction *instruction) {
+  RiscVZfhBinaryHelper<HalfFP, float>(instruction,
+                                      [](float a, float b) -> float {
+                                        // On ARM std::fminf returns NaN if
+                                        // either input is NaN. Add extra checks
+                                        // to make X86 and ARM behavior the
+                                        // same.
+                                        if (std::isnan(a)) {
+                                          return b;
+                                        } else if (std::isnan(b)) {
+                                          return a;
+                                        }
+                                        return std::fminf(a, b);
+                                      });
+}
+
+// Take the maximum of two half precision values. Do the operation in single
+// precision.
+void RiscVZfhFmax(const Instruction *instruction) {
+  RiscVZfhBinaryHelper<HalfFP, float>(instruction,
+                                      [](float a, float b) -> float {
+                                        // On ARM std::fmaxf returns NaN if
+                                        // either input is NaN. Add extra checks
+                                        // to make X86 and ARM behavior the
+                                        // same.
+                                        if (std::isnan(a)) {
+                                          return b;
+                                        } else if (std::isnan(b)) {
+                                          return a;
+                                        }
+                                        return std::fmaxf(a, b);
+                                      });
+}
+
+// The result is the exponent and significand of the first source with the
+// sign bit of the second source.
+void RiscVZfhFsgnj(const Instruction *instruction) {
+  RiscVBinaryFloatNaNBoxOp<RVFpRegister::ValueType, HalfFP, HalfFP>(
+      instruction, [](HalfFP a, HalfFP b) -> HalfFP {
+        uint16_t mask =
+            FPTypeInfo<HalfFP>::kExpMask | FPTypeInfo<HalfFP>::kSigMask;
+        return HalfFP{.value = static_cast<uint16_t>((a.value & mask) |
+                                                     (b.value & ~mask))};
+      });
+}
+
+// The result is the exponent and significand of the first source with the
+// opposite sign bit of the second source.
+void RiscVZfhFsgnjn(const Instruction *instruction) {
+  RiscVBinaryFloatNaNBoxOp<RVFpRegister::ValueType, HalfFP, HalfFP>(
+      instruction, [](HalfFP a, HalfFP b) -> HalfFP {
+        uint16_t mask =
+            FPTypeInfo<HalfFP>::kExpMask | FPTypeInfo<HalfFP>::kSigMask;
+        return HalfFP{.value = static_cast<uint16_t>((a.value & mask) |
+                                                     (~b.value & ~mask))};
+      });
+}
+
+// The result is the exponent and significand of the first source with the
+// sign bit that is the exclusive or of the two source sign bits.
+void RiscVZfhFsgnjx(const Instruction *instruction) {
+  RiscVBinaryFloatNaNBoxOp<RVFpRegister::ValueType, HalfFP, HalfFP>(
+      instruction, [](HalfFP a, HalfFP b) -> HalfFP {
+        uint16_t mask =
+            FPTypeInfo<HalfFP>::kExpMask | FPTypeInfo<HalfFP>::kSigMask;
+        return HalfFP{.value = static_cast<uint16_t>(
+                          (a.value & mask) | ((a.value ^ b.value) & ~mask))};
+      });
+}
+
 // TODO(b/409778536): Factor out generic unimplemented instruction semantic
 //                    function.
 void RV32VUnimplementedInstruction(const Instruction *instruction) {

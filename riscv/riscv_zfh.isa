@@ -136,5 +136,25 @@ slot riscv32_zfh : riscv32_zfh_min {
       resources: {next_pc, frs1, frs2 : frd[0..]},
       semfunc: "&RiscVZfhFdiv",
       disasm: "fdiv.h", "%frd, %frs1, %frs2";
+    fmin_h{: frs1, frs2, rm : frd, fflags},
+      resources: {next_pc, frs1, frs2 : frd[0..]},
+      semfunc: "&RiscVZfhFmin",
+      disasm: "fmin.h", "%frd, %frs1, %frs2";
+    fmax_h{: frs1, frs2, rm : frd, fflags},
+      resources: {next_pc, frs1, frs2 : frd[0..]},
+      semfunc: "&RiscVZfhFmax",
+      disasm: "fmax.h", "%frd, %frs1, %frs2";
+    fsgnj_h{: frs1, frs2 : frd },
+      resources: {next_pc, frs1, frs2 : frd[0..]},
+      semfunc: "&RiscVZfhFsgnj",
+      disasm: "fsgnj.h", "%frd, %frs1, %frs2";
+    fsgnjn_h{: frs1, frs2 : frd },
+      resources: {next_pc, frs1, frs2 : frd[0..]},
+      semfunc: "&RiscVZfhFsgnjn",
+      disasm: "fsgnjn.h", "%frd, %frs1, %frs2";
+    fsgnjnx_h{: frs1, frs2 : frd },
+      resources: {next_pc, frs1, frs2 : frd[0..]},
+      semfunc: "&RiscVZfhFsgnjx",
+      disasm: "fsgnjnx.h", "%frd, %frs1, %frs2";
   }
 }
