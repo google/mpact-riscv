@@ -152,7 +152,7 @@ slot riscv32_zfh : riscv32_zfh_min {
       resources: {next_pc, frs1, frs2 : frd[0..]},
       semfunc: "&RiscVZfhFsgnjn",
       disasm: "fsgnjn.h", "%frd, %frs1, %frs2";
-    fsgnjnx_h{: frs1, frs2 : frd },
+    fsgnjx_h{: frs1, frs2 : frd },
       resources: {next_pc, frs1, frs2 : frd[0..]},
       semfunc: "&RiscVZfhFsgnjx",
       disasm: "fsgnjnx.h", "%frd, %frs1, %frs2";

@@ -24,16 +24,21 @@ decoder ZFH {
 }
 
 instruction group RiscVZfhminInst32[32] : Inst32Format {
-  flh     : IType : func3 == 0b001,  opcode == 0b000'0111;
-  fsh     : SType : func3 == 0b001,  opcode == 0b010'0111;
-  fmv_xh  : RType : func7 == 0b1110010, rs2 == 0, func3 == 0b000, opcode == 0b1010011;
-  fmv_hx  : RType : func7 == 0b1111010, rs2 == 0, func3 == 0b000, opcode == 0b1010011;
-  fcvt_sh : RType : func7 == 0b0100000, rs2 == 0b00010, opcode == 0b1010011;
-  fcvt_hs : RType : func7 == 0b0100010, rs2 == 0b00000, opcode == 0b1010011;
-  fcvt_dh : RType : func7 == 0b0100001, rs2 == 0b00010, opcode == 0b1010011;
-  fcvt_hd : RType : func7 == 0b0100010, rs2 == 0b00001, opcode == 0b1010011;
-  fadd_h  : RType : func7 == 0b0000010, opcode == 0b1010011;
-  fsub_h  : RType : func7 == 0b0000110, opcode == 0b1010011;
-  fmul_h  : RType : func7 == 0b0001010, opcode == 0b1010011;
-  fdiv_h  : RType : func7 == 0b0001110, opcode == 0b1010011;
+  flh      : IType : func3 == 0b001,  opcode == 0b000'0111;
+  fsh      : SType : func3 == 0b001,  opcode == 0b010'0111;
+  fmv_xh   : RType : func7 == 0b1110010, rs2 == 0, func3 == 0b000, opcode == 0b1010011;
+  fmv_hx   : RType : func7 == 0b1111010, rs2 == 0, func3 == 0b000, opcode == 0b1010011;
+  fcvt_sh  : RType : func7 == 0b0100000, rs2 == 0b00010, opcode == 0b1010011;
+  fcvt_hs  : RType : func7 == 0b0100010, rs2 == 0b00000, opcode == 0b1010011;
+  fcvt_dh  : RType : func7 == 0b0100001, rs2 == 0b00010, opcode == 0b1010011;
+  fcvt_hd  : RType : func7 == 0b0100010, rs2 == 0b00001, opcode == 0b1010011;
+  fadd_h   : RType : func7 == 0b0000010, opcode == 0b1010011;
+  fsub_h   : RType : func7 == 0b0000110, opcode == 0b1010011;
+  fmul_h   : RType : func7 == 0b0001010, opcode == 0b1010011;
+  fdiv_h   : RType : func7 == 0b0001110, opcode == 0b1010011;
+  fmin_h   : RType : func7 == 0b0010110, func3 == 0b000, opcode == 0b1010011;
+  fmax_h   : RType : func7 == 0b0010110, func3 == 0b001, opcode == 0b1010011;
+  fsgnj_h  : RType : func7 == 0b0010010, func3 == 0b000, opcode == 0b1010011;
+  fsgnjn_h : RType : func7 == 0b0010010, func3 == 0b001, opcode == 0b1010011;
+  fsgnjx_h : RType : func7 == 0b0010010, func3 == 0b010, opcode == 0b1010011;
 };
