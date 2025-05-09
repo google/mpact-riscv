@@ -15,11 +15,8 @@
 #ifndef THIRD_PARTY_MPACT_RISCV_RISCV_ZFH_INSTRUCTIONS_H_
 #define THIRD_PARTY_MPACT_RISCV_RISCV_ZFH_INSTRUCTIONS_H_
 
-#include <cstdint>
-
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/type_helpers.h"
-#include "riscv/riscv_fp_info.h"
 
 namespace mpact {
 namespace sim {
@@ -153,13 +150,6 @@ void RiscVZfhCvtHd(const Instruction *instruction);
 // TODO(b/409778536): Factor out generic unimplemented instruction semantic
 //                    function.
 void RV32VUnimplementedInstruction(const Instruction *instruction);
-
-HalfFP ConvertSingleToHalfFP(float, FPRoundingMode, uint32_t &);
-HalfFP ConvertDoubleToHalfFP(double, FPRoundingMode, uint32_t &);
-
-namespace zfh_internal {
-bool UseHostFlagsForConversion();
-}  // namespace zfh_internal
 
 // Source Operands:
 //   frs1: Float Register

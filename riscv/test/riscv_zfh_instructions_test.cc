@@ -797,6 +797,7 @@ TEST_F(RV32ZfhInstructionTest, RiscVZfhFdiv) {
               mpact::sim::riscv::FPExceptions::kInvalidOp);
           result.value = FPTypeInfo<HalfFP>::kCanonicalNaN;
         } else if (!FPTypeInfo<HalfFP>::IsNaN(a) &&
+                   !FPTypeInfo<HalfFP>::IsInf(a) &&
                    (b.value == FPTypeInfo<HalfFP>::kPosZero ||
                     b.value == FPTypeInfo<HalfFP>::kNegZero)) {
           // Dividing by zero requires an exception for non-NaN dividend values.

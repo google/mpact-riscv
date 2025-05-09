@@ -329,35 +329,15 @@ cc_library(
 
 cc_library(
     name = "riscv_zfh_instructions",
-    srcs = select({
-        "//third_party/bazel_platforms/cpu:aarch64": [
-            "riscv_zfh_instructions.cc",
-            "riscv_zfh_instructions_arm.cc",
-        ],
-        "//conditions:default": [
-            "riscv_zfh_instructions.cc",
-            "riscv_zfh_instructions_x86.cc",
-        ],
-    }),
+    srcs = ["riscv_zfh_instructions.cc"],
     hdrs = [
         "riscv_instruction_helpers.h",
         "riscv_zfh_instructions.h",
     ],
-    copts = select({
-        "//third_party/bazel_platforms/cpu:aarch64": [
-            "-O3",
-            "-ffp-model=strict",
-        ],
-        "//buildenv/platforms/settings:macos_aarch64": [
-            "-O3",
-            "-ffp-model=strict",
-        ],
-        "//conditions:default": [
-            "-ffp-model=strict",
-            "-O3",
-            "-mf16c",
-        ],
-    }),
+    copts = [
+        "-ffp-model=strict",
+        "-O3",
+    ],
     deps = [
         ":riscv_fp_state",
         ":riscv_state",
