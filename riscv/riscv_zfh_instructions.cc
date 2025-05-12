@@ -445,6 +445,59 @@ void RiscVZfhBinaryHelper(
   fflags_dest->GetRiscVCsr()->SetBits(fflags);
 }
 
+// Generic helper function enabling HalfFP operations in native datatypes.
+template <typename Argument, typename IntermediateType>
+void RiscVZfhTernaryHelper(
+    const Instruction *instruction,
+    std::function<IntermediateType(IntermediateType, IntermediateType,
+                                   IntermediateType)>
+        operation) {
+  RiscVCsrDestinationOperand *fflags_dest =
+      static_cast<RiscVCsrDestinationOperand *>(instruction->Destination(1));
+  uint32_t fflags = 0;
+  // RiscVTernaryFloatNaNBoxOp will handle the register NaN boxed reads and
+  // write. The operation is in a native datatype so we will handle conversions
+  // from/to half precision float values before and after the operation.
+  RiscVTernaryFloatNaNBoxOp<RVFpRegister::ValueType, HalfFP, Argument>(
+      instruction,
+      [instruction, &operation, &fflags](Argument a, Argument b,
+                                         Argument c) -> HalfFP {
+        RiscVFPState *rv_fp =
+            static_cast<RiscVState *>(instruction->state())->rv_fp();
+        int rm_value = generic::GetInstructionSource<int>(instruction, 3);
+        // If the rounding mode is dynamic, read it from the current state.
+        if (rm_value == *FPRoundingMode::kDynamic) {
+          if (!rv_fp->rounding_mode_valid()) {
+            LOG(ERROR) << "Invalid rounding mode";
+          }
+          rm_value = *(rv_fp->GetRoundingMode());
+        }
+        FPRoundingMode rm = static_cast<FPRoundingMode>(rm_value);
+        IntermediateType argument1 =
+            ConvertFromHalfFP<IntermediateType>(a, fflags);
+        IntermediateType argument2 =
+            ConvertFromHalfFP<IntermediateType>(b, fflags);
+        IntermediateType argument3 =
+            ConvertFromHalfFP<IntermediateType>(c, fflags);
+        IntermediateType result;
+        {
+          ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface(), rm_value);
+          result = operation(argument1, argument2, argument3);
+        }
+        // To get the correct fflags we need a combination of host flags from
+        // the operation and the conversion flags. Copy the host flags and merge
+        // them with the conversion flags.
+        fflags |= rv_fp->fflags()->GetUint32();
+        {
+          // ConvertToHalfFP pollutes the host flags so we need to create a
+          // ScopedFPRoundingMode to restore the host flags.
+          ScopedFPRoundingMode scoped_rm(rv_fp->host_fp_interface(), rm_value);
+          return ConvertToHalfFP(result, rm, fflags);
+        }
+      });
+  fflags_dest->GetRiscVCsr()->SetBits(fflags);
+}
+
 }  // namespace
 
 namespace RV32 {
@@ -741,6 +794,38 @@ void RiscVZfhFsgnjx(const Instruction *instruction) {
         return HalfFP{.value = static_cast<uint16_t>(
                           (a.value & mask) | ((a.value ^ b.value) & ~mask))};
       });
+}
+
+// Fused multiply add in half precision. Do the operation in single precision.
+// (rs1 * rs2) + rs3
+void RiscVZfhFmadd(const Instruction *instruction) {
+  RiscVZfhTernaryHelper<HalfFP, float>(
+      instruction,
+      [](float a, float b, float c) -> float { return fma(a, b, c); });
+}
+
+// Fused multiply add in half precision. Do the operation in single precision.
+// (rs1 * rs2) - rs3
+void RiscVZfhFmsub(const Instruction *instruction) {
+  RiscVZfhTernaryHelper<HalfFP, float>(
+      instruction,
+      [](float a, float b, float c) -> float { return fma(a, b, -c); });
+}
+
+// Fused multiply add in half precision. Do the operation in single precision.
+// -(rs1 * rs2) - rs3
+void RiscVZfhFnmadd(const Instruction *instruction) {
+  RiscVZfhTernaryHelper<HalfFP, float>(
+      instruction,
+      [](float a, float b, float c) -> float { return fma(-a, b, -c); });
+}
+
+// Fused multiply add in half precision. Do the operation in single precision.
+// -(rs1 * rs2) + rs3
+void RiscVZfhFnmsub(const Instruction *instruction) {
+  RiscVZfhTernaryHelper<HalfFP, float>(
+      instruction,
+      [](float a, float b, float c) -> float { return fma(-a, b, c); });
 }
 
 // TODO(b/409778536): Factor out generic unimplemented instruction semantic
