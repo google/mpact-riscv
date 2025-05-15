@@ -111,6 +111,14 @@ constexpr uint32_t kFcmpltH = 0b1010010'00000'00000'001'00000'1010011;
 constexpr uint32_t kFcmpleH = 0b1010010'00000'00000'000'00000'1010011;
 //                              func7  |     | rs1 |fn3| rd  | opcode
 constexpr uint32_t kFclassH = 0b1110010'00000'00000'001'00000'1010011;
+//                             rs3  |f2| rs2 | rs1 |rm | rd  | opcode
+constexpr uint32_t kFmaddH = 0b00000'10'00000'00000'000'00000'1000011;
+//                             rs3  |f2| rs2 | rs1 |rm | rd  | opcode
+constexpr uint32_t kFmsubH = 0b00001'10'00000'00000'000'00000'1000111;
+//                              rs3  |f2| rs2 | rs1 |rm | rd  | opcode
+constexpr uint32_t kFnmaddH = 0b00000'10'00000'00000'000'00000'1001111;
+//                              rs3  |f2| rs2 | rs1 |rm | rd  | opcode
+constexpr uint32_t kFnmsubH = 0b00000'10'00000'00000'000'00000'1001011;
 
 class ZfhEncodingTest : public testing::Test {
  protected:
@@ -130,6 +138,7 @@ class ZfhEncodingTest : public testing::Test {
   void FloatSourceHelper(uint32_t, OpcodeEnum, SourceOpEnum, int);
   void FloatFrs1Helper(uint32_t, OpcodeEnum);
   void FloatFrs2Helper(uint32_t, OpcodeEnum);
+  void FloatFrs3Helper(uint32_t, OpcodeEnum);
   void FloatRmHelper(uint32_t, OpcodeEnum);
 
   FlatDemandMemory memory_;
@@ -234,6 +243,11 @@ void ZfhEncodingTest::FloatFrs1Helper(uint32_t binary_instruction,
 void ZfhEncodingTest::FloatFrs2Helper(uint32_t binary_instruction,
                                       OpcodeEnum opcode_enum) {
   FloatSourceHelper(binary_instruction, opcode_enum, SourceOpEnum::kFrs2, 20);
+}
+
+void ZfhEncodingTest::FloatFrs3Helper(uint32_t binary_instruction,
+                                      OpcodeEnum opcode_enum) {
+  FloatSourceHelper(binary_instruction, opcode_enum, SourceOpEnum::kFrs3, 27);
 }
 
 void ZfhEncodingTest::FloatRmHelper(uint32_t binary_instruction,
@@ -752,6 +766,106 @@ TEST_F(ZfhEncodingTest, FclassH_frs1) {
 
 TEST_F(ZfhEncodingTest, FclassH_frd) {
   FloatFrdHelper(kFclassH, OpcodeEnum::kFclassH);
+}
+
+TEST_F(ZfhEncodingTest, FmaddH) {
+  enc_->ParseInstruction(kFmaddH);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32Zfh, 0), OpcodeEnum::kFmaddH);
+}
+
+TEST_F(ZfhEncodingTest, FmaddH_frs1) {
+  FloatFrs1Helper(kFmaddH, OpcodeEnum::kFmaddH);
+}
+
+TEST_F(ZfhEncodingTest, FmaddH_frs2) {
+  FloatFrs2Helper(kFmaddH, OpcodeEnum::kFmaddH);
+}
+
+TEST_F(ZfhEncodingTest, FmaddH_frs3) {
+  FloatFrs3Helper(kFmaddH, OpcodeEnum::kFmaddH);
+}
+
+TEST_F(ZfhEncodingTest, FmaddH_rm) {
+  FloatRmHelper(kFmaddH, OpcodeEnum::kFmaddH);
+}
+
+TEST_F(ZfhEncodingTest, FmaddH_frd) {
+  FloatFrdHelper(kFmaddH, OpcodeEnum::kFmaddH);
+}
+
+TEST_F(ZfhEncodingTest, FmsubH) {
+  enc_->ParseInstruction(kFmsubH);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32Zfh, 0), OpcodeEnum::kFmsubH);
+}
+
+TEST_F(ZfhEncodingTest, FmsubH_frs1) {
+  FloatFrs1Helper(kFmsubH, OpcodeEnum::kFmsubH);
+}
+
+TEST_F(ZfhEncodingTest, FmsubH_frs2) {
+  FloatFrs2Helper(kFmsubH, OpcodeEnum::kFmsubH);
+}
+
+TEST_F(ZfhEncodingTest, FmsubH_frs3) {
+  FloatFrs3Helper(kFmsubH, OpcodeEnum::kFmsubH);
+}
+
+TEST_F(ZfhEncodingTest, FmsubH_rm) {
+  FloatRmHelper(kFmsubH, OpcodeEnum::kFmsubH);
+}
+
+TEST_F(ZfhEncodingTest, FmsubH_frd) {
+  FloatFrdHelper(kFmsubH, OpcodeEnum::kFmsubH);
+}
+
+TEST_F(ZfhEncodingTest, FnmaddH) {
+  enc_->ParseInstruction(kFnmaddH);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32Zfh, 0), OpcodeEnum::kFnmaddH);
+}
+
+TEST_F(ZfhEncodingTest, FnmaddH_frs1) {
+  FloatFrs1Helper(kFnmaddH, OpcodeEnum::kFnmaddH);
+}
+
+TEST_F(ZfhEncodingTest, FnmaddH_frs2) {
+  FloatFrs2Helper(kFnmaddH, OpcodeEnum::kFnmaddH);
+}
+
+TEST_F(ZfhEncodingTest, FnmaddH_frs3) {
+  FloatFrs3Helper(kFnmaddH, OpcodeEnum::kFnmaddH);
+}
+
+TEST_F(ZfhEncodingTest, FnmaddH_rm) {
+  FloatRmHelper(kFnmaddH, OpcodeEnum::kFnmaddH);
+}
+
+TEST_F(ZfhEncodingTest, FnmaddH_frd) {
+  FloatFrdHelper(kFnmaddH, OpcodeEnum::kFnmaddH);
+}
+
+TEST_F(ZfhEncodingTest, FnmsubH) {
+  enc_->ParseInstruction(kFnmsubH);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32Zfh, 0), OpcodeEnum::kFnmsubH);
+}
+
+TEST_F(ZfhEncodingTest, FnmsubH_frs1) {
+  FloatFrs1Helper(kFnmsubH, OpcodeEnum::kFnmsubH);
+}
+
+TEST_F(ZfhEncodingTest, FnmsubH_frs2) {
+  FloatFrs2Helper(kFnmsubH, OpcodeEnum::kFnmsubH);
+}
+
+TEST_F(ZfhEncodingTest, FnmsubH_frs3) {
+  FloatFrs3Helper(kFnmsubH, OpcodeEnum::kFnmsubH);
+}
+
+TEST_F(ZfhEncodingTest, FnmsubH_rm) {
+  FloatRmHelper(kFnmsubH, OpcodeEnum::kFnmsubH);
+}
+
+TEST_F(ZfhEncodingTest, FnmsubH_frd) {
+  FloatFrdHelper(kFnmsubH, OpcodeEnum::kFnmsubH);
 }
 
 }  // namespace

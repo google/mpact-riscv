@@ -78,6 +78,12 @@ void AddRiscVZfhSourceFloatGetters(SourceOpGetterMap &getter_map,
         common->state(), absl::StrCat(RiscVState::kFregPrefix, num),
         kFRegisterAliases[num]);
   });
+  Insert(getter_map, *Enum::kFrs3, [common]() -> SourceOperandInterface * {
+    int num = Extractors::Inst32Format::ExtractRs3(common->inst_word());
+    return GetRegisterSourceOp<FloatRegister>(
+        common->state(), absl::StrCat(RiscVState::kFregPrefix, num),
+        kFRegisterAliases[num]);
+  });
 }
 
 template <typename Enum, typename Extractors, typename IntegerRegister>
