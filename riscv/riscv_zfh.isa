@@ -35,10 +35,6 @@ slot riscv_zfh_min {
     disasm: "Unimplemented instruction at 0x%(@:08x)",
     semfunc: "&RV32VUnimplementedInstruction";
   opcodes {
-    fmv_hx{: rs1 : frd},
-      resources: {next_pc, rs1 : frd[0..]},
-      semfunc: "&RiscVZfhFMvhx",
-      disasm: "fmv.h.x", "%frd, %rs1";
     fcvt_sh{: frs1, rm : frd, fflags},
       resources: {next_pc, frs1 : frd[0..]},
       semfunc: "&RiscVZfhCvtSh",
@@ -81,6 +77,10 @@ slot riscv32_zfh_min: riscv_zfh_min {
       resources: {next_pc, frs1 : rd[0..]},
       semfunc: "&RV32::RiscVZfhFMvxh",
       disasm: "fmv.x.h", "%rd, %frs1";
+    fmv_hx{: rs1 : frd},
+      resources: {next_pc, rs1 : frd[0..]},
+      semfunc: "&RV32::RiscVZfhFMvhx",
+      disasm: "fmv.h.x", "%frd, %rs1";
   }
 }
 
@@ -107,6 +107,10 @@ slot riscv64_zfh_min: riscv_zfh_min {
       resources: {next_pc, frs1 : rd[0..]},
       semfunc: "&RV64::RiscVZfhFMvxh",
       disasm: "fmv.x.h", "%rd, %frs1";
+    fmv_hx{: rs1 : frd},
+      resources: {next_pc, rs1 : frd[0..]},
+      semfunc: "&RV64::RiscVZfhFMvhx",
+      disasm: "fmv.h.x", "%frd, %rs1";
   }
 }
 

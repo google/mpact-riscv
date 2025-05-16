@@ -33,6 +33,12 @@ namespace RV32 {
 void RiscVZfhFMvxh(const Instruction *instruction);
 
 // Source Operands:
+//   rs1: Integer Register
+// Destination Operands:
+//   frd: Float Register
+void RiscVZfhFMvhx(const Instruction *instruction);
+
+// Source Operands:
 //   frs1: Float Register
 //   rm: Literal Operand (rounding mode)
 // Destination Operands:
@@ -102,18 +108,18 @@ namespace RV64 {
 // Destination Operands:
 //   rd: Integer Register
 void RiscVZfhFMvxh(const Instruction *instruction);
-}  // namespace RV64
-
-// Source Operands: *none*
-// Destination Operands:
-//   frd: Float Register
-void RiscVZfhFlhChild(const Instruction *instruction);
 
 // Source Operands:
 //   rs1: Integer Register
 // Destination Operands:
 //   frd: Float Register
 void RiscVZfhFMvhx(const Instruction *instruction);
+}  // namespace RV64
+
+// Source Operands: *none*
+// Destination Operands:
+//   frd: Float Register
+void RiscVZfhFlhChild(const Instruction *instruction);
 
 // Source Operands:
 //   frs1: Float Register

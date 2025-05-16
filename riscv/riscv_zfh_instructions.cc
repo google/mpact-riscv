@@ -514,6 +514,27 @@ void RiscVZfhFMvxh(const Instruction *instruction) {
   });
 }
 
+// Move a half precision value from an integer register to a float register and
+// NaN box the value.
+void RiscVZfhFMvhx(const Instruction *instruction) {
+  using DstRegValue = RVFpRegister::ValueType;
+  using SrcRegValue = RV32Register::ValueType;
+  SrcRegValue lhs = generic::GetInstructionSource<SrcRegValue>(instruction, 0);
+  HalfFP dest_value = {.value = static_cast<uint16_t>(lhs)};
+
+  auto *reg = static_cast<generic::RegisterDestinationOperand<DstRegValue> *>(
+                  instruction->Destination(0))
+                  ->GetRegister();
+
+  using UReg = typename std::make_unsigned<DstRegValue>::type;
+  using UInt = typename FPTypeInfo<HalfFP>::UIntType;
+  auto dest_u_value = *reinterpret_cast<UInt *>(&dest_value);
+  UReg reg_value = std::numeric_limits<UReg>::max();
+  int shift = 8 * sizeof(HalfFP);
+  reg_value = (reg_value << shift) | dest_u_value;
+  reg->data_buffer()->template Set<DstRegValue>(0, reg_value);
+}
+
 // Convert from half precision to integer.
 void RiscVZfhCvtWh(const Instruction *instruction) {
   RiscVConvertFloatWithFflagsOp<typename RV32Register::ValueType, HalfFP,
@@ -632,6 +653,27 @@ void RiscVZfhFMvxh(const Instruction *instruction) {
   });
 }
 
+// Move a half precision value from an integer register to a float register and
+// NaN box the value.
+void RiscVZfhFMvhx(const Instruction *instruction) {
+  using DstRegValue = RVFpRegister::ValueType;
+  using SrcRegValue = RV64Register::ValueType;
+  SrcRegValue lhs = generic::GetInstructionSource<SrcRegValue>(instruction, 0);
+  HalfFP dest_value = {.value = static_cast<uint16_t>(lhs)};
+
+  auto *reg = static_cast<generic::RegisterDestinationOperand<DstRegValue> *>(
+                  instruction->Destination(0))
+                  ->GetRegister();
+
+  using UReg = typename std::make_unsigned<DstRegValue>::type;
+  using UInt = typename FPTypeInfo<HalfFP>::UIntType;
+  auto dest_u_value = *reinterpret_cast<UInt *>(&dest_value);
+  UReg reg_value = std::numeric_limits<UReg>::max();
+  int shift = 8 * sizeof(HalfFP);
+  reg_value = (reg_value << shift) | dest_u_value;
+  reg->data_buffer()->template Set<DstRegValue>(0, reg_value);
+}
+
 }  // namespace RV64
 
 void RiscVZfhFlhChild(const Instruction *instruction) {
@@ -652,13 +694,6 @@ void RiscVZfhFlhChild(const Instruction *instruction) {
     return;
   }
   reg->data_buffer()->Set<RVFpRegister::ValueType>(0, value);
-}
-
-// Move a half precision value from an integer register to a float register.
-void RiscVZfhFMvhx(const Instruction *instruction) {
-  RiscVUnaryFloatOp<HalfFP, uint64_t>(instruction, [](uint64_t a) -> HalfFP {
-    return HalfFP{.value = static_cast<uint16_t>(a)};
-  });
 }
 
 // Convert from half precision to single precision.
