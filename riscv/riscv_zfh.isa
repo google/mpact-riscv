@@ -25,7 +25,7 @@ isa ZFH {
 // First disasm field is 18 char wide and left justified.
 disasm widths = {-18};
 
-slot riscv_zfh_min {
+slot riscv_zfh_min_common {
   includes {
     #include "riscv/riscv_zfh_instructions.h"
   }
@@ -54,7 +54,7 @@ slot riscv_zfh_min {
   }
 }
 
-slot riscv32_zfh_min: riscv_zfh_min {
+slot riscv32_zfh_min: riscv_zfh_min_common {
   includes {
     #include "riscv/riscv_i_instructions.h"
     #include "riscv/riscv_zfh_instructions.h"
@@ -84,7 +84,7 @@ slot riscv32_zfh_min: riscv_zfh_min {
   }
 }
 
-slot riscv64_zfh_min: riscv_zfh_min {
+slot riscv64_zfh_min: riscv_zfh_min_common {
   includes {
     #include "riscv/riscv_i_instructions.h"
     #include "riscv/riscv_zfh_instructions.h"
@@ -114,7 +114,7 @@ slot riscv64_zfh_min: riscv_zfh_min {
   }
 }
 
-slot riscv32_zfh : riscv32_zfh_min {
+slot riscv_zfh_common {
   includes {
     #include "riscv/riscv_zfh_instructions.h"
   }
@@ -124,6 +124,14 @@ slot riscv32_zfh : riscv32_zfh_min {
     disasm: "Unimplemented instruction at 0x%(@:08x)",
     semfunc: "&RV32VUnimplementedInstruction";
   opcodes {
+    fcvt_hw{: rs1, rm : frd, fflags},
+      resources: {next_pc, frs1 : frd[0..]},
+      semfunc: "&RiscVZfhCvtHw",
+      disasm: "fcvt.h.w", "%frd, %rs1";
+    fcvt_hwu{: rs1, rm : frd, fflags},
+      resources: {next_pc, frs1 : frd[0..]},
+      semfunc: "&RiscVZfhCvtHwu",
+      disasm: "fcvt.h.wu", "%frd, %rs1";
     fadd_h{: frs1, frs2, rm : frd, fflags},
       resources: {next_pc, frs1, frs2 : frd[0..]},
       semfunc: "&RiscVZfhFadd",
@@ -152,22 +160,6 @@ slot riscv32_zfh : riscv32_zfh_min {
       resources: {next_pc, frs1 : frd[0..]},
       semfunc: "&RiscVZfhFsqrt",
       disasm: "fsqrt.h", "%frd, %frs1";
-    fcvt_hw{: rs1, rm : frd, fflags},
-      resources: {next_pc, frs1 : frd[0..]},
-      semfunc: "&RV32::RiscVZfhCvtHw",
-      disasm: "fcvt.h.w", "%frd, %rs1";
-    fcvt_wh{: frs1, rm : rd, fflags},
-      resources: {next_pc, frs1 : rd[0..]},
-      semfunc: "&RV32::RiscVZfhCvtWh",
-      disasm: "fcvt.w.h", "%rd, %frs1";
-    fcvt_hwu{: rs1, rm : frd, fflags},
-      resources: {next_pc, frs1 : frd[0..]},
-      semfunc: "&RV32::RiscVZfhCvtHwu",
-      disasm: "fcvt.h.wu", "%frd, %rs1";
-    fcvt_wuh{: frs1, rm : rd, fflags},
-      resources: {next_pc, frs1 : rd[0..]},
-      semfunc: "&RV32::RiscVZfhCvtWuh",
-      disasm: "fcvt.wu.h", "%rd, %frs1";
     fsgnj_h{: frs1, frs2 : frd },
       resources: {next_pc, frs1, frs2 : frd[0..]},
       semfunc: "&RiscVZfhFsgnj",
@@ -180,22 +172,6 @@ slot riscv32_zfh : riscv32_zfh_min {
       resources: {next_pc, frs1, frs2 : frd[0..]},
       semfunc: "&RiscVZfhFsgnjx",
       disasm: "fsgnjnx.h", "%frd, %frs1, %frs2";
-    fcmpeq_h{: frs1, frs2 : rd, fflags},
-      resources: { next_pc, frs1, frs2 : rd[0..]},
-      semfunc: "&RV32::RiscVZfhFcmpeq",
-      disasm: "feq.h", "%rd, %frs1, %frs2";
-    fcmplt_h{: frs1, frs2 : rd, fflags},
-      resources: { next_pc, frs1, frs2 : rd[0..]},
-      semfunc: "&RV32::RiscVZfhFcmplt",
-      disasm: "flt.h", "%rd, %frs1, %frs2";
-    fcmple_h{: frs1, frs2 : rd, fflags},
-      resources: { next_pc, frs1, frs2 : rd[0..]},
-      semfunc: "&RV32::RiscVZfhFcmple",
-      disasm: "fle.h", "%rd, %frs1, %frs2";
-    fclass_h{: frs1 : rd},
-      resources: { next_pc, frs1 : rd[0..]},
-      semfunc: "&RV32::RiscVZfhFclass",
-      disasm: "fclass.h", "%rd, %frs1";
     fmadd_h{: frs1, frs2, frs3, rm : frd, fflags},
       resources: {next_pc, frs1, frs2, frs3 : frd[0..]},
       semfunc: "&RiscVZfhFmadd",
@@ -212,5 +188,79 @@ slot riscv32_zfh : riscv32_zfh_min {
       resources: {next_pc, frs1, frs2, frs3 : frd[0..]},
       semfunc: "&RiscVZfhFnmsub",
       disasm: "fnmsub.h", "%frd, %frs1, %frs2, %frs3";
+  }
+}
+
+slot riscv32_zfh : riscv32_zfh_min, riscv_zfh_common {
+  includes {
+    #include "riscv/riscv_zfh_instructions.h"
+  }
+  default size = 4;
+  default latency = 0;
+  default opcode =
+    disasm: "Unimplemented instruction at 0x%(@:08x)",
+    semfunc: "&RV32VUnimplementedInstruction";
+  opcodes {
+    fcvt_wh{: frs1, rm : rd, fflags},
+      resources: {next_pc, frs1 : rd[0..]},
+      semfunc: "&RV32::RiscVZfhCvtWh",
+      disasm: "fcvt.w.h", "%rd, %frs1";
+    fcvt_wuh{: frs1, rm : rd, fflags},
+      resources: {next_pc, frs1 : rd[0..]},
+      semfunc: "&RV32::RiscVZfhCvtWuh",
+      disasm: "fcvt.wu.h", "%rd, %frs1";
+    fcmpeq_h{: frs1, frs2 : rd, fflags},
+      resources: { next_pc, frs1, frs2 : rd[0..]},
+      semfunc: "&RV32::RiscVZfhFcmpeq",
+      disasm: "feq.h", "%rd, %frs1, %frs2";
+    fcmplt_h{: frs1, frs2 : rd, fflags},
+      resources: { next_pc, frs1, frs2 : rd[0..]},
+      semfunc: "&RV32::RiscVZfhFcmplt",
+      disasm: "flt.h", "%rd, %frs1, %frs2";
+    fcmple_h{: frs1, frs2 : rd, fflags},
+      resources: { next_pc, frs1, frs2 : rd[0..]},
+      semfunc: "&RV32::RiscVZfhFcmple",
+      disasm: "fle.h", "%rd, %frs1, %frs2";
+    fclass_h{: frs1 : rd},
+      resources: { next_pc, frs1 : rd[0..]},
+      semfunc: "&RV32::RiscVZfhFclass",
+      disasm: "fclass.h", "%rd, %frs1";
+  }
+}
+
+slot riscv64_zfh : riscv64_zfh_min, riscv_zfh_common {
+  includes {
+    #include "riscv/riscv_zfh_instructions.h"
+  }
+  default size = 4;
+  default latency = 0;
+  default opcode =
+    disasm: "Unimplemented instruction at 0x%(@:08x)",
+    semfunc: "&RV32VUnimplementedInstruction";
+  opcodes {
+    fcvt_wh{: frs1, rm : rd, fflags},
+      resources: {next_pc, frs1 : rd[0..]},
+      semfunc: "&RV64::RiscVZfhCvtWh",
+      disasm: "fcvt.w.h", "%rd, %frs1";
+    fcvt_wuh{: frs1, rm : rd, fflags},
+      resources: {next_pc, frs1 : rd[0..]},
+      semfunc: "&RV64::RiscVZfhCvtWuh",
+      disasm: "fcvt.wu.h", "%rd, %frs1";
+    fcmpeq_h{: frs1, frs2 : rd, fflags},
+      resources: { next_pc, frs1, frs2 : rd[0..]},
+      semfunc: "&RV64::RiscVZfhFcmpeq",
+      disasm: "feq.h", "%rd, %frs1, %frs2";
+    fcmplt_h{: frs1, frs2 : rd, fflags},
+      resources: { next_pc, frs1, frs2 : rd[0..]},
+      semfunc: "&RV64::RiscVZfhFcmplt",
+      disasm: "flt.h", "%rd, %frs1, %frs2";
+    fcmple_h{: frs1, frs2 : rd, fflags},
+      resources: { next_pc, frs1, frs2 : rd[0..]},
+      semfunc: "&RV64::RiscVZfhFcmple",
+      disasm: "fle.h", "%rd, %frs1, %frs2";
+    fclass_h{: frs1 : rd},
+      resources: { next_pc, frs1 : rd[0..]},
+      semfunc: "&RV64::RiscVZfhFclass",
+      disasm: "fclass.h", "%rd, %frs1";
   }
 }

@@ -43,7 +43,6 @@ namespace riscv {
 using HalfFP = ::mpact::sim::generic::HalfFP;
 using ::mpact::sim::generic::IsMpactFp;
 using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
-using ::mpact::sim::generic::IsMpactFp;
 
 namespace {
 
@@ -498,27 +497,24 @@ void RiscVZfhTernaryHelper(
   fflags_dest->GetRiscVCsr()->SetBits(fflags);
 }
 
-}  // namespace
-
-namespace RV32 {
-
-// Move a half precision value from a float register to a 32 bit integer
-// register.
-void RiscVZfhFMvxh(const Instruction *instruction) {
-  RiscVUnaryFloatOp<uint32_t, HalfFP>(instruction, [](HalfFP a) -> uint32_t {
+// Move a half precision value from a float register to an integer register.
+template <typename XRegister>
+void RiscVZfhFMvxhHelper(const Instruction *instruction) {
+  using XRegValue = typename XRegister::ValueType;
+  RiscVUnaryFloatOp<XRegValue, HalfFP>(instruction, [](HalfFP a) -> XRegValue {
     if (FPTypeInfo<HalfFP>::SignBit(a)) {
       // Repeat the sign bit for negative values.
-      return 0xFFFF'0000 | a.value;
+      return (std::numeric_limits<XRegValue>::max() << 16) | a.value;
     }
-    return static_cast<uint32_t>(a.value);
+    return static_cast<XRegValue>(a.value);
   });
 }
 
-// Move a half precision value from an integer register to a float register and
-// NaN box the value.
-void RiscVZfhFMvhx(const Instruction *instruction) {
+// Move a half precision value from an integer register to a float register
+template <typename XRegister>
+inline void RiscVZfhFMvhxHelper(const Instruction *instruction) {
   using DstRegValue = RVFpRegister::ValueType;
-  using SrcRegValue = RV32Register::ValueType;
+  using SrcRegValue = XRegister::ValueType;
   SrcRegValue lhs = generic::GetInstructionSource<SrcRegValue>(instruction, 0);
   HalfFP dest_value = {.value = static_cast<uint16_t>(lhs)};
 
@@ -526,6 +522,7 @@ void RiscVZfhFMvhx(const Instruction *instruction) {
                   instruction->Destination(0))
                   ->GetRegister();
 
+  // NaN box the value.
   using UReg = typename std::make_unsigned<DstRegValue>::type;
   using UInt = typename FPTypeInfo<HalfFP>::UIntType;
   auto dest_u_value = *reinterpret_cast<UInt *>(&dest_value);
@@ -535,33 +532,101 @@ void RiscVZfhFMvhx(const Instruction *instruction) {
   reg->data_buffer()->template Set<DstRegValue>(0, reg_value);
 }
 
-// Convert from half precision to integer.
+// Compare two half precision values for equality.
+template <typename XRegister>
+inline void RiscVZfhFcmpeqHelper(const Instruction *instruction) {
+  using DstRegValue = XRegister::ValueType;
+  uint32_t fflags = 0;
+  HalfFP lhs =
+      GetNaNBoxedSource<RVFpRegister::ValueType, HalfFP>(instruction, 0);
+  HalfFP rhs =
+      GetNaNBoxedSource<RVFpRegister::ValueType, HalfFP>(instruction, 1);
+  float lhs_f = ConvertFromHalfFP<float>(lhs, fflags);
+  float rhs_f = ConvertFromHalfFP<float>(rhs, fflags);
+
+  DstRegValue result = lhs_f == rhs_f ? 1 : 0;
+  auto *reg = static_cast<generic::RegisterDestinationOperand<DstRegValue> *>(
+                  instruction->Destination(0))
+                  ->GetRegister();
+  reg->data_buffer()->template Set<DstRegValue>(0, result);
+
+  RiscVCsrDestinationOperand *fflags_dest =
+      static_cast<RiscVCsrDestinationOperand *>(instruction->Destination(1));
+  fflags_dest->GetRiscVCsr()->SetBits(fflags & *FPExceptions::kInvalidOp);
+}
+
+// Compare two half precision values for less than.
+template <typename XRegister>
+inline void RiscVZfhFcmpltHelper(const Instruction *instruction) {
+  using DstRegValue = XRegister::ValueType;
+  uint32_t unused_fflags = 0;
+  HalfFP lhs =
+      GetNaNBoxedSource<RVFpRegister::ValueType, HalfFP>(instruction, 0);
+  HalfFP rhs =
+      GetNaNBoxedSource<RVFpRegister::ValueType, HalfFP>(instruction, 1);
+  float lhs_f = ConvertFromHalfFP<float>(lhs, unused_fflags);
+  float rhs_f = ConvertFromHalfFP<float>(rhs, unused_fflags);
+
+  DstRegValue result = lhs_f < rhs_f ? 1 : 0;
+  auto *reg = static_cast<generic::RegisterDestinationOperand<DstRegValue> *>(
+                  instruction->Destination(0))
+                  ->GetRegister();
+  reg->data_buffer()->template Set<DstRegValue>(0, result);
+
+  RiscVCsrDestinationOperand *fflags_dest =
+      static_cast<RiscVCsrDestinationOperand *>(instruction->Destination(1));
+  if (std::isnan(lhs_f) || std::isnan(rhs_f)) {
+    fflags_dest->GetRiscVCsr()->SetBits(*FPExceptions::kInvalidOp);
+  }
+}
+
+// Compare two half precision values for less than or equal to.
+template <typename XRegister>
+void RiscVZfhFcmpleHelper(const Instruction *instruction) {
+  using DstRegValue = XRegister::ValueType;
+  uint32_t unused_fflags = 0;
+  HalfFP lhs =
+      GetNaNBoxedSource<RVFpRegister::ValueType, HalfFP>(instruction, 0);
+  HalfFP rhs =
+      GetNaNBoxedSource<RVFpRegister::ValueType, HalfFP>(instruction, 1);
+  float lhs_f = ConvertFromHalfFP<float>(lhs, unused_fflags);
+  float rhs_f = ConvertFromHalfFP<float>(rhs, unused_fflags);
+
+  DstRegValue result = lhs_f <= rhs_f ? 1 : 0;
+  auto *reg = static_cast<generic::RegisterDestinationOperand<DstRegValue> *>(
+                  instruction->Destination(0))
+                  ->GetRegister();
+  reg->data_buffer()->template Set<DstRegValue>(0, result);
+
+  RiscVCsrDestinationOperand *fflags_dest =
+      static_cast<RiscVCsrDestinationOperand *>(instruction->Destination(1));
+  if (std::isnan(lhs_f) || std::isnan(rhs_f)) {
+    fflags_dest->GetRiscVCsr()->SetBits(*FPExceptions::kInvalidOp);
+  }
+}
+
+}  // namespace
+
+namespace RV32 {
+// Move a half precision value from a float register to a 32 bit integer
+// register.
+void RiscVZfhFMvxh(const Instruction *instruction) {
+  RiscVZfhFMvxhHelper<RV32Register>(instruction);
+}
+
+// Move a half precision value from an integer register to a float register and
+// NaN box the value.
+void RiscVZfhFMvhx(const Instruction *instruction) {
+  RiscVZfhFMvhxHelper<RV32Register>(instruction);
+}
+
+// Convert from half precision to signed 32 bit integer.
 void RiscVZfhCvtWh(const Instruction *instruction) {
   RiscVConvertFloatWithFflagsOp<typename RV32Register::ValueType, HalfFP,
                                 int32_t>(instruction);
 }
 
-// Convert from integer to half precision.
-void RiscVZfhCvtHw(const Instruction *instruction) {
-  RiscVZfhCvtHelper<HalfFP, int32_t>(
-      instruction,
-      [](int32_t a, FPRoundingMode rm, uint32_t &fflags) -> HalfFP {
-        float input_float = static_cast<float>(a);
-        return ConvertToHalfFP(input_float, rm, fflags);
-      });
-}
-
-// Convert from unsigned integer to half precision.
-void RiscVZfhCvtHwu(const Instruction *instruction) {
-  RiscVZfhCvtHelper<HalfFP, uint32_t>(
-      instruction,
-      [](uint32_t a, FPRoundingMode rm, uint32_t &fflags) -> HalfFP {
-        float input_float = static_cast<float>(a);
-        return ConvertToHalfFP(input_float, rm, fflags);
-      });
-}
-
-// Convert from half precision to unsigned integer.
+// Convert from half precision to unsigned 32 bit integer.
 void RiscVZfhCvtWuh(const Instruction *instruction) {
   RiscVConvertFloatWithFflagsOp<typename RV32Register::ValueType, HalfFP,
                                 uint32_t>(instruction);
@@ -569,65 +634,17 @@ void RiscVZfhCvtWuh(const Instruction *instruction) {
 
 // Compare two half precision values for equality.
 void RiscVZfhFcmpeq(const Instruction *instruction) {
-  RiscVBinaryFloatNaNBoxOp<RVFpRegister::ValueType, uint64_t, HalfFP>(
-      instruction, [](HalfFP a, HalfFP b) -> uint64_t {
-        float a_f;
-        float b_f;
-        uint32_t unused_fflags = 0;
-        if (FPTypeInfo<HalfFP>::IsSNaN(a)) {
-          a_f = absl::bit_cast<float>(FPTypeInfo<float>::kPosInf | 1);
-        } else {
-          a_f = ConvertFromHalfFP<float>(a, unused_fflags);
-        }
-        if (FPTypeInfo<HalfFP>::IsSNaN(b)) {
-          b_f = absl::bit_cast<float>(FPTypeInfo<float>::kPosInf | 1);
-        } else {
-          b_f = ConvertFromHalfFP<float>(b, unused_fflags);
-        }
-        return a_f == b_f ? 1 : 0;
-      });
+  RiscVZfhFcmpeqHelper<RV32Register>(instruction);
 }
 
 // Compare two half precision values for less than.
 void RiscVZfhFcmplt(const Instruction *instruction) {
-  RiscVBinaryFloatNaNBoxOp<RVFpRegister::ValueType, uint64_t, HalfFP>(
-      instruction, [](HalfFP a, HalfFP b) -> uint64_t {
-        float a_f;
-        float b_f;
-        uint32_t unused_fflags = 0;
-        if (FPTypeInfo<HalfFP>::IsNaN(a)) {
-          a_f = absl::bit_cast<float>(FPTypeInfo<float>::kPosInf | 1);
-        } else {
-          a_f = ConvertFromHalfFP<float>(a, unused_fflags);
-        }
-        if (FPTypeInfo<HalfFP>::IsNaN(b)) {
-          b_f = absl::bit_cast<float>(FPTypeInfo<float>::kPosInf | 1);
-        } else {
-          b_f = ConvertFromHalfFP<float>(b, unused_fflags);
-        }
-        return a_f < b_f ? 1 : 0;
-      });
+  RiscVZfhFcmpltHelper<RV32Register>(instruction);
 }
 
 // Compare two half precision values for less than or equal to.
 void RiscVZfhFcmple(const Instruction *instruction) {
-  RiscVBinaryFloatNaNBoxOp<RVFpRegister::ValueType, uint64_t, HalfFP>(
-      instruction, [](HalfFP a, HalfFP b) -> uint64_t {
-        float a_f;
-        float b_f;
-        uint32_t unused_fflags = 0;
-        if (FPTypeInfo<HalfFP>::IsNaN(a)) {
-          a_f = absl::bit_cast<float>(FPTypeInfo<float>::kPosInf | 1);
-        } else {
-          a_f = ConvertFromHalfFP<float>(a, unused_fflags);
-        }
-        if (FPTypeInfo<HalfFP>::IsNaN(b)) {
-          b_f = absl::bit_cast<float>(FPTypeInfo<float>::kPosInf | 1);
-        } else {
-          b_f = ConvertFromHalfFP<float>(b, unused_fflags);
-        }
-        return a_f <= b_f ? 1 : 0;
-      });
+  RiscVZfhFcmpleHelper<RV32Register>(instruction);
 }
 
 // Classify a half precision value.
@@ -644,34 +661,48 @@ namespace RV64 {
 // Move a half precision value from a float register to a 32 bit integer
 // register.
 void RiscVZfhFMvxh(const Instruction *instruction) {
-  RiscVUnaryFloatOp<uint64_t, HalfFP>(instruction, [](HalfFP a) -> uint64_t {
-    if (FPTypeInfo<HalfFP>::SignBit(a)) {
-      // Repeat the sign bit for negative values.
-      return 0xFFFF'FFFF'FFFF'0000 | a.value;
-    }
-    return static_cast<uint64_t>(a.value);
-  });
+  RiscVZfhFMvxhHelper<RV64Register>(instruction);
 }
 
 // Move a half precision value from an integer register to a float register and
 // NaN box the value.
 void RiscVZfhFMvhx(const Instruction *instruction) {
-  using DstRegValue = RVFpRegister::ValueType;
-  using SrcRegValue = RV64Register::ValueType;
-  SrcRegValue lhs = generic::GetInstructionSource<SrcRegValue>(instruction, 0);
-  HalfFP dest_value = {.value = static_cast<uint16_t>(lhs)};
+  RiscVZfhFMvhxHelper<RV64Register>(instruction);
+}
 
-  auto *reg = static_cast<generic::RegisterDestinationOperand<DstRegValue> *>(
-                  instruction->Destination(0))
-                  ->GetRegister();
+// Convert from half precision to signed 32 bit integer.
+void RiscVZfhCvtWh(const Instruction *instruction) {
+  RiscVConvertFloatWithFflagsOp<typename RV64Register::ValueType, HalfFP,
+                                int32_t>(instruction);
+}
 
-  using UReg = typename std::make_unsigned<DstRegValue>::type;
-  using UInt = typename FPTypeInfo<HalfFP>::UIntType;
-  auto dest_u_value = *reinterpret_cast<UInt *>(&dest_value);
-  UReg reg_value = std::numeric_limits<UReg>::max();
-  int shift = 8 * sizeof(HalfFP);
-  reg_value = (reg_value << shift) | dest_u_value;
-  reg->data_buffer()->template Set<DstRegValue>(0, reg_value);
+// Convert from half precision to unsigned 32 bit integer.
+void RiscVZfhCvtWuh(const Instruction *instruction) {
+  RiscVConvertFloatWithFflagsOp<typename RV64Register::ValueType, HalfFP,
+                                uint32_t>(instruction);
+}
+
+// Compare two half precision values for equality.
+void RiscVZfhFcmpeq(const Instruction *instruction) {
+  RiscVZfhFcmpeqHelper<RV64Register>(instruction);
+}
+
+// Compare two half precision values for less than.
+void RiscVZfhFcmplt(const Instruction *instruction) {
+  RiscVZfhFcmpltHelper<RV64Register>(instruction);
+}
+
+// Compare two half precision values for less than or equal to.
+void RiscVZfhFcmple(const Instruction *instruction) {
+  RiscVZfhFcmpleHelper<RV64Register>(instruction);
+}
+
+// Classify a half precision value.
+void RiscVZfhFclass(const Instruction *instruction) {
+  RiscVUnaryOp<RV64Register, uint64_t, HalfFP>(
+      instruction, [](HalfFP a) -> uint64_t {
+        return static_cast<uint64_t>(ClassifyFP(a));
+      });
 }
 
 }  // namespace RV64
@@ -861,6 +892,26 @@ void RiscVZfhFnmsub(const Instruction *instruction) {
   RiscVZfhTernaryHelper<HalfFP, float>(
       instruction,
       [](float a, float b, float c) -> float { return fma(-a, b, c); });
+}
+
+// Convert from signed 32 bit integer to half precision.
+void RiscVZfhCvtHw(const Instruction *instruction) {
+  RiscVZfhCvtHelper<HalfFP, int32_t>(
+      instruction,
+      [](int32_t a, FPRoundingMode rm, uint32_t &fflags) -> HalfFP {
+        float input_float = static_cast<float>(a);
+        return ConvertToHalfFP(input_float, rm, fflags);
+      });
+}
+
+// Convert from unsigned 32 bit integer to half precision.
+void RiscVZfhCvtHwu(const Instruction *instruction) {
+  RiscVZfhCvtHelper<HalfFP, uint32_t>(
+      instruction,
+      [](uint32_t a, FPRoundingMode rm, uint32_t &fflags) -> HalfFP {
+        float input_float = static_cast<float>(a);
+        return ConvertToHalfFP(input_float, rm, fflags);
+      });
 }
 
 // TODO(b/409778536): Factor out generic unimplemented instruction semantic
