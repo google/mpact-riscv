@@ -136,13 +136,14 @@ class TestRoundingModeSourceOperand
   FPRoundingMode rounding_mode_;
 };
 
-class RVZfhInstructionTestBase : public RiscVFPInstructionTestBase {
+template <typename XRegister>
+class RVZfhInstructionTestBase : public RiscVFPInstructionTestBase<XRegister> {
  protected:
   template <typename AddressType, typename ValueType>
   void SetupMemory(AddressType, ValueType);
 
-  template <typename ReturnType, typename IntegerRegister>
-  ReturnType LoadHalfHelper(typename IntegerRegister::ValueType, int16_t);
+  template <typename ReturnType>
+  ReturnType LoadHalfHelper(typename XRegister::ValueType, int16_t);
 
   template <typename DestRegisterType, typename LhsRegisterType, typename R,
             typename LHS>
@@ -159,63 +160,64 @@ class RVZfhInstructionTestBase : public RiscVFPInstructionTestBase {
 
   uint32_t GetOperationFlags(std::function<void(void)> operation);
 
-  template <typename ScalarRegister, typename FPType>
+  template <typename FPType>
   void FmvHxNanBoxHelper();
 
-  template <typename ScalarRegister>
   void FmvXhHelper();
 
-  template <typename ScalarRegister, typename SourceIntegerType>
+  template <typename SourceIntegerType>
   void CvtHwHelper(absl::string_view);
 
-  template <typename ScalarRegister, typename DestinationIntegerType>
+  template <typename DestinationIntegerType>
   void CvtWhHelper(absl::string_view);
 
-  template <typename ScalarRegister>
   void CmpEqHelper();
 
-  template <typename ScalarRegister>
   void CmpLtHelper();
 
-  template <typename ScalarRegister>
   void CmpLeHelper();
 
-  template <typename ScalarRegister>
   void ClassHelper();
 };
 
+template <typename XRegister>
 template <typename AddressType, typename ValueType>
-void RVZfhInstructionTestBase::SetupMemory(AddressType address,
-                                           ValueType value) {
-  DataBuffer *mem_db = state_->db_factory()->Allocate<ValueType>(1);
+void RVZfhInstructionTestBase<XRegister>::SetupMemory(AddressType address,
+                                                      ValueType value) {
+  DataBuffer *mem_db =
+      this->state_->db_factory()->template Allocate<ValueType>(1);
   mem_db->Set<ValueType>(0, value);
-  state_->StoreMemory(instruction_, address, mem_db);
+  this->state_->StoreMemory(this->instruction_, address, mem_db);
   mem_db->DecRef();
 }
 
-template <typename ReturnType, typename IntegerRegister>
-ReturnType RVZfhInstructionTestBase::LoadHalfHelper(
-    typename IntegerRegister::ValueType base, int16_t offset) {
+template <typename XRegister>
+template <typename ReturnType>
+ReturnType RVZfhInstructionTestBase<XRegister>::LoadHalfHelper(
+    typename XRegister::ValueType base, int16_t offset) {
   // Technically the offset for FL* is a 12 bit signed integer but we'll use 16
   // bits for testing.
   const std::string kRs1Name("x1");
   const std::string kFrdName("f5");
-  AppendRegisterOperands<IntegerRegister>({kRs1Name}, {});
-  AppendRegisterOperands<RVFpRegister>(child_instruction_, {}, {kFrdName});
+  this->template AppendRegisterOperands<XRegister>({kRs1Name}, {});
+  this->template AppendRegisterOperands<RVFpRegister>(this->child_instruction_,
+                                                      {}, {kFrdName});
 
   ImmediateOperand<int16_t> *offset_source_operand =
       new ImmediateOperand<int16_t>(offset);
-  instruction_->AppendSource(offset_source_operand);
+  this->instruction_->AppendSource(offset_source_operand);
 
-  SetRegisterValues<typename IntegerRegister::ValueType, IntegerRegister>(
-      {{kRs1Name, static_cast<IntegerRegister::ValueType>(base)}});
-  SetRegisterValues<uint64_t, RVFpRegister>({{kFrdName, 0}});
+  this->template SetRegisterValues<typename XRegister::ValueType, XRegister>(
+      {{kRs1Name, static_cast<XRegister::ValueType>(base)}});
+  this->template SetRegisterValues<RVFpRegister::ValueType, RVFpRegister>(
+      {{kFrdName, 0}});
 
-  instruction_->Execute(nullptr);
+  this->instruction_->Execute(nullptr);
 
-  ReturnType observed_val = state_->GetRegister<RVFpRegister>(kFrdName)
-                                .first->data_buffer()
-                                ->template Get<ReturnType>(0);
+  ReturnType observed_val =
+      this->state_->template GetRegister<RVFpRegister>(kFrdName)
+          .first->data_buffer()
+          ->template Get<ReturnType>(0);
   return observed_val;
 }
 
@@ -223,25 +225,27 @@ ReturnType RVZfhInstructionTestBase::LoadHalfHelper(
 // determine the flags set by an operation. Enables targeted capture of flags
 // that are set by an operation. The Simulation flags are restored to the
 // initial state after the operation is executed.
-uint32_t RVZfhInstructionTestBase::GetOperationFlags(
+template <typename XRegister>
+uint32_t RVZfhInstructionTestBase<XRegister>::GetOperationFlags(
     std::function<void(void)> operation) {
-  uint32_t initial_fflags = rv_fp_->fflags()->GetUint32();
+  uint32_t initial_fflags = this->rv_fp_->fflags()->GetUint32();
   uint32_t delta_fflags = 0;
-  rv_fp_->fflags()->Write(static_cast<uint32_t>(0));
+  this->rv_fp_->fflags()->Write(static_cast<uint32_t>(0));
   {
-    ScopedFPStatus sfpstatus(rv_fp_->host_fp_interface(),
-                             rv_fp_->GetRoundingMode());
+    ScopedFPStatus sfpstatus(this->rv_fp_->host_fp_interface(),
+                             this->rv_fp_->GetRoundingMode());
     operation();
   }
-  delta_fflags = rv_fp_->fflags()->GetUint32();
-  rv_fp_->fflags()->Write(initial_fflags);
+  delta_fflags = this->rv_fp_->fflags()->GetUint32();
+  this->rv_fp_->fflags()->Write(initial_fflags);
   return delta_fflags;
 }
 
 // Helper for unary instructions that go between floats and integers.
+template <typename XRegister>
 template <typename DestRegisterType, typename LhsRegisterType, typename R,
           typename LHS>
-void RVZfhInstructionTestBase::UnaryOpWithFflagsMixedTestHelper(
+void RVZfhInstructionTestBase<XRegister>::UnaryOpWithFflagsMixedTestHelper(
     absl::string_view name, Instruction *inst,
     absl::Span<const absl::string_view> reg_prefixes, int delta_position,
     std::function<std::tuple<R, uint32_t>(LHS, uint32_t)> operation) {
@@ -254,21 +258,22 @@ void RVZfhInstructionTestBase::UnaryOpWithFflagsMixedTestHelper(
   // This is used for the rounding mode operand.
   const std::string kRmName = absl::StrCat("x", 10);
   if (kR1Name[0] == 'x') {
-    AppendRegisterOperands<RV32Register>({kR1Name}, {});
+    this->template AppendRegisterOperands<XRegister>({kR1Name}, {});
   } else {
-    AppendRegisterOperands<RVFpRegister>({kR1Name}, {});
+    this->template AppendRegisterOperands<RVFpRegister>({kR1Name}, {});
   }
   if (kRdName[0] == 'x') {
-    AppendRegisterOperands<RV32Register>({}, {kRdName});
+    this->template AppendRegisterOperands<XRegister>({}, {kRdName});
   } else {
-    AppendRegisterOperands<RVFpRegister>({}, {kRdName});
+    this->template AppendRegisterOperands<RVFpRegister>({}, {kRdName});
   }
-  AppendRegisterOperands<RV32Register>({kRmName}, {});
-  auto *flag_op = rv_fp_->fflags()->CreateSetDestinationOperand(0, "fflags");
-  instruction_->AppendDestination(flag_op);
+  this->template AppendRegisterOperands<XRegister>({kRmName}, {});
+  auto *flag_op =
+      this->rv_fp_->fflags()->CreateSetDestinationOperand(0, "fflags");
+  this->instruction_->AppendDestination(flag_op);
   if constexpr (std::is_integral<LHS>::value) {
     for (auto &lhs : lhs_span) {
-      lhs = absl::Uniform(absl::IntervalClosed, bitgen_,
+      lhs = absl::Uniform(absl::IntervalClosed, this->bitgen_,
                           std::numeric_limits<LHS>::min(),
                           std::numeric_limits<LHS>::max());
     }
@@ -281,7 +286,7 @@ void RVZfhInstructionTestBase::UnaryOpWithFflagsMixedTestHelper(
     *reinterpret_cast<LHS *>(&lhs_span[6]) = 1024;
     *reinterpret_cast<LHS *>(&lhs_span[7]) = 65000;
   } else {
-    FillArrayWithRandomFPValues<LHS>(lhs_span);
+    this->template FillArrayWithRandomFPValues<LHS>(lhs_span);
     *reinterpret_cast<LhsInt *>(&lhs_span[0]) = FPTypeInfo<LHS>::kQNaN;
     *reinterpret_cast<LhsInt *>(&lhs_span[1]) = FPTypeInfo<LHS>::kSNaN;
     *reinterpret_cast<LhsInt *>(&lhs_span[2]) = FPTypeInfo<LHS>::kPosInf;
@@ -293,31 +298,34 @@ void RVZfhInstructionTestBase::UnaryOpWithFflagsMixedTestHelper(
   }
   for (int i = 0; i < kTestValueLength; i++) {
     if constexpr (std::is_integral<LHS>::value) {
-      SetRegisterValues<LHS, LhsRegisterType>({{kR1Name, lhs_span[i]}});
+      this->template SetRegisterValues<LHS, LhsRegisterType>(
+          {{kR1Name, lhs_span[i]}});
     } else {
-      SetNaNBoxedRegisterValues<LHS, LhsRegisterType>({{kR1Name, lhs_span[i]}});
+      this->template SetNaNBoxedRegisterValues<LHS, LhsRegisterType>(
+          {{kR1Name, lhs_span[i]}});
     }
 
     for (int rm : {0, 1, 2, 3, 4}) {
-      rv_fp_->SetRoundingMode(static_cast<FPRoundingMode>(rm));
-      rv_fp_->fflags()->Write(static_cast<uint32_t>(0));
-      SetRegisterValues<int, RV32Register>({{kRmName, rm}, {}});
-      SetRegisterValues<typename DestRegisterType::ValueType, DestRegisterType>(
-          {{kRdName, 0}});
+      this->rv_fp_->SetRoundingMode(static_cast<FPRoundingMode>(rm));
+      this->rv_fp_->fflags()->Write(static_cast<uint32_t>(0));
+      this->template SetRegisterValues<int, XRegister>({{kRmName, rm}, {}});
+      this->template SetRegisterValues<typename DestRegisterType::ValueType,
+                                       DestRegisterType>({{kRdName, 0}});
 
       inst->Execute(nullptr);
-      auto instruction_fflags = rv_fp_->fflags()->GetUint32();
+      auto instruction_fflags = this->rv_fp_->fflags()->GetUint32();
 
       R op_val;
       uint32_t test_operation_fflags;
       {
-        ScopedFPRoundingMode scoped_rm(rv_fp_->host_fp_interface(), rm);
+        ScopedFPRoundingMode scoped_rm(this->rv_fp_->host_fp_interface(), rm);
         std::tie(op_val, test_operation_fflags) = operation(lhs_span[i], rm);
       }
 
-      auto reg_val = state_->GetRegister<DestRegisterType>(kRdName)
-                         .first->data_buffer()
-                         ->template Get<R>(0);
+      auto reg_val =
+          this->state_->template GetRegister<DestRegisterType>(kRdName)
+              .first->data_buffer()
+              ->template Get<R>(0);
       FPCompare<R>(
           op_val, reg_val, delta_position,
           absl::StrCat(name, "  ", i, ": ",
@@ -333,8 +341,9 @@ void RVZfhInstructionTestBase::UnaryOpWithFflagsMixedTestHelper(
   }
 }
 
+template <typename XRegister>
 template <typename R, typename LHS, typename MHS, typename RHS>
-void RVZfhInstructionTestBase::TernaryOpWithFflagsFPTestHelper(
+void RVZfhInstructionTestBase<XRegister>::TernaryOpWithFflagsFPTestHelper(
     absl::string_view name, Instruction *inst,
     absl::Span<const absl::string_view> reg_prefixes, int delta_position,
     std::function<std::tuple<R, uint32_t>(LHS, MHS, RHS)> operation) {
@@ -353,33 +362,34 @@ void RVZfhInstructionTestBase::TernaryOpWithFflagsFPTestHelper(
   const std::string kR3Name = absl::StrCat(reg_prefixes[2], 3);
   const std::string kRdName = absl::StrCat(reg_prefixes[3], 5);
   if (kR1Name[0] == 'x') {
-    AppendRegisterOperands<RV32Register>({kR1Name}, {});
+    this->template AppendRegisterOperands<XRegister>({kR1Name}, {});
   } else {
-    AppendRegisterOperands<RVFpRegister>({kR1Name}, {});
+    this->template AppendRegisterOperands<RVFpRegister>({kR1Name}, {});
   }
   if (kR2Name[0] == 'x') {
-    AppendRegisterOperands<RV32Register>({kR2Name}, {});
+    this->template AppendRegisterOperands<XRegister>({kR2Name}, {});
   } else {
-    AppendRegisterOperands<RVFpRegister>({kR2Name}, {});
+    this->template AppendRegisterOperands<RVFpRegister>({kR2Name}, {});
   }
   if (kR3Name[0] == 'x') {
-    AppendRegisterOperands<RV32Register>({kR3Name}, {});
+    this->template AppendRegisterOperands<XRegister>({kR3Name}, {});
   } else {
-    AppendRegisterOperands<RVFpRegister>({kR3Name}, {});
+    this->template AppendRegisterOperands<RVFpRegister>({kR3Name}, {});
   }
   if (kRdName[0] == 'x') {
-    AppendRegisterOperands<RV32Register>({}, {kRdName});
+    this->template AppendRegisterOperands<XRegister>({}, {kRdName});
   } else {
-    AppendRegisterOperands<RVFpRegister>({}, {kRdName});
+    this->template AppendRegisterOperands<RVFpRegister>({}, {kRdName});
   }
   TestRoundingModeSourceOperand *rm_source_operand =
       new TestRoundingModeSourceOperand();
-  instruction_->AppendSource(rm_source_operand);
-  auto *flag_op = rv_fp_->fflags()->CreateSetDestinationOperand(0, "fflags");
-  instruction_->AppendDestination(flag_op);
-  FillArrayWithRandomFPValues<LHS>(lhs_span);
-  FillArrayWithRandomFPValues<MHS>(mhs_span);
-  FillArrayWithRandomFPValues<RHS>(rhs_span);
+  this->instruction_->AppendSource(rm_source_operand);
+  auto *flag_op =
+      this->rv_fp_->fflags()->CreateSetDestinationOperand(0, "fflags");
+  this->instruction_->AppendDestination(flag_op);
+  this->template FillArrayWithRandomFPValues<LHS>(lhs_span);
+  this->template FillArrayWithRandomFPValues<MHS>(mhs_span);
+  this->template FillArrayWithRandomFPValues<RHS>(rhs_span);
   using LhsInt = typename FPTypeInfo<LHS>::IntType;
   *reinterpret_cast<LhsInt *>(&lhs_span[0]) = FPTypeInfo<LHS>::kQNaN;
   *reinterpret_cast<LhsInt *>(&lhs_span[1]) = FPTypeInfo<LHS>::kSNaN;
@@ -408,31 +418,35 @@ void RVZfhInstructionTestBase::TernaryOpWithFflagsFPTestHelper(
   *reinterpret_cast<RhsInt *>(&rhs_span[16 + 6]) = FPTypeInfo<RHS>::kPosDenorm;
   *reinterpret_cast<RhsInt *>(&rhs_span[16 + 7]) = FPTypeInfo<RHS>::kNegDenorm;
   for (int i = 0; i < kTestValueLength; i++) {
-    SetNaNBoxedRegisterValues<LHS, LhsRegisterType>({{kR1Name, lhs_span[i]}});
-    SetNaNBoxedRegisterValues<MHS, MhsRegisterType>({{kR2Name, mhs_span[i]}});
-    SetNaNBoxedRegisterValues<RHS, RhsRegisterType>({{kR3Name, rhs_span[i]}});
+    this->template SetNaNBoxedRegisterValues<LHS, LhsRegisterType>(
+        {{kR1Name, lhs_span[i]}});
+    this->template SetNaNBoxedRegisterValues<MHS, MhsRegisterType>(
+        {{kR2Name, mhs_span[i]}});
+    this->template SetNaNBoxedRegisterValues<RHS, RhsRegisterType>(
+        {{kR3Name, rhs_span[i]}});
 
     for (int rm : {0, 1, 2, 3, 4}) {
-      rv_fp_->SetRoundingMode(static_cast<FPRoundingMode>(rm));
+      this->rv_fp_->SetRoundingMode(static_cast<FPRoundingMode>(rm));
       rm_source_operand->SetRoundingMode(static_cast<FPRoundingMode>(rm));
-      rv_fp_->fflags()->Write(static_cast<uint32_t>(0));
-      SetRegisterValues<DestRegisterType::ValueType, DestRegisterType>(
-          {{kRdName, 0}});
+      this->rv_fp_->fflags()->Write(static_cast<uint32_t>(0));
+      this->template SetRegisterValues<DestRegisterType::ValueType,
+                                       DestRegisterType>({{kRdName, 0}});
 
       inst->Execute(nullptr);
       // Get the fflags for the instruction execution.
-      auto instruction_fflags = rv_fp_->fflags()->GetUint32();
-      rv_fp_->fflags()->Write(static_cast<uint32_t>(0));
+      auto instruction_fflags = this->rv_fp_->fflags()->GetUint32();
+      this->rv_fp_->fflags()->Write(static_cast<uint32_t>(0));
       R op_val;
       uint32_t test_operation_fflags;
       {
-        ScopedFPRoundingMode scoped_rm(rv_fp_->host_fp_interface(), rm);
+        ScopedFPRoundingMode scoped_rm(this->rv_fp_->host_fp_interface(), rm);
         std::tie(op_val, test_operation_fflags) =
             operation(lhs_span[i], mhs_span[i], rhs_span[i]);
       }
-      auto reg_val = state_->GetRegister<DestRegisterType>(kRdName)
-                         .first->data_buffer()
-                         ->template Get<R>(0);
+      auto reg_val =
+          this->state_->template GetRegister<DestRegisterType>(kRdName)
+              .first->data_buffer()
+              ->template Get<R>(0);
       FPCompare<R>(
           op_val, reg_val, delta_position,
           absl::StrCat(name, "  ", i, " (rm=", rm,
@@ -456,18 +470,21 @@ void RVZfhInstructionTestBase::TernaryOpWithFflagsFPTestHelper(
 }
 
 // Verify that the fmv.h.x instruction NaN boxes the converted value.
-template <typename ScalarRegister, typename FPType>
-void RVZfhInstructionTestBase::FmvHxNanBoxHelper() {
-  using ScalarRegisterType = ScalarRegister::ValueType;
-  AppendRegisterOperands<RVFpRegister>({}, {"f5"});
-  AppendRegisterOperands<ScalarRegister>({"x5"}, {});
-  instruction_->AppendSource(new TestRoundingModeSourceOperand());
+template <typename XRegister>
+template <typename FPType>
+void RVZfhInstructionTestBase<XRegister>::FmvHxNanBoxHelper() {
+  using ScalarRegisterType = XRegister::ValueType;
+  this->template AppendRegisterOperands<RVFpRegister>({}, {"f5"});
+  this->template AppendRegisterOperands<XRegister>({"x5"}, {});
+  this->instruction_->AppendSource(new TestRoundingModeSourceOperand());
   for (int i = 0; i < 128; i++) {
-    ScalarRegisterType scalar = absl::Uniform<ScalarRegisterType>(bitgen_);
-    SetRegisterValues<ScalarRegisterType, ScalarRegister>({{"x5", scalar}});
-    SetRegisterValues<uint64_t, RVFpRegister>({{"f5", 0}});
-    instruction_->Execute(nullptr);
-    FPType observed_fp = state_->GetRegister<RVFpRegister>("f5")
+    ScalarRegisterType scalar =
+        absl::Uniform<ScalarRegisterType>(this->bitgen_);
+    this->template SetRegisterValues<ScalarRegisterType, XRegister>(
+        {{"x5", scalar}});
+    this->template SetRegisterValues<uint64_t, RVFpRegister>({{"f5", 0}});
+    this->instruction_->Execute(nullptr);
+    FPType observed_fp = this->state_->template GetRegister<RVFpRegister>("f5")
                              .first->data_buffer()
                              ->template Get<FPType>(0);
     EXPECT_TRUE(std::isnan(observed_fp));
@@ -476,11 +493,11 @@ void RVZfhInstructionTestBase::FmvHxNanBoxHelper() {
 
 // Helper to test the movement of an IEEE encoded half precision value from a
 // float register to an integer register.
-template <typename ScalarRegister>
-void RVZfhInstructionTestBase::FmvXhHelper() {
-  using ScalarRegisterType = ScalarRegister::ValueType;
-  UnaryOpFPTestHelper<ScalarRegisterType, HalfFP>(
-      "fmv.x.h", instruction_, {"f", "x"}, 32,
+template <typename XRegister>
+void RVZfhInstructionTestBase<XRegister>::FmvXhHelper() {
+  using ScalarRegisterType = XRegister::ValueType;
+  this->template UnaryOpFPTestHelper<ScalarRegisterType, HalfFP>(
+      "fmv.x.h", this->instruction_, {"f", "x"}, 32,
       [](HalfFP half_fp) -> ScalarRegisterType {
         bool sign = 1 & (half_fp.value >> (FPTypeInfo<HalfFP>::kBitSize - 1));
         // Fill the upper XLEN-16 bits with the sign bit as per the spec.
@@ -493,11 +510,12 @@ void RVZfhInstructionTestBase::FmvXhHelper() {
 
 // Helper to test conversion of a 32bit integer value to a half precision float
 // value.
-template <typename ScalarRegister, typename SourceIntegerType>
-void RVZfhInstructionTestBase::CvtHwHelper(absl::string_view name) {
-  UnaryOpWithFflagsMixedTestHelper<RVFpRegister, ScalarRegister, HalfFP,
+template <typename XRegister>
+template <typename SourceIntegerType>
+void RVZfhInstructionTestBase<XRegister>::CvtHwHelper(absl::string_view name) {
+  UnaryOpWithFflagsMixedTestHelper<RVFpRegister, XRegister, HalfFP,
                                    SourceIntegerType>(
-      name, instruction_, {"x", "f"}, 32,
+      name, this->instruction_, {"x", "f"}, 32,
       [](SourceIntegerType input_int, int rm) -> std::tuple<HalfFP, uint32_t> {
         uint32_t fflags = 0;
         HalfFP result = FpConversionsTestHelper(static_cast<double>(input_int))
@@ -509,29 +527,31 @@ void RVZfhInstructionTestBase::CvtHwHelper(absl::string_view name) {
 
 // Helper to test conversion of a half precision float value to a 32bit integer
 // value.
-template <typename ScalarRegister, typename DestinationIntegerType>
-void RVZfhInstructionTestBase::CvtWhHelper(absl::string_view name) {
-  UnaryOpWithFflagsMixedTestHelper<ScalarRegister, RVFpRegister,
+template <typename XRegister>
+template <typename DestinationIntegerType>
+void RVZfhInstructionTestBase<XRegister>::CvtWhHelper(absl::string_view name) {
+  UnaryOpWithFflagsMixedTestHelper<XRegister, RVFpRegister,
                                    DestinationIntegerType, HalfFP>(
-      name, instruction_, {"f", "x"}, 32,
+      name, this->instruction_, {"f", "x"}, 32,
       [this](HalfFP input,
              int rm) -> std::tuple<DestinationIntegerType, uint32_t> {
         uint32_t fflags = 0;
         double input_double =
             FpConversionsTestHelper(input).ConvertWithFlags<double>(fflags);
         const DestinationIntegerType val =
-            RoundToInteger<double, DestinationIntegerType>(input_double, rm,
-                                                           fflags);
+            this->template RoundToInteger<double, DestinationIntegerType>(
+                input_double, rm, fflags);
         return std::make_tuple(val, fflags);
       });
 }
 
 // Helper to test the comparison of two half precision values for equality.
-template <typename ScalarRegister>
-void RVZfhInstructionTestBase::CmpEqHelper() {
-  using ScalarRegisterType = ScalarRegister::ValueType;
-  BinaryOpWithFflagsFPTestHelper<ScalarRegisterType, HalfFP, HalfFP>(
-      "feq.h", instruction_, {"f", "f", "x"}, 32,
+template <typename XRegister>
+void RVZfhInstructionTestBase<XRegister>::CmpEqHelper() {
+  using ScalarRegisterType = XRegister::ValueType;
+  this->template BinaryOpWithFflagsFPTestHelper<ScalarRegisterType, HalfFP,
+                                                HalfFP>(
+      "feq.h", this->instruction_, {"f", "f", "x"}, 32,
       [](HalfFP a, HalfFP b) -> std::tuple<ScalarRegisterType, uint32_t> {
         uint32_t fflags = 0;
         double a_f =
@@ -547,11 +567,12 @@ void RVZfhInstructionTestBase::CmpEqHelper() {
 }
 
 // Helper to test the comparison of two half precision values for less than.
-template <typename ScalarRegister>
-void RVZfhInstructionTestBase::CmpLtHelper() {
-  using ScalarRegisterType = ScalarRegister::ValueType;
-  BinaryOpWithFflagsFPTestHelper<ScalarRegisterType, HalfFP, HalfFP>(
-      "flt.h", instruction_, {"f", "f", "x"}, 32,
+template <typename XRegister>
+void RVZfhInstructionTestBase<XRegister>::CmpLtHelper() {
+  using ScalarRegisterType = XRegister::ValueType;
+  this->template BinaryOpWithFflagsFPTestHelper<ScalarRegisterType, HalfFP,
+                                                HalfFP>(
+      "flt.h", this->instruction_, {"f", "f", "x"}, 32,
       [](HalfFP a, HalfFP b) -> std::tuple<ScalarRegisterType, uint32_t> {
         uint32_t fflags = 0;
         double a_f =
@@ -572,11 +593,12 @@ void RVZfhInstructionTestBase::CmpLtHelper() {
 
 // Helper to test the comparison of two half precision values for less than or
 // equal to.
-template <typename ScalarRegister>
-void RVZfhInstructionTestBase::CmpLeHelper() {
-  using ScalarRegisterType = ScalarRegister::ValueType;
-  BinaryOpWithFflagsFPTestHelper<ScalarRegisterType, HalfFP, HalfFP>(
-      "fle.h", instruction_, {"f", "f", "x"}, 32,
+template <typename XRegister>
+void RVZfhInstructionTestBase<XRegister>::CmpLeHelper() {
+  using ScalarRegisterType = XRegister::ValueType;
+  this->template BinaryOpWithFflagsFPTestHelper<ScalarRegisterType, HalfFP,
+                                                HalfFP>(
+      "fle.h", this->instruction_, {"f", "f", "x"}, 32,
       [](HalfFP a, HalfFP b) -> std::tuple<ScalarRegisterType, uint32_t> {
         uint32_t fflags = 0;
         double a_f =
@@ -596,12 +618,12 @@ void RVZfhInstructionTestBase::CmpLeHelper() {
 }
 
 // Helper to test the classification of the half precision value.
-template <typename ScalarRegister>
-void RVZfhInstructionTestBase::ClassHelper() {
-  using ScalarRegisterType = ScalarRegister::ValueType;
-  UnaryOpWithFflagsMixedTestHelper<ScalarRegister, RVFpRegister,
-                                   ScalarRegisterType, HalfFP>(
-      "fclass.h", instruction_, {"f", "x"}, 32,
+template <typename XRegister>
+void RVZfhInstructionTestBase<XRegister>::ClassHelper() {
+  using ScalarRegisterType = XRegister::ValueType;
+  UnaryOpWithFflagsMixedTestHelper<XRegister, RVFpRegister, ScalarRegisterType,
+                                   HalfFP>(
+      "fclass.h", this->instruction_, {"f", "x"}, 32,
       [](HalfFP input, int rm) -> std::tuple<ScalarRegisterType, uint32_t> {
         uint16_t sign_mask =
             ~(FPTypeInfo<HalfFP>::kExpMask | FPTypeInfo<HalfFP>::kSigMask);
@@ -633,7 +655,7 @@ void RVZfhInstructionTestBase::ClassHelper() {
       });
 }
 
-class RV32ZfhInstructionTest : public RVZfhInstructionTestBase {
+class RV32ZfhInstructionTest : public RVZfhInstructionTestBase<RV32Register> {
  protected:
   // Test conversion instructions. The instance variable semantic_function_ is
   // used to set the semantic function for the instruction and should be set
@@ -724,7 +746,7 @@ TEST_F(RV32ZfhInstructionTest, RiscVFlh) {
   SetupMemory<uint32_t, uint16_t>(0xFF, 0xBEEF);
 
   HalfFP observed_val =
-      LoadHalfHelper<HalfFP, RV32Register>(/* base */ 0x0, /* offset */ 0xFF);
+      LoadHalfHelper<HalfFP>(/* base */ 0x0, /* offset */ 0xFF);
   EXPECT_EQ(observed_val.value, 0xBEEF);
 }
 
@@ -737,8 +759,7 @@ TEST_F(RV32ZfhInstructionTest, RiscVFlh_float_nanbox) {
 
   SetupMemory<uint32_t, uint16_t>(0xFF, 0xBEEF);
 
-  float observed_val =
-      LoadHalfHelper<float, RV32Register>(/* base */ 0xFF, /* offset */ 0);
+  float observed_val = LoadHalfHelper<float>(/* base */ 0xFF, /* offset */ 0);
   EXPECT_TRUE(std::isnan(observed_val));
 }
 
@@ -751,7 +772,7 @@ TEST_F(RV32ZfhInstructionTest, RiscVFlh_double_nanbox) {
 
   SetupMemory<uint32_t, uint16_t>(0xFF, 0xBEEF);
 
-  double observed_val = LoadHalfHelper<double, RV32Register>(
+  double observed_val = LoadHalfHelper<double>(
       /* base */ 0x0100, /* offset */ -1);
   EXPECT_TRUE(std::isnan(observed_val));
 }
@@ -760,7 +781,7 @@ TEST_F(RV32ZfhInstructionTest, RiscVFlh_double_nanbox) {
 // encoding is preserved in the integer register.
 TEST_F(RV32ZfhInstructionTest, RiscVZfhFMvxh) {
   SetSemanticFunction(&::mpact::sim::riscv::RV32::RiscVZfhFMvxh);
-  FmvXhHelper<RV32Register>();
+  FmvXhHelper();
 }
 
 // Move half precision from an integer register (lower 16 bits) to a float
@@ -777,14 +798,14 @@ TEST_F(RV32ZfhInstructionTest, RiscVZfhFMvhx) {
 // that the destination value is NaN boxed.
 TEST_F(RV32ZfhInstructionTest, RiscVZfhFMvhx_float_nanbox) {
   SetSemanticFunction(&::mpact::sim::riscv::RV32::RiscVZfhFMvhx);
-  FmvHxNanBoxHelper<RV32Register, float>();
+  FmvHxNanBoxHelper<float>();
 }
 
 // Move half precision from an integer register to a float register. Confirm
 // that the destination value is NaN boxed.
 TEST_F(RV32ZfhInstructionTest, RiscVZfhFMvhx_double_nanbox) {
   SetSemanticFunction(&::mpact::sim::riscv::RV32::RiscVZfhFMvhx);
-  FmvHxNanBoxHelper<RV32Register, double>();
+  FmvHxNanBoxHelper<double>();
 }
 
 // Half precision to single precision conversion.
@@ -1324,49 +1345,49 @@ TEST_F(RV32ZfhInstructionTest, RiscVZfhFsqrt) {
 // Test conversion from signed 32 bit integer to half precision.
 TEST_F(RV32ZfhInstructionTest, RiscVZfhCvtHw) {
   SetSemanticFunction(&RiscVZfhCvtHw);
-  CvtHwHelper<RV32Register, int32_t>("fcvt.h.w");
+  CvtHwHelper<int32_t>("fcvt.h.w");
 }
 
 // Test conversion from unsigned 32 bit integer to half precision.
 TEST_F(RV32ZfhInstructionTest, RiscVZfhCvtHwu) {
   SetSemanticFunction(&RiscVZfhCvtHwu);
-  CvtHwHelper<RV32Register, uint32_t>("fcvt.h.wu");
+  CvtHwHelper<uint32_t>("fcvt.h.wu");
 }
 
 // Test conversion from half precision to signed 32 bit integer.
 TEST_F(RV32ZfhInstructionTest, RiscVZfhCvtWh) {
   SetSemanticFunction(&::mpact::sim::riscv::RV32::RiscVZfhCvtWh);
-  CvtWhHelper<RV32Register, int32_t>("fcvt.w.h");
+  CvtWhHelper<int32_t>("fcvt.w.h");
 }
 
 // Test conversion from half precision to unsigned 32 bit integer.
 TEST_F(RV32ZfhInstructionTest, RiscVZfhCvtWuh) {
   SetSemanticFunction(&::mpact::sim::riscv::RV32::RiscVZfhCvtWuh);
-  CvtWhHelper<RV32Register, uint32_t>("fcvt.wu.h");
+  CvtWhHelper<uint32_t>("fcvt.wu.h");
 }
 
 // Test equality comparison for half precision values.
 TEST_F(RV32ZfhInstructionTest, RiscVZfhFcmpeq) {
   SetSemanticFunction(&::mpact::sim::riscv::RV32::RiscVZfhFcmpeq);
-  CmpEqHelper<RV32Register>();
+  CmpEqHelper();
 }
 
 // Test less than comparison for half precision values.
 TEST_F(RV32ZfhInstructionTest, RiscVZfhFcmplt) {
   SetSemanticFunction(&::mpact::sim::riscv::RV32::RiscVZfhFcmplt);
-  CmpLtHelper<RV32Register>();
+  CmpLtHelper();
 }
 
 // Test less than or equal to comparison for half precision values.
 TEST_F(RV32ZfhInstructionTest, RiscVZfhFcmple) {
   SetSemanticFunction(&::mpact::sim::riscv::RV32::RiscVZfhFcmple);
-  CmpLeHelper<RV32Register>();
+  CmpLeHelper();
 }
 
 // Test classification of half precision values.
 TEST_F(RV32ZfhInstructionTest, RiscVZfhFclass) {
   SetSemanticFunction(&::mpact::sim::riscv::RV32::RiscVZfhFclass);
-  ClassHelper<RV32Register>();
+  ClassHelper();
 }
 
 // Test fused multiply add for half precision values.
@@ -1509,13 +1530,13 @@ TEST_F(RV32ZfhInstructionTest, RiscVZfhFnmsub) {
       });
 }
 
-class RV64ZfhInstructionTest : public RVZfhInstructionTestBase {};
+class RV64ZfhInstructionTest : public RVZfhInstructionTestBase<RV64Register> {};
 
 // Move half precision from a float register to an integer register. The IEEE754
 // encoding is preserved in the integer register.
 TEST_F(RV64ZfhInstructionTest, RiscVZfhFMvxh) {
   SetSemanticFunction(&mpact::sim::riscv::RV64::RiscVZfhFMvxh);
-  FmvXhHelper<RV64Register>();
+  FmvXhHelper();
 }
 
 // Move half precision from an integer register (lower 16 bits) to a float
@@ -1532,14 +1553,14 @@ TEST_F(RV64ZfhInstructionTest, RiscVZfhFMvhx) {
 // that the destination value is NaN boxed.
 TEST_F(RV64ZfhInstructionTest, RiscVZfhFMvhx_float_nanbox) {
   SetSemanticFunction(&::mpact::sim::riscv::RV64::RiscVZfhFMvhx);
-  FmvHxNanBoxHelper<RV64Register, float>();
+  FmvHxNanBoxHelper<float>();
 }
 
 // Move half precision from an integer register to a float register. Confirm
 // that the destination value is NaN boxed.
 TEST_F(RV64ZfhInstructionTest, RiscVZfhFMvhx_double_nanbox) {
   SetSemanticFunction(&::mpact::sim::riscv::RV64::RiscVZfhFMvhx);
-  FmvHxNanBoxHelper<RV64Register, double>();
+  FmvHxNanBoxHelper<double>();
 }
 
 // Test the FP16 load instruction. The semantic functions should match the isa
@@ -1552,7 +1573,7 @@ TEST_F(RV64ZfhInstructionTest, RiscVFlh) {
   SetupMemory<uint64_t, uint16_t>(0xFF, 0xBEEF);
 
   HalfFP observed_val =
-      LoadHalfHelper<HalfFP, RV64Register>(/* base */ 0x0, /* offset */ 0xFF);
+      LoadHalfHelper<HalfFP>(/* base */ 0x0, /* offset */ 0xFF);
   EXPECT_EQ(observed_val.value, 0xBEEF);
 }
 
@@ -1565,8 +1586,7 @@ TEST_F(RV64ZfhInstructionTest, RiscVFlh_float_nanbox) {
 
   SetupMemory<uint64_t, uint16_t>(0xFF, 0xBEEF);
 
-  float observed_val =
-      LoadHalfHelper<float, RV64Register>(/* base */ 0xFF, /* offset */ 0);
+  float observed_val = LoadHalfHelper<float>(/* base */ 0xFF, /* offset */ 0);
   EXPECT_TRUE(std::isnan(observed_val));
 }
 
@@ -1579,7 +1599,7 @@ TEST_F(RV64ZfhInstructionTest, RiscVFlh_double_nanbox) {
 
   SetupMemory<uint64_t, uint16_t>(0xFF, 0xBEEF);
 
-  double observed_val = LoadHalfHelper<double, RV64Register>(
+  double observed_val = LoadHalfHelper<double>(
       /* base */ 0x0100, /* offset */ -1);
   EXPECT_TRUE(std::isnan(observed_val));
 }
@@ -1587,49 +1607,49 @@ TEST_F(RV64ZfhInstructionTest, RiscVFlh_double_nanbox) {
 // Test conversion from signed 32 bit integer to half precision.
 TEST_F(RV64ZfhInstructionTest, RiscVZfhCvtHw) {
   SetSemanticFunction(&RiscVZfhCvtHw);
-  CvtHwHelper<RV64Register, int32_t>("fcvt.h.w");
+  CvtHwHelper<int32_t>("fcvt.h.w");
 }
 
 // Test conversion from unsigned 32 bit integer to half precision.
 TEST_F(RV64ZfhInstructionTest, RiscVZfhCvtHwu) {
   SetSemanticFunction(&RiscVZfhCvtHwu);
-  CvtHwHelper<RV64Register, uint32_t>("fcvt.h.wu");
+  CvtHwHelper<uint32_t>("fcvt.h.wu");
 }
 
 // Test conversion from half precision to signed 32 bit integer.
 TEST_F(RV64ZfhInstructionTest, RiscVZfhCvtWh) {
   SetSemanticFunction(&::mpact::sim::riscv::RV64::RiscVZfhCvtWh);
-  CvtWhHelper<RV64Register, int32_t>("fcvt.w.h");
+  CvtWhHelper<int32_t>("fcvt.w.h");
 }
 
 // Test conversion from half precision to unsigned 32 bit integer.
 TEST_F(RV64ZfhInstructionTest, RiscVZfhCvtWuh) {
   SetSemanticFunction(&::mpact::sim::riscv::RV64::RiscVZfhCvtWuh);
-  CvtWhHelper<RV64Register, uint32_t>("fcvt.wu.h");
+  CvtWhHelper<uint32_t>("fcvt.wu.h");
 }
 
 // Test equality comparison for half precision values.
 TEST_F(RV64ZfhInstructionTest, RiscVZfhFcmpeq) {
   SetSemanticFunction(&::mpact::sim::riscv::RV64::RiscVZfhFcmpeq);
-  CmpEqHelper<RV64Register>();
+  CmpEqHelper();
 }
 
 // Test less than comparison for half precision values.
 TEST_F(RV64ZfhInstructionTest, RiscVZfhFcmplt) {
   SetSemanticFunction(&::mpact::sim::riscv::RV64::RiscVZfhFcmplt);
-  CmpLtHelper<RV64Register>();
+  CmpLtHelper();
 }
 
 // Test less than or equal to comparison for half precision values.
 TEST_F(RV64ZfhInstructionTest, RiscVZfhFcmple) {
   SetSemanticFunction(&::mpact::sim::riscv::RV64::RiscVZfhFcmple);
-  CmpLeHelper<RV64Register>();
+  CmpLeHelper();
 }
 
 // Test classification of half precision values.
 TEST_F(RV64ZfhInstructionTest, RiscVZfhFclass) {
   SetSemanticFunction(&::mpact::sim::riscv::RV64::RiscVZfhFclass);
-  ClassHelper<RV64Register>();
+  ClassHelper();
 }
 
 }  // namespace

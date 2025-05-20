@@ -22,6 +22,7 @@
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "riscv/riscv_fp_info.h"
+#include "riscv/riscv_register.h"
 #include "riscv/test/riscv_fp_test_base.h"
 
 namespace {
@@ -53,7 +54,8 @@ using ::mpact::sim::riscv::RV32::RiscVFCmple;
 using ::mpact::sim::riscv::RV32::RiscVFCmplt;
 using ::mpact::sim::riscv::RV32::RiscVFCvtWs;
 using ::mpact::sim::riscv::RV32::RiscVFCvtWus;
-class RV32FInstructionTest : public RiscVFPInstructionTestBase {};
+class RV32FInstructionTest
+    : public RiscVFPInstructionTestBase<mpact::sim::riscv::RV32Register> {};
 
 static bool is_snan(float a) {
   if (!std::isnan(a)) return false;

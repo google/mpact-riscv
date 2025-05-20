@@ -340,6 +340,7 @@ NaNBox(S value) {
   // No return statement, so error will be reported.
 }
 
+template <typename XRegister = RV32Register>
 class RiscVFPInstructionTestBase : public testing::Test {
  public:
   RiscVFPInstructionTestBase() {
@@ -360,7 +361,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
     memory_->Store(kDataLoadAddress - 4096, db);
     db->DecRef();
     for (int i = 1; i < 32; i++) {
-      xreg_[i] = state_->GetRegister<RV32Register>(absl::StrCat("x", i)).first;
+      xreg_[i] = state_->GetRegister<XRegister>(absl::StrCat("x", i)).first;
     }
     for (int i = 1; i < 32; i++) {
       freg_[i] = state_->GetRegister<RVFpRegister>(absl::StrCat("f", i)).first;
@@ -410,7 +411,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
   }
 
   // named register and sets it to the corresponding value.
-  template <typename T, typename RegisterType = RV32Register>
+  template <typename T, typename RegisterType = XRegister>
   void SetRegisterValues(
       const std::vector<std::tuple<std::string, const T>> &values) {
     for (auto &[reg_name, value] : values) {
@@ -423,7 +424,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
     }
   }
 
-  template <typename T, typename RegisterType = RV32Register>
+  template <typename T, typename RegisterType = XRegister>
   void SetNaNBoxedRegisterValues(
       const std::vector<std::tuple<std::string, const T>> &values) {
     for (auto &[reg_name, value] : values) {
@@ -495,16 +496,16 @@ class RiscVFPInstructionTestBase : public testing::Test {
     // This is used for the rounding mode operand.
     const std::string kRmName = absl::StrCat("x", 10);
     if (kR1Name[0] == 'x') {
-      AppendRegisterOperands<RV32Register>({kR1Name}, {});
+      AppendRegisterOperands<XRegister>({kR1Name}, {});
     } else {
       AppendRegisterOperands<RVFpRegister>({kR1Name}, {});
     }
     if (kRdName[0] == 'x') {
-      AppendRegisterOperands<RV32Register>({}, {kRdName});
+      AppendRegisterOperands<XRegister>({}, {kRdName});
     } else {
       AppendRegisterOperands<RVFpRegister>({}, {kRdName});
     }
-    AppendRegisterOperands<RV32Register>({kRmName}, {});
+    AppendRegisterOperands<XRegister>({kRmName}, {});
     FillArrayWithRandomFPValues<LHS>(lhs_span);
     using LhsInt = typename FPTypeInfo<LHS>::IntType;
     *reinterpret_cast<LhsInt *>(&lhs_span[0]) = FPTypeInfo<LHS>::kQNaN;
@@ -525,7 +526,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
 
       for (int rm : {0, 1, 2, 3, 4}) {
         rv_fp_->SetRoundingMode(static_cast<FPRoundingMode>(rm));
-        SetRegisterValues<int, RV32Register>({{kRmName, rm}});
+        SetRegisterValues<int, XRegister>({{kRmName, rm}});
         SetRegisterValues<DestRegisterType::ValueType, DestRegisterType>(
             {{kRdName, 0}});
 
@@ -563,16 +564,16 @@ class RiscVFPInstructionTestBase : public testing::Test {
     // This is used for the rounding mode operand.
     const std::string kRmName = absl::StrCat("x", 10);
     if (kR1Name[0] == 'x') {
-      AppendRegisterOperands<RV32Register>({kR1Name}, {});
+      AppendRegisterOperands<XRegister>({kR1Name}, {});
     } else {
       AppendRegisterOperands<RVFpRegister>({kR1Name}, {});
     }
     if (kRdName[0] == 'x') {
-      AppendRegisterOperands<RV32Register>({}, {kRdName});
+      AppendRegisterOperands<XRegister>({}, {kRdName});
     } else {
       AppendRegisterOperands<RVFpRegister>({}, {kRdName});
     }
-    AppendRegisterOperands<RV32Register>({kRmName}, {});
+    AppendRegisterOperands<XRegister>({kRmName}, {});
     auto *flag_op = rv_fp_->fflags()->CreateSetDestinationOperand(0, "fflags");
     instruction_->AppendDestination(flag_op);
     FillArrayWithRandomFPValues<LHS>(lhs_span);
@@ -595,7 +596,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
       for (int rm : {0, 1, 2, 3, 4}) {
         rv_fp_->SetRoundingMode(static_cast<FPRoundingMode>(rm));
         rv_fp_->fflags()->Write(static_cast<uint32_t>(0));
-        SetRegisterValues<int, RV32Register>({{kRmName, rm}, {}});
+        SetRegisterValues<int, XRegister>({{kRmName, rm}, {}});
         SetRegisterValues<DestRegisterType::ValueType, DestRegisterType>(
             {{kRdName, 0}});
 
@@ -646,21 +647,21 @@ class RiscVFPInstructionTestBase : public testing::Test {
     // This is used for the rounding mode operand.
     const std::string kRmName = absl::StrCat("x", 10);
     if (kR1Name[0] == 'x') {
-      AppendRegisterOperands<RV32Register>({kR1Name}, {});
+      AppendRegisterOperands<XRegister>({kR1Name}, {});
     } else {
       AppendRegisterOperands<RVFpRegister>({kR1Name}, {});
     }
     if (kR2Name[0] == 'x') {
-      AppendRegisterOperands<RV32Register>({kR2Name}, {});
+      AppendRegisterOperands<XRegister>({kR2Name}, {});
     } else {
       AppendRegisterOperands<RVFpRegister>({kR2Name}, {});
     }
     if (kRdName[0] == 'x') {
-      AppendRegisterOperands<RV32Register>({}, {kRdName});
+      AppendRegisterOperands<XRegister>({}, {kRdName});
     } else {
       AppendRegisterOperands<RVFpRegister>({}, {kRdName});
     }
-    AppendRegisterOperands<RV32Register>({kRmName}, {});
+    AppendRegisterOperands<XRegister>({kRmName}, {});
     auto *flag_op = rv_fp_->fflags()->CreateSetDestinationOperand(0, "fflags");
     instruction_->AppendDestination(flag_op);
     FillArrayWithRandomFPValues<LHS>(lhs_span);
@@ -680,7 +681,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
 
       for (int rm : {0, 1, 2, 3, 4}) {
         rv_fp_->SetRoundingMode(static_cast<FPRoundingMode>(rm));
-        SetRegisterValues<int, RV32Register>({{kRmName, rm}});
+        SetRegisterValues<int, XRegister>({{kRmName, rm}});
         SetRegisterValues<DestRegisterType::ValueType, DestRegisterType>(
             {{kRdName, 0}});
 
@@ -726,21 +727,21 @@ class RiscVFPInstructionTestBase : public testing::Test {
     // This is used for the rounding mode operand.
     const std::string kRmName = absl::StrCat("x", 10);
     if (kR1Name[0] == 'x') {
-      AppendRegisterOperands<RV32Register>({kR1Name}, {});
+      AppendRegisterOperands<XRegister>({kR1Name}, {});
     } else {
       AppendRegisterOperands<RVFpRegister>({kR1Name}, {});
     }
     if (kR2Name[0] == 'x') {
-      AppendRegisterOperands<RV32Register>({kR2Name}, {});
+      AppendRegisterOperands<XRegister>({kR2Name}, {});
     } else {
       AppendRegisterOperands<RVFpRegister>({kR2Name}, {});
     }
     if (kRdName[0] == 'x') {
-      AppendRegisterOperands<RV32Register>({}, {kRdName});
+      AppendRegisterOperands<XRegister>({}, {kRdName});
     } else {
       AppendRegisterOperands<RVFpRegister>({}, {kRdName});
     }
-    AppendRegisterOperands<RV32Register>({kRmName}, {});
+    AppendRegisterOperands<XRegister>({kRmName}, {});
     auto *flag_op = rv_fp_->fflags()->CreateSetDestinationOperand(0, "fflags");
     instruction_->AppendDestination(flag_op);
     FillArrayWithRandomFPValues<LHS>(lhs_span);
@@ -761,7 +762,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
       for (int rm : {0, 1, 2, 3, 4}) {
         rv_fp_->SetRoundingMode(static_cast<FPRoundingMode>(rm));
         rv_fp_->fflags()->Write(static_cast<uint32_t>(0));
-        SetRegisterValues<int, RV32Register>({{kRmName, rm}, {}});
+        SetRegisterValues<int, XRegister>({{kRmName, rm}, {}});
         SetRegisterValues<DestRegisterType::ValueType, DestRegisterType>(
             {{kRdName, 0}});
 
@@ -815,26 +816,26 @@ class RiscVFPInstructionTestBase : public testing::Test {
     // This is used for the rounding mode operand.
     const std::string kRmName = absl::StrCat("x", 10);
     if (kR1Name[0] == 'x') {
-      AppendRegisterOperands<RV32Register>({kR1Name}, {});
+      AppendRegisterOperands<XRegister>({kR1Name}, {});
     } else {
       AppendRegisterOperands<RVFpRegister>({kR1Name}, {});
     }
     if (kR2Name[0] == 'x') {
-      AppendRegisterOperands<RV32Register>({kR2Name}, {});
+      AppendRegisterOperands<XRegister>({kR2Name}, {});
     } else {
       AppendRegisterOperands<RVFpRegister>({kR2Name}, {});
     }
     if (kR3Name[0] == 'x') {
-      AppendRegisterOperands<RV32Register>({kR3Name}, {});
+      AppendRegisterOperands<XRegister>({kR3Name}, {});
     } else {
       AppendRegisterOperands<RVFpRegister>({kR3Name}, {});
     }
     if (kRdName[0] == 'x') {
-      AppendRegisterOperands<RV32Register>({}, {kRdName});
+      AppendRegisterOperands<XRegister>({}, {kRdName});
     } else {
       AppendRegisterOperands<RVFpRegister>({}, {kRdName});
     }
-    AppendRegisterOperands<RV32Register>({kRmName}, {});
+    AppendRegisterOperands<XRegister>({kRmName}, {});
     FillArrayWithRandomFPValues<LHS>(lhs_span);
     FillArrayWithRandomFPValues<MHS>(mhs_span);
     FillArrayWithRandomFPValues<RHS>(rhs_span);
@@ -854,7 +855,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
 
       for (int rm : {0, 1, 2, 3, 4}) {
         rv_fp_->SetRoundingMode(static_cast<FPRoundingMode>(rm));
-        SetRegisterValues<int, RV32Register>({{kRmName, rm}});
+        SetRegisterValues<int, XRegister>({{kRmName, rm}});
         SetRegisterValues<R, DestRegisterType>({{kRdName, 0}});
 
         inst->Execute(nullptr);
@@ -898,26 +899,26 @@ class RiscVFPInstructionTestBase : public testing::Test {
     // This is used for the rounding mode operand.
     const std::string kRmName = absl::StrCat("x", 10);
     if (kR1Name[0] == 'x') {
-      AppendRegisterOperands<RV32Register>({kR1Name}, {});
+      AppendRegisterOperands<XRegister>({kR1Name}, {});
     } else {
       AppendRegisterOperands<RVFpRegister>({kR1Name}, {});
     }
     if (kR2Name[0] == 'x') {
-      AppendRegisterOperands<RV32Register>({kR2Name}, {});
+      AppendRegisterOperands<XRegister>({kR2Name}, {});
     } else {
       AppendRegisterOperands<RVFpRegister>({kR2Name}, {});
     }
     if (kR3Name[0] == 'x') {
-      AppendRegisterOperands<RV32Register>({kR3Name}, {});
+      AppendRegisterOperands<XRegister>({kR3Name}, {});
     } else {
       AppendRegisterOperands<RVFpRegister>({kR3Name}, {});
     }
     if (kRdName[0] == 'x') {
-      AppendRegisterOperands<RV32Register>({}, {kRdName});
+      AppendRegisterOperands<XRegister>({}, {kRdName});
     } else {
       AppendRegisterOperands<RVFpRegister>({}, {kRdName});
     }
-    AppendRegisterOperands<RV32Register>({kRmName}, {});
+    AppendRegisterOperands<XRegister>({kRmName}, {});
     auto *flag_op = rv_fp_->fflags()->CreateSetDestinationOperand(0, "fflags");
     instruction_->AppendDestination(flag_op);
     FillArrayWithRandomFPValues<LHS>(lhs_span);
@@ -940,7 +941,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
       for (int rm : {0, 1, 2, 3, 4}) {
         rv_fp_->SetRoundingMode(static_cast<FPRoundingMode>(rm));
         rv_fp_->fflags()->Write(static_cast<uint32_t>(0));
-        SetRegisterValues<int, RV32Register>({{kRmName, rm}});
+        SetRegisterValues<int, XRegister>({{kRmName, rm}});
         SetRegisterValues<DestRegisterType::ValueType, DestRegisterType>(
             {{kRdName, 0}});
 
@@ -971,9 +972,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
     }
   }
 
-  absl::Span<RV32Register *> xreg() {
-    return absl::Span<RV32Register *>(xreg_);
-  }
+  absl::Span<XRegister *> xreg() { return absl::Span<XRegister *>(xreg_); }
 
   absl::Span<RVFpRegister *> freg() {
     return absl::Span<RVFpRegister *>(freg_);
@@ -1151,7 +1150,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
   }
 
  protected:
-  RV32Register *xreg_[32];
+  XRegister *xreg_[32];
   RV64Register *dreg_[32];
   RVFpRegister *freg_[32];
   RiscVState *state_;

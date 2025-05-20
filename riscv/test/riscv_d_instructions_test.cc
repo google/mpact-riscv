@@ -21,6 +21,8 @@
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/type_helpers.h"
+#include "riscv/riscv_fp_info.h"
+#include "riscv/riscv_register.h"
 #include "riscv/test/riscv_fp_test_base.h"
 
 namespace {
@@ -55,7 +57,8 @@ using ::mpact::sim::riscv::RV32::RiscVDCmplt;
 using ::mpact::sim::riscv::RV32::RiscVDCvtWd;
 using ::mpact::sim::riscv::RV32::RiscVDCvtWud;
 
-class RV32DInstructionTest : public RiscVFPInstructionTestBase {};
+class RV32DInstructionTest
+    : public RiscVFPInstructionTestBase<mpact::sim::riscv::RV32Register> {};
 
 static bool is_snan(double a) {
   if (!std::isnan(a)) return false;
