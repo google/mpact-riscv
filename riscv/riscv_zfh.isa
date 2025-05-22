@@ -262,5 +262,21 @@ slot riscv64_zfh : riscv64_zfh_min, riscv_zfh_common {
       resources: { next_pc, frs1 : rd[0..]},
       semfunc: "&RV64::RiscVZfhFclass",
       disasm: "fclass.h", "%rd, %frs1";
+    fcvt_lh{: frs1, rm : rd, fflags},
+      resources: {next_pc, frs1 : rd[0..]},
+      semfunc: "&RV64::RiscVZfhCvtLh",
+      disasm: "fcvt.l.h", "%rd, %frs1";
+    fcvt_luh{: frs1, rm : rd, fflags},
+      resources: {next_pc, frs1 : rd[0..]},
+      semfunc: "&RV64::RiscVZfhCvtLuh",
+      disasm: "fcvt.lu.h", "%rd, %frs1";
+    fcvt_hl{: rs1, rm : frd, fflags},
+      resources: {next_pc, frs1 : frd[0..]},
+      semfunc: "&RV64::RiscVZfhCvtHl",
+      disasm: "fcvt.h.l", "%frd, %rs1";
+    fcvt_hlu{: rs1, rm : frd, fflags},
+      resources: {next_pc, frs1 : frd[0..]},
+      semfunc: "&RV64::RiscVZfhCvtHlu",
+      disasm: "fcvt.h.lu", "%frd, %rs1";
   }
 }

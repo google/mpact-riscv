@@ -705,6 +705,36 @@ void RiscVZfhFclass(const Instruction *instruction) {
       });
 }
 
+// Converts from half precision to signed 64 bit integer.
+void RiscVZfhCvtLh(const Instruction *instruction) {
+  RiscVConvertFloatWithFflagsOp<typename RV64Register::ValueType, HalfFP,
+                                int64_t>(instruction);
+}
+
+// Converts from half precision to unsigned 64 bit integer.
+void RiscVZfhCvtLuh(const Instruction *instruction) {
+  RiscVConvertFloatWithFflagsOp<typename RV64Register::ValueType, HalfFP,
+                                uint64_t>(instruction);
+}
+
+// Converts from signed 64 bit integer to half precision.
+void RiscVZfhCvtHl(const Instruction *instruction) {
+  RiscVZfhCvtHelper<HalfFP, int64_t>(
+      instruction,
+      [](int64_t a, FPRoundingMode rm, uint32_t &fflags) -> HalfFP {
+        return ConvertToHalfFP(static_cast<float>(a), rm, fflags);
+      });
+}
+
+// Convert from unsigned 64 bit integer to half precision.
+void RiscVZfhCvtHlu(const Instruction *instruction) {
+  RiscVZfhCvtHelper<HalfFP, uint64_t>(
+      instruction,
+      [](uint64_t a, FPRoundingMode rm, uint32_t &fflags) -> HalfFP {
+        return ConvertToHalfFP(static_cast<float>(a), rm, fflags);
+      });
+}
+
 }  // namespace RV64
 
 void RiscVZfhFlhChild(const Instruction *instruction) {

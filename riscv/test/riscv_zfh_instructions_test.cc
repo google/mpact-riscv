@@ -84,6 +84,10 @@ using ::mpact::sim::riscv::RV64Register;
 using ::mpact::sim::riscv::RVFpRegister;
 using ::mpact::sim::riscv::ScopedFPRoundingMode;
 using ::mpact::sim::riscv::ScopedFPStatus;
+using ::mpact::sim::riscv::RV64::RiscVZfhCvtHl;
+using ::mpact::sim::riscv::RV64::RiscVZfhCvtHlu;
+using ::mpact::sim::riscv::RV64::RiscVZfhCvtLh;
+using ::mpact::sim::riscv::RV64::RiscVZfhCvtLuh;
 
 using ::mpact::sim::riscv::test::FloatingPointToString;
 using ::mpact::sim::riscv::test::FPCompare;
@@ -242,6 +246,7 @@ uint32_t RVZfhInstructionTestBase<XRegister>::GetOperationFlags(
 }
 
 // Helper for unary instructions that go between floats and integers.
+// TODO(b/419352093): Change the rounding mode datatype to int.
 template <typename XRegister>
 template <typename DestRegisterType, typename LhsRegisterType, typename R,
           typename LHS>
@@ -1650,6 +1655,66 @@ TEST_F(RV64ZfhInstructionTest, RiscVZfhFcmple) {
 TEST_F(RV64ZfhInstructionTest, RiscVZfhFclass) {
   SetSemanticFunction(&::mpact::sim::riscv::RV64::RiscVZfhFclass);
   ClassHelper();
+}
+
+// Test conversion from half precision to signed 64 bit integer.
+TEST_F(RV64ZfhInstructionTest, RiscVZfhCvtLh) {
+  SetSemanticFunction(&RiscVZfhCvtLh);
+  UnaryOpWithFflagsMixedTestHelper<RV64Register, RVFpRegister, int64_t, HalfFP>(
+      "fcvt.l.h", instruction_, {"f", "x"}, 32,
+      [this](HalfFP input, uint32_t rm) -> std::tuple<int64_t, uint32_t> {
+        uint32_t fflags = 0;
+        double input_double =
+            FpConversionsTestHelper(input).ConvertWithFlags<double>(fflags);
+        int64_t val =
+            this->RoundToInteger<double, int64_t>(input_double, rm, fflags);
+        return std::tuple(val, fflags);
+      });
+}
+
+// Test conversion from half precision to unsigned 64 bit integer.
+TEST_F(RV64ZfhInstructionTest, RiscVZfhCvtLuh) {
+  SetSemanticFunction(&RiscVZfhCvtLuh);
+  UnaryOpWithFflagsMixedTestHelper<RV64Register, RVFpRegister, uint64_t,
+                                   HalfFP>(
+      "fcvt.lu.h", instruction_, {"f", "x"}, 32,
+      [this](HalfFP input, uint32_t rm) -> std::tuple<uint64_t, uint32_t> {
+        uint32_t fflags = 0;
+        double input_double =
+            FpConversionsTestHelper(input).ConvertWithFlags<double>(fflags);
+        uint64_t val =
+            this->RoundToInteger<double, uint64_t>(input_double, rm, fflags);
+        return std::tuple(val, fflags);
+      });
+}
+
+// Test conversion from signed 64 bit integer to half precision.
+TEST_F(RV64ZfhInstructionTest, RiscVZfhCvtHl) {
+  SetSemanticFunction(&RiscVZfhCvtHl);
+  UnaryOpWithFflagsMixedTestHelper<RVFpRegister, RV64Register, HalfFP, int64_t>(
+      "fcvt.h.l", instruction_, {"x", "f"}, 32,
+      [](int64_t input_int, uint32_t rm) -> std::tuple<HalfFP, uint32_t> {
+        uint32_t fflags = 0;
+        HalfFP result = FpConversionsTestHelper(static_cast<double>(input_int))
+                            .ConvertWithFlags<HalfFP>(
+                                fflags, static_cast<FPRoundingMode>(rm));
+        return std::tuple(result, fflags);
+      });
+}
+
+// Test conversion from unsigned 64 bit integer to half precision.
+TEST_F(RV64ZfhInstructionTest, RiscVZfhCvtHlu) {
+  SetSemanticFunction(&RiscVZfhCvtHlu);
+  UnaryOpWithFflagsMixedTestHelper<RVFpRegister, RV64Register, HalfFP,
+                                   uint64_t>(
+      "fcvt.h.lu", instruction_, {"x", "f"}, 32,
+      [](uint64_t input_int, uint32_t rm) -> std::tuple<HalfFP, uint32_t> {
+        uint32_t fflags = 0;
+        HalfFP result = FpConversionsTestHelper(static_cast<double>(input_int))
+                            .ConvertWithFlags<HalfFP>(
+                                fflags, static_cast<FPRoundingMode>(rm));
+        return std::tuple(result, fflags);
+      });
 }
 
 }  // namespace

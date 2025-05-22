@@ -145,6 +145,38 @@ void RiscVZfhFcmple(const Instruction *instruction);
 //   rd: Integer Register
 void RiscVZfhFclass(const Instruction *instruction);
 
+// Source Operands:
+//   frs1: Float Register
+//   rm: Literal Operand (rounding mode)
+// Destination Operands:
+//   rd: Integer Register
+//   fflags: Accrued Exception Flags field in FCSR
+void RiscVZfhCvtLh(const Instruction *instruction);
+
+// Source Operands:
+//   frs1: Float Register
+//   rm: Literal Operand (rounding mode)
+// Destination Operands:
+//   rd: Integer Register
+//   fflags: Accrued Exception Flags field in FCSR
+void RiscVZfhCvtLuh(const Instruction *instruction);
+
+// Source Operands:
+//   rs1: Integer Register
+//   rm: Literal Operand (rounding mode)
+// Destination Operands:
+//   frd: Float Register
+//   fflags: Accrued Exception Flags field in FCSR
+void RiscVZfhCvtHl(const Instruction *instruction);
+
+// Source Operands:
+//   rs1: Integer Register
+//   rm: Literal Operand (rounding mode)
+// Destination Operands:
+//   frd: Float Register
+//   fflags: Accrued Exception Flags field in FCSR
+void RiscVZfhCvtHlu(const Instruction *instruction);
+
 }  // namespace RV64
 
 // Source Operands: *none*
