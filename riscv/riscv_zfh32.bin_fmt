@@ -1,0 +1,57 @@
+// Copyright 2025 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#include "riscv/riscv32g.bin_fmt"
+
+decoder ZFH {
+  namespace mpact::sim::riscv::zfh32;
+  opcode_enum = "OpcodeEnum";
+  includes {
+    #include "riscv/zfh32_decoder.h"
+  }
+  RiscVZfhInst32 = { RiscVZfh32Inst32 };
+}
+
+instruction group RiscVZfh32Inst32[32] : Inst32Format {
+  flh      : IType : func3 == 0b001,  opcode == 0b000'0111;
+  fsh      : SType : func3 == 0b001,  opcode == 0b010'0111;
+  fmv_xh   : RType : func7 == 0b1110010, rs2 == 0, func3 == 0b000, opcode == 0b1010011;
+  fmv_hx   : RType : func7 == 0b1111010, rs2 == 0, func3 == 0b000, opcode == 0b1010011;
+  fcvt_sh  : RType : func7 == 0b0100000, rs2 == 0b00010, opcode == 0b1010011;
+  fcvt_hs  : RType : func7 == 0b0100010, rs2 == 0b00000, opcode == 0b1010011;
+  fcvt_dh  : RType : func7 == 0b0100001, rs2 == 0b00010, opcode == 0b1010011;
+  fcvt_hd  : RType : func7 == 0b0100010, rs2 == 0b00001, opcode == 0b1010011;
+  fadd_h   : RType : func7 == 0b0000010, opcode == 0b1010011;
+  fsub_h   : RType : func7 == 0b0000110, opcode == 0b1010011;
+  fmul_h   : RType : func7 == 0b0001010, opcode == 0b1010011;
+  fdiv_h   : RType : func7 == 0b0001110, opcode == 0b1010011;
+  fmin_h   : RType : func7 == 0b0010110, func3 == 0b000, opcode == 0b1010011;
+  fmax_h   : RType : func7 == 0b0010110, func3 == 0b001, opcode == 0b1010011;
+  fsgnj_h  : RType : func7 == 0b0010010, func3 == 0b000, opcode == 0b1010011;
+  fsgnjn_h : RType : func7 == 0b0010010, func3 == 0b001, opcode == 0b1010011;
+  fsgnjx_h : RType : func7 == 0b0010010, func3 == 0b010, opcode == 0b1010011;
+  fsqrt_h  : RType : func7 == 0b0101110, rs2 == 0b00000, opcode == 0b1010011;
+  fcvt_hw  : RType : func7 == 0b1101010, rs2 == 0b00000, opcode == 0b1010011;
+  fcvt_wh  : RType : func7 == 0b1100010, rs2 == 0b00000, opcode == 0b1010011;
+  fcvt_hwu  : RType : func7 == 0b1101010, rs2 == 0b00001, opcode == 0b1010011;
+  fcvt_wuh  : RType : func7 == 0b1100010, rs2 == 0b00001, opcode == 0b1010011;
+  fcmpeq_h  : RType : func7 == 0b1010010, func3 == 0b010, opcode == 0b1010011;
+  fcmplt_h  : RType : func7 == 0b1010010, func3 == 0b001, opcode == 0b1010011;
+  fcmple_h  : RType : func7 == 0b1010010, func3 == 0b000, opcode == 0b1010011;
+  fclass_h  : RType : func7 == 0b1110010, rs2 == 0b00000, func3 == 0b001, opcode == 0b1010011;
+  fmadd_h   : R4Type : func2 == 0b10, opcode == 0b1000011;
+  fmsub_h   : R4Type : func2 == 0b10, opcode == 0b1000111;
+  fnmsub_h  : R4Type : func2 == 0b10, opcode == 0b1001011;
+  fnmadd_h  : R4Type : func2 == 0b10, opcode == 0b1001111;
+};

@@ -678,11 +678,24 @@ mpact_bin_fmt_decoder(
 )
 
 mpact_isa_decoder(
-    name = "zfh_isa",
+    name = "zfh32_isa",
     src = "riscv_zfh.isa",
     includes = [],
-    isa_name = "ZFH",
-    prefix = "zfh",
+    isa_name = "ZFH32",
+    prefix = "zfh32",
+    deps = [
+        ":riscv_g",
+        ":riscv_zfh_instructions",
+        "@com_google_absl//absl/functional:bind_front",
+    ],
+)
+
+mpact_isa_decoder(
+    name = "zfh64_isa",
+    src = "riscv_zfh.isa",
+    includes = [],
+    isa_name = "ZFH64",
+    prefix = "zfh64",
     deps = [
         ":riscv_g",
         ":riscv_zfh_instructions",
@@ -691,15 +704,28 @@ mpact_isa_decoder(
 )
 
 mpact_bin_fmt_decoder(
-    name = "zfh_bin_fmt",
-    src = "riscv_zfh.bin_fmt",
+    name = "zfh32_bin_fmt",
+    src = "riscv_zfh32.bin_fmt",
     decoder_name = "ZFH",
     includes = [
         "riscv32g.bin_fmt",
     ],
-    prefix = "zfh",
+    prefix = "zfh32",
     deps = [
-        ":zfh_isa",
+        ":zfh32_isa",
+    ],
+)
+
+mpact_bin_fmt_decoder(
+    name = "zfh64_bin_fmt",
+    src = "riscv_zfh64.bin_fmt",
+    decoder_name = "ZFH",
+    includes = [
+        "riscv32g.bin_fmt",
+    ],
+    prefix = "zfh64",
+    deps = [
+        ":zfh64_isa",
     ],
 )
 

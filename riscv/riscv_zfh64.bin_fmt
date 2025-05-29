@@ -15,15 +15,15 @@
 #include "riscv/riscv32g.bin_fmt"
 
 decoder ZFH {
-  namespace mpact::sim::riscv::zfh;
+  namespace mpact::sim::riscv::zfh64;
   opcode_enum = "OpcodeEnum";
   includes {
-    #include "riscv/zfh_decoder.h"
+    #include "riscv/zfh64_decoder.h"
   }
-  RiscVZfhInst32 = { RiscVZfhminInst32 };
+  RiscVZfhInst32 = { RiscVZfh64Inst32 };
 }
 
-instruction group RiscVZfhminInst32[32] : Inst32Format {
+instruction group RiscVZfh64Inst32[32] : Inst32Format {
   flh      : IType : func3 == 0b001,  opcode == 0b000'0111;
   fsh      : SType : func3 == 0b001,  opcode == 0b010'0111;
   fmv_xh   : RType : func7 == 0b1110010, rs2 == 0, func3 == 0b000, opcode == 0b1010011;

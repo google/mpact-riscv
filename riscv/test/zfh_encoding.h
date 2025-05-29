@@ -18,50 +18,197 @@
 #include <cstdint>
 #include <string>
 
+#include "absl/log/log.h"
+#include "mpact/sim/generic/operand_interface.h"
 #include "mpact/sim/generic/simple_resource.h"
 #include "mpact/sim/generic/simple_resource_operand.h"
 #include "riscv/riscv_encoding_common.h"
 #include "riscv/riscv_getter_helpers.h"
+#include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
-#include "riscv/zfh_bin_decoder.h"
-#include "riscv/zfh_decoder.h"
-#include "riscv/zfh_enums.h"
+#include "riscv/test/riscv_getters_zfh.h"
+#include "riscv/zfh32_bin_decoder.h"
+#include "riscv/zfh32_decoder.h"
+#include "riscv/zfh32_enums.h"
+#include "riscv/zfh64_bin_decoder.h"
+#include "riscv/zfh64_decoder.h"
+#include "riscv/zfh64_enums.h"
 
 namespace mpact::sim::riscv::zfh {
 
-// This class provides the interface between the generated instruction decoder
-// framework (which is agnostic of the actual bit representation of
-// instructions) and the instruction representation. This class provides methods
-// to return the opcode, source operands, and destination operands for
-// instructions according to the operand fields in the encoding.
-class ZFHEncoding : public ZFHEncodingBase, public RiscVEncodingCommon {
- public:
-  explicit ZFHEncoding(RiscVState *state);
-  ~ZFHEncoding() override;
+template <int XLen>
+class ZfhEncoding;
 
-  void ParseInstruction(uint32_t inst_word);
+template <int XLen>
+struct ZfhTraits;
+
+template <>
+struct ZfhTraits<32> {
+  using EncodingBase = ::mpact::sim::riscv::zfh32::ZFH32EncodingBase;
+  using SlotEnum = ::mpact::sim::riscv::zfh32::SlotEnum;
+  using OpcodeEnum = ::mpact::sim::riscv::zfh32::OpcodeEnum;
+  using FormatEnum = ::mpact::sim::riscv::zfh32::FormatEnum;
+  using DestOpEnum = ::mpact::sim::riscv::zfh32::DestOpEnum;
+  using SourceOpEnum = ::mpact::sim::riscv::zfh32::SourceOpEnum;
+  using ComplexResourceEnum = ::mpact::sim::riscv::zfh32::ComplexResourceEnum;
+  using SimpleResourceEnum = ::mpact::sim::riscv::zfh32::SimpleResourceEnum;
+  using PredOpEnum = ::mpact::sim::riscv::zfh32::PredOpEnum;
+  using SimpleResourceVector = ::mpact::sim::riscv::zfh32::SimpleResourceVector;
+  using Extractors = ::mpact::sim::riscv::zfh32::Extractors;
+  using XRegister = ::mpact::sim::riscv::RV32Register;
+  using SelfEncoding = ZfhEncoding<32>;
+  static constexpr int kXLen = 32;
+  static constexpr const char *const *kOpcodeNames =
+      ::mpact::sim::riscv::zfh32::kOpcodeNames;
+};
+
+template <>
+struct ZfhTraits<64> {
+  using EncodingBase = ::mpact::sim::riscv::zfh64::ZFH64EncodingBase;
+  using SlotEnum = ::mpact::sim::riscv::zfh64::SlotEnum;
+  using OpcodeEnum = ::mpact::sim::riscv::zfh64::OpcodeEnum;
+  using FormatEnum = ::mpact::sim::riscv::zfh64::FormatEnum;
+  using DestOpEnum = ::mpact::sim::riscv::zfh64::DestOpEnum;
+  using SourceOpEnum = ::mpact::sim::riscv::zfh64::SourceOpEnum;
+  using ComplexResourceEnum = ::mpact::sim::riscv::zfh64::ComplexResourceEnum;
+  using SimpleResourceEnum = ::mpact::sim::riscv::zfh64::SimpleResourceEnum;
+  using PredOpEnum = ::mpact::sim::riscv::zfh64::PredOpEnum;
+  using SimpleResourceVector = ::mpact::sim::riscv::zfh64::SimpleResourceVector;
+  using Extractors = ::mpact::sim::riscv::zfh64::Extractors;
+  using XRegister = ::mpact::sim::riscv::RV64Register;
+  using SelfEncoding = ZfhEncoding<64>;
+  static constexpr int kXLen = 64;
+  static constexpr const char *const *kOpcodeNames =
+      ::mpact::sim::riscv::zfh64::kOpcodeNames;
+};
+
+template <int XLen>
+class ZfhEncoding : public ZfhTraits<XLen>::EncodingBase,
+                    public RiscVEncodingCommon {
+ public:
+  using OpcodeEnum = ZfhTraits<XLen>::OpcodeEnum;
+  using FormatEnum = ZfhTraits<XLen>::FormatEnum;
+  using DestOpEnum = ZfhTraits<XLen>::DestOpEnum;
+  using SourceOpEnum = ZfhTraits<XLen>::SourceOpEnum;
+  using ComplexResourceEnum = ZfhTraits<XLen>::ComplexResourceEnum;
+  using SimpleResourceEnum = ZfhTraits<XLen>::SimpleResourceEnum;
+  using PredOpEnum = ZfhTraits<XLen>::PredOpEnum;
+  using SlotEnum = ZfhTraits<XLen>::SlotEnum;
+  using SimpleResourceVector = ZfhTraits<XLen>::SimpleResourceVector;
+  using Extractors = ZfhTraits<XLen>::Extractors;
+  using XRegister = ZfhTraits<XLen>::XRegister;
+
+  explicit ZfhEncoding(RiscVState *state)
+      : state_(state),
+        inst_word_(0),
+        opcode_(OpcodeEnum::kNone),
+        format_(FormatEnum::kNone) {
+    resource_delay_line_ =
+        state_->CreateAndAddDelayLine<generic::SimpleResourceDelayLine>(8);
+    // Initialize getters.
+    source_op_getters_.insert({*SourceOpEnum::kNone, []() { return nullptr; }});
+    dest_op_getters_.insert(
+        {*DestOpEnum::kNone, [](int latency) { return nullptr; }});
+    simple_resource_getters_.insert(
+        {*SimpleResourceEnum::kNone, []() { return nullptr; }});
+    complex_resource_getters_.insert(
+        {*ComplexResourceEnum::kNone,
+         [](int latency, int end) { return nullptr; }});
+
+    AddRiscVZfhSourceScalarGetters<SourceOpEnum, Extractors, XRegister>(
+        source_op_getters_, this);
+    AddRiscVZfhSourceFloatGetters<SourceOpEnum, Extractors, RVFpRegister>(
+        source_op_getters_, this);
+    AddRiscVZfhDestScalarGetters<DestOpEnum, Extractors, XRegister>(
+        dest_op_getters_, this);
+    AddRiscVZfhDestFloatGetters<DestOpEnum, Extractors, RVFpRegister>(
+        dest_op_getters_, this);
+    AddRiscVZfhSimpleResourceGetters<SimpleResourceEnum, Extractors>(
+        simple_resource_getters_, this);
+
+    // Verify that there are getters for each enum value.
+    for (int i = *SourceOpEnum::kNone; i < *SourceOpEnum::kPastMaxValue; ++i) {
+      if (!source_op_getters_.contains(i)) {
+        LOG(ERROR) << "No getter for source op enum value " << i;
+      }
+    }
+    for (int i = *DestOpEnum::kNone; i < *DestOpEnum::kPastMaxValue; ++i) {
+      if (!dest_op_getters_.contains(i)) {
+        LOG(ERROR) << "No getter for destination op enum value " << i;
+      }
+    }
+    for (int i = *SimpleResourceEnum::kNone;
+         i < *SimpleResourceEnum::kPastMaxValue; ++i) {
+      if (!simple_resource_getters_.contains(i)) {
+        LOG(ERROR) << "No getter for simple resource enum value " << i;
+      }
+    }
+  }
+
+  ~ZfhEncoding() { delete resource_pool_; }
+
+  void ParseInstruction(uint32_t inst_word) {
+    inst_word_ = inst_word;
+    if constexpr (XLen == 32) {
+      auto [opcode, format] =
+          ::mpact::sim::riscv::zfh32::DecodeRiscVZfhInst32WithFormat(
+              inst_word_);
+      opcode_ = opcode;
+      format_ = format;
+    } else {
+      auto [opcode, format] =
+          ::mpact::sim::riscv::zfh64::DecodeRiscVZfhInst32WithFormat(
+              inst_word_);
+      opcode_ = opcode;
+      format_ = format;
+    }
+  }
+
   OpcodeEnum GetOpcode(SlotEnum, int) override { return opcode_; }
   FormatEnum GetFormat(SlotEnum, int) { return format_; }
 
-  PredicateOperandInterface *GetPredicate(SlotEnum, int, OpcodeEnum,
-                                          PredOpEnum) override {
+  ::mpact::sim::generic::PredicateOperandInterface *GetPredicate(
+      SlotEnum, int, OpcodeEnum, PredOpEnum) override {
     return nullptr;
   }
 
   ResourceOperandInterface *GetSimpleResourceOperand(
-      SlotEnum, int, OpcodeEnum, SimpleResourceVector &resource_vec,
-      int end) override;
+      SlotEnum, int, OpcodeEnum, SimpleResourceVector &resource_vec, int end) {
+    return nullptr;
+  }
 
   ResourceOperandInterface *GetComplexResourceOperand(
       SlotEnum, int, OpcodeEnum, ComplexResourceEnum resource, int begin,
-      int end) override;
+      int end) {
+    return nullptr;
+  }
 
-  SourceOperandInterface *GetSource(SlotEnum, int, OpcodeEnum, SourceOpEnum op,
-                                    int source_no) override;
+  DestinationOperandInterface *GetDestination(SlotEnum, int, OpcodeEnum opcode,
+                                              DestOpEnum dest_op, int dest_no,
+                                              int latency) {
+    int index = static_cast<int>(dest_op);
+    auto iter = dest_op_getters_.find(index);
+    if (iter == dest_op_getters_.end()) {
+      LOG(ERROR) << absl::StrCat(
+          "No getter for destination op enum value ", index, "for instruction ",
+          ZfhTraits<XLen>::kOpcodeNames[static_cast<int>(opcode)]);
+      return nullptr;
+    }
+    return (iter->second)(latency);
+  }
 
-  DestinationOperandInterface *GetDestination(SlotEnum, int, OpcodeEnum,
-                                              DestOpEnum op, int dest_no,
-                                              int latency) override;
+  SourceOperandInterface *GetSource(SlotEnum, int, OpcodeEnum opcode,
+                                    SourceOpEnum source_op, int source_no) {
+    int index = static_cast<int>(source_op);
+    auto iter = source_op_getters_.find(index);
+    if (iter == source_op_getters_.end()) {
+      LOG(ERROR) << absl::StrCat(
+          "No getter for source op enum value ", index, " for instruction ",
+          ZfhTraits<XLen>::kOpcodeNames[static_cast<int>(opcode)]);
+      return nullptr;
+    }
+    return (iter->second)();
+  }
 
   int GetLatency(SlotEnum, int, OpcodeEnum, DestOpEnum, int) override {
     return 0;
@@ -97,7 +244,6 @@ class ZFHEncoding : public ZFHEncodingBase, public RiscVEncodingCommon {
   generic::SimpleResourceDelayLine *resource_delay_line_ = nullptr;
   generic::SimpleResourcePool *resource_pool_ = nullptr;
 };
-
 }  // namespace mpact::sim::riscv::zfh
 
 #endif  // THIRD_PARTY_MPACT_RISCV_TEST_ZFH_ENCODING_H_

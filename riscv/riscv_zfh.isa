@@ -15,10 +15,17 @@
 // This file contains the ISA description of the RiscV ZFH extention
 // instructions.
 
-isa ZFH {
-  namespace mpact::sim::riscv::zfh;
+isa ZFH32 {
+  namespace mpact::sim::riscv::zfh32;
   slots {
     riscv32_zfh;
+  }
+}
+
+isa ZFH64 {
+  namespace mpact::sim::riscv::zfh64;
+  slots {
+    riscv64_zfh;
   }
 }
 
@@ -97,7 +104,7 @@ slot riscv64_zfh_min: riscv_zfh_min_common {
   opcodes {
     flh{(: rs1, I_imm12 : ), (: : frd)},
       resources: {next_pc, rs1 : frd[0..]},
-      semfunc: "&RV64::RiscVILhu", "&RV64::RiscVZfhFlhChild",
+      semfunc: "&RV64::RiscVILhu", "&RiscVZfhFlhChild",
       disasm: "flh", "%frd, %I_imm12(%rs1)";
     fsh{: rs1, S_imm12, frs2},
       resources: {next_pc, rs1, frs2},

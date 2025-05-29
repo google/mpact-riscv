@@ -118,7 +118,6 @@ cc_test(
     deps = [
         "//riscv:riscv_g",
         "//riscv:riscv_state",
-        "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
@@ -373,7 +372,6 @@ cc_test(
         "zvbb_encoding_test.cc",
     ],
     deps = [
-        "//riscv:riscv32g_bitmanip_decoder",
         "//riscv:riscv_state",
         "//riscv:zvbb_decoder",
         "//riscv:zvbb_isa",
@@ -383,40 +381,23 @@ cc_test(
     ],
 )
 
-cc_library(
-    name = "zfh_decoder",
-    testonly = True,
-    srcs = [
-        "zfh_encoding.cc",
-    ],
-    hdrs = [
-        "riscv_getters_zfh.h",
-        "zfh_encoding.h",
-    ],
-    copts = ["-O3"],
-    deps = [
-        "//riscv:riscv_encoding_common",
-        "//riscv:riscv_getters",
-        "//riscv:riscv_state",
-        "//riscv:zfh_bin_fmt",
-        "//riscv:zfh_isa",
-        "@com_google_absl//absl/log",
-        "@com_google_absl//absl/strings",
-        "@com_google_mpact-sim//mpact/sim/generic:core",
-        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
-    ],
-)
-
 cc_test(
     name = "zfh_encoding_test",
     size = "small",
     srcs = [
+        "riscv_getters_zfh.h",
+        "zfh_encoding.h",
         "zfh_encoding_test.cc",
     ],
     deps = [
-        ":zfh_decoder",
+        "//riscv:riscv_encoding_common",
+        "//riscv:riscv_getters",
         "//riscv:riscv_state",
-        "//riscv:zfh_isa",
+        "//riscv:zfh32_bin_fmt",
+        "//riscv:zfh32_isa",
+        "//riscv:zfh64_bin_fmt",
+        "//riscv:zfh64_isa",
+        "@com_google_absl//absl/log",
         "@com_google_absl//absl/random",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
@@ -588,7 +569,6 @@ cc_test(
         "@com_google_absl//absl/base",
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/numeric:int128",
-        "@com_google_absl//absl/random",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
@@ -655,7 +635,6 @@ cc_test(
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:span",
         "@com_google_googletest//:gtest_main",
-        "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
         "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
     ],
@@ -680,7 +659,6 @@ cc_test(
         "//riscv:riscv_fp_state",
         "//riscv:riscv_state",
         "//riscv:riscv_v",
-        "@com_google_absl//absl/log",
         "@com_google_absl//absl/random",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:span",
@@ -776,7 +754,6 @@ cc_test(
         "//riscv:riscv32g_decoder",
         "//riscv:riscv64g_decoder",
         "//riscv:riscv_arm_semihost",
-        "//riscv:riscv_fp_state",
         "//riscv:riscv_state",
         "//riscv:riscv_top",
         "@com_google_absl//absl/log:check",
@@ -832,7 +809,6 @@ cc_test(
         "@com_google_absl//absl/log:check",
         "@com_google_googletest//:gtest_main",
         "@com_google_mpact-sim//mpact/sim/generic:core",
-        "@com_googlesource_code_re2//:re2",
     ],
 )
 
@@ -907,7 +883,6 @@ cc_test(
         "@com_google_googletest//:gtest_main",
         "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
-        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
     ],
 )
 
@@ -924,7 +899,6 @@ cc_test(
         "@com_google_googletest//:gtest_main",
         "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
-        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
     ],
 )
 
@@ -995,7 +969,6 @@ cc_test(
     deps = [
         ":riscv_vector_instructions_test_base",
         "//riscv:riscv_state",
-        "//riscv:riscv_v",
         "//riscv:riscv_vector_basic_bit_manipulation_instructions",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
