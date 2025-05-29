@@ -154,7 +154,7 @@ class RVZfhInstructionTestBase : public RiscVFPInstructionTestBase<XRegister> {
   void UnaryOpWithFflagsMixedTestHelper(
       absl::string_view name, Instruction *inst,
       absl::Span<const absl::string_view> reg_prefixes, int delta_position,
-      std::function<std::tuple<R, uint32_t>(LHS, uint32_t)> operation);
+      std::function<std::tuple<R, uint32_t>(LHS, int)> operation);
 
   template <typename R, typename LHS, typename MHS, typename RHS>
   void TernaryOpWithFflagsFPTestHelper(
@@ -253,7 +253,7 @@ template <typename DestRegisterType, typename LhsRegisterType, typename R,
 void RVZfhInstructionTestBase<XRegister>::UnaryOpWithFflagsMixedTestHelper(
     absl::string_view name, Instruction *inst,
     absl::Span<const absl::string_view> reg_prefixes, int delta_position,
-    std::function<std::tuple<R, uint32_t>(LHS, uint32_t)> operation) {
+    std::function<std::tuple<R, uint32_t>(LHS, int)> operation) {
   using LhsInt = typename FPTypeInfo<LHS>::IntType;
   using RInt = typename FPTypeInfo<R>::IntType;
   LHS lhs_values[kTestValueLength];
@@ -1662,7 +1662,7 @@ TEST_F(RV64ZfhInstructionTest, RiscVZfhCvtLh) {
   SetSemanticFunction(&RiscVZfhCvtLh);
   UnaryOpWithFflagsMixedTestHelper<RV64Register, RVFpRegister, int64_t, HalfFP>(
       "fcvt.l.h", instruction_, {"f", "x"}, 32,
-      [this](HalfFP input, uint32_t rm) -> std::tuple<int64_t, uint32_t> {
+      [this](HalfFP input, int rm) -> std::tuple<int64_t, uint32_t> {
         uint32_t fflags = 0;
         double input_double =
             FpConversionsTestHelper(input).ConvertWithFlags<double>(fflags);
@@ -1678,7 +1678,7 @@ TEST_F(RV64ZfhInstructionTest, RiscVZfhCvtLuh) {
   UnaryOpWithFflagsMixedTestHelper<RV64Register, RVFpRegister, uint64_t,
                                    HalfFP>(
       "fcvt.lu.h", instruction_, {"f", "x"}, 32,
-      [this](HalfFP input, uint32_t rm) -> std::tuple<uint64_t, uint32_t> {
+      [this](HalfFP input, int rm) -> std::tuple<uint64_t, uint32_t> {
         uint32_t fflags = 0;
         double input_double =
             FpConversionsTestHelper(input).ConvertWithFlags<double>(fflags);
@@ -1693,7 +1693,7 @@ TEST_F(RV64ZfhInstructionTest, RiscVZfhCvtHl) {
   SetSemanticFunction(&RiscVZfhCvtHl);
   UnaryOpWithFflagsMixedTestHelper<RVFpRegister, RV64Register, HalfFP, int64_t>(
       "fcvt.h.l", instruction_, {"x", "f"}, 32,
-      [](int64_t input_int, uint32_t rm) -> std::tuple<HalfFP, uint32_t> {
+      [](int64_t input_int, int rm) -> std::tuple<HalfFP, uint32_t> {
         uint32_t fflags = 0;
         HalfFP result = FpConversionsTestHelper(static_cast<double>(input_int))
                             .ConvertWithFlags<HalfFP>(
@@ -1708,7 +1708,7 @@ TEST_F(RV64ZfhInstructionTest, RiscVZfhCvtHlu) {
   UnaryOpWithFflagsMixedTestHelper<RVFpRegister, RV64Register, HalfFP,
                                    uint64_t>(
       "fcvt.h.lu", instruction_, {"x", "f"}, 32,
-      [](uint64_t input_int, uint32_t rm) -> std::tuple<HalfFP, uint32_t> {
+      [](uint64_t input_int, int rm) -> std::tuple<HalfFP, uint32_t> {
         uint32_t fflags = 0;
         HalfFP result = FpConversionsTestHelper(static_cast<double>(input_int))
                             .ConvertWithFlags<HalfFP>(
