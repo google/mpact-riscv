@@ -24,6 +24,7 @@
 
 #include "absl/random/random.h"
 #include "absl/strings/str_cat.h"
+#include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/immediate_operand.h"
 #include "mpact/sim/generic/operand_interface.h"
 #include "mpact/sim/generic/register.h"
@@ -41,6 +42,7 @@
 namespace {
 
 using ::mpact::sim::generic::operator*;  // NOLINT: clang-tidy false positive.
+using ::mpact::sim::generic::DataBuffer;
 using ::mpact::sim::generic::ImmediateOperand;
 using ::mpact::sim::generic::RegisterDestinationOperand;
 using ::mpact::sim::generic::SourceOperandInterface;
@@ -167,9 +169,10 @@ struct ZfhEncodingTest : public testing::Test {
 
   typename ConfigT::XValue RandomizeScalarRegister(int);
   void ParseInstructionWithRs1(uint32_t, int);
+  void ParseInstructionWithRd(uint32_t, int);
   typename ConfigT::XValue GetRs1SourceValue(typename ConfigT::OpcodeEnum);
+  typename ConfigT::XValue GetRdDestinationValue(typename ConfigT::OpcodeEnum);
   void FloatFrdHelper(uint32_t, typename ConfigT::OpcodeEnum);
-  void FloatSourceHelper(uint32_t, typename ConfigT::OpcodeEnum, int);
   void FloatSourceHelper(uint32_t, typename ConfigT::OpcodeEnum,
                          typename ConfigT::SourceOpEnum, int);
   void FloatFrs1Helper(uint32_t, typename ConfigT::OpcodeEnum);
@@ -190,6 +193,8 @@ ConfigT::OpcodeEnum ZfhEncodingTest<ConfigT>::GetOpcode() {
   return static_cast<ConfigT::OpcodeEnum>(enc_->GetOpcode(expected_slot_, 0));
 }
 
+// Puts a random value in the expected register and checks that the source
+// operand returns that value.
 template <typename ConfigT>
 typename ConfigT::XValue ZfhEncodingTest<ConfigT>::RandomizeScalarRegister(
     int register_index) {
@@ -212,6 +217,14 @@ void ZfhEncodingTest<ConfigT>::ParseInstructionWithRs1(
 }
 
 template <typename ConfigT>
+void ZfhEncodingTest<ConfigT>::ParseInstructionWithRd(
+    uint32_t binary_instruction, int rd_index) {
+  int rd_offset = 7;
+  uint32_t rd_adjustment = static_cast<uint32_t>(rd_index) << rd_offset;
+  enc_->ParseInstruction(binary_instruction | rd_adjustment);
+}
+
+template <typename ConfigT>
 typename ConfigT::XValue ZfhEncodingTest<ConfigT>::GetRs1SourceValue(
     typename ConfigT::OpcodeEnum opcode_enum) {
   using XValue = typename ConfigT::XValue;
@@ -225,6 +238,18 @@ typename ConfigT::XValue ZfhEncodingTest<ConfigT>::GetRs1SourceValue(
     observed_value = src->AsUint64(0);
   }
   return observed_value;
+}
+
+template <typename ConfigT>
+typename ConfigT::XValue ZfhEncodingTest<ConfigT>::GetRdDestinationValue(
+    typename ConfigT::OpcodeEnum opcode_enum) {
+  using XValue = typename ConfigT::XValue;
+  using XRegister = typename ConfigT::XRegister;
+  std::unique_ptr<RegisterDestinationOperand<XRegister>> dst(
+      static_cast<RegisterDestinationOperand<XRegister> *>(enc_->GetDestination(
+          expected_slot_, 0, opcode_enum, ConfigT::DestOpEnum::kRd, 0, 0)));
+  std::unique_ptr<DataBuffer> db(dst->CopyDataBuffer());
+  return db->template Get<XValue>(0);
 }
 
 // TODO: b/421177084 - Move EXPECT_* out of helpers and back to test body.
@@ -261,6 +286,8 @@ void ZfhEncodingTest<ConfigT>::FloatFrdHelper(
 }
 
 // TODO: b/421177084 - Move EXPECT_* out of helpers and back to test body.
+// Puts a random value in the expected register and checks that the source
+// operand returns that value.
 template <typename ConfigT>
 void ZfhEncodingTest<ConfigT>::FloatSourceHelper(
     uint32_t binary_instruction, typename ConfigT::OpcodeEnum opcode_enum,
@@ -756,8 +783,19 @@ TYPED_TEST(ZfhEncodingTest, FcvtHw) {
   EXPECT_EQ(this->GetOpcode(), TypeParam::OpcodeEnum::kFcvtHw);
 }
 
-TYPED_TEST(ZfhEncodingTest, FcvtHw_frs1) {
-  this->FloatFrs1Helper(kFcvtHw, TypeParam::OpcodeEnum::kFcvtHw);
+TYPED_TEST(ZfhEncodingTest, FcvtHw_rs1) {
+  using XValue = typename TypeParam::XValue;
+  std::vector<int> failed_scalar_sources;
+  for (int register_index = 0; register_index < 32; register_index++) {
+    XValue test_register_value = this->RandomizeScalarRegister(register_index);
+    this->ParseInstructionWithRs1(kFcvtHw, register_index);
+    XValue source_value =
+        this->GetRs1SourceValue(TypeParam::OpcodeEnum::kFcvtHw);
+    if (source_value != test_register_value) {
+      failed_scalar_sources.push_back(register_index);
+    }
+  }
+  EXPECT_THAT(failed_scalar_sources, ::testing::IsEmpty());
 }
 
 TYPED_TEST(ZfhEncodingTest, FcvtHw_rm) {
@@ -781,8 +819,19 @@ TYPED_TEST(ZfhEncodingTest, FcvtWh_rm) {
   this->FloatRmHelper(kFcvtWh, TypeParam::OpcodeEnum::kFcvtWh);
 }
 
-TYPED_TEST(ZfhEncodingTest, FcvtWh_frd) {
-  this->FloatFrdHelper(kFcvtWh, TypeParam::OpcodeEnum::kFcvtWh);
+TYPED_TEST(ZfhEncodingTest, FcvtWh_rd) {
+  using XValue = typename TypeParam::XValue;
+  std::vector<int> failed_scalar_destinations;
+  for (int register_index = 1; register_index < 32; register_index++) {
+    XValue test_register_value = this->RandomizeScalarRegister(register_index);
+    this->ParseInstructionWithRd(kFcvtWh, register_index);
+    XValue destination_value =
+        this->GetRdDestinationValue(TypeParam::OpcodeEnum::kFcvtWh);
+    if (destination_value != test_register_value) {
+      failed_scalar_destinations.push_back(register_index);
+    }
+  }
+  EXPECT_THAT(failed_scalar_destinations, ::testing::IsEmpty());
 }
 
 TYPED_TEST(ZfhEncodingTest, FcvtHwu) {
@@ -790,8 +839,19 @@ TYPED_TEST(ZfhEncodingTest, FcvtHwu) {
   EXPECT_EQ(this->GetOpcode(), TypeParam::OpcodeEnum::kFcvtHwu);
 }
 
-TYPED_TEST(ZfhEncodingTest, FcvtHwu_frs1) {
-  this->FloatFrs1Helper(kFcvtHwu, TypeParam::OpcodeEnum::kFcvtHwu);
+TYPED_TEST(ZfhEncodingTest, FcvtHwu_rs1) {
+  using XValue = typename TypeParam::XValue;
+  std::vector<int> failed_scalar_sources;
+  for (int register_index = 0; register_index < 32; register_index++) {
+    XValue test_register_value = this->RandomizeScalarRegister(register_index);
+    this->ParseInstructionWithRs1(kFcvtHwu, register_index);
+    XValue source_value =
+        this->GetRs1SourceValue(TypeParam::OpcodeEnum::kFcvtHwu);
+    if (source_value != test_register_value) {
+      failed_scalar_sources.push_back(register_index);
+    }
+  }
+  EXPECT_THAT(failed_scalar_sources, ::testing::IsEmpty());
 }
 
 TYPED_TEST(ZfhEncodingTest, FcvtHwu_rm) {
@@ -815,8 +875,19 @@ TYPED_TEST(ZfhEncodingTest, FcvtWuh_rm) {
   this->FloatRmHelper(kFcvtWuh, TypeParam::OpcodeEnum::kFcvtWuh);
 }
 
-TYPED_TEST(ZfhEncodingTest, FcvtWuh_frd) {
-  this->FloatFrdHelper(kFcvtWuh, TypeParam::OpcodeEnum::kFcvtWuh);
+TYPED_TEST(ZfhEncodingTest, FcvtWuh_rd) {
+  using XValue = typename TypeParam::XValue;
+  std::vector<int> failed_scalar_destinations;
+  for (int register_index = 1; register_index < 32; register_index++) {
+    XValue test_register_value = this->RandomizeScalarRegister(register_index);
+    this->ParseInstructionWithRd(kFcvtWuh, register_index);
+    XValue destination_value =
+        this->GetRdDestinationValue(TypeParam::OpcodeEnum::kFcvtWuh);
+    if (destination_value != test_register_value) {
+      failed_scalar_destinations.push_back(register_index);
+    }
+  }
+  EXPECT_THAT(failed_scalar_destinations, ::testing::IsEmpty());
 }
 
 TYPED_TEST(ZfhEncodingTest, FcmpeqH) {
