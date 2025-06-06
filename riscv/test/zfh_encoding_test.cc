@@ -112,6 +112,14 @@ constexpr uint32_t kFmsubH = 0b00001'10'00000'00000'000'00000'1000111;
 constexpr uint32_t kFnmaddH = 0b00000'10'00000'00000'000'00000'1001111;
 //                              rs3  |f2| rs2 | rs1 |rm | rd  | opcode
 constexpr uint32_t kFnmsubH = 0b00000'10'00000'00000'000'00000'1001011;
+//   64 bit only                func7 |     | rs1 |rm | rd  | opcode
+constexpr uint32_t kFcvtLh = 0b1100010'00010'00000'000'00000'1010011;
+//   64 bit only                 func7 |     | rs1 |rm | rd  | opcode
+constexpr uint32_t kFcvtLuh = 0b1100010'00011'00000'000'00000'1010011;
+//   64 bit only                func7 |     | rs1 |rm | rd  | opcode
+constexpr uint32_t kFcvtHl = 0b1101010'00010'00000'000'00000'1010011;
+//   64 bit only                 func7 |     | rs1 |rm | rd  | opcode
+constexpr uint32_t kFcvtHlu = 0b1101010'00011'00000'000'00000'1010011;
 
 struct Zfh32Config {
   using XRegister = ::mpact::sim::riscv::RV32Register;
@@ -1052,6 +1060,154 @@ TYPED_TEST(ZfhEncodingTest, FnmsubH_rm) {
 
 TYPED_TEST(ZfhEncodingTest, FnmsubH_frd) {
   this->FloatFrdHelper(kFnmsubH, TypeParam::OpcodeEnum::kFnmsubH);
+}
+
+TYPED_TEST(ZfhEncodingTest, FcvtLh) {
+  if constexpr (TypeParam::kXLen == 64) {
+    this->enc_->ParseInstruction(kFcvtLh);
+    EXPECT_EQ(this->GetOpcode(), TypeParam::OpcodeEnum::kFcvtLh);
+  }
+}
+
+TYPED_TEST(ZfhEncodingTest, FcvtLh_frs1) {
+  if constexpr (TypeParam::kXLen == 64) {
+    this->FloatFrs1Helper(kFcvtLh, TypeParam::OpcodeEnum::kFcvtLh);
+  }
+}
+
+TYPED_TEST(ZfhEncodingTest, FcvtLh_rm) {
+  if constexpr (TypeParam::kXLen == 64) {
+    this->FloatRmHelper(kFcvtLh, TypeParam::OpcodeEnum::kFcvtLh);
+  }
+}
+
+TYPED_TEST(ZfhEncodingTest, FcvtLh_rd) {
+  using XValue = typename TypeParam::XValue;
+  if constexpr (TypeParam::kXLen == 64) {
+    std::vector<int> failed_scalar_destinations;
+    for (int register_index = 1; register_index < 32; register_index++) {
+      XValue test_register_value =
+          this->RandomizeScalarRegister(register_index);
+      this->ParseInstructionWithRd(kFcvtLh, register_index);
+      XValue destination_value =
+          this->GetRdDestinationValue(TypeParam::OpcodeEnum::kFcvtLh);
+      if (destination_value != test_register_value) {
+        failed_scalar_destinations.push_back(register_index);
+      }
+    }
+    EXPECT_THAT(failed_scalar_destinations, ::testing::IsEmpty());
+  }
+}
+
+TYPED_TEST(ZfhEncodingTest, FcvtLuh) {
+  if constexpr (TypeParam::kXLen == 64) {
+    this->enc_->ParseInstruction(kFcvtLuh);
+    EXPECT_EQ(this->GetOpcode(), TypeParam::OpcodeEnum::kFcvtLuh);
+  }
+}
+
+TYPED_TEST(ZfhEncodingTest, FcvtLuh_frs1) {
+  if constexpr (TypeParam::kXLen == 64) {
+    this->FloatFrs1Helper(kFcvtLuh, TypeParam::OpcodeEnum::kFcvtLuh);
+  }
+}
+
+TYPED_TEST(ZfhEncodingTest, FcvtLuh_rm) {
+  if constexpr (TypeParam::kXLen == 64) {
+    this->FloatRmHelper(kFcvtLuh, TypeParam::OpcodeEnum::kFcvtLuh);
+  }
+}
+
+TYPED_TEST(ZfhEncodingTest, FcvtLuh_rd) {
+  using XValue = typename TypeParam::XValue;
+  if constexpr (TypeParam::kXLen == 64) {
+    std::vector<int> failed_scalar_destinations;
+    for (int register_index = 1; register_index < 32; register_index++) {
+      XValue test_register_value =
+          this->RandomizeScalarRegister(register_index);
+      this->ParseInstructionWithRd(kFcvtLuh, register_index);
+      XValue destination_value =
+          this->GetRdDestinationValue(TypeParam::OpcodeEnum::kFcvtLuh);
+      if (destination_value != test_register_value) {
+        failed_scalar_destinations.push_back(register_index);
+      }
+    }
+    EXPECT_THAT(failed_scalar_destinations, ::testing::IsEmpty());
+  }
+}
+
+TYPED_TEST(ZfhEncodingTest, FcvtHl) {
+  if constexpr (TypeParam::kXLen == 64) {
+    this->enc_->ParseInstruction(kFcvtHl);
+    EXPECT_EQ(this->GetOpcode(), TypeParam::OpcodeEnum::kFcvtHl);
+  }
+}
+
+TYPED_TEST(ZfhEncodingTest, FcvtHl_rs1) {
+  using XValue = typename TypeParam::XValue;
+  if constexpr (TypeParam::kXLen == 64) {
+    std::vector<int> failed_scalar_sources;
+    for (int register_index = 0; register_index < 32; register_index++) {
+      XValue test_register_value =
+          this->RandomizeScalarRegister(register_index);
+      this->ParseInstructionWithRs1(kFcvtHl, register_index);
+      XValue source_value =
+          this->GetRs1SourceValue(TypeParam::OpcodeEnum::kFcvtHl);
+      if (source_value != test_register_value) {
+        failed_scalar_sources.push_back(register_index);
+      }
+    }
+    EXPECT_THAT(failed_scalar_sources, ::testing::IsEmpty());
+  }
+}
+
+TYPED_TEST(ZfhEncodingTest, FcvtHl_rm) {
+  if constexpr (TypeParam::kXLen == 64) {
+    this->FloatRmHelper(kFcvtHl, TypeParam::OpcodeEnum::kFcvtHl);
+  }
+}
+
+TYPED_TEST(ZfhEncodingTest, FcvtHl_frd) {
+  if constexpr (TypeParam::kXLen == 64) {
+    this->FloatFrdHelper(kFcvtHl, TypeParam::OpcodeEnum::kFcvtHl);
+  }
+}
+
+TYPED_TEST(ZfhEncodingTest, FcvtHlu) {
+  if constexpr (TypeParam::kXLen == 64) {
+    this->enc_->ParseInstruction(kFcvtHlu);
+    EXPECT_EQ(this->GetOpcode(), TypeParam::OpcodeEnum::kFcvtHlu);
+  }
+}
+
+TYPED_TEST(ZfhEncodingTest, FcvtHlu_rs1) {
+  using XValue = typename TypeParam::XValue;
+  if constexpr (TypeParam::kXLen == 64) {
+    std::vector<int> failed_scalar_sources;
+    for (int register_index = 0; register_index < 32; register_index++) {
+      XValue test_register_value =
+          this->RandomizeScalarRegister(register_index);
+      this->ParseInstructionWithRs1(kFcvtHlu, register_index);
+      XValue source_value =
+          this->GetRs1SourceValue(TypeParam::OpcodeEnum::kFcvtHlu);
+      if (source_value != test_register_value) {
+        failed_scalar_sources.push_back(register_index);
+      }
+    }
+    EXPECT_THAT(failed_scalar_sources, ::testing::IsEmpty());
+  }
+}
+
+TYPED_TEST(ZfhEncodingTest, FcvtHlu_rm) {
+  if constexpr (TypeParam::kXLen == 64) {
+    this->FloatRmHelper(kFcvtHlu, TypeParam::OpcodeEnum::kFcvtHlu);
+  }
+}
+
+TYPED_TEST(ZfhEncodingTest, FcvtHlu_frd) {
+  if constexpr (TypeParam::kXLen == 64) {
+    this->FloatFrdHelper(kFcvtHlu, TypeParam::OpcodeEnum::kFcvtHlu);
+  }
 }
 
 }  // namespace
