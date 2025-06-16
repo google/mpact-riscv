@@ -12,62 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "riscv/riscv_format32.bin_fmt"
+
 // RiscV vector instruction encodings.
-
-format VMem[32] : Inst32Format {
-  fields:
-    unsigned nf[3];
-    unsigned mew[1];
-    unsigned mop[2];
-    unsigned vm[1];
-    unsigned rs2[5];
-    unsigned rs1[5];
-    unsigned width[3];
-    unsigned vd[5];
-    unsigned opcode[7];
-  overlays:
-    unsigned lumop[5] = rs2;
-    unsigned sumop[5] = rs2;
-    unsigned vs2[5] = rs2;
-    unsigned vs3[5] = vd;
-};
-
-format VArith[32] : Inst32Format {
-  fields:
-    unsigned func6[6];
-    unsigned vm[1];
-    unsigned vs2[5];
-    unsigned vs1[5];
-    unsigned func3[3];
-    unsigned vd[5];
-    unsigned opcode[7];
-  overlays:
-    unsigned uimm5[5] = vs1;
-    unsigned uimm6[6] = func6[0], vs1;
-    unsigned func5[5] = func6[5..1];
-    signed simm5[5] = vs1;
-    unsigned rd[5] = vd;
-    unsigned rs1[5] = vs1;
-    unsigned vd_mask[5] = vd;
-};
-
-format VConfig[32] : Inst32Format {
-  fields:
-    unsigned top12[12];
-    unsigned rs1[5];
-    unsigned func3[3];
-    unsigned rd[5];
-    unsigned opcode[7];
-   overlays:
-    signed zimm11[11] = top12[10..0];
-    unsigned func1[1] = top12[11];
-    unsigned func2[2] = top12[11..10];
-    unsigned func7[7] = top12[11..5];
-    signed zimm10[10] = top12[9..0];
-    unsigned uimm5[5] = rs1;
-    unsigned rs2[5] = top12[4..0];
-};
-
 instruction group RiscVVInst32[32] : Inst32Format {
   //opcfg : VArith : func6 == 0bxxx'xxx, func3 == 0b111, opcode == 0b101'0111;
   vsetvli_xn  : VConfig : rs1 != 0, func1 == 0, func3 == 0b111, opcode == 0b101'0111;

@@ -14,37 +14,8 @@
 
 // This file contains the encoding for the Zimop and Zcmop instructions.
 
-format MopRType[32] : Inst32Format {
-  fields:
-    unsigned func1[1];
-    unsigned n_hi[1];
-    unsigned func2[2];
-    unsigned n_mid[2];
-    unsigned func4[4];
-    unsigned n_lo[2];
-    unsigned rs1[5];
-    unsigned func3[3];
-    unsigned rd[5];
-    unsigned opcode[7];
-  overlays:
-    unsigned mop_no[5] = n_hi, n_mid, n_lo;
-};
-
-format MopRRType[32] : Inst32Format {
-  fields:
-    unsigned func1h[1];
-    unsigned n_hi[1];
-    unsigned func2[2];
-    unsigned n_lo[2];
-    unsigned func1l[1];
-    unsigned rs2[5];
-    unsigned rs1[5];
-    unsigned func3[3];
-    unsigned rd[5];
-    unsigned opcode[7];
-  overlays:
-    unsigned mop_no[3] = n_hi, n_lo;
-};
+#include "riscv/riscv_format32.bin_fmt"
+#include "riscv/riscv_format16.bin_fmt"
 
 instruction group RiscVZimop[32] : Inst32Format {
   mop_r_0: MopRType : mop_no == 0, func1 == 0b1, func2 == 0b00, func4 == 0b0111, func3 == 0b100, opcode == 0b111'0011;
@@ -89,13 +60,6 @@ instruction group RiscVZimop[32] : Inst32Format {
   mop_rr_7: MopRRType : mop_no == 7, func1h == 0b1, func2 == 0b00, func1l == 0b1, opcode == 0b111'0011;
 };
 
-format CMopType[16] : Inst16Format {
-  fields:
-    unsigned func4[4];
-    unsigned num[5];
-    unsigned rd[5];
-    unsigned op[2];
-};
 
 instruction group RiscVZcmop[16] : Inst16Format {
   c_mop_1:  CMopType : func4 == 0b0110, num == 1, rd == 0, op == 0b01;

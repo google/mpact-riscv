@@ -38,6 +38,8 @@ exports_files([
     "riscv64v.isa",
     "riscv64zb.bin_fmt",
     "riscv64zb.isa",
+    "riscv_format16.bin_fmt",
+    "riscv_format32.bin_fmt",
     "riscv_vector.bin_fmt",
     "riscv_vector.isa",
 ])
@@ -366,7 +368,8 @@ mpact_bin_fmt_decoder(
     src = "riscv32g.bin_fmt",
     decoder_name = "RiscV32G",
     includes = [
-        "riscv32v.bin_fmt",
+        "riscv_format16.bin_fmt",
+        "riscv_format32.bin_fmt",
     ],
     deps = [
         ":riscv32g_isa",
@@ -399,6 +402,8 @@ mpact_bin_fmt_decoder(
     includes = [
         "riscv32g.bin_fmt",
         "riscv32zb.bin_fmt",
+        "riscv_format16.bin_fmt",
+        "riscv_format32.bin_fmt",
         "riscv_vector.bin_fmt",
     ],
     prefix = "riscv32gv",
@@ -431,6 +436,8 @@ mpact_bin_fmt_decoder(
     includes = [
         "riscv32g.bin_fmt",
         "riscv32zb.bin_fmt",
+        "riscv_format16.bin_fmt",
+        "riscv_format32.bin_fmt",
     ],
     prefix = "riscv32gzb",
     deps = [
@@ -464,6 +471,8 @@ mpact_bin_fmt_decoder(
     includes = [
         "riscv32g.bin_fmt",
         "riscv32zb.bin_fmt",
+        "riscv_format16.bin_fmt",
+        "riscv_format32.bin_fmt",
         "riscv_vector.bin_fmt",
     ],
     prefix = "riscv32gvzb",
@@ -506,6 +515,8 @@ mpact_bin_fmt_decoder(
         "riscv32g.bin_fmt",
         "riscv32v.bin_fmt",
         "riscv32zb.bin_fmt",
+        "riscv_format16.bin_fmt",
+        "riscv_format32.bin_fmt",
         "riscv_zc.bin_fmt",
         "riscv_zhintpause.bin_fmt",
         "riscv_zicbop.bin_fmt",
@@ -536,6 +547,8 @@ mpact_bin_fmt_decoder(
     src = "riscv64g.bin_fmt",
     decoder_name = "RiscV64G",
     includes = [
+        "riscv_format16.bin_fmt",
+        "riscv_format32.bin_fmt",
     ],
     prefix = "riscv64g",
     deps = [
@@ -571,6 +584,8 @@ mpact_bin_fmt_decoder(
         "riscv32zb.bin_fmt",
         "riscv64g.bin_fmt",
         "riscv64zb.bin_fmt",
+        "riscv_format16.bin_fmt",
+        "riscv_format32.bin_fmt",
         "riscv_vector.bin_fmt",
     ],
     prefix = "riscv64gv",
@@ -607,6 +622,8 @@ mpact_bin_fmt_decoder(
         "riscv32zb.bin_fmt",
         "riscv64g.bin_fmt",
         "riscv64zb.bin_fmt",
+        "riscv_format16.bin_fmt",
+        "riscv_format32.bin_fmt",
         "riscv_vector.bin_fmt",
     ],
     prefix = "riscv64gvzb",
@@ -641,6 +658,8 @@ mpact_bin_fmt_decoder(
         "riscv32zb.bin_fmt",
         "riscv64g.bin_fmt",
         "riscv64zb.bin_fmt",
+        "riscv_format16.bin_fmt",
+        "riscv_format32.bin_fmt",
     ],
     prefix = "riscv64gzb",
     deps = [
@@ -669,6 +688,8 @@ mpact_bin_fmt_decoder(
     decoder_name = "ZVBB",
     includes = [
         "riscv32g.bin_fmt",
+        "riscv_format16.bin_fmt",
+        "riscv_format32.bin_fmt",
         "riscv_vector.bin_fmt",
     ],
     prefix = "zvbb",
@@ -709,6 +730,8 @@ mpact_bin_fmt_decoder(
     decoder_name = "ZFH",
     includes = [
         "riscv32g.bin_fmt",
+        "riscv_format16.bin_fmt",
+        "riscv_format32.bin_fmt",
     ],
     prefix = "zfh32",
     deps = [
@@ -722,6 +745,8 @@ mpact_bin_fmt_decoder(
     decoder_name = "ZFH",
     includes = [
         "riscv32g.bin_fmt",
+        "riscv_format16.bin_fmt",
+        "riscv_format32.bin_fmt",
     ],
     prefix = "zfh64",
     deps = [

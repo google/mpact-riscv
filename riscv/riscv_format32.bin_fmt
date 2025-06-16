@@ -1,0 +1,243 @@
+// Copyright 2025 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#once
+
+// This file defines the 32 bit instruction formats for the RISC-V encodings.
+
+format Inst32Format[32] {
+  fields:
+    unsigned bits[25];
+    unsigned opcode[7];
+};
+
+format RType[32] : Inst32Format {
+  fields:
+    unsigned func7[7];
+    unsigned rs2[5];
+    unsigned rs1[5];
+    unsigned func3[3];
+    unsigned rd[5];
+    unsigned opcode[7];
+  overlays:
+    unsigned r_uimm5[5] = rs2;
+};
+
+// Format for shift immediate for RV64, note 6 bit immediate.
+format RSType[32] : Inst32Format {
+  fields:
+    unsigned func6[6];
+    unsigned r_uimm6[6];
+    unsigned rs1[5];
+    unsigned func3[3];
+    unsigned rd[5];
+    unsigned opcode[7];
+};
+
+format R4Type[32] : Inst32Format {
+  fields:
+    unsigned rs3[5];
+    unsigned func2[2];
+    unsigned rs2[5];
+    unsigned rs1[5];
+    unsigned func3[3];
+    unsigned rd[5];
+    unsigned opcode[7];
+};
+
+format IType[32] : Inst32Format {
+  fields:
+    signed imm12[12];
+    unsigned rs1[5];
+    unsigned func3[3];
+    unsigned rd[5];
+    unsigned opcode[7];
+  overlays:
+    unsigned u_imm12[12] = imm12;
+    unsigned i_uimm5[5] = rs1;
+};
+
+format SType[32] : Inst32Format {
+  fields:
+    unsigned imm7[7];
+    unsigned rs2[5];
+    unsigned rs1[5];
+    unsigned func3[3];
+    unsigned imm5[5];
+    unsigned opcode[7];
+  overlays:
+    signed s_imm[12] = imm7, imm5;
+};
+
+format BType[32] : Inst32Format {
+  fields:
+    unsigned imm7[7];
+    unsigned rs2[5];
+    unsigned rs1[5];
+    unsigned func3[3];
+    unsigned imm5[5];
+    unsigned opcode[7];
+  overlays:
+    signed b_imm[13] = imm7[6], imm5[0], imm7[5..0], imm5[4..1], 0b0;
+};
+
+format UType[32] : Inst32Format {
+  fields:
+    unsigned imm20[20];
+    unsigned rd[5];
+    unsigned opcode[7];
+  overlays:
+    unsigned u_imm[32] = imm20, 0b0000'0000'0000;
+};
+
+format JType[32] : Inst32Format {
+  fields:
+    unsigned imm20[20];
+    unsigned rd[5];
+    unsigned opcode[7];
+  overlays:
+    signed j_imm[21] = imm20[19, 7..0, 8, 18..9], 0b0;
+};
+
+format Fence[32] : Inst32Format {
+  fields:
+    unsigned fm[4];
+    unsigned pred[4];
+    unsigned succ[4];
+    unsigned rs1[5];
+    unsigned func3[3];
+    unsigned rd[5];
+    unsigned opcode[7];
+};
+
+format AType[32] : Inst32Format {
+  fields:
+    unsigned func5[5];
+    unsigned aq[1];
+    unsigned rl[1];
+    unsigned rs2[5];
+    unsigned rs1[5];
+    unsigned func3[3];
+    unsigned rd[5];
+    unsigned opcode[7];
+};
+
+format F12Type[32] : Inst32Format {
+  fields:
+    unsigned func12[12];
+    unsigned rs1[5];
+    unsigned func3[3];
+    unsigned rd[5];
+    unsigned opcode[7];
+};
+
+format ZICBOP[32] : Inst32Format {
+  fields:
+    unsigned offset[7];
+    unsigned func5[5];
+    unsigned rs1[5];
+    unsigned func3[3];
+    unsigned imm5[5];
+    unsigned op[7];
+  overlays:
+    unsigned bop_uimm12[12] = offset, 0b00000;
+}
+
+format MopRType[32] : Inst32Format {
+  fields:
+    unsigned func1[1];
+    unsigned n_hi[1];
+    unsigned func2[2];
+    unsigned n_mid[2];
+    unsigned func4[4];
+    unsigned n_lo[2];
+    unsigned rs1[5];
+    unsigned func3[3];
+    unsigned rd[5];
+    unsigned opcode[7];
+  overlays:
+    unsigned mop_no[5] = n_hi, n_mid, n_lo;
+};
+
+format MopRRType[32] : Inst32Format {
+  fields:
+    unsigned func1h[1];
+    unsigned n_hi[1];
+    unsigned func2[2];
+    unsigned n_lo[2];
+    unsigned func1l[1];
+    unsigned rs2[5];
+    unsigned rs1[5];
+    unsigned func3[3];
+    unsigned rd[5];
+    unsigned opcode[7];
+  overlays:
+    unsigned mop_no[3] = n_hi, n_lo;
+};
+
+// Vector instruction formats.
+
+format VMem[32] : Inst32Format {
+  fields:
+    unsigned nf[3];
+    unsigned mew[1];
+    unsigned mop[2];
+    unsigned vm[1];
+    unsigned rs2[5];
+    unsigned rs1[5];
+    unsigned width[3];
+    unsigned vd[5];
+    unsigned opcode[7];
+  overlays:
+    unsigned lumop[5] = rs2;
+    unsigned sumop[5] = rs2;
+    unsigned vs2[5] = rs2;
+    unsigned vs3[5] = vd;
+};
+
+format VArith[32] : Inst32Format {
+  fields:
+    unsigned func6[6];
+    unsigned vm[1];
+    unsigned vs2[5];
+    unsigned vs1[5];
+    unsigned func3[3];
+    unsigned vd[5];
+    unsigned opcode[7];
+  overlays:
+    unsigned uimm5[5] = vs1;
+    unsigned uimm6[6] = func6[0], vs1;
+    unsigned func5[5] = func6[5..1];
+    signed simm5[5] = vs1;
+    unsigned rd[5] = vd;
+    unsigned rs1[5] = vs1;
+    unsigned vd_mask[5] = vd;
+};
+
+format VConfig[32] : Inst32Format {
+  fields:
+    unsigned top12[12];
+    unsigned rs1[5];
+    unsigned func3[3];
+    unsigned rd[5];
+    unsigned opcode[7];
+   overlays:
+    signed zimm11[11] = top12[10..0];
+    unsigned func1[1] = top12[11];
+    unsigned func2[2] = top12[11..10];
+    unsigned func7[7] = top12[11..5];
+    signed zimm10[10] = top12[9..0];
+    unsigned uimm5[5] = rs1;
+    unsigned rs2[5] = top12[4..0];
+};

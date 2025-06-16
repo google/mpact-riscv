@@ -15,98 +15,15 @@
 // This file refactors the original "C" extension into the new set of Zc*
 // extensions. These should be preferred for new simulator targets.
 
+#include "riscv/riscv_format16.bin_fmt"
+
 // Compact instruction formats.
-
-
-format CLB[16] : Inst16Format {
-  fields:
-    unsigned func6[6];
-    unsigned rs1p[3];
-    unsigned uimm2[2];
-    unsigned rdp[3];
-    unsigned op[2];
-  overlays:
-    unsigned rs1[5] = 0b01, rs1p;
-    unsigned rd[5] = 0b01, rdp;
-};
-
-format CLH[16] : Inst16Format {
-  fields:
-    unsigned func6[6];
-    unsigned rs1p[3];
-    unsigned func1[1];
-    unsigned uimm1[1];
-    unsigned rdp[3];
-    unsigned op[2];
-  overlays:
-    unsigned rs1[5] = 0b01, rs1p;
-    unsigned rd[5] = 0b01, rdp;
-    unsigned uimm2[2] = uimm1, 0b0;
-};
-
-format CMMV[16] : Inst16Format {
-  fields:
-    unsigned func6[6];
-    unsigned rs1p[3];
-    unsigned func2[2];
-    unsigned rs2p[3];
-    unsigned op[2];
-  overlays:
-    unsigned rs1[5] = 0b01, rs1p;
-    unsigned rs2[5] = 0b01, rs2p;
-};
-
-format CMPP[16] : Inst16Format {
-  fields:
-    unsigned func8[8];
-    unsigned rlist[4];
-    unsigned spimm[2];
-    unsigned op[2];
-};
-
-
-format CSB[16] : Inst16Format {
-  fields:
-    unsigned func6[6];
-    unsigned rs1p[3];
-    unsigned uimm2[2];
-    unsigned rs2p[3];
-    unsigned op[2];
-  overlays:
-    unsigned rs1[5] = 0b01, rs1p;
-    unsigned rs2[5] = 0b01, rs2p;
-};
-
-format CSH[16] : Inst16Format {
-  fields:
-    unsigned func6[6];
-    unsigned rs1p[3];
-    unsigned func1[1];
-    unsigned uimm1[1];
-    unsigned rs2p[3];
-    unsigned op[2];
-  overlays:
-    unsigned rs1[5] = 0b01, rs1p;
-    unsigned rs2[5] = 0b01, rs2p;
-    unsigned uimm2[2] = uimm1, 0b0;
-};
-
-format CU[16] : Inst16Format {
-  fields:
-    unsigned func6[6];
-    unsigned rs1p[3];
-    unsigned func5[5];
-    unsigned op[2];
-  overlays:
-    unsigned rs1[5] = 0b01, rs1p;
-    unsigned rd[5] = 0b01, rs1p;
-};
 
 // Non floating point compact instructions from "C".
 instruction group RiscVCZca[16] : Inst16Format {
   caddi4spn : CIW: func3 == 0b000, op == 0b00, imm8 != 0;
   clw       : CL : func3 == 0b010, op == 0b00;
-  csw       : CS : func3 == 0b110, op == 0b00;
+  csw       : CS : func3 == 0b110, op == 0b00;ß
   cnop      : CI : func3 == 0b000, imm1 == 0, rs1 == 0, imm5 == 0, op == 0b01;
   caddi     : CI : func3 == 0b000, imm6 != 0, rd != 0, op == 0b01;
   cjal      : CJ : func3 == 0b001, op == 0b01;
@@ -177,13 +94,6 @@ instruction group RiscVCZcmp[16] : Inst16Format {
   cm_popretz : CMPP : func8 == 0b101'11100, rlist > 3, op == 0b10;
   cm_mvsa01  : CMMV : func6 == 0b101'011, func2 == 0b01, rs1p != rs2p, op == 0b10;
   cm_mva01s  : CMMV : func6 == 0b101'011, func2 == 0b11, op == 0b10;
-}
-
-format CMJT[16] : Inst16Format {
-  fields:
-    unsigned func6[6];
-    unsigned index[8];
-    unsigned op[2];
 }
 
 // Jump table instructions.

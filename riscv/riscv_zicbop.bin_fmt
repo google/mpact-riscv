@@ -15,17 +15,7 @@
 // This file defines the encoding for the cache prefetch instructions in the
 // Zicbop extension.
 
-format ZICBOP[32] : Inst32Format {
-  fields:
-    unsigned offset[7];
-    unsigned func5[5];
-    unsigned rs1[5];
-    unsigned func3[3];
-    unsigned imm5[5];
-    unsigned op[7];
-  overlays:
-    unsigned bop_uimm12[12] = offset, 0b00000;
-}
+#include "riscv/riscv_format32.bin_fmt"
 
 instruction group RiscVZicbop[32] : Inst32Format {
   prefetch_i : ZICBOP : func5 == 0b00000, func3 == 0b110, imm5 == 0b00000, op == 0b001'0011;
