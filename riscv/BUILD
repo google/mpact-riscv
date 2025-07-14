@@ -15,6 +15,8 @@
 # Build rules for RiscV simulator code.
 
 load("@com_google_mpact-sim//mpact/sim/decoder:mpact_sim_isa.bzl", "mpact_bin_fmt_decoder", "mpact_isa_decoder")
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
 
 package(
     default_applicable_licenses = ["//:license"],
