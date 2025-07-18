@@ -370,8 +370,11 @@ mpact_bin_fmt_decoder(
     src = "riscv32g.bin_fmt",
     decoder_name = "RiscV32G",
     includes = [
+        "riscv32v.bin_fmt",
+        "riscv32zb.bin_fmt",
         "riscv_format16.bin_fmt",
         "riscv_format32.bin_fmt",
+        "riscv_vector.bin_fmt",
     ],
     deps = [
         ":riscv32g_isa",
