@@ -23,7 +23,7 @@
 instruction group RiscVCZca[16] : Inst16Format {
   caddi4spn : CIW: func3 == 0b000, op == 0b00, imm8 != 0;
   clw       : CL : func3 == 0b010, op == 0b00;
-  csw       : CS : func3 == 0b110, op == 0b00;ß
+  csw       : CS : func3 == 0b110, op == 0b00;
   cnop      : CI : func3 == 0b000, imm1 == 0, rs1 == 0, imm5 == 0, op == 0b01;
   caddi     : CI : func3 == 0b000, imm6 != 0, rd != 0, op == 0b01;
   cjal      : CJ : func3 == 0b001, op == 0b01;

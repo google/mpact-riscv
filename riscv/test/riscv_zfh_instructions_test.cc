@@ -212,7 +212,7 @@ ReturnType RVZfhInstructionTestBase<XRegister>::LoadHalfHelper(
   this->instruction_->AppendSource(offset_source_operand);
 
   this->template SetRegisterValues<typename XRegister::ValueType, XRegister>(
-      {{kRs1Name, static_cast<XRegister::ValueType>(base)}});
+      {{kRs1Name, static_cast<typename XRegister::ValueType>(base)}});
   this->template SetRegisterValues<RVFpRegister::ValueType, RVFpRegister>(
       {{kFrdName, 0}});
 
@@ -478,7 +478,7 @@ void RVZfhInstructionTestBase<XRegister>::TernaryOpWithFflagsFPTestHelper(
 template <typename XRegister>
 template <typename FPType>
 void RVZfhInstructionTestBase<XRegister>::FmvHxNanBoxHelper() {
-  using ScalarRegisterType = XRegister::ValueType;
+  using ScalarRegisterType = typename XRegister::ValueType;
   this->template AppendRegisterOperands<RVFpRegister>({}, {"f5"});
   this->template AppendRegisterOperands<XRegister>({"x5"}, {});
   this->instruction_->AppendSource(new TestRoundingModeSourceOperand());
@@ -500,7 +500,7 @@ void RVZfhInstructionTestBase<XRegister>::FmvHxNanBoxHelper() {
 // float register to an integer register.
 template <typename XRegister>
 void RVZfhInstructionTestBase<XRegister>::FmvXhHelper() {
-  using ScalarRegisterType = XRegister::ValueType;
+  using ScalarRegisterType = typename XRegister::ValueType;
   this->template UnaryOpFPTestHelper<ScalarRegisterType, HalfFP>(
       "fmv.x.h", this->instruction_, {"f", "x"}, 32,
       [](HalfFP half_fp) -> ScalarRegisterType {
@@ -553,7 +553,7 @@ void RVZfhInstructionTestBase<XRegister>::CvtWhHelper(absl::string_view name) {
 // Helper to test the comparison of two half precision values for equality.
 template <typename XRegister>
 void RVZfhInstructionTestBase<XRegister>::CmpEqHelper() {
-  using ScalarRegisterType = XRegister::ValueType;
+  using ScalarRegisterType = typename XRegister::ValueType;
   this->template BinaryOpWithFflagsFPTestHelper<ScalarRegisterType, HalfFP,
                                                 HalfFP>(
       "feq.h", this->instruction_, {"f", "f", "x"}, 32,
@@ -574,7 +574,7 @@ void RVZfhInstructionTestBase<XRegister>::CmpEqHelper() {
 // Helper to test the comparison of two half precision values for less than.
 template <typename XRegister>
 void RVZfhInstructionTestBase<XRegister>::CmpLtHelper() {
-  using ScalarRegisterType = XRegister::ValueType;
+  using ScalarRegisterType = typename XRegister::ValueType;
   this->template BinaryOpWithFflagsFPTestHelper<ScalarRegisterType, HalfFP,
                                                 HalfFP>(
       "flt.h", this->instruction_, {"f", "f", "x"}, 32,
@@ -600,7 +600,7 @@ void RVZfhInstructionTestBase<XRegister>::CmpLtHelper() {
 // equal to.
 template <typename XRegister>
 void RVZfhInstructionTestBase<XRegister>::CmpLeHelper() {
-  using ScalarRegisterType = XRegister::ValueType;
+  using ScalarRegisterType = typename XRegister::ValueType;
   this->template BinaryOpWithFflagsFPTestHelper<ScalarRegisterType, HalfFP,
                                                 HalfFP>(
       "fle.h", this->instruction_, {"f", "f", "x"}, 32,
@@ -625,7 +625,7 @@ void RVZfhInstructionTestBase<XRegister>::CmpLeHelper() {
 // Helper to test the classification of the half precision value.
 template <typename XRegister>
 void RVZfhInstructionTestBase<XRegister>::ClassHelper() {
-  using ScalarRegisterType = XRegister::ValueType;
+  using ScalarRegisterType = typename XRegister::ValueType;
   UnaryOpWithFflagsMixedTestHelper<XRegister, RVFpRegister, ScalarRegisterType,
                                    HalfFP>(
       "fclass.h", this->instruction_, {"f", "x"}, 32,

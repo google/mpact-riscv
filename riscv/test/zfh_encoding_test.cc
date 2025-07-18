@@ -24,6 +24,7 @@
 
 #include "absl/random/random.h"
 #include "absl/strings/str_cat.h"
+#include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/immediate_operand.h"
 #include "mpact/sim/generic/operand_interface.h"
@@ -34,8 +35,6 @@
 #include "riscv/riscv_state.h"
 #include "riscv/zfh32_enums.h"
 #include "riscv/zfh64_enums.h"
-#include "testing/base/public/gmock.h"
-#include "testing/base/public/gunit.h"
 
 // Test that hand crafted zfh instructions are decoded and parsed correctly.
 
@@ -167,7 +166,7 @@ struct ZfhEncodingTest : public testing::Test {
   ZfhEncodingTest() {
     state_ = new RiscVState("test", ConfigT::rvXLen, &memory_);
     enc_ = new ZfhEncoding<ConfigT::kXLen>(state_);
-    expected_slot_ = static_cast<ConfigT::SlotEnum>(ConfigT::slot);
+    expected_slot_ = static_cast<typename ConfigT::SlotEnum>(ConfigT::slot);
   }
 
   ~ZfhEncodingTest() override {
@@ -187,7 +186,7 @@ struct ZfhEncodingTest : public testing::Test {
   void FloatFrs2Helper(uint32_t, typename ConfigT::OpcodeEnum);
   void FloatFrs3Helper(uint32_t, typename ConfigT::OpcodeEnum);
   void FloatRmHelper(uint32_t, typename ConfigT::OpcodeEnum);
-  ConfigT::OpcodeEnum GetOpcode();
+  typename ConfigT::OpcodeEnum GetOpcode();
 
   FlatDemandMemory memory_;
   RiscVState *state_;
@@ -197,8 +196,9 @@ struct ZfhEncodingTest : public testing::Test {
 };
 
 template <typename ConfigT>
-ConfigT::OpcodeEnum ZfhEncodingTest<ConfigT>::GetOpcode() {
-  return static_cast<ConfigT::OpcodeEnum>(enc_->GetOpcode(expected_slot_, 0));
+typename ConfigT::OpcodeEnum ZfhEncodingTest<ConfigT>::GetOpcode() {
+  return static_cast<typename ConfigT::OpcodeEnum>(
+      enc_->GetOpcode(expected_slot_, 0));
 }
 
 // Puts a random value in the expected register and checks that the source
@@ -486,7 +486,7 @@ TYPED_TEST(ZfhEncodingTest, FmvXh_frs1) {
 }
 
 TYPED_TEST(ZfhEncodingTest, FmvXh_rd) {
-  using XRegister = TypeParam::XRegister;
+  using XRegister = typename TypeParam::XRegister;
   using XValue = typename TypeParam::XRegister::ValueType;
   for (uint32_t rd_index = 1; rd_index < 32; ++rd_index) {
     uint32_t rd_adjustment = rd_index << 7;

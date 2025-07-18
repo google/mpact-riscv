@@ -86,17 +86,17 @@ template <int XLen>
 class ZfhEncoding : public ZfhTraits<XLen>::EncodingBase,
                     public RiscVEncodingCommon {
  public:
-  using OpcodeEnum = ZfhTraits<XLen>::OpcodeEnum;
-  using FormatEnum = ZfhTraits<XLen>::FormatEnum;
-  using DestOpEnum = ZfhTraits<XLen>::DestOpEnum;
-  using SourceOpEnum = ZfhTraits<XLen>::SourceOpEnum;
-  using ComplexResourceEnum = ZfhTraits<XLen>::ComplexResourceEnum;
-  using SimpleResourceEnum = ZfhTraits<XLen>::SimpleResourceEnum;
-  using PredOpEnum = ZfhTraits<XLen>::PredOpEnum;
-  using SlotEnum = ZfhTraits<XLen>::SlotEnum;
-  using SimpleResourceVector = ZfhTraits<XLen>::SimpleResourceVector;
-  using Extractors = ZfhTraits<XLen>::Extractors;
-  using XRegister = ZfhTraits<XLen>::XRegister;
+  using OpcodeEnum = typename ZfhTraits<XLen>::OpcodeEnum;
+  using FormatEnum = typename ZfhTraits<XLen>::FormatEnum;
+  using DestOpEnum = typename ZfhTraits<XLen>::DestOpEnum;
+  using SourceOpEnum = typename ZfhTraits<XLen>::SourceOpEnum;
+  using ComplexResourceEnum = typename ZfhTraits<XLen>::ComplexResourceEnum;
+  using SimpleResourceEnum = typename ZfhTraits<XLen>::SimpleResourceEnum;
+  using PredOpEnum = typename ZfhTraits<XLen>::PredOpEnum;
+  using SlotEnum = typename ZfhTraits<XLen>::SlotEnum;
+  using SimpleResourceVector = typename ZfhTraits<XLen>::SimpleResourceVector;
+  using Extractors = typename ZfhTraits<XLen>::Extractors;
+  using XRegister = typename ZfhTraits<XLen>::XRegister;
 
   explicit ZfhEncoding(RiscVState *state)
       : state_(state),
@@ -173,19 +173,20 @@ class ZfhEncoding : public ZfhTraits<XLen>::EncodingBase,
   }
 
   ResourceOperandInterface *GetSimpleResourceOperand(
-      SlotEnum, int, OpcodeEnum, SimpleResourceVector &resource_vec, int end) {
+      SlotEnum, int, OpcodeEnum, SimpleResourceVector &resource_vec,
+      int end) override {
     return nullptr;
   }
 
   ResourceOperandInterface *GetComplexResourceOperand(
       SlotEnum, int, OpcodeEnum, ComplexResourceEnum resource, int begin,
-      int end) {
+      int end) override {
     return nullptr;
   }
 
   DestinationOperandInterface *GetDestination(SlotEnum, int, OpcodeEnum opcode,
                                               DestOpEnum dest_op, int dest_no,
-                                              int latency) {
+                                              int latency) override {
     int index = static_cast<int>(dest_op);
     auto iter = dest_op_getters_.find(index);
     if (iter == dest_op_getters_.end()) {
@@ -198,7 +199,8 @@ class ZfhEncoding : public ZfhTraits<XLen>::EncodingBase,
   }
 
   SourceOperandInterface *GetSource(SlotEnum, int, OpcodeEnum opcode,
-                                    SourceOpEnum source_op, int source_no) {
+                                    SourceOpEnum source_op,
+                                    int source_no) override {
     int index = static_cast<int>(source_op);
     auto iter = source_op_getters_.find(index);
     if (iter == source_op_getters_.end()) {

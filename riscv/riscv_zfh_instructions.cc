@@ -513,8 +513,8 @@ void RiscVZfhFMvxhHelper(const Instruction *instruction) {
 // Move a half precision value from an integer register to a float register
 template <typename XRegister>
 inline void RiscVZfhFMvhxHelper(const Instruction *instruction) {
-  using DstRegValue = RVFpRegister::ValueType;
-  using SrcRegValue = XRegister::ValueType;
+  using DstRegValue = typename RVFpRegister::ValueType;
+  using SrcRegValue = typename XRegister::ValueType;
   SrcRegValue lhs = generic::GetInstructionSource<SrcRegValue>(instruction, 0);
   HalfFP dest_value = {.value = static_cast<uint16_t>(lhs)};
 
@@ -535,7 +535,7 @@ inline void RiscVZfhFMvhxHelper(const Instruction *instruction) {
 // Compare two half precision values for equality.
 template <typename XRegister>
 inline void RiscVZfhFcmpeqHelper(const Instruction *instruction) {
-  using DstRegValue = XRegister::ValueType;
+  using DstRegValue = typename XRegister::ValueType;
   uint32_t fflags = 0;
   HalfFP lhs =
       GetNaNBoxedSource<RVFpRegister::ValueType, HalfFP>(instruction, 0);
@@ -558,7 +558,7 @@ inline void RiscVZfhFcmpeqHelper(const Instruction *instruction) {
 // Compare two half precision values for less than.
 template <typename XRegister>
 inline void RiscVZfhFcmpltHelper(const Instruction *instruction) {
-  using DstRegValue = XRegister::ValueType;
+  using DstRegValue = typename XRegister::ValueType;
   uint32_t unused_fflags = 0;
   HalfFP lhs =
       GetNaNBoxedSource<RVFpRegister::ValueType, HalfFP>(instruction, 0);
@@ -583,7 +583,7 @@ inline void RiscVZfhFcmpltHelper(const Instruction *instruction) {
 // Compare two half precision values for less than or equal to.
 template <typename XRegister>
 void RiscVZfhFcmpleHelper(const Instruction *instruction) {
-  using DstRegValue = XRegister::ValueType;
+  using DstRegValue = typename XRegister::ValueType;
   uint32_t unused_fflags = 0;
   HalfFP lhs =
       GetNaNBoxedSource<RVFpRegister::ValueType, HalfFP>(instruction, 0);

@@ -68,9 +68,9 @@ constexpr uint32_t kDataStoreAddress = 0x2'0000;
 template <typename T>
 struct FPTypeInfo {
   using IntType = T;
-  static const int kBitSize = 8 * sizeof(T);
-  static const int kExpSize = 0;
-  static const int kSigSize = 0;
+  static constexpr int kBitSize = 8 * sizeof(T);
+  static constexpr int kExpSize = 0;
+  static constexpr int kSigSize = 0;
   static bool IsNaN(T value) { return false; }
   static constexpr IntType kQNaN = 0;
   static constexpr IntType kSNaN = 0;
@@ -86,22 +86,22 @@ template <>
 struct FPTypeInfo<float> {
   using T = float;
   using IntType = uint32_t;
-  static const int kExpBias = 127;
-  static const int kBitSize = sizeof(float) << 3;
-  static const int kExpSize = 8;
-  static const int kSigSize = kBitSize - kExpSize - 1;
-  static const IntType kExpMask = ((1ULL << kExpSize) - 1) << kSigSize;
-  static const IntType kSigMask = (1ULL << kSigSize) - 1;
-  static const IntType kQNaN = kExpMask | (1ULL << (kSigSize - 1)) | 1;
-  static const IntType kSNaN = kExpMask | 1;
-  static const IntType kPosInf = kExpMask;
-  static const IntType kNegInf = kExpMask | (1ULL << (kBitSize - 1));
-  static const IntType kPosZero = 0;
-  static const IntType kNegZero = 1ULL << (kBitSize - 1);
-  static const IntType kPosDenorm = 1ULL << (kSigSize - 2);
-  static const IntType kNegDenorm =
+  static constexpr int kExpBias = 127;
+  static constexpr int kBitSize = sizeof(float) << 3;
+  static constexpr int kExpSize = 8;
+  static constexpr int kSigSize = kBitSize - kExpSize - 1;
+  static constexpr IntType kExpMask = ((1ULL << kExpSize) - 1) << kSigSize;
+  static constexpr IntType kSigMask = (1ULL << kSigSize) - 1;
+  static constexpr IntType kQNaN = kExpMask | (1ULL << (kSigSize - 1)) | 1;
+  static constexpr IntType kSNaN = kExpMask | 1;
+  static constexpr IntType kPosInf = kExpMask;
+  static constexpr IntType kNegInf = kExpMask | (1ULL << (kBitSize - 1));
+  static constexpr IntType kPosZero = 0;
+  static constexpr IntType kNegZero = 1ULL << (kBitSize - 1);
+  static constexpr IntType kPosDenorm = 1ULL << (kSigSize - 2);
+  static constexpr IntType kNegDenorm =
       (1ULL << (kBitSize - 1)) | (1ULL << (kSigSize - 2));
-  static const IntType kCanonicalNaN = 0x7fc0'0000ULL;
+  static constexpr IntType kCanonicalNaN = 0x7fc0'0000ULL;
   static bool IsNaN(T value) { return std::isnan(value); }
   static bool IsQNaN(T value) {
     IntType uint_val = absl::bit_cast<IntType>(value);
@@ -114,22 +114,22 @@ template <>
 struct FPTypeInfo<double> {
   using T = double;
   using IntType = uint64_t;
-  static const int kExpBias = 1023;
-  static const int kBitSize = sizeof(double) << 3;
-  static const int kExpSize = 11;
-  static const int kSigSize = kBitSize - kExpSize - 1;
-  static const IntType kExpMask = ((1ULL << kExpSize) - 1) << kSigSize;
-  static const IntType kSigMask = (1ULL << kSigSize) - 1;
-  static const IntType kQNaN = kExpMask | (1ULL << (kSigSize - 1)) | 1;
-  static const IntType kSNaN = kExpMask | 1;
-  static const IntType kPosInf = kExpMask;
-  static const IntType kNegInf = kExpMask | (1ULL << (kBitSize - 1));
-  static const IntType kPosZero = 0;
-  static const IntType kNegZero = 1ULL << (kBitSize - 1);
-  static const IntType kPosDenorm = 1ULL << (kSigSize - 2);
-  static const IntType kNegDenorm =
+  static constexpr int kExpBias = 1023;
+  static constexpr int kBitSize = sizeof(double) << 3;
+  static constexpr int kExpSize = 11;
+  static constexpr int kSigSize = kBitSize - kExpSize - 1;
+  static constexpr IntType kExpMask = ((1ULL << kExpSize) - 1) << kSigSize;
+  static constexpr IntType kSigMask = (1ULL << kSigSize) - 1;
+  static constexpr IntType kQNaN = kExpMask | (1ULL << (kSigSize - 1)) | 1;
+  static constexpr IntType kSNaN = kExpMask | 1;
+  static constexpr IntType kPosInf = kExpMask;
+  static constexpr IntType kNegInf = kExpMask | (1ULL << (kBitSize - 1));
+  static constexpr IntType kPosZero = 0;
+  static constexpr IntType kNegZero = 1ULL << (kBitSize - 1);
+  static constexpr IntType kPosDenorm = 1ULL << (kSigSize - 2);
+  static constexpr IntType kNegDenorm =
       (1ULL << (kBitSize - 1)) | (1ULL << (kSigSize - 2));
-  static const IntType kCanonicalNaN = 0x7ff8'0000'0000'0000ULL;
+  static constexpr IntType kCanonicalNaN = 0x7ff8'0000'0000'0000ULL;
   static bool IsNaN(T value) { return std::isnan(value); }
   static bool IsQNaN(T value) {
     IntType uint_val = absl::bit_cast<IntType>(value);
@@ -142,22 +142,22 @@ template <>
 struct FPTypeInfo<HalfFP> {
   using T = HalfFP;
   using IntType = uint16_t;
-  static const int kExpBias = 15;
-  static const int kBitSize = sizeof(HalfFP) << 3;
-  static const int kExpSize = 5;
-  static const int kSigSize = kBitSize - kExpSize - 1;  // 10 from the spec.
-  static const IntType kExpMask = ((1ULL << kExpSize) - 1) << kSigSize;
-  static const IntType kSigMask = (1ULL << kSigSize) - 1;
-  static const IntType kQNaN = kExpMask | (1ULL << (kSigSize - 1)) | 1;
-  static const IntType kSNaN = kExpMask | 1;
-  static const IntType kPosInf = kExpMask;
-  static const IntType kNegInf = kExpMask | (1ULL << (kBitSize - 1));
-  static const IntType kPosZero = 0;
-  static const IntType kNegZero = 1ULL << (kBitSize - 1);
-  static const IntType kPosDenorm = 1ULL << (kSigSize - 2);
-  static const IntType kNegDenorm =
+  static constexpr int kExpBias = 15;
+  static constexpr int kBitSize = sizeof(HalfFP) << 3;
+  static constexpr int kExpSize = 5;
+  static constexpr int kSigSize = kBitSize - kExpSize - 1;  // 10 from the spec.
+  static constexpr IntType kExpMask = ((1ULL << kExpSize) - 1) << kSigSize;
+  static constexpr IntType kSigMask = (1ULL << kSigSize) - 1;
+  static constexpr IntType kQNaN = kExpMask | (1ULL << (kSigSize - 1)) | 1;
+  static constexpr IntType kSNaN = kExpMask | 1;
+  static constexpr IntType kPosInf = kExpMask;
+  static constexpr IntType kNegInf = kExpMask | (1ULL << (kBitSize - 1));
+  static constexpr IntType kPosZero = 0;
+  static constexpr IntType kNegZero = 1ULL << (kBitSize - 1);
+  static constexpr IntType kPosDenorm = 1ULL << (kSigSize - 2);
+  static constexpr IntType kNegDenorm =
       (1ULL << (kBitSize - 1)) | (1ULL << (kSigSize - 2));
-  static const IntType kCanonicalNaN = 0x7e00;
+  static constexpr IntType kCanonicalNaN = 0x7e00;
   // std::isnan won't work for half precision.
   static bool IsNaN(T wrapper) {
     IntType exp = (wrapper.value & kExpMask) >> kSigSize;
