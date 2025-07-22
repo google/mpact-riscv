@@ -521,7 +521,10 @@ void RVZfhInstructionTestBase<XRegister>::CvtHwHelper(absl::string_view name) {
   UnaryOpWithFflagsMixedTestHelper<RVFpRegister, XRegister, HalfFP,
                                    SourceIntegerType>(
       name, this->instruction_, {"x", "f"}, 32,
-      [](SourceIntegerType input_int, int rm) -> std::tuple<HalfFP, uint32_t> {
+      [this](SourceIntegerType input_int,
+             int rm) -> std::tuple<HalfFP, uint32_t> {
+        ScopedFPRoundingMode scoped_rm(this->rv_fp_->host_fp_interface(),
+                                       FPRoundingMode::kRoundToNearest);
         uint32_t fflags = 0;
         HalfFP result = FpConversionsTestHelper(static_cast<double>(input_int))
                             .ConvertWithFlags<HalfFP>(
@@ -540,6 +543,8 @@ void RVZfhInstructionTestBase<XRegister>::CvtWhHelper(absl::string_view name) {
       name, this->instruction_, {"f", "x"}, 32,
       [this](HalfFP input,
              int rm) -> std::tuple<DestinationIntegerType, uint32_t> {
+        ScopedFPRoundingMode scoped_rm(this->rv_fp_->host_fp_interface(),
+                                       FPRoundingMode::kRoundToNearest);
         uint32_t fflags = 0;
         double input_double =
             FpConversionsTestHelper(input).ConvertWithFlags<double>(fflags);
@@ -832,7 +837,9 @@ TEST_F(RV32ZfhInstructionTest, RiscVZfhCvtHs) {
   SetSemanticFunction(&RiscVZfhCvtHs);
   UnaryOpWithFflagsFPTestHelper<HalfFP, float>(
       "fcvt.h.s", instruction_, {"f", "f"}, 32,
-      [](float input_float, int rm) -> std::tuple<HalfFP, uint32_t> {
+      [this](float input_float, int rm) -> std::tuple<HalfFP, uint32_t> {
+        ScopedFPRoundingMode scoped_rm(this->rv_fp_->host_fp_interface(),
+                                       FPRoundingMode::kRoundToNearest);
         uint32_t fflags = 0;
         HalfFP half_result = FpConversionsTestHelper(input_float)
                                  .ConvertWithFlags<HalfFP>(
@@ -1086,6 +1093,8 @@ TEST_F(RV32ZfhInstructionTest, RiscVZfhFadd) {
       "fadd.h", instruction_, {"f", "f", "f"}, 32,
       [this](HalfFP a, HalfFP b) -> std::tuple<HalfFP, uint32_t> {
         FPRoundingMode rm = rv_fp_->GetRoundingMode();
+        ScopedFPRoundingMode scoped_rm(this->rv_fp_->host_fp_interface(),
+                                       FPRoundingMode::kRoundToNearest);
         uint32_t fflags = 0;
         double a_f =
             FpConversionsTestHelper(a).ConvertWithFlags<double>(fflags);
@@ -1112,6 +1121,8 @@ TEST_F(RV32ZfhInstructionTest, RiscVZfhFsub) {
       "fsub.h", instruction_, {"f", "f", "f"}, 32,
       [this](HalfFP a, HalfFP b) -> std::tuple<HalfFP, uint32_t> {
         FPRoundingMode rm = rv_fp_->GetRoundingMode();
+        ScopedFPRoundingMode scoped_rm(this->rv_fp_->host_fp_interface(),
+                                       FPRoundingMode::kRoundToNearest);
         uint32_t fflags = 0;
         double a_f =
             FpConversionsTestHelper(a).ConvertWithFlags<double>(fflags);
@@ -1138,6 +1149,8 @@ TEST_F(RV32ZfhInstructionTest, RiscVZfhFmul) {
       "fmul.h", instruction_, {"f", "f", "f"}, 32,
       [this](HalfFP a, HalfFP b) -> std::tuple<HalfFP, uint32_t> {
         FPRoundingMode rm = rv_fp_->GetRoundingMode();
+        ScopedFPRoundingMode scoped_rm(this->rv_fp_->host_fp_interface(),
+                                       FPRoundingMode::kRoundToNearest);
         uint32_t fflags = 0;
         double a_f =
             FpConversionsTestHelper(a).ConvertWithFlags<double>(fflags);
@@ -1164,6 +1177,8 @@ TEST_F(RV32ZfhInstructionTest, RiscVZfhFdiv) {
       "fdiv.h", instruction_, {"f", "f", "f"}, 32,
       [this](HalfFP a, HalfFP b) -> std::tuple<HalfFP, uint32_t> {
         FPRoundingMode rm = rv_fp_->GetRoundingMode();
+        ScopedFPRoundingMode scoped_rm(this->rv_fp_->host_fp_interface(),
+                                       FPRoundingMode::kRoundToNearest);
         uint32_t fflags = 0;
         double a_f =
             FpConversionsTestHelper(a).ConvertWithFlags<double>(fflags);
@@ -1199,6 +1214,8 @@ TEST_F(RV32ZfhInstructionTest, RiscVZfhFmin) {
       "fmin.h", instruction_, {"f", "f", "f"}, 32,
       [this](HalfFP a, HalfFP b) -> std::tuple<HalfFP, uint32_t> {
         FPRoundingMode rm = rv_fp_->GetRoundingMode();
+        ScopedFPRoundingMode scoped_rm(this->rv_fp_->host_fp_interface(),
+                                       FPRoundingMode::kRoundToNearest);
         uint32_t fflags = 0;
         double a_f =
             FpConversionsTestHelper(a).ConvertWithFlags<double>(fflags);
@@ -1239,6 +1256,8 @@ TEST_F(RV32ZfhInstructionTest, RiscVZfhFmax) {
       "fmax.h", instruction_, {"f", "f", "f"}, 32,
       [this](HalfFP a, HalfFP b) -> std::tuple<HalfFP, uint32_t> {
         FPRoundingMode rm = rv_fp_->GetRoundingMode();
+        ScopedFPRoundingMode scoped_rm(this->rv_fp_->host_fp_interface(),
+                                       FPRoundingMode::kRoundToNearest);
         uint32_t fflags = 0;
         double a_f =
             FpConversionsTestHelper(a).ConvertWithFlags<double>(fflags);
@@ -1321,7 +1340,9 @@ TEST_F(RV32ZfhInstructionTest, RiscVZfhFsqrt) {
   SetSemanticFunction(&RiscVZfhFsqrt);
   UnaryOpWithFflagsFPTestHelper<HalfFP, HalfFP>(
       "fsqrt.h", instruction_, {"f", "f"}, 32,
-      [](HalfFP input_half, int rm) -> std::tuple<HalfFP, uint32_t> {
+      [this](HalfFP input_half, int rm) -> std::tuple<HalfFP, uint32_t> {
+        ScopedFPRoundingMode scoped_rm(this->rv_fp_->host_fp_interface(),
+                                       FPRoundingMode::kRoundToNearest);
         uint32_t fflags = 0;
         double input_double_f = FpConversionsTestHelper(input_half)
                                     .ConvertWithFlags<double>(fflags);
@@ -1402,6 +1423,8 @@ TEST_F(RV32ZfhInstructionTest, RiscVZfhFmadd) {
       "fmadd.h", instruction_, {"f", "f", "f", "f"}, 10,
       [this](HalfFP a, HalfFP b, HalfFP c) -> std::tuple<HalfFP, uint32_t> {
         FPRoundingMode rm = rv_fp_->GetRoundingMode();
+        ScopedFPRoundingMode scoped_rm(this->rv_fp_->host_fp_interface(),
+                                       FPRoundingMode::kRoundToNearest);
         uint32_t fflags = 0;
         double a_f =
             FpConversionsTestHelper(a).ConvertWithFlags<double>(fflags);
@@ -1437,6 +1460,8 @@ TEST_F(RV32ZfhInstructionTest, RiscVZfhFmsub) {
       "fmsub.h", instruction_, {"f", "f", "f", "f"}, 10,
       [this](HalfFP a, HalfFP b, HalfFP c) -> std::tuple<HalfFP, uint32_t> {
         FPRoundingMode rm = rv_fp_->GetRoundingMode();
+        ScopedFPRoundingMode scoped_rm(this->rv_fp_->host_fp_interface(),
+                                       FPRoundingMode::kRoundToNearest);
         uint32_t fflags = 0;
         double a_f =
             FpConversionsTestHelper(a).ConvertWithFlags<double>(fflags);
@@ -1472,6 +1497,8 @@ TEST_F(RV32ZfhInstructionTest, RiscVZfhFnmadd) {
       "fnmadd.h", instruction_, {"f", "f", "f", "f"}, 10,
       [this](HalfFP a, HalfFP b, HalfFP c) -> std::tuple<HalfFP, uint32_t> {
         FPRoundingMode rm = rv_fp_->GetRoundingMode();
+        ScopedFPRoundingMode scoped_rm(this->rv_fp_->host_fp_interface(),
+                                       FPRoundingMode::kRoundToNearest);
         uint32_t fflags = 0;
         double a_f =
             FpConversionsTestHelper(a).ConvertWithFlags<double>(fflags);
@@ -1507,6 +1534,8 @@ TEST_F(RV32ZfhInstructionTest, RiscVZfhFnmsub) {
       "fnmsub.h", instruction_, {"f", "f", "f", "f"}, 10,
       [this](HalfFP a, HalfFP b, HalfFP c) -> std::tuple<HalfFP, uint32_t> {
         FPRoundingMode rm = rv_fp_->GetRoundingMode();
+        ScopedFPRoundingMode scoped_rm(this->rv_fp_->host_fp_interface(),
+                                       FPRoundingMode::kRoundToNearest);
         uint32_t fflags = 0;
         double a_f =
             FpConversionsTestHelper(a).ConvertWithFlags<double>(fflags);
@@ -1663,6 +1692,8 @@ TEST_F(RV64ZfhInstructionTest, RiscVZfhCvtLh) {
   UnaryOpWithFflagsMixedTestHelper<RV64Register, RVFpRegister, int64_t, HalfFP>(
       "fcvt.l.h", instruction_, {"f", "x"}, 32,
       [this](HalfFP input, int rm) -> std::tuple<int64_t, uint32_t> {
+        ScopedFPRoundingMode scoped_rm(this->rv_fp_->host_fp_interface(),
+                                       FPRoundingMode::kRoundToNearest);
         uint32_t fflags = 0;
         double input_double =
             FpConversionsTestHelper(input).ConvertWithFlags<double>(fflags);
@@ -1679,6 +1710,8 @@ TEST_F(RV64ZfhInstructionTest, RiscVZfhCvtLuh) {
                                    HalfFP>(
       "fcvt.lu.h", instruction_, {"f", "x"}, 32,
       [this](HalfFP input, int rm) -> std::tuple<uint64_t, uint32_t> {
+        ScopedFPRoundingMode scoped_rm(this->rv_fp_->host_fp_interface(),
+                                       FPRoundingMode::kRoundToNearest);
         uint32_t fflags = 0;
         double input_double =
             FpConversionsTestHelper(input).ConvertWithFlags<double>(fflags);

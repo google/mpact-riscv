@@ -84,12 +84,67 @@ struct DataTypeRegValue<uint64_t> {
   using type = RV64Register::ValueType;
 };
 
+// Convert from half precision to single or double precision.
+template <typename T>
+inline T ConvertFromHalfFP(HalfFP half_fp, uint32_t &fflags) {
+  using UIntType = typename FPTypeInfo<T>::UIntType;
+  using HalfFPUIntType = typename FPTypeInfo<HalfFP>::UIntType;
+  HalfFPUIntType in_int = half_fp.value;
+
+  if (FPTypeInfo<HalfFP>::IsNaN(half_fp)) {
+    if (FPTypeInfo<HalfFP>::IsSNaN(half_fp)) {
+      fflags |= static_cast<uint32_t>(FPExceptions::kInvalidOp);
+    }
+    UIntType uint_value = FPTypeInfo<T>::kCanonicalNaN;
+    return absl::bit_cast<T>(uint_value);
+  }
+
+  if (FPTypeInfo<HalfFP>::IsInf(half_fp)) {
+    UIntType uint_value = FPTypeInfo<T>::kPosInf;
+    UIntType sign = in_int >> (FPTypeInfo<HalfFP>::kBitSize - 1);
+    uint_value |= sign << (FPTypeInfo<T>::kBitSize - 1);
+    return absl::bit_cast<T>(uint_value);
+  }
+
+  if ((in_int == 0) || (in_int == (1 << (FPTypeInfo<HalfFP>::kBitSize - 1)))) {
+    UIntType uint_value =
+        static_cast<UIntType>(in_int)
+        << (FPTypeInfo<T>::kBitSize - FPTypeInfo<HalfFP>::kBitSize);
+    return absl::bit_cast<T>(uint_value);
+  }
+
+  UIntType in_sign = FPTypeInfo<HalfFP>::SignBit(half_fp);
+  UIntType in_exp =
+      (in_int & FPTypeInfo<HalfFP>::kExpMask) >> FPTypeInfo<HalfFP>::kSigSize;
+  UIntType in_sig = in_int & FPTypeInfo<HalfFP>::kSigMask;
+  UIntType out_int = 0;
+  UIntType out_sig = in_sig;
+  if ((in_exp == 0) && (in_sig != 0)) {
+    // Handle subnormal half precision inputs. They always result in a normal
+    // float or double. Calculate how much shifting is needed move the MSB to
+    // the location of the implicit bit. Then it can be handled as a normal
+    // value from here on.
+    int32_t shift_count =
+        (1 + FPTypeInfo<HalfFP>::kSigSize) -
+        (std::numeric_limits<UIntType>::digits - absl::countl_zero(out_sig));
+    out_sig = (out_sig << shift_count) & FPTypeInfo<HalfFP>::kSigMask;
+    in_exp = 1 - shift_count;
+  }
+  out_int |= in_sign << (FPTypeInfo<T>::kBitSize - 1);
+  out_int |= (in_exp + FPTypeInfo<T>::kExpBias - FPTypeInfo<HalfFP>::kExpBias)
+             << FPTypeInfo<T>::kSigSize;
+  out_int |=
+      out_sig << (FPTypeInfo<T>::kSigSize - FPTypeInfo<HalfFP>::kSigSize);
+  return absl::bit_cast<T>(out_int);
+}
+
 // This is a soft conversion from a float or double to a half precision value.
 // It is not a direct conversion from the floating point format to the half
 // format. Instead, it uses the floating point hardware to do the conversion.
 // This is done to get the correct rounding behavior for free from the FPU.
 template <typename T>
-HalfFP ConvertToHalfFP(T input_value, FPRoundingMode rm, uint32_t &fflags) {
+inline HalfFP ConvertToHalfFP(T input_value, FPRoundingMode rm,
+                              uint32_t &fflags) {
   using UIntType = typename FPTypeInfo<T>::UIntType;
   using IntType = typename FPTypeInfo<T>::IntType;
   UIntType in_int = absl::bit_cast<UIntType>(input_value);
@@ -115,7 +170,7 @@ HalfFP ConvertToHalfFP(T input_value, FPRoundingMode rm, uint32_t &fflags) {
     return half_fp;
   }
 
-  if (in_int == 0 || in_int == 1ULL << (FPTypeInfo<T>::kBitSize - 1)) {
+  if ((in_int == 0) || (in_int == (1ULL << (FPTypeInfo<T>::kBitSize - 1)))) {
     half_fp.value =
         in_int >> (FPTypeInfo<T>::kBitSize - FPTypeInfo<HalfFP>::kBitSize);
     return half_fp;
@@ -218,22 +273,14 @@ HalfFP ConvertToHalfFP(T input_value, FPRoundingMode rm, uint32_t &fflags) {
                   (half_exponent << FPTypeInfo<HalfFP>::kSigSize) |
                   (sign << (FPTypeInfo<HalfFP>::kBitSize - 1));
 
-  // Do an arithmetic reconstruction of the float to check for exactness.
-  T trailing_significand_float = static_cast<T>(half_mantissa);
-  T precision_factor = std::pow(2.0, -1.0 * FPTypeInfo<HalfFP>::kSigSize);
-  IntType unbiased_exponent =
-      (half_exponent == 0 ? 1 : half_exponent) - FPTypeInfo<HalfFP>::kExpBias;
-  T exponent_factor = std::pow(2.0, unbiased_exponent);
-  T sign_factor = sign == 1 ? -1.0 : 1.0;
-  T implicit_bit_adjustment = half_exponent == 0 ? 0.0 : 1.0;
-  T reconstructed_value = ((trailing_significand_float * precision_factor) +
-                           implicit_bit_adjustment) *
-                          exponent_factor * sign_factor;
+  uint32_t temp_fflags = 0;
+  T reconstructed_value = ConvertFromHalfFP<T>(half_fp, temp_fflags);
   bool exact_conversion = reconstructed_value == input_value;
 
   // Handle flags for the specific underflow case.
-  if (!exact_conversion && (unbounded_half_exponent < 0 ||
-                            (unbounded_half_exponent == 0 && fres2 != ftmp))) {
+  if (!exact_conversion &&
+      ((unbounded_half_exponent < 0) ||
+       ((unbounded_half_exponent == 0) && (fres2 != ftmp)))) {
     fflags |= static_cast<uint32_t>(FPExceptions::kUnderflow);
   }
 
@@ -242,60 +289,6 @@ HalfFP ConvertToHalfFP(T input_value, FPRoundingMode rm, uint32_t &fflags) {
     fflags |= static_cast<uint32_t>(FPExceptions::kInexact);
   }
   return half_fp;
-}
-
-// Convert from half precision to single or double precision.
-template <typename T>
-inline T ConvertFromHalfFP(HalfFP half_fp, uint32_t &fflags) {
-  using UIntType = typename FPTypeInfo<T>::UIntType;
-  using HalfFPUIntType = typename FPTypeInfo<HalfFP>::UIntType;
-  HalfFPUIntType in_int = half_fp.value;
-
-  if (FPTypeInfo<HalfFP>::IsNaN(half_fp)) {
-    if (FPTypeInfo<HalfFP>::IsSNaN(half_fp)) {
-      fflags |= static_cast<uint32_t>(FPExceptions::kInvalidOp);
-    }
-    UIntType uint_value = FPTypeInfo<T>::kCanonicalNaN;
-    return absl::bit_cast<T>(uint_value);
-  }
-
-  if (FPTypeInfo<HalfFP>::IsInf(half_fp)) {
-    UIntType uint_value = FPTypeInfo<T>::kPosInf;
-    UIntType sign = in_int >> (FPTypeInfo<HalfFP>::kBitSize - 1);
-    uint_value |= sign << (FPTypeInfo<T>::kBitSize - 1);
-    return absl::bit_cast<T>(uint_value);
-  }
-
-  if (in_int == 0 || in_int == 1 << (FPTypeInfo<HalfFP>::kBitSize - 1)) {
-    UIntType uint_value =
-        static_cast<UIntType>(in_int)
-        << (FPTypeInfo<T>::kBitSize - FPTypeInfo<HalfFP>::kBitSize);
-    return absl::bit_cast<T>(uint_value);
-  }
-
-  UIntType in_sign = FPTypeInfo<HalfFP>::SignBit(half_fp);
-  UIntType in_exp =
-      (in_int & FPTypeInfo<HalfFP>::kExpMask) >> FPTypeInfo<HalfFP>::kSigSize;
-  UIntType in_sig = in_int & FPTypeInfo<HalfFP>::kSigMask;
-  UIntType out_int = 0;
-  UIntType out_sig = in_sig;
-  if (in_exp == 0 && in_sig != 0) {
-    // Handle subnormal half precision inputs. They always result in a normal
-    // float or double. Calculate how much shifting is needed move the MSB to
-    // the location of the implicit bit. Then it can be handled as a normal
-    // value from here on.
-    int32_t shift_count =
-        (1 + FPTypeInfo<HalfFP>::kSigSize) -
-        (std::numeric_limits<UIntType>::digits - absl::countl_zero(out_sig));
-    out_sig = (out_sig << shift_count) & FPTypeInfo<HalfFP>::kSigMask;
-    in_exp = 1 - shift_count;
-  }
-  out_int |= in_sign << (FPTypeInfo<T>::kBitSize - 1);
-  out_int |= (in_exp + FPTypeInfo<T>::kExpBias - FPTypeInfo<HalfFP>::kExpBias)
-             << FPTypeInfo<T>::kSigSize;
-  out_int |=
-      out_sig << (FPTypeInfo<T>::kSigSize - FPTypeInfo<HalfFP>::kSigSize);
-  return absl::bit_cast<T>(out_int);
 }
 
 template <typename Result, typename Argument>
