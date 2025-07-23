@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "riscv/riscv32g.bin_fmt"
+#include "riscv32g.bin_fmt"
 
 decoder ZFH {
   namespace mpact::sim::riscv::zfh64;

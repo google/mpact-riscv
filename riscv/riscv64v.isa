@@ -29,8 +29,8 @@ isa RiscV64GVZB {
   slots { riscv64gvzb; }
 }
 
-#include "riscv/riscv64gzb.isa"
-#include "riscv/riscv_vector.isa"
+#include "riscv64gzb.isa"
+#include "riscv_vector.isa"
 
 // This adds vector instructions.
 slot riscv64gv : riscv64g, riscv_vector {

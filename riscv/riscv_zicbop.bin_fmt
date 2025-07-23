@@ -15,7 +15,7 @@
 // This file defines the encoding for the cache prefetch instructions in the
 // Zicbop extension.
 
-#include "riscv/riscv_format32.bin_fmt"
+#include "riscv_format32.bin_fmt"
 
 instruction group RiscVZicbop[32] : Inst32Format {
   prefetch_i : ZICBOP : func5 == 0b00000, func3 == 0b110, imm5 == 0b00000, op == 0b001'0011;

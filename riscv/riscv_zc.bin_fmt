@@ -15,7 +15,7 @@
 // This file refactors the original "C" extension into the new set of Zc*
 // extensions. These should be preferred for new simulator targets.
 
-#include "riscv/riscv_format16.bin_fmt"
+#include "riscv_format16.bin_fmt"
 
 // Compact instruction formats.
 

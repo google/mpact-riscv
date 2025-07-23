@@ -23,8 +23,8 @@ decoder RiscV64G {
   RiscVCInst16;
 };
 
-#include "riscv/riscv_format32.bin_fmt"
-#include "riscv/riscv_format16.bin_fmt"
+#include "riscv_format32.bin_fmt"
+#include "riscv_format16.bin_fmt"
 
 instruction group RiscVGInst32[32] : Inst32Format {
   lui    : UType  : opcode == 0b011'0111;

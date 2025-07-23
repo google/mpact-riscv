@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "riscv/riscv_format32.bin_fmt"
+#include "riscv_format32.bin_fmt"
 
 // RiscV vector instruction encodings.
 instruction group RiscVVInst32[32] : Inst32Format {
