@@ -41,7 +41,7 @@ using ::mpact::sim::generic::operator*;  // NOLINT: clang-tidy false positive.
 class RV32GVZBIsaFactory : public isa32gvzb::RiscV32GVZBInstructionSetFactory {
  public:
   std::unique_ptr<isa32gvzb::Riscv32gvzbSlot> CreateRiscv32gvzbSlot(
-      ArchState *state) override {
+      ArchState* state) override {
     return std::make_unique<isa32gvzb::Riscv32gvzbSlot>(state);
   }
 };
@@ -54,28 +54,28 @@ class RiscV32GZBVecDecoder : public generic::DecoderInterface {
   using SlotEnum = isa32gvzb::SlotEnum;
   using OpcodeEnum = isa32gvzb::OpcodeEnum;
 
-  RiscV32GZBVecDecoder(RiscVState *state, util::MemoryInterface *memory);
+  RiscV32GZBVecDecoder(RiscVState* state, util::MemoryInterface* memory);
   RiscV32GZBVecDecoder() = delete;
   ~RiscV32GZBVecDecoder() override;
 
   // This will always return a valid instruction that can be executed. In the
   // case of a decode error, the semantic function in the instruction object
   // instance will raise an internal simulator error when executed.
-  generic::Instruction *DecodeInstruction(uint64_t address) override;
+  generic::Instruction* DecodeInstruction(uint64_t address) override;
   // Return the number of opcodes supported by this decoder.
   int GetNumOpcodes() const override { return *OpcodeEnum::kPastMaxValue; }
   // Return the name of the opcode at the given index.
-  const char *GetOpcodeName(int index) const override {
+  const char* GetOpcodeName(int index) const override {
     return isa32gvzb::kOpcodeNames[index];
   }
 
  private:
-  RiscVState *const state_;
-  util::MemoryInterface *const memory_;
+  RiscVState* const state_;
+  util::MemoryInterface* const memory_;
 
   // Buffer used to load instructions from memory. Re-used for each instruction
   // word.
-  generic::DataBuffer *const inst_db_;
+  generic::DataBuffer* const inst_db_;
 
   std::unique_ptr<generic::ProgramError> decode_error_;
   std::unique_ptr<isa32gvzb::RiscV32GZBVecEncoding> riscv_encoding_;

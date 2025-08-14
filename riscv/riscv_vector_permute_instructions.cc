@@ -32,7 +32,7 @@ namespace riscv {
 
 // This helper function handles the vector gather operations.
 template <typename Vd, typename Vs2, typename Vs1>
-void VrgatherHelper(RiscVVectorState *rv_vector, Instruction *inst) {
+void VrgatherHelper(RiscVVectorState* rv_vector, Instruction* inst) {
   if (rv_vector->vector_exception()) return;
   int num_elements = rv_vector->vector_length();
   int elements_per_vector =
@@ -46,8 +46,8 @@ void VrgatherHelper(RiscVVectorState *rv_vector, Instruction *inst) {
   }
   int max_regs = std::max(
       1, (num_elements + elements_per_vector - 1) / elements_per_vector);
-  auto *dest_op =
-      static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+  auto* dest_op =
+      static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
   // Verify that there are enough registers in the destination operand.
   if (dest_op->size() < max_regs) {
     rv_vector->set_vector_exception();
@@ -57,7 +57,7 @@ void VrgatherHelper(RiscVVectorState *rv_vector, Instruction *inst) {
     return;
   }
   // Get the vector mask.
-  auto *mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(2));
+  auto* mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(2));
   auto mask_span = mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
   // Get the vector start element index and compute the where to start
   // the operation.
@@ -66,13 +66,13 @@ void VrgatherHelper(RiscVVectorState *rv_vector, Instruction *inst) {
   int item_index = vector_index % elements_per_vector;
   // Determine if it's vector-vector or vector-scalar.
   bool vector_scalar = inst->Source(1)->shape()[0] == 1;
-  auto src0_op = static_cast<RV32VectorSourceOperand *>(inst->Source(0));
+  auto src0_op = static_cast<RV32VectorSourceOperand*>(inst->Source(0));
   int max_index = src0_op->size() * elements_per_vector;
   // Iterate over the number of registers to write.
   for (int reg = start_reg; (reg < max_regs) && (vector_index < num_elements);
        reg++) {
     // Allocate data buffer for the new register data.
-    auto *dest_db = dest_op->CopyDataBuffer(reg);
+    auto* dest_db = dest_op->CopyDataBuffer(reg);
     auto dest_span = dest_db->Get<Vd>();
     // Write data into register subject to masking.
     int element_count = std::min(elements_per_vector, num_elements);
@@ -107,8 +107,8 @@ void VrgatherHelper(RiscVVectorState *rv_vector, Instruction *inst) {
 }
 
 // Vector register gather.
-void Vrgather(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vrgather(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -127,8 +127,8 @@ void Vrgather(Instruction *inst) {
 }
 
 // Vector register gather with 16 bit indices.
-void Vrgatherei16(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vrgatherei16(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -148,15 +148,15 @@ void Vrgatherei16(Instruction *inst) {
 
 // This helper function handles the vector slide up/down instructions.
 template <typename Vd>
-void VSlideHelper(RiscVVectorState *rv_vector, Instruction *inst, int offset) {
+void VSlideHelper(RiscVVectorState* rv_vector, Instruction* inst, int offset) {
   if (rv_vector->vector_exception()) return;
   int num_elements = rv_vector->vector_length();
   int elements_per_vector =
       rv_vector->vector_register_byte_length() / sizeof(Vd);
   int max_regs = std::max(
       1, (num_elements + elements_per_vector - 1) / elements_per_vector);
-  auto *dest_op =
-      static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+  auto* dest_op =
+      static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
   // Verify that there are enough registers in the destination operand.
   if (dest_op->size() < max_regs) {
     rv_vector->set_vector_exception();
@@ -166,7 +166,7 @@ void VSlideHelper(RiscVVectorState *rv_vector, Instruction *inst, int offset) {
     return;
   }
   // Get the vector mask.
-  auto *mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(2));
+  auto* mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(2));
   auto mask_span = mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
   // Get the vector start element index and compute the where to start
   // the operation.
@@ -177,7 +177,7 @@ void VSlideHelper(RiscVVectorState *rv_vector, Instruction *inst, int offset) {
   for (int reg = start_reg; (reg < max_regs) && (vector_index < num_elements);
        reg++) {
     // Allocate data buffer for the new register data.
-    auto *dest_db = dest_op->CopyDataBuffer(reg);
+    auto* dest_db = dest_op->CopyDataBuffer(reg);
     auto dest_span = dest_db->Get<Vd>();
     // Write data into register subject to masking.
     int element_count = std::min(elements_per_vector, num_elements);
@@ -205,9 +205,9 @@ void VSlideHelper(RiscVVectorState *rv_vector, Instruction *inst, int offset) {
   rv_vector->clear_vstart();
 }
 
-void Vslideup(Instruction *inst) {
+void Vslideup(Instruction* inst) {
   using ValueType = RV32Register::ValueType;
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   auto offset = generic::GetInstructionSource<ValueType>(inst, 1, 0);
   int int_offset = static_cast<int>(offset);
@@ -229,9 +229,9 @@ void Vslideup(Instruction *inst) {
   }
 }
 
-void Vslidedown(Instruction *inst) {
+void Vslidedown(Instruction* inst) {
   using ValueType = RV32Register::ValueType;
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   auto offset = generic::GetInstructionSource<ValueType>(inst, 1, 0);
   // Slide down amount is negative.
@@ -254,15 +254,15 @@ void Vslidedown(Instruction *inst) {
 
 // This helper function handles the vector slide up/down 1 instructions.
 template <typename Vd>
-void VSlide1Helper(RiscVVectorState *rv_vector, Instruction *inst, int offset) {
+void VSlide1Helper(RiscVVectorState* rv_vector, Instruction* inst, int offset) {
   if (rv_vector->vector_exception()) return;
   int num_elements = rv_vector->vector_length();
   int elements_per_vector =
       rv_vector->vector_register_byte_length() / sizeof(Vd);
   int max_regs = std::max(
       1, (num_elements + elements_per_vector - 1) / elements_per_vector);
-  auto *dest_op =
-      static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+  auto* dest_op =
+      static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
   // Verify that there are enough registers in the destination operand.
   if (dest_op->size() < max_regs) {
     rv_vector->set_vector_exception();
@@ -272,7 +272,7 @@ void VSlide1Helper(RiscVVectorState *rv_vector, Instruction *inst, int offset) {
     return;
   }
   // Get the vector mask.
-  auto *mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(2));
+  auto* mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(2));
   auto mask_span = mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
   // Get the vector start element index and compute the where to start
   // the operation.
@@ -284,7 +284,7 @@ void VSlide1Helper(RiscVVectorState *rv_vector, Instruction *inst, int offset) {
   for (int reg = start_reg; (reg < max_regs) && (vector_index < num_elements);
        reg++) {
     // Allocate data buffer for the new register data.
-    auto *dest_db = dest_op->CopyDataBuffer(reg);
+    auto* dest_db = dest_op->CopyDataBuffer(reg);
     auto dest_span = dest_db->Get<Vd>();
     // Write data into register subject to masking.
     int element_count = std::min(elements_per_vector, num_elements);
@@ -312,8 +312,8 @@ void VSlide1Helper(RiscVVectorState *rv_vector, Instruction *inst, int offset) {
   rv_vector->clear_vstart();
 }
 
-void Vslide1up(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vslide1up(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -331,8 +331,8 @@ void Vslide1up(Instruction *inst) {
   }
 }
 
-void Vslide1down(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vslide1down(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -350,8 +350,8 @@ void Vslide1down(Instruction *inst) {
   }
 }
 
-void Vfslide1up(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfslide1up(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 4:
@@ -365,8 +365,8 @@ void Vfslide1up(Instruction *inst) {
   }
 }
 
-void Vfslide1down(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfslide1down(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 4:
@@ -381,15 +381,15 @@ void Vfslide1down(Instruction *inst) {
 }
 
 template <typename Vd>
-void VCompressHelper(RiscVVectorState *rv_vector, Instruction *inst) {
+void VCompressHelper(RiscVVectorState* rv_vector, Instruction* inst) {
   if (rv_vector->vector_exception()) return;
   int num_elements = rv_vector->vector_length();
   int elements_per_vector =
       rv_vector->vector_register_byte_length() / sizeof(Vd);
   int max_regs = std::max(
       1, (num_elements + elements_per_vector - 1) / elements_per_vector);
-  auto *dest_op =
-      static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+  auto* dest_op =
+      static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
   // Verify that there are enough registers in the destination operand.
   if (dest_op->size() < max_regs) {
     rv_vector->set_vector_exception();
@@ -399,7 +399,7 @@ void VCompressHelper(RiscVVectorState *rv_vector, Instruction *inst) {
     return;
   }
   // Get the vector mask.
-  auto *mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(1));
+  auto* mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(1));
   auto mask_span = mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
   // Get the vector start element index and compute the where to start
   // the operation.
@@ -407,7 +407,7 @@ void VCompressHelper(RiscVVectorState *rv_vector, Instruction *inst) {
   int dest_index = 0;
   int prev_reg = -1;
   absl::Span<Vd> dest_span;
-  generic::DataBuffer *dest_db = nullptr;
+  generic::DataBuffer* dest_db = nullptr;
   // Iterate over the input elements.
   for (int i = vector_index; i < num_elements; i++) {
     // Get mask value.
@@ -435,8 +435,8 @@ void VCompressHelper(RiscVVectorState *rv_vector, Instruction *inst) {
   rv_vector->clear_vstart();
 }
 
-void Vcompress(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vcompress(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:

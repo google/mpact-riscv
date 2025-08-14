@@ -27,11 +27,11 @@ namespace riscv {
 using Instruction = ::mpact::sim::generic::Instruction;
 
 // Move a single floating point value from vector[0] to vector[vl-1].
-void Vfmvvf(const Instruction *inst);
+void Vfmvvf(const Instruction* inst);
 // Move a single floating point value from vector[0] to scalar fp register.
-void Vfmvsf(const Instruction *inst);
+void Vfmvsf(const Instruction* inst);
 // Move single floating point value from scalar fp register to vector[0].
-void Vfmvfs(const Instruction *inst);
+void Vfmvfs(const Instruction* inst);
 
 // Each of the following semantic functions take 2 source operands and 1
 // destination operand. Source operand 0 is a vector register group, source
@@ -44,17 +44,17 @@ void Vfmvfs(const Instruction *inst);
 // rounding mode.
 
 // FP to unsigned integer.
-void Vfcvtxufv(const Instruction *inst);
+void Vfcvtxufv(const Instruction* inst);
 // FP to signed integer.
-void Vfcvtxfv(const Instruction *inst);
+void Vfcvtxfv(const Instruction* inst);
 // Unsigned integer to FP.
-void Vfcvtfxuv(const Instruction *inst);
+void Vfcvtfxuv(const Instruction* inst);
 // Signed integer to FP.
-void Vfcvtfxv(const Instruction *inst);
+void Vfcvtfxv(const Instruction* inst);
 // FP to unsigned integer using round to zero.
-void Vfcvtrtzxufv(const Instruction *inst);
+void Vfcvtrtzxufv(const Instruction* inst);
 // FP to signed integer using round to zero.
-void Vfcvtrtzxfv(const Instruction *inst);
+void Vfcvtrtzxfv(const Instruction* inst);
 
 // Vector element widening conversion instructions. These convert values from/to
 // signed/unsigned integer and floating point, where the resulting value is 2x
@@ -62,19 +62,19 @@ void Vfcvtrtzxfv(const Instruction *inst);
 // zero), whereas the others use the dynamically set rounding mode.
 
 // FP to wider unsigned integer.
-void Vfwcvtxufv(const Instruction *inst);
+void Vfwcvtxufv(const Instruction* inst);
 // FP to wider signed integer.
-void Vfwcvtxfv(const Instruction *inst);
+void Vfwcvtxfv(const Instruction* inst);
 // FP to next wider FP.
-void Vfwcvtffv(const Instruction *inst);
+void Vfwcvtffv(const Instruction* inst);
 // Unsigned integer to wider FP.
-void Vfwcvtfxuv(const Instruction *inst);
+void Vfwcvtfxuv(const Instruction* inst);
 // Signed integer to wider FP.
-void Vfwcvtfxv(const Instruction *inst);
+void Vfwcvtfxv(const Instruction* inst);
 // FP to wider unsigned integer using round to zero.
-void Vfwcvtrtzxufv(const Instruction *inst);
+void Vfwcvtrtzxufv(const Instruction* inst);
 // FP to wider signed integer using round to zero.
-void Vfwcvtrtzxfv(const Instruction *inst);
+void Vfwcvtrtzxfv(const Instruction* inst);
 
 // Vector element widening conversion instructions. These convert values from/to
 // signed/unsigned integer and floating point, where the resulting value is 1/2x
@@ -83,30 +83,30 @@ void Vfwcvtrtzxfv(const Instruction *inst);
 // dynamically set rounding mode.
 
 // FP to narrower unsigned integer.
-void Vfncvtxufw(const Instruction *inst);
+void Vfncvtxufw(const Instruction* inst);
 // FP to narrower signed integer.
-void Vfncvtxfw(const Instruction *inst);
+void Vfncvtxfw(const Instruction* inst);
 // FP to next narrower FP.
-void Vfncvtffw(const Instruction *inst);
+void Vfncvtffw(const Instruction* inst);
 // FP to next narrower FP with round to odd.
-void Vfncvtrodffw(const Instruction *inst);
+void Vfncvtrodffw(const Instruction* inst);
 // Unsigned integer to narrower FP.
-void Vfncvtfxuw(const Instruction *inst);
+void Vfncvtfxuw(const Instruction* inst);
 // Signed integer to narrower FP.
-void Vfncvtfxw(const Instruction *inst);
+void Vfncvtfxw(const Instruction* inst);
 // FP to narrower unsigned integer using round to zero.
-void Vfncvtrtzxufw(const Instruction *inst);
+void Vfncvtrtzxufw(const Instruction* inst);
 // FP to narrower signed integer using round to zero.
-void Vfncvtrtzxfw(const Instruction *inst);
+void Vfncvtrtzxfw(const Instruction* inst);
 
 // Vector element square root instruction.
-void Vfsqrtv(const Instruction *inst);
+void Vfsqrtv(const Instruction* inst);
 // Vector element approximate reciprocal square root instruction.
-void Vfrsqrt7v(const Instruction *inst);
+void Vfrsqrt7v(const Instruction* inst);
 // Vector element approximate reciprocal instruction.
-void Vfrec7v(const Instruction *inst);
+void Vfrec7v(const Instruction* inst);
 // Vector element floating point value classify instruction.
-void Vfclassv(const Instruction *inst);
+void Vfclassv(const Instruction* inst);
 
 }  // namespace riscv
 }  // namespace sim

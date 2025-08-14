@@ -44,8 +44,8 @@ class RiscV32HtifSemiHostTest : public testing::Test {
   }
 
   DataBufferFactory db_factory_;
-  mpact::sim::util::MemoryWatcher *watcher_;
-  mpact::sim::util::FlatDemandMemory *memory_;
+  mpact::sim::util::MemoryWatcher* watcher_;
+  mpact::sim::util::FlatDemandMemory* memory_;
   SemiHostAddresses semi_host_addresses_ = {0x1000, 0x1008, 0x2000, 0x2008};
 };
 
@@ -53,10 +53,10 @@ class RiscV32HtifSemiHostTest : public testing::Test {
 TEST_F(RiscV32HtifSemiHostTest, Constructors) {
   bool halted = false;
   std::string error;
-  auto *one = new RiscV32HtifSemiHost(watcher_, memory_, semi_host_addresses_);
+  auto* one = new RiscV32HtifSemiHost(watcher_, memory_, semi_host_addresses_);
   one->SetHaltCallback([&halted]() { halted = true; });
   one->SetErrorCallback([&error](std::string err) { error = err; });
-  auto *two = new RiscV32HtifSemiHost(
+  auto* two = new RiscV32HtifSemiHost(
       watcher_, memory_, semi_host_addresses_, [&halted]() { halted = true; },
       [&error](std::string err) { error = err; });
   delete one;
@@ -68,15 +68,15 @@ TEST_F(RiscV32HtifSemiHostTest, Halting) {
   bool halted = false;
   bool error_call = false;
   std::string error;
-  auto *semi_host =
+  auto* semi_host =
       new RiscV32HtifSemiHost(watcher_, memory_, semi_host_addresses_);
   semi_host->SetHaltCallback([&halted]() { halted = true; });
   semi_host->SetErrorCallback([&error, &error_call](std::string msg) {
     error_call = true;
     error = msg;
   });
-  auto *db1 = db_factory_.Allocate<uint8_t>(1);
-  auto *db8 = db_factory_.Allocate<uint64_t>(1);
+  auto* db1 = db_factory_.Allocate<uint8_t>(1);
+  auto* db8 = db_factory_.Allocate<uint64_t>(1);
   db1->Set<uint8_t>(0, 1);
   db8->Set<uint64_t>(0, 1);
   watcher_->Store(semi_host_addresses_.tohost, db8);
@@ -96,20 +96,20 @@ TEST_F(RiscV32HtifSemiHostTest, Error) {
   bool halted = false;
   bool error_call = false;
   std::string error;
-  auto *semi_host =
+  auto* semi_host =
       new RiscV32HtifSemiHost(watcher_, memory_, semi_host_addresses_);
   semi_host->SetHaltCallback([&halted]() { halted = true; });
   semi_host->SetErrorCallback([&error, &error_call](std::string msg) {
     error_call = true;
     error = msg;
   });
-  auto *db1 = db_factory_.Allocate<uint8_t>(1);
-  auto *db8 = db_factory_.Allocate<uint64_t>(1);
-  auto *db64 = db_factory_.Allocate<uint64_t>(8);
+  auto* db1 = db_factory_.Allocate<uint8_t>(1);
+  auto* db8 = db_factory_.Allocate<uint64_t>(1);
+  auto* db64 = db_factory_.Allocate<uint64_t>(8);
 
   db1->Set<uint8_t>(0, 1);
   db8->Set<uint64_t>(0, 0x4000);
-  for (auto &el : db64->Get<uint64_t>()) el = 0;
+  for (auto& el : db64->Get<uint64_t>()) el = 0;
   db64->Set<uint64_t>(0, 123);
   watcher_->Store(0x4000, db64);
   watcher_->Store(semi_host_addresses_.tohost, db8);
@@ -132,22 +132,22 @@ TEST_F(RiscV32HtifSemiHostTest, Syswrite) {
   bool halted = false;
   bool error_call = false;
   std::string error;
-  auto *semi_host =
+  auto* semi_host =
       new RiscV32HtifSemiHost(watcher_, memory_, semi_host_addresses_);
   semi_host->SetHaltCallback([&halted]() { halted = true; });
   semi_host->SetErrorCallback([&error, &error_call](std::string msg) {
     error_call = true;
     error = msg;
   });
-  auto *db1 = db_factory_.Allocate<uint8_t>(1);
-  auto *db8 = db_factory_.Allocate<uint64_t>(1);
-  auto *db16 = db_factory_.Allocate<uint8_t>(16);
-  auto *db64 = db_factory_.Allocate<uint64_t>(8);
+  auto* db1 = db_factory_.Allocate<uint8_t>(1);
+  auto* db8 = db_factory_.Allocate<uint64_t>(1);
+  auto* db16 = db_factory_.Allocate<uint8_t>(16);
+  auto* db64 = db_factory_.Allocate<uint64_t>(8);
 
   db1->Set<uint8_t>(0, 1);
   db8->Set<uint64_t>(0, 0x4000);
   std::memcpy(db16->raw_ptr(), kHelloWorld, strlen(kHelloWorld));
-  for (auto &el : db64->Get<uint64_t>()) el = 0;
+  for (auto& el : db64->Get<uint64_t>()) el = 0;
   db64->Set<uint64_t>(0, 64);
   db64->Set<uint64_t>(1, 2);
   db64->Set<uint64_t>(2, 0x4100);

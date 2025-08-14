@@ -35,18 +35,18 @@ namespace isa32v {
 class RiscV32GVecEncoding : public RiscV32GVEncodingBase {
  public:
   using SourceOpGetterMap =
-      absl::flat_hash_map<int, absl::AnyInvocable<SourceOperandInterface *()>>;
+      absl::flat_hash_map<int, absl::AnyInvocable<SourceOperandInterface*()>>;
   using DestOpGetterMap = absl::flat_hash_map<
-      int, absl::AnyInvocable<DestinationOperandInterface *(int)>>;
+      int, absl::AnyInvocable<DestinationOperandInterface*(int)>>;
   using SimpleResourceGetterMap =
-      absl::flat_hash_map<int, absl::AnyInvocable<generic::SimpleResource *()>>;
+      absl::flat_hash_map<int, absl::AnyInvocable<generic::SimpleResource*()>>;
   using ComplexResourceGetterMap = absl::flat_hash_map<
-      int, absl::AnyInvocable<ResourceOperandInterface *(int, int)>>;
+      int, absl::AnyInvocable<ResourceOperandInterface*(int, int)>>;
 
   static constexpr int kParseGroup32Size = 32;
   static constexpr int kParseGroup16Size = 32;
 
-  explicit RiscV32GVecEncoding(RiscVState *state);
+  explicit RiscV32GVecEncoding(RiscVState* state);
   ~RiscV32GVecEncoding() override;
 
   // Parses an instruction and determines the opcode.
@@ -59,7 +59,7 @@ class RiscV32GVecEncoding : public RiscV32GVEncodingBase {
   OpcodeEnum GetOpcode(SlotEnum, int) override { return opcode_; }
 
   // There is no predicate, so return nullptr.
-  PredicateOperandInterface *GetPredicate(SlotEnum, int, OpcodeEnum,
+  PredicateOperandInterface* GetPredicate(SlotEnum, int, OpcodeEnum,
                                           PredOpEnum) override {
     return nullptr;
   }
@@ -71,22 +71,22 @@ class RiscV32GVecEncoding : public RiscV32GVEncodingBase {
   // where the resource itself is a register bank, and the argument specifies
   // which register (or more precisely) which encoding "field" specifies the
   // register number.
-  ResourceOperandInterface *GetSimpleResourceOperand(
-      SlotEnum, int, OpcodeEnum, SimpleResourceVector &resource_vec,
+  ResourceOperandInterface* GetSimpleResourceOperand(
+      SlotEnum, int, OpcodeEnum, SimpleResourceVector& resource_vec,
       int end) override;
 
-  ResourceOperandInterface *GetComplexResourceOperand(
+  ResourceOperandInterface* GetComplexResourceOperand(
       SlotEnum, int, OpcodeEnum, ComplexResourceEnum resource, int begin,
       int end) override;
 
   // The following method returns a source operand that corresponds to the
   // particular operand field.
-  SourceOperandInterface *GetSource(SlotEnum, int, OpcodeEnum, SourceOpEnum op,
+  SourceOperandInterface* GetSource(SlotEnum, int, OpcodeEnum, SourceOpEnum op,
                                     int source_no) override;
 
   // The following method returns a destination operand that corresponds to the
   // particular operand field.
-  DestinationOperandInterface *GetDestination(SlotEnum, int, OpcodeEnum,
+  DestinationOperandInterface* GetDestination(SlotEnum, int, OpcodeEnum,
                                               DestOpEnum op, int dest_no,
                                               int latency) override;
 
@@ -98,12 +98,12 @@ class RiscV32GVecEncoding : public RiscV32GVEncodingBase {
   }
 
   // Getter.
-  const SourceOpGetterMap &source_op_getters() { return source_op_getters_; }
-  const DestOpGetterMap &dest_op_getters() { return dest_op_getters_; }
-  const SimpleResourceGetterMap &simple_resource_getters() {
+  const SourceOpGetterMap& source_op_getters() { return source_op_getters_; }
+  const DestOpGetterMap& dest_op_getters() { return dest_op_getters_; }
+  const SimpleResourceGetterMap& simple_resource_getters() {
     return simple_resource_getters_;
   }
-  const ComplexResourceGetterMap &complex_resource_getters() {
+  const ComplexResourceGetterMap& complex_resource_getters() {
     return complex_resource_getters_;
   }
 
@@ -128,11 +128,11 @@ class RiscV32GVecEncoding : public RiscV32GVEncodingBase {
   DestOpGetterMap dest_op_getters_;
   SimpleResourceGetterMap simple_resource_getters_;
   ComplexResourceGetterMap complex_resource_getters_;
-  RiscVState *state_;
+  RiscVState* state_;
   uint32_t inst_word_;
   OpcodeEnum opcode_;
-  generic::SimpleResourceDelayLine *resource_delay_line_ = nullptr;
-  generic::SimpleResourcePool *resource_pool_ = nullptr;
+  generic::SimpleResourceDelayLine* resource_delay_line_ = nullptr;
+  generic::SimpleResourcePool* resource_pool_ = nullptr;
 };
 
 }  // namespace isa32v

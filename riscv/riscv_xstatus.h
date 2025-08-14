@@ -38,8 +38,8 @@ class RiscVMStatus : public RiscVSimpleCsr<uint64_t> {
   static constexpr uint64_t kWriteMask = 0x0000'0000'007f'f9bbULL;
   // Disable default constructor.
   RiscVMStatus() = delete;
-  RiscVMStatus(uint32_t initial_value, ArchState *state, RiscVMIsa *misa);
-  RiscVMStatus(uint64_t initial_value, ArchState *state, RiscVMIsa *misa);
+  RiscVMStatus(uint32_t initial_value, ArchState* state, RiscVMIsa* misa);
+  RiscVMStatus(uint64_t initial_value, ArchState* state, RiscVMIsa* misa);
 
   ~RiscVMStatus() override = default;
 
@@ -116,8 +116,8 @@ class RiscVMStatus : public RiscVSimpleCsr<uint64_t> {
 
  private:
   // Private constructor.
-  RiscVMStatus(uint64_t initial_value, ArchState *state, RiscVXlen xlen,
-               RiscVMIsa *misa);
+  RiscVMStatus(uint64_t initial_value, ArchState* state, RiscVXlen xlen,
+               RiscVMIsa* misa);
   // Template function to help implement the getters.
   template <int Shift, uint64_t BitMask>
   inline int GetterHelper() {
@@ -130,7 +130,7 @@ class RiscVMStatus : public RiscVSimpleCsr<uint64_t> {
     buffer_mask_ |= BitMask << Shift;
   }
 
-  RiscVMIsa *misa_;
+  RiscVMIsa* misa_;
   uint64_t buffer_ = 0;
   uint64_t buffer_mask_ = 0;
   uint32_t read_mask_32_;
@@ -147,7 +147,7 @@ class RiscVSStatus : public RiscVSimpleCsr<uint64_t> {
   static constexpr uint64_t kWriteMask = 0x0000'0000'000d'e133ULL;
 
   RiscVSStatus() = delete;
-  RiscVSStatus(RiscVMStatus *mstatus, RiscVState *state);
+  RiscVSStatus(RiscVMStatus* mstatus, RiscVState* state);
 
   // Overrides.
   uint64_t AsUint64() override;
@@ -199,7 +199,7 @@ class RiscVSStatus : public RiscVSimpleCsr<uint64_t> {
   uint32_t read_mask_32_;
   uint32_t write_mask_32_;
   uint64_t set_mask_from_32_;
-  RiscVMStatus *mstatus_;
+  RiscVMStatus* mstatus_;
 };
 
 // The ustatus register is a further restricted view of sstatus.
@@ -209,7 +209,7 @@ class RiscVUStatus : public RiscVSimpleCsr<uint64_t> {
   static constexpr uint64_t kWriteMask = 0x11ULL;
 
   RiscVUStatus() = delete;
-  RiscVUStatus(RiscVMStatus *mstatus, RiscVState *state);
+  RiscVUStatus(RiscVMStatus* mstatus, RiscVState* state);
   // Overrides.
   uint64_t AsUint64() override;
   uint32_t AsUint32() override;
@@ -229,7 +229,7 @@ class RiscVUStatus : public RiscVSimpleCsr<uint64_t> {
   uint32_t read_mask_32_;
   uint32_t write_mask_32_;
   uint64_t set_mask_from_32_;
-  RiscVMStatus *mstatus_;
+  RiscVMStatus* mstatus_;
 };
 
 }  // namespace riscv

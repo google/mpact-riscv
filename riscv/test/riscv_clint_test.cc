@@ -32,7 +32,7 @@ class RiscVClintTest : public ::testing::Test {
     state_ = new RiscVState("test", RiscVXlen::RV32, &memory_);
     state_->set_on_trap([this](bool is_interrupt, uint64_t trap_value,
                                uint64_t exception_code, uint64_t epc,
-                               const Instruction *inst) {
+                               const Instruction* inst) {
       return TrapHandler(is_interrupt, trap_value, exception_code, epc, inst);
     });
     cycle_counter_.Initialize("cycle_counter", 0);
@@ -43,26 +43,26 @@ class RiscVClintTest : public ::testing::Test {
   // Gets called on a trap.
   bool TrapHandler(bool is_interrupt, uint64_t trap_value,
                    uint64_t exception_code, uint64_t epc,
-                   const Instruction *inst);
+                   const Instruction* inst);
 
   FlatDemandMemory memory_;
   // Counter.
   SimpleCounter<uint64_t> cycle_counter_;
   // CherIoT state.
-  RiscVState *state_;
+  RiscVState* state_;
   // Latched trap info.
   bool trap_taken_ = false;
   bool trap_is_interrupt_ = false;
   uint64_t trap_value_ = 0;
   uint64_t trap_exception_code_ = 0;
   uint64_t trap_epc_ = 0;
-  const Instruction *trap_inst_ = nullptr;
+  const Instruction* trap_inst_ = nullptr;
 };
 
 // Called when there is a trap in the CherIoT state.
 bool RiscVClintTest::TrapHandler(bool is_interrupt, uint64_t trap_value,
                                  uint64_t exception_code, uint64_t epc,
-                                 const Instruction *inst) {
+                                 const Instruction* inst) {
   trap_taken_ = true;
   trap_is_interrupt_ = is_interrupt;
   trap_value_ = trap_value;
@@ -74,9 +74,9 @@ bool RiscVClintTest::TrapHandler(bool is_interrupt, uint64_t trap_value,
 
 // Test loads and stores for msip memory mapped register.
 TEST_F(RiscVClintTest, MSip) {
-  auto *db = state_->db_factory()->Allocate<uint32_t>(1);
+  auto* db = state_->db_factory()->Allocate<uint32_t>(1);
   db->Set<uint32_t>(0, 0xdeadbeef);
-  auto *clint = new RiscVClint(/*period=*/1, state_->mip());
+  auto* clint = new RiscVClint(/*period=*/1, state_->mip());
   cycle_counter_.AddListener(clint);
   // Initial value should be zero.
   clint->Load(kMSip, db, nullptr, nullptr);
@@ -110,8 +110,8 @@ TEST_F(RiscVClintTest, MSip) {
 
 // Test reads/writes to mtimecmp.
 TEST_F(RiscVClintTest, MTimeCmp) {
-  auto *db = state_->db_factory()->Allocate<uint32_t>(1);
-  auto *clint = new RiscVClint(/*period=*/100, state_->mip());
+  auto* db = state_->db_factory()->Allocate<uint32_t>(1);
+  auto* clint = new RiscVClint(/*period=*/100, state_->mip());
   cycle_counter_.AddListener(clint);
 
   // Verify value of mtimecmp.
@@ -180,7 +180,7 @@ TEST_F(RiscVClintTest, MTimeCmp) {
 
 // Test the reads/writes to mtime.
 TEST_F(RiscVClintTest, MTime) {
-  auto *db = state_->db_factory()->Allocate<uint32_t>(1);
+  auto* db = state_->db_factory()->Allocate<uint32_t>(1);
   auto clint = new RiscVClint(/*period=*/100, state_->mip());
   cycle_counter_.AddListener(clint);
   // Initial value should be zero.

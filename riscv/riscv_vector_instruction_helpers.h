@@ -20,9 +20,10 @@
 #include <functional>
 #include <limits>
 #include <optional>
-#include <type_traits>
+#include <tuple>
 
 #include "absl/log/log.h"
+#include "absl/strings/str_cat.h"
 #include "mpact/sim/generic/instruction.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
@@ -41,23 +42,23 @@ using ::mpact::sim::generic::GetInstructionSource;
 // Note that this function will modify masked bits no matter what the mask
 // value is.
 template <typename Vs2, typename Vs1>
-void RiscVSetMaskBinaryVectorMaskOp(RiscVVectorState *rv_vector,
-                                    const Instruction *inst,
+void RiscVSetMaskBinaryVectorMaskOp(RiscVVectorState* rv_vector,
+                                    const Instruction* inst,
                                     std::function<bool(Vs2, Vs1, bool)> op) {
   if (rv_vector->vector_exception()) return;
-  auto *dest_op =
-      static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+  auto* dest_op =
+      static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
   // Get the vector start element index and compute where to start
   // the operation.
   const int num_elements = rv_vector->vector_length();
   const int vector_index = rv_vector->vstart();
   // Allocate data buffer for the new register data.
-  auto *dest_db = dest_op->CopyDataBuffer();
+  auto* dest_db = dest_op->CopyDataBuffer();
   auto dest_span = dest_db->Get<uint8_t>();
   // Determine if it's vector-vector or vector-scalar.
   const bool vector_scalar = inst->Source(1)->shape()[0] == 1;
   // Get the vector mask.
-  auto *mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(2));
+  auto* mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(2));
   bool vm_unmasked_bit = false;
   if (inst->SourcesSize() > 3) {
     vm_unmasked_bit = GetInstructionSource<bool>(inst, 3);
@@ -87,23 +88,23 @@ void RiscVSetMaskBinaryVectorMaskOp(RiscVVectorState *rv_vector,
 // mask and uses the mask value in the instruction, such as carry generation
 // from add with carry.
 template <typename Vs2, typename Vs1>
-void RiscVMaskBinaryVectorMaskOp(RiscVVectorState *rv_vector,
-                                 const Instruction *inst,
+void RiscVMaskBinaryVectorMaskOp(RiscVVectorState* rv_vector,
+                                 const Instruction* inst,
                                  std::function<bool(Vs2, Vs1, bool)> op) {
   if (rv_vector->vector_exception()) return;
-  auto *dest_op =
-      static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+  auto* dest_op =
+      static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
   // Get the vector start element index and compute where to start
   // the operation.
   int num_elements = rv_vector->vector_length();
   int vector_index = rv_vector->vstart();
   // Allocate data buffer for the new register data.
-  auto *dest_db = dest_op->CopyDataBuffer();
+  auto* dest_db = dest_op->CopyDataBuffer();
   auto dest_span = dest_db->Get<uint8_t>();
   // Determine if it's vector-vector or vector-scalar.
   bool vector_scalar = inst->Source(1)->shape()[0] == 1;
   // Get the vector mask.
-  auto *mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(2));
+  auto* mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(2));
   bool vm_unmasked_bit = false;
   if (inst->SourcesSize() > 3) {
     vm_unmasked_bit = GetInstructionSource<bool>(inst, 3);
@@ -136,8 +137,8 @@ void RiscVMaskBinaryVectorMaskOp(RiscVVectorState *rv_vector,
 // This helper function handles the case of vector mask
 // operations.
 template <typename Vs2, typename Vs1>
-void RiscVBinaryVectorMaskOp(RiscVVectorState *rv_vector,
-                             const Instruction *inst,
+void RiscVBinaryVectorMaskOp(RiscVVectorState* rv_vector,
+                             const Instruction* inst,
                              std::function<bool(Vs2, Vs1)> op) {
   RiscVMaskBinaryVectorMaskOp<Vs2, Vs1>(
       rv_vector, inst, [op](Vs2 vs2, Vs1 vs1, bool mask_value) -> bool {
@@ -152,16 +153,16 @@ void RiscVBinaryVectorMaskOp(RiscVVectorState *rv_vector,
 // operations. It implements all the checking necessary for both widening and
 // narrowing operations.
 template <typename Vd>
-void RiscVMaskNullaryVectorOp(RiscVVectorState *rv_vector,
-                              const Instruction *inst,
+void RiscVMaskNullaryVectorOp(RiscVVectorState* rv_vector,
+                              const Instruction* inst,
                               std::function<Vd(bool)> op) {
   if (rv_vector->vector_exception()) return;
   int num_elements = rv_vector->vector_length();
   int elements_per_vector =
       rv_vector->vector_register_byte_length() / sizeof(Vd);
   int max_regs = (num_elements + elements_per_vector - 1) / elements_per_vector;
-  auto *dest_op =
-      static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+  auto* dest_op =
+      static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
   // Verify that there are enough registers in the destination operand.
   if (dest_op->size() < max_regs) {
     rv_vector->set_vector_exception();
@@ -173,13 +174,13 @@ void RiscVMaskNullaryVectorOp(RiscVVectorState *rv_vector,
   // There 2 types of instruction with different number of source operands.
   // 1. inst vd, vs2, vmask (viota instruction)
   // 2. inst vd, vmask (vid instruction)
-  RV32VectorSourceOperand *vs2_op = nullptr;
-  RV32VectorSourceOperand *mask_op = nullptr;
+  RV32VectorSourceOperand* vs2_op = nullptr;
+  RV32VectorSourceOperand* mask_op = nullptr;
   if (inst->SourcesSize() > 1) {
-    vs2_op = static_cast<RV32VectorSourceOperand *>(inst->Source(0));
-    mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(1));
+    vs2_op = static_cast<RV32VectorSourceOperand*>(inst->Source(0));
+    mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(1));
   } else {
-    mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(0));
+    mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(0));
   }
   auto mask_span = mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
   // Get the vector start element index and compute where to start
@@ -191,7 +192,7 @@ void RiscVMaskNullaryVectorOp(RiscVVectorState *rv_vector,
   for (int reg = start_reg; (reg < max_regs) && (vector_index < num_elements);
        reg++) {
     // Allocate data buffer for the new register data.
-    auto *dest_db = dest_op->CopyDataBuffer(reg);
+    auto* dest_db = dest_op->CopyDataBuffer(reg);
     auto dest_span = dest_db->Get<Vd>();
     // Write data into register subject to masking.
     int element_count = std::min(elements_per_vector, num_elements);
@@ -228,7 +229,7 @@ void RiscVMaskNullaryVectorOp(RiscVVectorState *rv_vector,
 // operations. It implements all the checking necessary for both widening and
 // narrowing operations.
 template <typename Vd, typename Vs2>
-void RiscVUnaryVectorOp(RiscVVectorState *rv_vector, const Instruction *inst,
+void RiscVUnaryVectorOp(RiscVVectorState* rv_vector, const Instruction* inst,
                         std::function<Vd(Vs2)> op) {
   if (rv_vector->vector_exception()) return;
   int num_elements = rv_vector->vector_length();
@@ -249,8 +250,8 @@ void RiscVUnaryVectorOp(RiscVVectorState *rv_vector, const Instruction *inst,
   int elements_per_vector =
       rv_vector->vector_register_byte_length() / sizeof(Vd);
   int max_regs = (num_elements + elements_per_vector - 1) / elements_per_vector;
-  auto *dest_op =
-      static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+  auto* dest_op =
+      static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
   // Verify that there are enough registers in the destination operand.
   if (dest_op->size() < max_regs) {
     rv_vector->set_vector_exception();
@@ -260,7 +261,7 @@ void RiscVUnaryVectorOp(RiscVVectorState *rv_vector, const Instruction *inst,
     return;
   }
   // Get the vector mask.
-  auto *mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(1));
+  auto* mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(1));
   auto mask_span = mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
   // Get the vector start element index and compute where to start
   // the operation.
@@ -271,7 +272,7 @@ void RiscVUnaryVectorOp(RiscVVectorState *rv_vector, const Instruction *inst,
   for (int reg = start_reg; (reg < max_regs) && (vector_index < num_elements);
        reg++) {
     // Allocate data buffer for the new register data.
-    auto *dest_db = dest_op->CopyDataBuffer(reg);
+    auto* dest_db = dest_op->CopyDataBuffer(reg);
     auto dest_span = dest_db->Get<Vd>();
     // Write data into register subject to masking.
     int element_count = std::min(elements_per_vector, num_elements);
@@ -300,7 +301,7 @@ void RiscVUnaryVectorOp(RiscVVectorState *rv_vector, const Instruction *inst,
 // narrowing operations.
 template <typename Vd, typename Vs2>
 void RiscVUnaryVectorOpWithFflags(
-    RiscVVectorState *rv_vector, const Instruction *inst,
+    RiscVVectorState* rv_vector, const Instruction* inst,
     std::function<std::tuple<Vd, uint32_t>(Vs2)> op) {
   if (rv_vector->vector_exception()) return;
   int num_elements = rv_vector->vector_length();
@@ -321,8 +322,8 @@ void RiscVUnaryVectorOpWithFflags(
   int elements_per_vector =
       rv_vector->vector_register_byte_length() / sizeof(Vd);
   int max_regs = (num_elements + elements_per_vector - 1) / elements_per_vector;
-  auto *dest_op =
-      static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+  auto* dest_op =
+      static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
   // Verify that there are enough registers in the destination operand.
   if (dest_op->size() < max_regs) {
     rv_vector->set_vector_exception();
@@ -332,7 +333,7 @@ void RiscVUnaryVectorOpWithFflags(
     return;
   }
   // Get the vector mask.
-  auto *mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(1));
+  auto* mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(1));
   auto mask_span = mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
   // Get the vector start element index and compute where to start
   // the operation.
@@ -344,7 +345,7 @@ void RiscVUnaryVectorOpWithFflags(
   for (int reg = start_reg; (reg < max_regs) && (vector_index < num_elements);
        reg++) {
     // Allocate data buffer for the new register data.
-    auto *dest_db = dest_op->CopyDataBuffer(reg);
+    auto* dest_db = dest_op->CopyDataBuffer(reg);
     auto dest_span = dest_db->Get<Vd>();
     // Write data into register subject to masking.
     int element_count = std::min(elements_per_vector, num_elements);
@@ -367,7 +368,7 @@ void RiscVUnaryVectorOpWithFflags(
     dest_db->Submit();
     item_index = 0;
   }
-  auto *flag_db = inst->Destination(1)->AllocateDataBuffer();
+  auto* flag_db = inst->Destination(1)->AllocateDataBuffer();
   flag_db->Set<uint32_t>(0, fflags);
   flag_db->Submit();
   rv_vector->clear_vstart();
@@ -378,7 +379,7 @@ void RiscVUnaryVectorOpWithFflags(
 // narrowing operations.
 template <typename Vd, typename Vs2, typename Vs1>
 void RiscVMaskBinaryVectorOp(
-    RiscVVectorState *rv_vector, const Instruction *inst,
+    RiscVVectorState* rv_vector, const Instruction* inst,
     std::function<std::optional<Vd>(Vs2, Vs1, bool)> op) {
   if (rv_vector->vector_exception()) return;
   int num_elements = rv_vector->vector_length();
@@ -400,8 +401,8 @@ void RiscVMaskBinaryVectorOp(
   int elements_per_vector =
       rv_vector->vector_register_byte_length() / sizeof(Vd);
   int max_regs = (num_elements + elements_per_vector - 1) / elements_per_vector;
-  auto *dest_op =
-      static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+  auto* dest_op =
+      static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
   // Verify that there are enough registers in the destination operand.
   if (dest_op->size() < max_regs) {
     rv_vector->set_vector_exception();
@@ -411,7 +412,7 @@ void RiscVMaskBinaryVectorOp(
     return;
   }
   // Get the vector mask.
-  auto *mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(2));
+  auto* mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(2));
   auto mask_span = mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
   // Get the vector start element index and compute where to start
   // the operation.
@@ -425,7 +426,7 @@ void RiscVMaskBinaryVectorOp(
   for (int reg = start_reg;
        !exception && (reg < max_regs) && (vector_index < num_elements); reg++) {
     // Allocate data buffer for the new register data.
-    auto *dest_db = dest_op->CopyDataBuffer(reg);
+    auto* dest_db = dest_op->CopyDataBuffer(reg);
     auto dest_span = dest_db->Get<Vd>();
     // Write data into register subject to masking.
     int element_count = std::min(elements_per_vector, num_elements);
@@ -464,7 +465,7 @@ void RiscVMaskBinaryVectorOp(
 // operations. It implements all the checking necessary for both widening and
 // narrowing operations.
 template <typename Vd, typename Vs2, typename Vs1>
-void RiscVBinaryVectorOp(RiscVVectorState *rv_vector, const Instruction *inst,
+void RiscVBinaryVectorOp(RiscVVectorState* rv_vector, const Instruction* inst,
                          std::function<Vd(Vs2, Vs1)> op) {
   RiscVMaskBinaryVectorOp<Vd, Vs2, Vs1>(
       rv_vector, inst,
@@ -478,7 +479,7 @@ void RiscVBinaryVectorOp(RiscVVectorState *rv_vector, const Instruction *inst,
 
 template <typename Vd, typename Vs2, typename Vs1>
 void RiscVBinaryVectorOpWithFflags(
-    RiscVVectorState *rv_vector, const Instruction *inst,
+    RiscVVectorState* rv_vector, const Instruction* inst,
     std::function<std::tuple<Vd, uint32_t>(Vs2, Vs1)> op) {
   if (rv_vector->vector_exception()) return;
   int num_elements = rv_vector->vector_length();
@@ -500,8 +501,8 @@ void RiscVBinaryVectorOpWithFflags(
   int elements_per_vector =
       rv_vector->vector_register_byte_length() / sizeof(Vd);
   int max_regs = (num_elements + elements_per_vector - 1) / elements_per_vector;
-  auto *dest_op =
-      static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+  auto* dest_op =
+      static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
   // Verify that there are enough registers in the destination operand.
   if (dest_op->size() < max_regs) {
     rv_vector->set_vector_exception();
@@ -511,7 +512,7 @@ void RiscVBinaryVectorOpWithFflags(
     return;
   }
   // Get the vector mask.
-  auto *mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(2));
+  auto* mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(2));
   auto mask_span = mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
   // Get the vector start element index and compute where to start
   // the operation.
@@ -526,7 +527,7 @@ void RiscVBinaryVectorOpWithFflags(
   for (int reg = start_reg;
        !exception && (reg < max_regs) && (vector_index < num_elements); reg++) {
     // Allocate data buffer for the new register data.
-    auto *dest_db = dest_op->CopyDataBuffer(reg);
+    auto* dest_db = dest_op->CopyDataBuffer(reg);
     auto dest_span = dest_db->Get<Vd>();
     // Write data into register subject to masking.
     int element_count = std::min(elements_per_vector, num_elements);
@@ -556,7 +557,7 @@ void RiscVBinaryVectorOpWithFflags(
     dest_db->Submit();
     item_index = 0;
   }
-  auto *flag_db = inst->Destination(1)->AllocateDataBuffer();
+  auto* flag_db = inst->Destination(1)->AllocateDataBuffer();
   flag_db->Set<uint32_t>(0, fflags);
   flag_db->Submit();
   rv_vector->clear_vstart();
@@ -566,7 +567,7 @@ void RiscVBinaryVectorOpWithFflags(
 // implements all the checking necessary for both widening and narrowing
 // operations.
 template <typename Vd, typename Vs2, typename Vs1>
-void RiscVTernaryVectorOp(RiscVVectorState *rv_vector, const Instruction *inst,
+void RiscVTernaryVectorOp(RiscVVectorState* rv_vector, const Instruction* inst,
                           std::function<Vd(Vs2, Vs1, Vd)> op) {
   if (rv_vector->vector_exception()) return;
   int num_elements = rv_vector->vector_length();
@@ -588,8 +589,8 @@ void RiscVTernaryVectorOp(RiscVVectorState *rv_vector, const Instruction *inst,
   int elements_per_vector =
       rv_vector->vector_register_byte_length() / sizeof(Vd);
   int max_regs = (num_elements + elements_per_vector - 1) / elements_per_vector;
-  auto *dest_op =
-      static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+  auto* dest_op =
+      static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
   // Verify that there are enough registers in the destination operand.
   if (dest_op->size() < max_regs) {
     rv_vector->set_vector_exception();
@@ -599,7 +600,7 @@ void RiscVTernaryVectorOp(RiscVVectorState *rv_vector, const Instruction *inst,
     return;
   }
   // Get the vector mask.
-  auto *mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(3));
+  auto* mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(3));
   auto mask_span = mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
   // Get the vector start element index and compute where to start
   // the operation.
@@ -612,7 +613,7 @@ void RiscVTernaryVectorOp(RiscVVectorState *rv_vector, const Instruction *inst,
   for (int reg = start_reg; (reg < max_regs) && (vector_index < num_elements);
        reg++) {
     // Allocate data buffer for the new register data.
-    auto *dest_db = dest_op->CopyDataBuffer(reg);
+    auto* dest_db = dest_op->CopyDataBuffer(reg);
     auto dest_span = dest_db->Get<Vd>();
     // Write data into register subject to masking.
     int element_count = std::min(elements_per_vector, num_elements);
@@ -643,8 +644,8 @@ void RiscVTernaryVectorOp(RiscVVectorState *rv_vector, const Instruction *inst,
 // masking) from Vs2 and apply the reduction operation to produce a single
 // element that is written to Vd[0].
 template <typename Vd, typename Vs2, typename Vs1>
-void RiscVBinaryReductionVectorOp(RiscVVectorState *rv_vector,
-                                  const Instruction *inst,
+void RiscVBinaryReductionVectorOp(RiscVVectorState* rv_vector,
+                                  const Instruction* inst,
                                   std::function<Vd(Vd, Vs2)> op) {
   if (rv_vector->vector_exception()) return;
   if (rv_vector->vstart()) {
@@ -668,7 +669,7 @@ void RiscVBinaryReductionVectorOp(RiscVVectorState *rv_vector,
   }
   int num_elements = rv_vector->vector_length();
   // Get the vector mask.
-  auto *mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(2));
+  auto* mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(2));
   auto mask_span = mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
   Vd accumulator =
       static_cast<Vd>(generic::GetInstructionSource<Vs1>(inst, 1, 0));
@@ -681,8 +682,8 @@ void RiscVBinaryReductionVectorOp(RiscVVectorState *rv_vector,
           op(accumulator, generic::GetInstructionSource<Vs2>(inst, 0, i));
     }
   }
-  auto *dest_op =
-      static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+  auto* dest_op =
+      static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
   auto dest_db = dest_op->CopyDataBuffer();
   dest_db->Set<Vd>(0, accumulator);
   dest_db->Submit();
@@ -722,7 +723,7 @@ T GetRoundingBit(int rounding_mode, T rounding_bits, int size) {
 }
 
 template <typename T>
-T RoundOff(RiscVVectorState *rv_vector, T value, int size) {
+T RoundOff(RiscVVectorState* rv_vector, T value, int size) {
   auto rm = rv_vector->vxrm();
   auto ret = (value >> size) + GetRoundingBit<T>(rm, value, size + 1);
   return ret;

@@ -21,8 +21,8 @@ namespace mpact {
 namespace sim {
 namespace riscv {
 
-void RiscVZFencei(Instruction *instruction) {
-  auto *state = static_cast<RiscVState *>(instruction->state());
+void RiscVZFencei(Instruction* instruction) {
+  auto* state = static_cast<RiscVState*>(instruction->state());
   state->FenceI(instruction);
 }
 

@@ -2042,8 +2042,8 @@ TEST_F(RiscVVectorInstructionsTest, Vmerge64VX) {
 }
 
 // This wrapper function factors out the main body of the Vmvr test.
-void VmvrWrapper(int num_reg, RiscVVectorInstructionsTest *tester,
-                 Instruction *inst) {
+void VmvrWrapper(int num_reg, RiscVVectorInstructionsTest* tester,
+                 Instruction* inst) {
   tester->SetSemanticFunction(absl::bind_front(&Vmvr, num_reg));
   // Number of elements per vector register.
   constexpr int vs2_size = kVectorLengthInBytes / sizeof(uint64_t);
@@ -2093,7 +2093,7 @@ TEST_F(RiscVVectorInstructionsTest, Vmvr8) {
 
 // Templated helper functions for Vssr testing.
 template <typename T>
-T VssrHelper(RiscVVectorInstructionsTest *tester, T vs2, T vs1,
+T VssrHelper(RiscVVectorInstructionsTest* tester, T vs2, T vs1,
              int rounding_mode) {
   using UT = typename MakeUnsigned<T>::type;
   int max_shift = (sizeof(T) << 3) - 1;
@@ -2111,8 +2111,8 @@ T VssrHelper(RiscVVectorInstructionsTest *tester, T vs2, T vs1,
 // These wrapper functions simplify the test bodies, and make it a little
 // easier to avoid errors due to type and sew specifications.
 template <typename T>
-void VssrVVWrapper(absl::string_view base_name, Instruction *inst,
-                   RiscVVectorInstructionsTest *tester) {
+void VssrVVWrapper(absl::string_view base_name, Instruction* inst,
+                   RiscVVectorInstructionsTest* tester) {
   // Iterate across rounding modes.
   for (int rm = 0; rm < 4; rm++) {
     tester->rv_vector()->set_vxrm(rm);
@@ -2124,8 +2124,8 @@ void VssrVVWrapper(absl::string_view base_name, Instruction *inst,
   }
 }
 template <typename T>
-void VssrVXWrapper(absl::string_view base_name, Instruction *inst,
-                   RiscVVectorInstructionsTest *tester) {
+void VssrVXWrapper(absl::string_view base_name, Instruction* inst,
+                   RiscVVectorInstructionsTest* tester) {
   // Iterate across rounding modes.
   for (int rm = 0; rm < 4; rm++) {
     tester->rv_vector()->set_vxrm(rm);
@@ -2210,8 +2210,8 @@ TEST_F(RiscVVectorInstructionsTest, Vssra64VX) {
 
 // Templated helper functions for Vnclip/Vnclipu instructions.
 template <typename T, typename WideT>
-T VnclipHelper(RiscVVectorInstructionsTest *tester, WideT vs2, T vs1, int rm,
-               RiscVVectorState *rv_vector) {
+T VnclipHelper(RiscVVectorInstructionsTest* tester, WideT vs2, T vs1, int rm,
+               RiscVVectorState* rv_vector) {
   auto vs1_16 = static_cast<WideT>(vs1);
   auto shifted = VssrHelper<WideT>(tester, vs2, vs1_16, rm);
   if (shifted < std::numeric_limits<T>::min()) {
@@ -2226,8 +2226,8 @@ T VnclipHelper(RiscVVectorInstructionsTest *tester, WideT vs2, T vs1, int rm,
 }
 
 template <typename T>
-void VnclipVVWrapper(absl::string_view base_name, Instruction *inst,
-                     RiscVVectorInstructionsTest *tester) {
+void VnclipVVWrapper(absl::string_view base_name, Instruction* inst,
+                     RiscVVectorInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   for (int rm = 0; rm < 4; rm++) {
     tester->rv_vector()->set_vxrm(rm);
@@ -2239,8 +2239,8 @@ void VnclipVVWrapper(absl::string_view base_name, Instruction *inst,
   }
 }
 template <typename T>
-void VnclipVXWrapper(absl::string_view base_name, Instruction *inst,
-                     RiscVVectorInstructionsTest *tester) {
+void VnclipVXWrapper(absl::string_view base_name, Instruction* inst,
+                     RiscVVectorInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   for (int rm = 0; rm < 4; rm++) {
     tester->rv_vector()->set_vxrm(rm);
@@ -2310,8 +2310,8 @@ TEST_F(RiscVVectorInstructionsTest, Vnclipu32VX) {
 
 // Vector fractional multiply with rounding and saturation.
 template <typename T>
-T VsmulHelper(RiscVVectorInstructionsTest *tester, T vs2, T vs1, int rm,
-              RiscVVectorState *rv_vector) {
+T VsmulHelper(RiscVVectorInstructionsTest* tester, T vs2, T vs1, int rm,
+              RiscVVectorState* rv_vector) {
   using WT = typename WideType<T>::type;
   WT vs2_w = static_cast<WT>(vs2);
   WT vs1_w = static_cast<WT>(vs1);
@@ -2327,8 +2327,8 @@ T VsmulHelper(RiscVVectorInstructionsTest *tester, T vs2, T vs1, int rm,
 }
 
 template <typename T>
-void VsmulVVWrapper(absl::string_view base_name, Instruction *inst,
-                    RiscVVectorInstructionsTest *tester) {
+void VsmulVVWrapper(absl::string_view base_name, Instruction* inst,
+                    RiscVVectorInstructionsTest* tester) {
   for (int rm = 0; rm < 4; rm++) {
     tester->rv_vector()->set_vxrm(rm);
     tester->BinaryOpTestHelperVV<T, T, T>(
@@ -2339,8 +2339,8 @@ void VsmulVVWrapper(absl::string_view base_name, Instruction *inst,
   }
 }
 template <typename T>
-void VsmulVXWrapper(absl::string_view base_name, Instruction *inst,
-                    RiscVVectorInstructionsTest *tester) {
+void VsmulVXWrapper(absl::string_view base_name, Instruction* inst,
+                    RiscVVectorInstructionsTest* tester) {
   for (int rm = 0; rm < 4; rm++) {
     tester->rv_vector()->set_vxrm(rm);
     tester->BinaryOpTestHelperVV<T, T, T>(

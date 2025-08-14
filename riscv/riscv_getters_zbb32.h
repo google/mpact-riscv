@@ -16,7 +16,6 @@
 #define THIRD_PARTY_MPACT_RISCV_RISCV_GETTERS_ZBB32_H_
 
 #include <cstdint>
-#include <new>
 
 #include "mpact/sim/generic/immediate_operand.h"
 #include "mpact/sim/generic/type_helpers.h"
@@ -37,8 +36,8 @@ using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 // types for the instruction set.
 template <typename Enum, typename Extractors, typename IntRegister,
           typename FpRegister>
-void AddRiscVZbb32SourceGetters(SourceOpGetterMap &getter_map,
-                                RiscVEncodingCommon *common) {
+void AddRiscVZbb32SourceGetters(SourceOpGetterMap& getter_map,
+                                RiscVEncodingCommon* common) {
   // Source operand getters.
   Insert(getter_map, *Enum::kRUimm5, [common]() {
     uint32_t uimm = Extractors::RType::ExtractRUimm5(common->inst_word());

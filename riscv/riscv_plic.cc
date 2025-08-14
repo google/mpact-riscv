@@ -33,7 +33,7 @@ RiscVPlic::RiscVPlic(int num_sources, int num_contexts)
   // Initialize the gateway info.
   gateway_info_ = new GatewayInfo[num_sources_];
   // Initialize the context interface.
-  context_if_ = new RiscVPlicIrqInterface *[num_contexts_];
+  context_if_ = new RiscVPlicIrqInterface*[num_contexts_];
   context_irq_ = new bool[num_contexts_];
   for (int i = 0; i < num_contexts_; ++i) {
     context_if_[i] = nullptr;
@@ -47,7 +47,7 @@ RiscVPlic::RiscVPlic(int num_sources, int num_contexts)
   std::memset(interrupt_pending_, 0,
               sizeof(uint32_t) * (num_sources_ / 32 + 1));
   // Initialize the interrupt enabled bits.
-  interrupt_enabled_ = new uint32_t *[num_contexts_];
+  interrupt_enabled_ = new uint32_t*[num_contexts_];
   for (int i = 0; i < num_contexts_; ++i) {
     interrupt_enabled_[i] = new uint32_t[num_sources_ / 32 + 1];
     std::memset(interrupt_enabled_[i], 0,
@@ -149,7 +149,7 @@ void RiscVPlic::SetInterrupt(int source, bool value, bool is_level) {
   // No action for clearing a non-level based interrupt.
   if (!value && !is_level) return;
 
-  auto &info = gateway_info_[source];
+  auto& info = gateway_info_[source];
   if (!info.ready || !value) {
     if (is_level) info.pending = value;
     return;
@@ -197,8 +197,8 @@ void RiscVPlic::SetPlicPendingInterrupt(int source) {
 
 // Implementation of the memory load interface for reading memory mapped
 // registers.
-void RiscVPlic::Load(uint64_t address, DataBuffer *db, Instruction *inst,
-                     ReferenceCount *context) {
+void RiscVPlic::Load(uint64_t address, DataBuffer* db, Instruction* inst,
+                     ReferenceCount* context) {
   uint32_t offset = address & 0xff'ffff;
   switch (db->size<uint8_t>()) {
     case 1:
@@ -237,15 +237,15 @@ void RiscVPlic::Load(uint64_t address, DataBuffer *db, Instruction *inst,
 }
 
 // No support for vector loads.
-void RiscVPlic::Load(DataBuffer *address_db, DataBuffer *mask_db, int el_size,
-                     DataBuffer *db, Instruction *inst,
-                     ReferenceCount *context) {
+void RiscVPlic::Load(DataBuffer* address_db, DataBuffer* mask_db, int el_size,
+                     DataBuffer* db, Instruction* inst,
+                     ReferenceCount* context) {
   LOG(FATAL) << "RiscVPlic does not support vector loads";
 }
 
 // Implementation of memory store interface to support writes to memory mapped
 // registers.
-void RiscVPlic::Store(uint64_t address, DataBuffer *db) {
+void RiscVPlic::Store(uint64_t address, DataBuffer* db) {
   uint32_t offset = address & 0xff'ffff;
   switch (db->size<uint8_t>()) {
     case 1:
@@ -262,13 +262,13 @@ void RiscVPlic::Store(uint64_t address, DataBuffer *db) {
   }
 }
 
-void RiscVPlic::SetContext(int context_no, RiscVPlicIrqInterface *context_if) {
+void RiscVPlic::SetContext(int context_no, RiscVPlicIrqInterface* context_if) {
   context_if_[context_no] = context_if;
 }
 
 // No support for vector stores.
-void RiscVPlic::Store(DataBuffer *address, DataBuffer *mask, int el_size,
-                      DataBuffer *db) {
+void RiscVPlic::Store(DataBuffer* address, DataBuffer* mask, int el_size,
+                      DataBuffer* db) {
   LOG(FATAL) << "RiscVPlic does not support vector stores";
 }
 
@@ -348,7 +348,7 @@ void RiscVPlic::Write(uint32_t offset, uint32_t value) {
     // If the priority is being changed from 0 to non-zero, see if there is a
     // pending level based interrupt, and if so, set the plic pending bit.
     if (prev == 0 && value != 0) {
-      auto &info = gateway_info_[source];
+      auto& info = gateway_info_[source];
       if (info.ready && info.pending) {
         SetPlicPendingInterrupt(source);
       }
@@ -550,7 +550,7 @@ void RiscVPlic::CompleteInterrupt(int context, uint32_t id) {
   // interrupt_claim_complete_ value.
   auto source = interrupt_claim_complete_[context];
   interrupt_claim_complete_[context] = 0;
-  auto &info = gateway_info_[source];
+  auto& info = gateway_info_[source];
   // Check to see if there's a pending level based interrupt w priority > 0.
   if (info.pending && (interrupt_priority_[source] > 0)) {
     // Set the plic pending bit but no need to set the ready bit as this will
@@ -578,7 +578,7 @@ bool RiscVPlic::IsPending(int source) {
   return (interrupt_pending_[word] & (1 << bit)) != 0;
 }
 
-RiscVPlicSourceInterface::RiscVPlicSourceInterface(RiscVPlic *plic, int source,
+RiscVPlicSourceInterface::RiscVPlicSourceInterface(RiscVPlic* plic, int source,
                                                    bool is_level)
     : plic_(plic), source_(source), is_level_(is_level) {}
 

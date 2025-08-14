@@ -104,9 +104,9 @@ struct CsrInfo<uint64_t> {
 // This creates the CSR and assigns it to a pointer in the state object. Type
 // can be inferred from the state object pointer.
 template <typename T, typename... Ps>
-T *CreateCsr(RiscVState *state, T *&ptr,
-             std::vector<RiscVCsrInterface *> &csr_vec, Ps... pargs) {
-  auto *csr = new T(pargs...);
+T* CreateCsr(RiscVState* state, T*& ptr,
+             std::vector<RiscVCsrInterface*>& csr_vec, Ps... pargs) {
+  auto* csr = new T(pargs...);
   auto result = state->csr_set()->AddCsr(csr);
   if (!result.ok()) {
     LOG(ERROR) << absl::StrCat("Failed to add csr '", csr->name(),
@@ -123,9 +123,9 @@ T *CreateCsr(RiscVState *state, T *&ptr,
 // that pointer is of abstract type, so the CSR type cannot be inferred, but
 // has to be specified in the call.
 template <typename T, typename... Ps>
-T *CreateCsr(RiscVState *state, RiscVCsrInterface *&ptr,
-             std::vector<RiscVCsrInterface *> &csr_vec, Ps... pargs) {
-  auto *csr = new T(pargs...);
+T* CreateCsr(RiscVState* state, RiscVCsrInterface*& ptr,
+             std::vector<RiscVCsrInterface*>& csr_vec, Ps... pargs) {
+  auto* csr = new T(pargs...);
   auto result = state->csr_set()->AddCsr(csr);
   if (!result.ok()) {
     LOG(ERROR) << absl::StrCat("Failed to add csr '", csr->name(),
@@ -142,9 +142,9 @@ T *CreateCsr(RiscVState *state, RiscVCsrInterface *&ptr,
 // object. That means the type cannot be inferred, but has to be specified
 // in the call.
 template <typename T, typename... Ps>
-T *CreateCsr(RiscVState *state, std::vector<RiscVCsrInterface *> &csr_vec,
+T* CreateCsr(RiscVState* state, std::vector<RiscVCsrInterface*>& csr_vec,
              Ps... pargs) {
-  auto *csr = new T(pargs...);
+  auto* csr = new T(pargs...);
   auto result = state->csr_set()->AddCsr(csr);
   if (!result.ok()) {
     LOG(ERROR) << absl::StrCat("Failed to add csr '", csr->name(),
@@ -159,7 +159,7 @@ T *CreateCsr(RiscVState *state, std::vector<RiscVCsrInterface *> &csr_vec,
 // Templated helper function that is used to create the set of CSRs needed
 // for simulation.
 template <typename T>
-void CreateCsrs(RiscVState *state, std::vector<RiscVCsrInterface *> &csr_vec) {
+void CreateCsrs(RiscVState* state, std::vector<RiscVCsrInterface*>& csr_vec) {
   absl::Status result;
   // Create CSRs.
 
@@ -169,7 +169,7 @@ void CreateCsrs(RiscVState *state, std::vector<RiscVCsrInterface *> &csr_vec) {
            nullptr);
 
   // misa
-  auto *misa = CreateCsr(state, state->misa_, csr_vec,
+  auto* misa = CreateCsr(state, state->misa_, csr_vec,
                          CsrInfo<T>::kMisaInitialValue, state);
   CHECK_NE(misa, nullptr);
   // mtvec
@@ -184,11 +184,11 @@ void CreateCsrs(RiscVState *state, std::vector<RiscVCsrInterface *> &csr_vec) {
 
   // Mip and Mie are always 32 bit.
   // mip
-  auto *mip = CreateCsr(state, state->mip_, csr_vec, 0, state);
+  auto* mip = CreateCsr(state, state->mip_, csr_vec, 0, state);
   CHECK_NE(mip, nullptr);
 
   // mie
-  auto *mie = CreateCsr(state, state->mie_, csr_vec, 0, state);
+  auto* mie = CreateCsr(state, state->mie_, csr_vec, 0, state);
   CHECK_NE(mie, nullptr);
 
   // mhartid
@@ -215,13 +215,13 @@ void CreateCsrs(RiscVState *state, std::vector<RiscVCsrInterface *> &csr_vec) {
            nullptr);
 
   // mideleg - machine mode interrupt delegation register.
-  auto *mideleg = CreateCsr<RiscVSimpleCsr<T>>(
+  auto* mideleg = CreateCsr<RiscVSimpleCsr<T>>(
       state, state->mideleg_, csr_vec, "mideleg", RiscVCsrEnum::kMIDeleg, 0,
       CsrInfo<T>::kMIdelegRMask, CsrInfo<T>::kMIdelegWMask, state);
   CHECK_NE(mideleg, nullptr);
 
   // mstatus
-  auto *mstatus =
+  auto* mstatus =
       CreateCsr(state, state->mstatus_, csr_vec,
                 CsrInfo<uint64_t>::kMstatusInitialValue, state, misa);
   CHECK_NE(mstatus, nullptr);
@@ -231,25 +231,25 @@ void CreateCsrs(RiscVState *state, std::vector<RiscVCsrInterface *> &csr_vec) {
            nullptr);
 
   // minstret/minstreth
-  auto *minstret = CreateCsr<RiscVCounterCsr<T, RiscVState>>(
+  auto* minstret = CreateCsr<RiscVCounterCsr<T, RiscVState>>(
       state, csr_vec, "minstret", RiscVCsrEnum ::kMInstret, state);
   CHECK_NE(minstret, nullptr);
   if (sizeof(T) == sizeof(uint32_t)) {
-    CHECK_NE(CreateCsr<RiscVCounterCsrHigh<RiscVState>>(
-                 state, csr_vec, "minstreth", RiscVCsrEnum::kMInstretH, state,
-                 reinterpret_cast<RiscVCounterCsr<uint32_t, RiscVState> *>(
-                     minstret)),
-             nullptr);
+    CHECK_NE(
+        CreateCsr<RiscVCounterCsrHigh<RiscVState>>(
+            state, csr_vec, "minstreth", RiscVCsrEnum::kMInstretH, state,
+            reinterpret_cast<RiscVCounterCsr<uint32_t, RiscVState>*>(minstret)),
+        nullptr);
   }
   // mcycle/mcycleh
-  auto *mcycle = CreateCsr<RiscVCounterCsr<T, RiscVState>>(
+  auto* mcycle = CreateCsr<RiscVCounterCsr<T, RiscVState>>(
       state, csr_vec, "mcycle", RiscVCsrEnum::kMCycle, state);
   CHECK_NE(mcycle, nullptr);
   if (sizeof(T) == sizeof(uint32_t)) {
     CHECK_NE(
         CreateCsr<RiscVCounterCsrHigh<RiscVState>>(
             state, csr_vec, "mcycleh", RiscVCsrEnum::kMCycleH, state,
-            reinterpret_cast<RiscVCounterCsr<uint32_t, RiscVState> *>(mcycle)),
+            reinterpret_cast<RiscVCounterCsr<uint32_t, RiscVState>*>(mcycle)),
         nullptr);
   }
 
@@ -329,7 +329,7 @@ void CreateCsrs(RiscVState *state, std::vector<RiscVCsrInterface *> &csr_vec) {
   state->pmp_->CreatePmpCsrs<T, RiscVCsrEnum>(state->csr_set());
 
   // Jump base vector and control register (for Zcmt instructions).
-  auto *jvt_csr = CreateCsr<RiscVJvtCsr<T>>(state, state->jvt_, csr_vec, "jvt",
+  auto* jvt_csr = CreateCsr<RiscVJvtCsr<T>>(state, state->jvt_, csr_vec, "jvt",
                                             RiscVCsrEnum::kJvt, 0, state);
   CHECK_NE(jvt_csr, nullptr);
   state->jvt_ = jvt_csr;
@@ -348,8 +348,8 @@ constexpr uint64_t kRiscv32MaxMemorySize = 0x3f'ffff'ffffULL;
 constexpr uint64_t kRiscv64MaxMemorySize = 0x00ff'ffff'ffff'ffffULL;
 
 RiscVState::RiscVState(absl::string_view id, RiscVXlen xlen,
-                       util::MemoryInterface *memory,
-                       util::AtomicMemoryOpInterface *atomic_memory)
+                       util::MemoryInterface* memory,
+                       util::AtomicMemoryOpInterface* atomic_memory)
     : ArchState(id),
       xlen_(xlen),
       memory_(memory),
@@ -359,10 +359,10 @@ RiscVState::RiscVState(absl::string_view id, RiscVXlen xlen,
       counter_interrupt_returns_("interrupt_returns", 0) {
   CHECK_OK(AddCounter(&counter_interrupt_returns_));
   CHECK_OK(AddCounter(&counter_interrupts_taken_));
-  DataBuffer *db = nullptr;
+  DataBuffer* db = nullptr;
   switch (xlen_) {
     case RiscVXlen::RV32: {
-      auto *pc32 = GetRegister<RV32Register>(kPcName).first;
+      auto* pc32 = GetRegister<RV32Register>(kPcName).first;
       pc_src_operand_ = pc32->CreateSourceOperand();
       pc_dst_operand_ = pc32->CreateDestinationOperand(0);
       pc_ = pc32;
@@ -373,7 +373,7 @@ RiscVState::RiscVState(absl::string_view id, RiscVXlen xlen,
       break;
     }
     case RiscVXlen::RV64: {
-      auto *pc64 = GetRegister<RV64Register>(kPcName).first;
+      auto* pc64 = GetRegister<RV64Register>(kPcName).first;
       pc_src_operand_ = pc64->CreateSourceOperand();
       pc_dst_operand_ = pc64->CreateDestinationOperand(0);
       pc_ = pc64;
@@ -399,7 +399,7 @@ RiscVState::RiscVState(absl::string_view id, RiscVXlen xlen,
     LOG(ERROR) << "Failed to get misa register";
     return;
   }
-  auto *misa = result.value();
+  auto* misa = result.value();
   auto misa_value = misa->AsUint32();
   if (misa_value & *IsaExtension::kSinglePrecisionFp) {
     flen_ = 32;
@@ -417,7 +417,7 @@ RiscVState::~RiscVState() {
   delete pc_dst_operand_;
   delete csr_set_;
   delete pmp_;
-  for (auto *csr : csr_vec_) {
+  for (auto* csr : csr_vec_) {
     delete csr;
   }
   csr_vec_.clear();
@@ -438,9 +438,9 @@ void RiscVState::set_max_physical_address(uint64_t max_physical_address) {
   }
 }
 
-void RiscVState::LoadMemory(const Instruction *inst, uint64_t address,
-                            DataBuffer *db, Instruction *child_inst,
-                            ReferenceCount *context) {
+void RiscVState::LoadMemory(const Instruction* inst, uint64_t address,
+                            DataBuffer* db, Instruction* child_inst,
+                            ReferenceCount* context) {
   if (address > max_physical_address_) {
     Trap(/*is_interrupt*/ false, address, *ExceptionCode::kLoadAccessFault,
          inst->address(), inst);
@@ -449,9 +449,9 @@ void RiscVState::LoadMemory(const Instruction *inst, uint64_t address,
   memory_->Load(address, db, child_inst, context);
 }
 
-void RiscVState::LoadMemory(const Instruction *inst, DataBuffer *address_db,
-                            DataBuffer *mask_db, int el_size, DataBuffer *db,
-                            Instruction *child_inst, ReferenceCount *context) {
+void RiscVState::LoadMemory(const Instruction* inst, DataBuffer* address_db,
+                            DataBuffer* mask_db, int el_size, DataBuffer* db,
+                            Instruction* child_inst, ReferenceCount* context) {
   for (auto address : address_db->Get<uint64_t>()) {
     if (address > max_physical_address_) {
       Trap(/*is_interrupt*/ false, address, *ExceptionCode::kLoadAccessFault,
@@ -462,8 +462,8 @@ void RiscVState::LoadMemory(const Instruction *inst, DataBuffer *address_db,
   memory_->Load(address_db, mask_db, el_size, db, child_inst, context);
 }
 
-void RiscVState::StoreMemory(const Instruction *inst, uint64_t address,
-                             DataBuffer *db) {
+void RiscVState::StoreMemory(const Instruction* inst, uint64_t address,
+                             DataBuffer* db) {
   if (address > max_physical_address_) {
     Trap(/*is_interrupt*/ false, address, *ExceptionCode::kStoreAccessFault,
          inst->address(), inst);
@@ -472,8 +472,8 @@ void RiscVState::StoreMemory(const Instruction *inst, uint64_t address,
   memory_->Store(address, db);
 }
 
-void RiscVState::StoreMemory(const Instruction *inst, DataBuffer *address_db,
-                             DataBuffer *mask_db, int el_size, DataBuffer *db) {
+void RiscVState::StoreMemory(const Instruction* inst, DataBuffer* address_db,
+                             DataBuffer* mask_db, int el_size, DataBuffer* db) {
   for (auto address : address_db->Get<uint64_t>()) {
     if (address > max_physical_address_) {
       Trap(/*is_interrupt*/ false, address, *ExceptionCode::kStoreAccessFault,
@@ -484,16 +484,16 @@ void RiscVState::StoreMemory(const Instruction *inst, DataBuffer *address_db,
   memory_->Store(address_db, mask_db, el_size, db);
 }
 
-void RiscVState::Fence(const Instruction *inst, int fm, int predecessor,
+void RiscVState::Fence(const Instruction* inst, int fm, int predecessor,
                        int successor) {
   // TODO: Add fence operation once operations have non-zero latency.
 }
 
-void RiscVState::FenceI(const Instruction *inst) {
+void RiscVState::FenceI(const Instruction* inst) {
   // TODO: Add instruction fence operation when needed.
 }
 
-void RiscVState::ECall(const Instruction *inst) {
+void RiscVState::ECall(const Instruction* inst) {
   if (on_ecall_ != nullptr) {
     auto res = on_ecall_(inst);
     if (res) return;
@@ -523,8 +523,8 @@ void RiscVState::ECall(const Instruction *inst) {
   Trap(/*is_interrupt*/ false, 0, *code, epc, inst);
 }
 
-void RiscVState::EBreak(const Instruction *inst) {
-  for (auto &handler : on_ebreak_) {
+void RiscVState::EBreak(const Instruction* inst) {
+  for (auto& handler : on_ebreak_) {
     bool res = handler(inst);
     if (res) return;
   }
@@ -534,7 +534,7 @@ void RiscVState::EBreak(const Instruction *inst) {
   Trap(/*is_interrupt=*/false, 0, 3, epc, inst);
 }
 
-void RiscVState::WFI(const Instruction *inst) {
+void RiscVState::WFI(const Instruction* inst) {
   if (on_wfi_ != nullptr) {
     bool res = on_wfi_(inst);
     if (res) return;
@@ -547,7 +547,7 @@ void RiscVState::WFI(const Instruction *inst) {
   LOG(INFO) << "No handler for wfi: treating as nop: " << where;
 }
 
-void RiscVState::Cease(const Instruction *inst) {
+void RiscVState::Cease(const Instruction* inst) {
   if (on_cease_ != nullptr) {
     const bool res = on_cease_(inst);
     if (res) return;
@@ -555,7 +555,7 @@ void RiscVState::Cease(const Instruction *inst) {
 
   // If no handler is specified, then CEASE is treated as an infinite loop.
   auto current_xlen = xlen();
-  auto *db = pc_dst_operand_->AllocateDataBuffer();
+  auto* db = pc_dst_operand_->AllocateDataBuffer();
   if (current_xlen == RiscVXlen::RV32) {
     db->SetSubmit<uint32_t>(0, static_cast<uint32_t>(inst->address()));
     set_branch(true);
@@ -575,7 +575,7 @@ void RiscVState::Cease(const Instruction *inst) {
 
 void RiscVState::Trap(bool is_interrupt, uint64_t trap_value,
                       uint64_t exception_code, uint64_t epc,
-                      const Instruction *inst) {
+                      const Instruction* inst) {
   if (on_trap_ != nullptr) {
     bool res = on_trap_(is_interrupt, trap_value, exception_code, epc, inst);
     if (res) return;
@@ -615,9 +615,9 @@ void RiscVState::Trap(bool is_interrupt, uint64_t trap_value,
 
   // Based on the destination privilege mode, select the CSRs that will be
   // used.
-  RiscVCsrInterface *epc_csr = nullptr;
-  RiscVCsrInterface *cause_csr = nullptr;
-  RiscVCsrInterface *tvec_csr = nullptr;
+  RiscVCsrInterface* epc_csr = nullptr;
+  RiscVCsrInterface* cause_csr = nullptr;
+  RiscVCsrInterface* tvec_csr = nullptr;
   if (destination_mode == PrivilegeMode::kMachine) {
     epc_csr = mepc_;
     cause_csr = mcause_;
@@ -677,7 +677,7 @@ void RiscVState::Trap(bool is_interrupt, uint64_t trap_value,
   }
 
   // Update the PC.
-  auto *db = pc_dst_operand_->AllocateDataBuffer();
+  auto* db = pc_dst_operand_->AllocateDataBuffer();
   if (current_xlen == RiscVXlen::RV32) {
     db->SetSubmit<uint32_t>(0, static_cast<uint32_t>(trap_target));
     set_branch(true);

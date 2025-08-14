@@ -54,12 +54,11 @@ using RVFpRegister = RV64Register;
 
 class RV32VectorSourceOperand : public generic::SourceOperandInterface {
  public:
-  RV32VectorSourceOperand(absl::Span<generic::RegisterBase *> reg_span,
+  RV32VectorSourceOperand(absl::Span<generic::RegisterBase*> reg_span,
                           std::string op_name);
-  explicit RV32VectorSourceOperand(
-      absl::Span<generic::RegisterBase *> reg_span);
-  explicit RV32VectorSourceOperand(generic::RegisterBase *reg);
-  RV32VectorSourceOperand(generic::RegisterBase *reg, std::string op_name);
+  explicit RV32VectorSourceOperand(absl::Span<generic::RegisterBase*> reg_span);
+  explicit RV32VectorSourceOperand(generic::RegisterBase* reg);
+  RV32VectorSourceOperand(generic::RegisterBase* reg, std::string op_name);
 
   RV32VectorSourceOperand() = delete;
   bool AsBool(int i) override;
@@ -74,7 +73,7 @@ class RV32VectorSourceOperand : public generic::SourceOperandInterface {
   // Returns the RegisterBase object wrapped in absl::any.
   std::any GetObject() const override { return std::any(registers_[0]); }
   // Non-inherited method to get the register object.
-  generic::RegisterBase *GetRegister(int i) const { return registers_[i]; }
+  generic::RegisterBase* GetRegister(int i) const { return registers_[i]; }
   // Returns the shape of the register.
   std::vector<int> shape() const override { return registers_[0]->shape(); }
   std::string AsString() const override { return registers_[0]->name(); }
@@ -86,13 +85,13 @@ class RV32VectorSourceOperand : public generic::SourceOperandInterface {
   int group_size_ = 0;
   int vector_size_ = 0;
   int vector_byte_size_ = 0;
-  std::vector<generic::RegisterBase *> registers_;
+  std::vector<generic::RegisterBase*> registers_;
   std::string op_name_;
 };
 
 class RV32VectorTrueOperand : public RV32VectorSourceOperand {
  public:
-  explicit RV32VectorTrueOperand(RiscVState *state);
+  explicit RV32VectorTrueOperand(RiscVState* state);
 
   RV32VectorTrueOperand() = delete;
   bool AsBool(int) final { return true; }
@@ -113,41 +112,41 @@ class RV32VectorTrueOperand : public RV32VectorSourceOperand {
 class RV32VectorDestinationOperand
     : public generic::DestinationOperandInterface {
  public:
-  RV32VectorDestinationOperand(absl::Span<generic::RegisterBase *> reg_span,
+  RV32VectorDestinationOperand(absl::Span<generic::RegisterBase*> reg_span,
                                int latency, std::string op_name);
-  RV32VectorDestinationOperand(absl::Span<generic::RegisterBase *> reg_span,
+  RV32VectorDestinationOperand(absl::Span<generic::RegisterBase*> reg_span,
                                int latency);
-  RV32VectorDestinationOperand(generic::RegisterBase *reg, int latency,
+  RV32VectorDestinationOperand(generic::RegisterBase* reg, int latency,
                                std::string op_name);
-  RV32VectorDestinationOperand(generic::RegisterBase *reg, int latency);
-  generic::DataBuffer *AllocateDataBuffer() override;
-  void InitializeDataBuffer(generic::DataBuffer *db) override;
-  generic::DataBuffer *CopyDataBuffer() override;
+  RV32VectorDestinationOperand(generic::RegisterBase* reg, int latency);
+  generic::DataBuffer* AllocateDataBuffer() override;
+  void InitializeDataBuffer(generic::DataBuffer* db) override;
+  generic::DataBuffer* CopyDataBuffer() override;
   int latency() const override;
   std::any GetObject() const override;
   std::vector<int> shape() const override;
   std::string AsString() const override;
   // New method.
-  generic::DataBuffer *AllocateDataBuffer(int i);
-  void InitializeDataBuffer(int i, generic::DataBuffer *db);
-  generic::DataBuffer *CopyDataBuffer(int i);
+  generic::DataBuffer* AllocateDataBuffer(int i);
+  void InitializeDataBuffer(int i, generic::DataBuffer* db);
+  generic::DataBuffer* CopyDataBuffer(int i);
   std::any GetObject(int i) const;
   int size() const { return registers_.size(); }
 
  private:
-  generic::DataBufferFactory *db_factory_;
-  generic::DataBufferDelayLine *delay_line_;
+  generic::DataBufferFactory* db_factory_;
+  generic::DataBufferDelayLine* delay_line_;
   int latency_ = 0;
   int group_size_ = 0;
   int vector_size_ = 0;
   int vector_byte_size_ = 0;
-  std::vector<generic::RegisterBase *> registers_;
+  std::vector<generic::RegisterBase*> registers_;
   std::string op_name_;
 };
 
 using RVVectorRegister =
-    generic::StateItem<generic::RegisterBase, uint8_t *,
-                       RV32VectorSourceOperand, RV32VectorDestinationOperand>;
+    generic::StateItem<generic::RegisterBase, uint8_t*, RV32VectorSourceOperand,
+                       RV32VectorDestinationOperand>;
 
 }  // namespace riscv
 }  // namespace sim

@@ -9,8 +9,8 @@
 // This file defines the factory method for creating a RiscV 32 simulator for
 // use with ReNode.
 
-extern ::mpact::sim::util::renode::RenodeDebugInterface *CreateMpactSim(
+extern ::mpact::sim::util::renode::RenodeDebugInterface* CreateMpactSim(
     std::string name, std::string cpu_type,
-    ::mpact::sim::util::MemoryInterface *renode_sysbus);
+    ::mpact::sim::util::MemoryInterface* renode_sysbus);
 
 #endif  // THIRD_PARTY_MPACT_RISCV_RISCV32_RENODE_H_

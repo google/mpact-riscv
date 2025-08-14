@@ -60,7 +60,7 @@ using ::mpact::sim::generic::ActionPointManagerBase;
 using ::mpact::sim::generic::BreakpointManager;
 
 // Local helper function used to execute instructions.
-static inline bool ExecuteInstruction(Instruction *inst) {
+static inline bool ExecuteInstruction(Instruction* inst) {
   // The following code can be used to model stalls due to latency of operand
   // writes that are used by subsequent instructions. Instruction latencies
   // are defined in the .isa file.
@@ -81,8 +81,8 @@ static inline bool ExecuteInstruction(Instruction *inst) {
   return true;
 }
 
-RiscVTop::RiscVTop(std::string name, RiscVState *state,
-                   generic::DecoderInterface *decoder)
+RiscVTop::RiscVTop(std::string name, RiscVState* state,
+                   generic::DecoderInterface* decoder)
     : Component(name),
       state_(state),
       rv_decoder_(decoder),
@@ -149,32 +149,32 @@ void RiscVTop::Initialize() {
   CHECK_OK(csr_res.status()) << "Failed to get minstret CSR";
   if (state_->xlen() == RiscVXlen::RV32) {
     // Minstret/minstreth.
-    auto *minstret = reinterpret_cast<RiscVCounterCsr<uint32_t, RiscVState> *>(
+    auto* minstret = reinterpret_cast<RiscVCounterCsr<uint32_t, RiscVState>*>(
         csr_res.value());
     minstret->set_counter(&counter_num_instructions_);
     csr_res = state_->csr_set()->GetCsr("minstreth");
     CHECK_OK(csr_res.status()) << "Failed to get minstret CSR";
-    auto *minstreth =
-        reinterpret_cast<RiscVCounterCsrHigh<RiscVState> *>(csr_res.value());
+    auto* minstreth =
+        reinterpret_cast<RiscVCounterCsrHigh<RiscVState>*>(csr_res.value());
     minstreth->set_counter(&counter_num_instructions_);
     // Mcycle/mcycleh.
     csr_res = state_->csr_set()->GetCsr("mcycle");
     CHECK_OK(csr_res.status()) << "Failed to get mcycle CSR";
-    auto *mcycle = reinterpret_cast<RiscVCounterCsr<uint32_t, RiscVState> *>(
+    auto* mcycle = reinterpret_cast<RiscVCounterCsr<uint32_t, RiscVState>*>(
         csr_res.value());
     mcycle->set_counter(&counter_num_cycles_);
     csr_res = state_->csr_set()->GetCsr("mcycleh");
     CHECK_OK(csr_res.status()) << "Failed to get mcycleh CSR";
-    auto *mcycleh =
-        reinterpret_cast<RiscVCounterCsrHigh<RiscVState> *>(csr_res.value());
+    auto* mcycleh =
+        reinterpret_cast<RiscVCounterCsrHigh<RiscVState>*>(csr_res.value());
     mcycleh->set_counter(&counter_num_cycles_);
   } else {
     // Minstret/minstreth.
-    auto *minstret = reinterpret_cast<RiscVCounterCsr<uint64_t, RiscVState> *>(
+    auto* minstret = reinterpret_cast<RiscVCounterCsr<uint64_t, RiscVState>*>(
         csr_res.value());
     minstret->set_counter(&counter_num_instructions_);
     // Mcycle/mcycleh.
-    auto *mcycle = reinterpret_cast<RiscVCounterCsr<uint64_t, RiscVState> *>(
+    auto* mcycle = reinterpret_cast<RiscVCounterCsr<uint64_t, RiscVState>*>(
         csr_res.value());
     mcycle->set_counter(&counter_num_cycles_);
   }
@@ -190,7 +190,7 @@ void RiscVTop::Initialize() {
       [this]() { RequestHalt(HaltReason::kSoftwareBreakpoint, nullptr); });
 
   // Set the ebreak handler callback.
-  state_->AddEbreakHandler([this](const Instruction *inst) {
+  state_->AddEbreakHandler([this](const Instruction* inst) {
     if (rv_action_point_manager_->IsActionPointActive(inst->address())) {
       // Need to request a halt so that the action point can be stepped past
       // after executing the actions. However, an action may override the
@@ -205,13 +205,13 @@ void RiscVTop::Initialize() {
   // Branch trace.
   branch_trace_db_ = db_factory_.Allocate<BranchTraceEntry>(kBranchTraceSize);
   branch_trace_ =
-      reinterpret_cast<BranchTraceEntry *>(branch_trace_db_->raw_ptr());
+      reinterpret_cast<BranchTraceEntry*>(branch_trace_db_->raw_ptr());
   for (int i = 0; i < kBranchTraceSize; i++) {
     branch_trace_[i] = {0, 0, 0};
   }
 }
 
-void RiscVTop::ConfigureCache(Cache *&cache, Config<std::string> &config) {
+void RiscVTop::ConfigureCache(Cache*& cache, Config<std::string>& config) {
   if (cache != nullptr) {
     LOG(WARNING) << "Cache already configured - ignored";
     return;
@@ -322,7 +322,7 @@ absl::StatusOr<int> RiscVTop::Step(int num) {
   pc = next_pc;
   while (!halted_ && (count < num)) {
     SetPc(pc);
-    auto *inst = rv_decode_cache_->GetDecodedInstruction(pc);
+    auto* inst = rv_decode_cache_->GetDecodedInstruction(pc);
     // Set the next_pc to the next sequential instruction.
     next_pc = pc + inst->size();
     bool executed = false;
@@ -416,7 +416,7 @@ absl::Status RiscVTop::Run() {
     // the most recently executed instruction.
     uint64_t pc = next_pc;
     while (!halted_) {
-      auto *inst = rv_decode_cache_->GetDecodedInstruction(pc);
+      auto* inst = rv_decode_cache_->GetDecodedInstruction(pc);
       SetPc(pc);
       next_pc = pc + inst->size();
       bool executed = false;
@@ -506,7 +506,7 @@ absl::StatusOr<RiscVTop::HaltReasonValueType> RiscVTop::GetLastHaltReason() {
   return halt_reason_;
 }
 
-absl::StatusOr<uint64_t> RiscVTop::ReadRegister(const std::string &name) {
+absl::StatusOr<uint64_t> RiscVTop::ReadRegister(const std::string& name) {
   auto iter = state_->registers()->find(name);
 
   // Was the register found? If not try CSRs.
@@ -519,7 +519,7 @@ absl::StatusOr<uint64_t> RiscVTop::ReadRegister(const std::string &name) {
       return absl::NotFoundError(
           absl::StrCat("Register '", name, "' not found"));
     }
-    auto *csr = *result;
+    auto* csr = *result;
     auto xlen = state_->xlen();
     switch (xlen) {
       case RiscVXlen::RV32:
@@ -531,7 +531,7 @@ absl::StatusOr<uint64_t> RiscVTop::ReadRegister(const std::string &name) {
     }
   }
 
-  auto *db = (iter->second)->data_buffer();
+  auto* db = (iter->second)->data_buffer();
   uint64_t value;
   switch (db->size<uint8_t>()) {
     case 1:
@@ -552,7 +552,7 @@ absl::StatusOr<uint64_t> RiscVTop::ReadRegister(const std::string &name) {
   return value;
 }
 
-absl::Status RiscVTop::WriteRegister(const std::string &name, uint64_t value) {
+absl::Status RiscVTop::WriteRegister(const std::string& name, uint64_t value) {
   // The registers aren't protected by a mutex, so let's not write them while
   // the simulator is running.
   if (run_status_ != RunStatus::kHalted) {
@@ -569,7 +569,7 @@ absl::Status RiscVTop::WriteRegister(const std::string &name, uint64_t value) {
       return absl::NotFoundError(
           absl::StrCat("Register '", name, "' not found"));
     }
-    auto *csr = *result;
+    auto* csr = *result;
     auto xlen = state_->xlen();
     switch (xlen) {
       case RiscVXlen::RV32:
@@ -589,7 +589,7 @@ absl::Status RiscVTop::WriteRegister(const std::string &name, uint64_t value) {
     halt_reason_ = *HaltReason::kNone;
   }
 
-  auto *db = (iter->second)->data_buffer();
+  auto* db = (iter->second)->data_buffer();
   switch (db->size<uint8_t>()) {
     case 1:
       db->Set<uint8_t>(0, static_cast<uint8_t>(value));
@@ -609,8 +609,8 @@ absl::Status RiscVTop::WriteRegister(const std::string &name, uint64_t value) {
   return absl::OkStatus();
 }
 
-absl::StatusOr<DataBuffer *> RiscVTop::GetRegisterDataBuffer(
-    const std::string &name) {
+absl::StatusOr<DataBuffer*> RiscVTop::GetRegisterDataBuffer(
+    const std::string& name) {
   // The registers aren't protected by a mutex, so let's not access them while
   // the simulator is running.
   if (run_status_ != RunStatus::kHalted) {
@@ -625,7 +625,7 @@ absl::StatusOr<DataBuffer *> RiscVTop::GetRegisterDataBuffer(
   return iter->second->data_buffer();
 }
 
-absl::StatusOr<size_t> RiscVTop::ReadMemory(uint64_t address, void *buffer,
+absl::StatusOr<size_t> RiscVTop::ReadMemory(uint64_t address, void* buffer,
                                             size_t length) {
   if (run_status_ != RunStatus::kHalted) {
     return absl::FailedPreconditionError("ReadMemory: Core must be halted");
@@ -635,7 +635,7 @@ absl::StatusOr<size_t> RiscVTop::ReadMemory(uint64_t address, void *buffer,
   }
   uint64_t length64 = static_cast<uint64_t>(length);
   length = std::min(length64, state_->max_physical_address() - address + 1);
-  auto *db = db_factory_.Allocate(length);
+  auto* db = db_factory_.Allocate(length);
   // Load bypassing any watch points/semihosting.
   state_->memory()->Load(address, db, nullptr, nullptr);
   std::memcpy(buffer, db->raw_ptr(), length);
@@ -644,7 +644,7 @@ absl::StatusOr<size_t> RiscVTop::ReadMemory(uint64_t address, void *buffer,
 }
 
 absl::StatusOr<size_t> RiscVTop::WriteMemory(uint64_t address,
-                                             const void *buffer,
+                                             const void* buffer,
                                              size_t length) {
   if (run_status_ != RunStatus::kHalted) {
     return absl::FailedPreconditionError("WriteMemory: Core must be halted");
@@ -654,7 +654,7 @@ absl::StatusOr<size_t> RiscVTop::WriteMemory(uint64_t address,
   }
   uint64_t length64 = static_cast<uint64_t>(length);
   length = std::min(length64, state_->max_physical_address() - address + 1);
-  auto *db = db_factory_.Allocate(length);
+  auto* db = db_factory_.Allocate(length);
   std::memcpy(db->raw_ptr(), buffer, length);
   // Store bypassing any watch points/semihosting.
   state_->memory()->Store(address, db);
@@ -784,7 +784,7 @@ absl::Status RiscVTop::ClearDataWatchpoint(uint64_t address,
   return absl::OkStatus();
 }
 
-absl::StatusOr<Instruction *> RiscVTop::GetInstruction(uint64_t address) {
+absl::StatusOr<Instruction*> RiscVTop::GetInstruction(uint64_t address) {
   // If requesting the instruction at an action point, we need to write the
   // original instruction back to memory before getting the disassembly.
   bool inst_swap = rv_action_point_manager_->IsActionPointActive(address);
@@ -793,7 +793,7 @@ absl::StatusOr<Instruction *> RiscVTop::GetInstruction(uint64_t address) {
         ->WriteOriginalInstruction(address);
   }
   // Get the decoded instruction.
-  Instruction *inst = rv_decode_cache_->GetDecodedInstruction(address);
+  Instruction* inst = rv_decode_cache_->GetDecodedInstruction(address);
   inst->IncRef();
   // Swap back if required.
   if (inst_swap) {
@@ -811,14 +811,14 @@ absl::StatusOr<std::string> RiscVTop::GetDisassembly(uint64_t address) {
 
   auto res = GetInstruction(address);
   if (!res.ok()) return res.status();
-  Instruction *inst = res.value();
+  Instruction* inst = res.value();
   auto disasm = inst != nullptr ? inst->AsString() : "Invalid instruction";
   inst->DecRef();
   return disasm;
 }
 
 void RiscVTop::RequestHalt(HaltReasonValueType halt_reason,
-                           const Instruction *inst) {
+                           const Instruction* inst) {
   // First set the halt_reason_, then the halt flag.
   halt_reason_ = halt_reason;
   halted_ = true;
@@ -830,7 +830,7 @@ void RiscVTop::RequestHalt(HaltReasonValueType halt_reason,
   }
 }
 
-void RiscVTop::RequestHalt(HaltReason halt_reason, const Instruction *inst) {
+void RiscVTop::RequestHalt(HaltReason halt_reason, const Instruction* inst) {
   RequestHalt(*halt_reason, inst);
 }
 
@@ -846,8 +846,8 @@ absl::Status RiscVTop::ResizeBranchTrace(size_t size) {
   if (absl::popcount(size) != 1) {
     return absl::InvalidArgumentError("Invalid size - must be a power of 2");
   }
-  auto *new_db = db_factory_.Allocate<BranchTraceEntry>(size);
-  auto *new_trace = reinterpret_cast<BranchTraceEntry *>(new_db->raw_ptr());
+  auto* new_db = db_factory_.Allocate<BranchTraceEntry>(size);
+  auto* new_trace = reinterpret_cast<BranchTraceEntry*>(new_db->raw_ptr());
   if (new_db == nullptr) {
     return absl::InternalError("Failed to allocate new branch trace buffer");
   }
@@ -882,7 +882,7 @@ absl::Status RiscVTop::ResizeBranchTrace(size_t size) {
 
 void RiscVTop::AddToBranchTrace(uint64_t from, uint64_t to) {
   // Get the most recent entry.
-  auto &entry = branch_trace_[branch_trace_head_];
+  auto& entry = branch_trace_[branch_trace_head_];
   // If the branch is the same as the previous, just increment its count.
   if ((from == entry.from) && (to == entry.to)) {
     entry.count++;
@@ -894,14 +894,14 @@ void RiscVTop::AddToBranchTrace(uint64_t from, uint64_t to) {
 }
 
 void RiscVTop::EnableStatistics() {
-  for (auto &[unused, counter_ptr] : counter_map()) {
+  for (auto& [unused, counter_ptr] : counter_map()) {
     if (counter_ptr->GetName() == "pc") continue;
     counter_ptr->SetIsEnabled(true);
   }
 }
 
 void RiscVTop::DisableStatistics() {
-  for (auto &[unused, counter_ptr] : counter_map()) {
+  for (auto& [unused, counter_ptr] : counter_map()) {
     if (counter_ptr->GetName() == "pc") continue;
     counter_ptr->SetIsEnabled(false);
   }

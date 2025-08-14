@@ -24,7 +24,7 @@ namespace riscv {
 using ::mpact::sim::generic::Instruction;
 
 // This instruction has no source or destination operands.
-void RiscVZFencei(Instruction *instruction);
+void RiscVZFencei(Instruction* instruction);
 
 }  // namespace riscv
 }  // namespace sim

@@ -31,8 +31,8 @@ namespace mpact {
 namespace sim {
 namespace riscv {
 
-void RV32VUnimplementedInstruction(const Instruction *inst) {
-  auto *state = static_cast<RiscVState *>(inst->state());
+void RV32VUnimplementedInstruction(const Instruction* inst) {
+  auto* state = static_cast<RiscVState*>(inst->state());
   state->Trap(/*is_interrupt*/ false, /*trap_value*/ 0,
               *ExceptionCode::kIllegalInstruction,
               /*epc*/ inst->address(), inst);
@@ -61,8 +61,8 @@ constexpr T ByteSwap(T input) {
 }
 }  // namespace
 
-void Vandn(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vandn(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -88,8 +88,8 @@ void Vandn(Instruction *inst) {
   }
 }
 
-void Vbrev8(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vbrev8(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -100,8 +100,8 @@ void Vbrev8(Instruction *inst) {
       return RiscVUnaryVectorOp<uint16_t, uint16_t>(
           rv_vector, inst, [](uint16_t vs2) -> uint16_t {
             absl::Span<uint8_t> span =
-                absl::MakeSpan(reinterpret_cast<uint8_t *>(&vs2), sizeof(vs2));
-            for (uint8_t &byte : span) {
+                absl::MakeSpan(reinterpret_cast<uint8_t*>(&vs2), sizeof(vs2));
+            for (uint8_t& byte : span) {
               byte = BitReverse(byte);
             }
             return vs2;
@@ -110,8 +110,8 @@ void Vbrev8(Instruction *inst) {
       return RiscVUnaryVectorOp<uint32_t, uint32_t>(
           rv_vector, inst, [](uint32_t vs2) -> uint32_t {
             absl::Span<uint8_t> span =
-                absl::MakeSpan(reinterpret_cast<uint8_t *>(&vs2), sizeof(vs2));
-            for (uint8_t &byte : span) {
+                absl::MakeSpan(reinterpret_cast<uint8_t*>(&vs2), sizeof(vs2));
+            for (uint8_t& byte : span) {
               byte = BitReverse(byte);
             }
             return vs2;
@@ -120,8 +120,8 @@ void Vbrev8(Instruction *inst) {
       return RiscVUnaryVectorOp<uint64_t, uint64_t>(
           rv_vector, inst, [](uint64_t vs2) -> uint64_t {
             absl::Span<uint8_t> span =
-                absl::MakeSpan(reinterpret_cast<uint8_t *>(&vs2), sizeof(vs2));
-            for (uint8_t &byte : span) {
+                absl::MakeSpan(reinterpret_cast<uint8_t*>(&vs2), sizeof(vs2));
+            for (uint8_t& byte : span) {
               byte = BitReverse(byte);
             }
             return vs2;
@@ -133,8 +133,8 @@ void Vbrev8(Instruction *inst) {
   }
 }
 
-void Vrev8(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vrev8(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -159,8 +159,8 @@ void Vrev8(Instruction *inst) {
   }
 }
 
-void Vrol(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vrol(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -194,8 +194,8 @@ void Vrol(Instruction *inst) {
   }
 }
 
-void Vror(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vror(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -231,8 +231,8 @@ void Vror(Instruction *inst) {
 
 // Instructions that are only in Zvbb
 
-void Vbrev(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vbrev(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -258,8 +258,8 @@ void Vbrev(Instruction *inst) {
   }
 }
 
-void Vclz(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vclz(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -285,8 +285,8 @@ void Vclz(Instruction *inst) {
   }
 }
 
-void Vctz(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vctz(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -312,8 +312,8 @@ void Vctz(Instruction *inst) {
   }
 }
 
-void VectorVcpop(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void VectorVcpop(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -339,8 +339,8 @@ void VectorVcpop(Instruction *inst) {
   }
 }
 
-void Vwsll(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vwsll(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:

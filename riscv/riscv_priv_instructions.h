@@ -27,22 +27,22 @@ namespace riscv {
 using ::mpact::sim::generic::Instruction;
 
 namespace RV32 {
-void RiscVPrivURet(const Instruction *inst);
-void RiscVPrivSRet(const Instruction *inst);
-void RiscVPrivMRet(const Instruction *inst);
+void RiscVPrivURet(const Instruction* inst);
+void RiscVPrivSRet(const Instruction* inst);
+void RiscVPrivMRet(const Instruction* inst);
 }  // namespace RV32
 
 namespace RV64 {
-void RiscVPrivURet(const Instruction *inst);
-void RiscVPrivSRet(const Instruction *inst);
-void RiscVPrivMRet(const Instruction *inst);
+void RiscVPrivURet(const Instruction* inst);
+void RiscVPrivSRet(const Instruction* inst);
+void RiscVPrivMRet(const Instruction* inst);
 }  // namespace RV64
 
-void RiscVPrivWfi(const Instruction *inst);
-void RiscVPrivSFenceVmaZZ(const Instruction *inst);
-void RiscVPrivSFenceVmaZN(const Instruction *inst);
-void RiscVPrivSFenceVmaNZ(const Instruction *inst);
-void RiscVPrivSFenceVmaNN(const Instruction *inst);
+void RiscVPrivWfi(const Instruction* inst);
+void RiscVPrivSFenceVmaZZ(const Instruction* inst);
+void RiscVPrivSFenceVmaZN(const Instruction* inst);
+void RiscVPrivSFenceVmaNZ(const Instruction* inst);
+void RiscVPrivSFenceVmaNN(const Instruction* inst);
 
 }  // namespace riscv
 }  // namespace sim

@@ -36,13 +36,13 @@ constexpr int kRiscvAtFdCwd = -100;
 using AddressRange = mpact::sim::util::MemoryWatcher::AddressRange;
 
 RiscV32HtifSemiHost::RiscV32HtifSemiHost(
-    util::MemoryWatcher *watcher, util::MemoryInterface *memory,
-    const SemiHostAddresses &magic_addresses)
+    util::MemoryWatcher* watcher, util::MemoryInterface* memory,
+    const SemiHostAddresses& magic_addresses)
     : RiscV32HtifSemiHost(watcher, memory, magic_addresses, nullptr, nullptr) {}
 
 RiscV32HtifSemiHost::RiscV32HtifSemiHost(
-    util::MemoryWatcher *watcher, util::MemoryInterface *memory,
-    const SemiHostAddresses &magic_addresses, HaltCallback halt_callback,
+    util::MemoryWatcher* watcher, util::MemoryInterface* memory,
+    const SemiHostAddresses& magic_addresses, HaltCallback halt_callback,
     ErrorCallback error_callback)
     : halt_callback_(std::move(halt_callback)),
       error_callback_(std::move(error_callback)),
@@ -66,7 +66,7 @@ RiscV32HtifSemiHost::~RiscV32HtifSemiHost() {
 }
 
 void RiscV32HtifSemiHost::SetMagicAddresses(
-    const SemiHostAddresses &magic_addresses) {
+    const SemiHostAddresses& magic_addresses) {
   // Clear any previous store watchpoint. Ignore any error.
   (void)watcher_->ClearStoreWatchCallback(magic_addresses_.tohost_ready);
   magic_addresses_ = magic_addresses;
@@ -91,7 +91,7 @@ void RiscV32HtifSemiHost::StoreEvent(uint64_t address, int size) {
 
   // Read the value of the ready_db, if not 1, then the tohost location
   // does not contain data, and there's nothing to do.
-  auto *ready_db = db_factory_.Allocate<uint8_t>(1);
+  auto* ready_db = db_factory_.Allocate<uint8_t>(1);
   memory_->Load(magic_addresses_.tohost_ready, ready_db, nullptr, nullptr);
   if (ready_db->Get<uint8_t>(0) != 1) {
     ready_db->DecRef();
@@ -99,7 +99,7 @@ void RiscV32HtifSemiHost::StoreEvent(uint64_t address, int size) {
   }
 
   // Get the payload double word. Extract the command.
-  auto *payload_db = db_factory_.Allocate<uint64_t>(1);
+  auto* payload_db = db_factory_.Allocate<uint64_t>(1);
   memory_->Load(magic_addresses_.tohost, payload_db, nullptr, nullptr);
   uint64_t payload = payload_db->Get<uint64_t>(0);
   uint8_t device = payload >> 56;
@@ -117,7 +117,7 @@ void RiscV32HtifSemiHost::StoreEvent(uint64_t address, int size) {
   }
   // The payload contains a pointer to an 8 double word parameter block. Load
   // that block.
-  auto *parameter_db = db_factory_.Allocate<uint64_t>(8);
+  auto* parameter_db = db_factory_.Allocate<uint64_t>(8);
   memory_->Load(payload, parameter_db, nullptr, nullptr);
   auto parameter_span = parameter_db->Get<uint64_t>();
   int64_t return_value = 0;
@@ -133,10 +133,10 @@ void RiscV32HtifSemiHost::StoreEvent(uint64_t address, int size) {
       } else {
         dirfd = iter->second;
       }
-      auto *db = db_factory_.Allocate(parameter_span[3]);
+      auto* db = db_factory_.Allocate(parameter_span[3]);
       auto address = parameter_span[2];
       memory_->Load(address, db, nullptr, nullptr);
-      char *name = static_cast<char *>(db->raw_ptr());
+      char* name = static_cast<char*>(db->raw_ptr());
       return_value = openat(dirfd, name, parameter_span[4], parameter_span[5]);
       db->DecRef();
     } break;
@@ -163,10 +163,10 @@ void RiscV32HtifSemiHost::StoreEvent(uint64_t address, int size) {
       auto iter = fd_map_.find(parameter_span[1]);
       int fd = iter == fd_map_.end() ? -1 : iter->second;
       size_t len = static_cast<size_t>(parameter_span[3]);
-      auto *data_db = db_factory_.Allocate<uint8_t>(len);
+      auto* data_db = db_factory_.Allocate<uint8_t>(len);
       int res = read(fd, data_db->raw_ptr(), len);
       if (res > 0) {
-        generic::DataBuffer *db = nullptr;
+        generic::DataBuffer* db = nullptr;
         // Need to see if fewer bytes were read than there was space for. If so
         // need to use a different db for the store.
         if (res == len) {
@@ -185,7 +185,7 @@ void RiscV32HtifSemiHost::StoreEvent(uint64_t address, int size) {
     {
       auto iter = fd_map_.find(parameter_span[1]);
       int fd = iter == fd_map_.end() ? -1 : iter->second;
-      auto *data_db = db_factory_.Allocate<uint8_t>(parameter_span[3]);
+      auto* data_db = db_factory_.Allocate<uint8_t>(parameter_span[3]);
       memory_->Load(parameter_span[2], data_db, nullptr, nullptr);
       size_t len = static_cast<size_t>(parameter_span[3]);
       return_value = write(fd, data_db->raw_ptr(), len);
@@ -197,10 +197,10 @@ void RiscV32HtifSemiHost::StoreEvent(uint64_t address, int size) {
       int fd = iter == fd_map_.end() ? -1 : iter->second;
       size_t len = static_cast<size_t>(parameter_span[3]);
       off_t offset = static_cast<off_t>(parameter_span[4]);
-      auto *data_db = db_factory_.Allocate<uint8_t>(len);
+      auto* data_db = db_factory_.Allocate<uint8_t>(len);
       int res = pread(fd, data_db->raw_ptr(), len, offset);
       if (res > 0) {
-        generic::DataBuffer *db = nullptr;
+        generic::DataBuffer* db = nullptr;
         // Need to see if fewer bytes were read than there was space for. If so
         // need to use a different db for the store.
         if (res == len) {
@@ -219,7 +219,7 @@ void RiscV32HtifSemiHost::StoreEvent(uint64_t address, int size) {
     {
       auto iter = fd_map_.find(parameter_span[1]);
       int fd = iter == fd_map_.end() ? -1 : iter->second;
-      auto *data_db = db_factory_.Allocate<uint8_t>(parameter_span[3]);
+      auto* data_db = db_factory_.Allocate<uint8_t>(parameter_span[3]);
       memory_->Load(parameter_span[2], data_db, nullptr, nullptr);
       size_t len = static_cast<size_t>(parameter_span[3]);
       off_t offset = static_cast<off_t>(parameter_span[4]);

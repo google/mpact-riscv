@@ -60,7 +60,7 @@ constexpr char kEndSignature[] = "end_signature";
 ABSL_FLAG(std::optional<std::string>, dump_signature, std::nullopt,
           "Dump signature file name (riscv torture test)");
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   auto arg_vec = absl::ParseCommandLine(argc, argv);
 
   if (arg_vec.size() > 2) {
@@ -73,8 +73,8 @@ int main(int argc, char **argv) {
   std::string file_basename = file_name.substr(0, file_name.find_first_of('.'));
 
   mpact::sim::util::FlatDemandMemory memory;
-  auto *watcher = new mpact::sim::util::MemoryWatcher(&memory);
-  auto *atomic_memory = new mpact::sim::util::AtomicMemory(watcher);
+  auto* watcher = new mpact::sim::util::MemoryWatcher(&memory);
+  auto* atomic_memory = new mpact::sim::util::AtomicMemory(watcher);
   // Load the elf segments into memory.
   mpact::sim::util::ElfProgramLoader elf_loader(&memory);
   auto load_result = elf_loader.LoadProgram(full_file_name);
@@ -190,7 +190,7 @@ int main(int argc, char **argv) {
       uint64_t begin_sig = begin_res.value().first;
       uint64_t end_sig = end_res.value().first;
       uint64_t length = end_sig - begin_sig;
-      uint64_t *buffer = new uint64_t[length >> 3];
+      uint64_t* buffer = new uint64_t[length >> 3];
       auto status = riscv_top.ReadMemory(begin_sig, buffer, length);
       for (int i = 0; i < length >> 3; ++i) {
         sig_file << std::hex << buffer[i] << std::endl;

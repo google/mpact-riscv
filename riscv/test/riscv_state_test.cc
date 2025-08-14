@@ -40,23 +40,23 @@ constexpr uint32_t kMemValue = 0xdeadbeef;
 
 TEST(RiscVStateTest, Basic) {
   FlatDemandMemory memory;
-  auto *state = new RiscVState("test", RiscVXlen::RV32, &memory);
+  auto* state = new RiscVState("test", RiscVXlen::RV32, &memory);
   // Make sure pc has been created.
   auto iter = state->registers()->find("pc");
-  auto *ptr = (iter != state->registers()->end()) ? iter->second : nullptr;
+  auto* ptr = (iter != state->registers()->end()) ? iter->second : nullptr;
   CHECK_NE(ptr, nullptr);
   // Set pc to 0x1000, then read value back through pc operand.
-  auto *pc = static_cast<RV32Register *>(ptr);
+  auto* pc = static_cast<RV32Register*>(ptr);
   pc->data_buffer()->Set<uint32_t>(0, kPcValue);
-  auto *pc_op = state->pc_operand();
+  auto* pc_op = state->pc_operand();
   EXPECT_EQ(pc_op->AsUint32(0), kPcValue);
   delete state;
 }
 
 TEST(RiscVStateTest, Memory) {
   FlatDemandMemory memory;
-  auto *state = new RiscVState("test", RiscVXlen::RV32, &memory);
-  auto *db = state->db_factory()->Allocate<uint32_t>(1);
+  auto* state = new RiscVState("test", RiscVXlen::RV32, &memory);
+  auto* db = state->db_factory()->Allocate<uint32_t>(1);
   state->LoadMemory(nullptr, kMemAddr, db, nullptr, nullptr);
   EXPECT_EQ(db->Get<uint32_t>(0), 0);
   db->Set<uint32_t>(0, kMemValue);
@@ -70,11 +70,11 @@ TEST(RiscVStateTest, Memory) {
 
 TEST(RiscVStateTest, OutOfBoundLoad) {
   FlatDemandMemory memory;
-  auto *state = new RiscVState("test", RiscVXlen::RV32, &memory);
+  auto* state = new RiscVState("test", RiscVXlen::RV32, &memory);
   state->set_max_physical_address(kMemAddr - 4);
   state->set_on_trap([](bool is_interrupt, uint64_t trap_value,
                         uint64_t exception_code, uint64_t epc,
-                        const mpact::sim::riscv::Instruction *inst) -> bool {
+                        const mpact::sim::riscv::Instruction* inst) -> bool {
     if (exception_code ==
         static_cast<uint64_t>(
             mpact::sim::riscv::ExceptionCode::kLoadAccessFault)) {
@@ -83,9 +83,9 @@ TEST(RiscVStateTest, OutOfBoundLoad) {
     }
     return false;
   });
-  auto *db = state->db_factory()->Allocate<uint32_t>(1);
+  auto* db = state->db_factory()->Allocate<uint32_t>(1);
   // Create a dummy instruction so trap can dereference the address.
-  auto *dummy_inst = new mpact::sim::riscv::Instruction(0x0, nullptr);
+  auto* dummy_inst = new mpact::sim::riscv::Instruction(0x0, nullptr);
   dummy_inst->set_size(4);
   testing::internal::CaptureStderr();
   state->LoadMemory(dummy_inst, kMemAddr, db, nullptr, nullptr);

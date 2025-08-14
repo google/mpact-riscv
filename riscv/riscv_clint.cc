@@ -33,7 +33,7 @@ using ::mpact::sim::generic::Instruction;
 using ::mpact::sim::generic::ReferenceCount;
 using EC = ::mpact::sim::riscv::ExceptionCode;
 
-RiscVClint::RiscVClint(int period, MipExternalWriteInterface *mip_interface)
+RiscVClint::RiscVClint(int period, MipExternalWriteInterface* mip_interface)
     : mip_interface_(mip_interface), period_(period) {
   // Set the initial values.
   SetValue(0);
@@ -54,7 +54,7 @@ void RiscVClint::Reset() {
 }
 
 // Called by the counter whenever its value is changed.
-void RiscVClint::SetValue(const uint64_t &val) {
+void RiscVClint::SetValue(const uint64_t& val) {
   update_counter_++;
   if (update_counter_ >= period_) {
     update_counter_ = 0;
@@ -68,8 +68,8 @@ void RiscVClint::SetValue(const uint64_t &val) {
 
 // Implementation of the memory load interface for reading memory mapped
 // registers.
-void RiscVClint::Load(uint64_t address, DataBuffer *db, Instruction *inst,
-                      ReferenceCount *context) {
+void RiscVClint::Load(uint64_t address, DataBuffer* db, Instruction* inst,
+                      ReferenceCount* context) {
   uint32_t offset = address & 0xffff;
   switch (db->size<uint8_t>()) {
     case 1:
@@ -108,15 +108,15 @@ void RiscVClint::Load(uint64_t address, DataBuffer *db, Instruction *inst,
 }
 
 // No support for vector loads.
-void RiscVClint::Load(DataBuffer *address_db, DataBuffer *mask_db, int el_size,
-                      DataBuffer *db, Instruction *inst,
-                      ReferenceCount *context) {
+void RiscVClint::Load(DataBuffer* address_db, DataBuffer* mask_db, int el_size,
+                      DataBuffer* db, Instruction* inst,
+                      ReferenceCount* context) {
   LOG(FATAL) << "RiscVClint does not support vector loads";
 }
 
 // Implementation of memory store interface to support writes to memory mapped
 // registers.
-void RiscVClint::Store(uint64_t address, DataBuffer *db) {
+void RiscVClint::Store(uint64_t address, DataBuffer* db) {
   uint32_t offset = address & 0xffff;
   switch (db->size<uint8_t>()) {
     case 1:
@@ -134,8 +134,8 @@ void RiscVClint::Store(uint64_t address, DataBuffer *db) {
 }
 
 // No support for vector stores.
-void RiscVClint::Store(DataBuffer *address, DataBuffer *mask, int el_size,
-                       DataBuffer *db) {
+void RiscVClint::Store(DataBuffer* address, DataBuffer* mask, int el_size,
+                       DataBuffer* db) {
   LOG(FATAL) << "RiscVClint does not support vector stores";
 }
 

@@ -61,8 +61,8 @@ class RiscVPlic : public MemoryInterface {
   // capable of receiving and handling interrupts.
   RiscVPlic(int num_sources, int num_contexts);
   RiscVPlic() = delete;
-  RiscVPlic(const RiscVPlic &) = delete;
-  RiscVPlic &operator=(const RiscVPlic &) = delete;
+  RiscVPlic(const RiscVPlic&) = delete;
+  RiscVPlic& operator=(const RiscVPlic&) = delete;
   ~RiscVPlic() override;
 
   // Configure the PLIC state according to the source and context configuration
@@ -88,19 +88,19 @@ class RiscVPlic : public MemoryInterface {
 
   // MemoryInterface overrides.
   // Non-vector load method.
-  void Load(uint64_t address, DataBuffer *db, Instruction *inst,
-            ReferenceCount *context) override;
+  void Load(uint64_t address, DataBuffer* db, Instruction* inst,
+            ReferenceCount* context) override;
   // Vector load method - this is stubbed out.
-  void Load(DataBuffer *address_db, DataBuffer *mask_db, int el_size,
-            DataBuffer *db, Instruction *inst,
-            ReferenceCount *context) override;
+  void Load(DataBuffer* address_db, DataBuffer* mask_db, int el_size,
+            DataBuffer* db, Instruction* inst,
+            ReferenceCount* context) override;
   // Non-vector store method.
-  void Store(uint64_t address, DataBuffer *db) override;
+  void Store(uint64_t address, DataBuffer* db) override;
   // Vector store method - this is stubbed out.
-  void Store(DataBuffer *address, DataBuffer *mask, int el_size,
-             DataBuffer *db) override;
+  void Store(DataBuffer* address, DataBuffer* mask, int el_size,
+             DataBuffer* db) override;
 
-  void SetContext(int context_no, RiscVPlicIrqInterface *context_if);
+  void SetContext(int context_no, RiscVPlicIrqInterface* context_if);
 
  private:
   struct GatewayInfo {
@@ -128,22 +128,22 @@ class RiscVPlic : public MemoryInterface {
   int num_sources_;
   int num_contexts_;
   // Interface to call to write the IRQ line for a context.
-  RiscVPlicIrqInterface **context_if_;
+  RiscVPlicIrqInterface** context_if_;
   // Last value written to the IRQ line for a context.
-  bool *context_irq_ = nullptr;
+  bool* context_irq_ = nullptr;
   // Source gateway info.
-  GatewayInfo *gateway_info_ = nullptr;
+  GatewayInfo* gateway_info_ = nullptr;
   // Interrupt priorities by source.
-  uint32_t *interrupt_priority_ = nullptr;
+  uint32_t* interrupt_priority_ = nullptr;
   // Pending interrupts by source - 32 bits per word.
-  uint32_t *interrupt_pending_ = nullptr;
+  uint32_t* interrupt_pending_ = nullptr;
   // Enable bits per context per source - 32 bits per word.
   // Array is organized as interrupt_enabled_[context][source / 32].
-  uint32_t **interrupt_enabled_ = nullptr;
+  uint32_t** interrupt_enabled_ = nullptr;
   // Priority threshold by context.
-  uint32_t *priority_threshold_ = nullptr;
+  uint32_t* priority_threshold_ = nullptr;
   // Interrupt claim/complete register by context.
-  uint32_t *interrupt_claim_complete_ = nullptr;
+  uint32_t* interrupt_claim_complete_ = nullptr;
   // Map from source to context that has the source enabled. This must be
   // updated whenever an an enable bit is changed for a context.
   absl::btree_multimap<int, int> source_to_context_;
@@ -153,7 +153,7 @@ class RiscVPlic : public MemoryInterface {
 
 class RiscVPlicSourceInterface : public RiscVPlicIrqInterface {
  public:
-  RiscVPlicSourceInterface(RiscVPlic *plic, int source, bool is_level);
+  RiscVPlicSourceInterface(RiscVPlic* plic, int source, bool is_level);
   RiscVPlicSourceInterface() = delete;
   ~RiscVPlicSourceInterface() override = default;
   void SetIrq(bool irq_value) override {
@@ -161,7 +161,7 @@ class RiscVPlicSourceInterface : public RiscVPlicIrqInterface {
   };
 
  private:
-  RiscVPlic *plic_ = nullptr;
+  RiscVPlic* plic_ = nullptr;
   int source_ = 0;
   bool is_level_ = false;
 };

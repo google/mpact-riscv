@@ -27,7 +27,7 @@ namespace riscv {
 
 class RiscVSimModeCsr : public RiscVSimpleCsr<uint32_t> {
  public:
-  RiscVSimModeCsr(std::string name, RiscVCsrEnum index, RiscVState *state)
+  RiscVSimModeCsr(std::string name, RiscVCsrEnum index, RiscVState* state)
       : RiscVSimpleCsr<uint32_t>(name, index, 0x0, 0x3, 0x3, state),
         state_(state) {}
 
@@ -37,7 +37,7 @@ class RiscVSimModeCsr : public RiscVSimpleCsr<uint32_t> {
   void Set(uint64_t value) override;
 
  private:
-  RiscVState *state_;
+  RiscVState* state_;
 };
 
 }  // namespace riscv

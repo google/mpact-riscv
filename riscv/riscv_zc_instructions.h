@@ -26,30 +26,30 @@ using ::mpact::sim::generic::Instruction;
 namespace RV32 {
 
 // Zcmp instructions.
-void RiscVZCmpPush(const Instruction *inst);
-void RiscVZCmpPop(const Instruction *inst);
-void RiscVZCmpPopRet(const Instruction *inst);
-void RiscVZCmpPopRetz(const Instruction *inst);
-void RiscVZCmpMvTwoRegs(const Instruction *inst);
+void RiscVZCmpPush(const Instruction* inst);
+void RiscVZCmpPop(const Instruction* inst);
+void RiscVZCmpPopRet(const Instruction* inst);
+void RiscVZCmpPopRetz(const Instruction* inst);
+void RiscVZCmpMvTwoRegs(const Instruction* inst);
 
 // Zcmt instructions.
-void RiscVZCmtJt(const Instruction *inst);
-void RiscVZCmtJalt(const Instruction *inst);
+void RiscVZCmtJt(const Instruction* inst);
+void RiscVZCmtJalt(const Instruction* inst);
 
 }  // namespace RV32
 
 namespace RV64 {
 
 // Zcmp instructions.
-void RiscVZCmpPush(const Instruction *inst);
-void RiscVZCmpPop(const Instruction *inst);
-void RiscVZCmpPopRet(const Instruction *inst);
-void RiscVZCmpPopRetz(const Instruction *inst);
-void RiscVZCmpMvTwoRegs(const Instruction *inst);
+void RiscVZCmpPush(const Instruction* inst);
+void RiscVZCmpPop(const Instruction* inst);
+void RiscVZCmpPopRet(const Instruction* inst);
+void RiscVZCmpPopRetz(const Instruction* inst);
+void RiscVZCmpMvTwoRegs(const Instruction* inst);
 
 // Zcmt instructions.
-void RiscVZCmtJt(const Instruction *inst);
-void RiscVZCmtJalt(const Instruction *inst);
+void RiscVZCmtJt(const Instruction* inst);
+void RiscVZCmtJalt(const Instruction* inst);
 
 }  // namespace RV64
 

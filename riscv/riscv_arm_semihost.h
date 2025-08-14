@@ -61,21 +61,21 @@ class RiscVArmSemihost {
   static constexpr char kA1Name[] = "x11";  // Also known as "a1".
 
   // Constructor/destructor.
-  RiscVArmSemihost(BitWidth bit_width, util::MemoryInterface *i_memory_if,
-                   util::MemoryInterface *d_memory_if);
+  RiscVArmSemihost(BitWidth bit_width, util::MemoryInterface* i_memory_if,
+                   util::MemoryInterface* d_memory_if);
   RiscVArmSemihost() = delete;
-  RiscVArmSemihost(const RiscVArmSemihost &) = delete;
+  RiscVArmSemihost(const RiscVArmSemihost&) = delete;
   ~RiscVArmSemihost();
 
   // If the instruction is a semihosting call, execute the requested function.
-  void OnEBreak(const Instruction *inst);
+  void OnEBreak(const Instruction* inst);
   // Return true if the instruction is a semihosting call.
-  bool IsSemihostingCall(const Instruction *inst);
+  bool IsSemihostingCall(const Instruction* inst);
   // Set the command line string.
-  void SetCmdLine(const std::vector<char *> &argv) {
+  void SetCmdLine(const std::vector<char*>& argv) {
     cmd_line_.clear();
     std::string sep;
-    for (const auto &arg : argv) {
+    for (const auto& arg : argv) {
       absl::StrAppend(&cmd_line_, sep, arg);
       sep = " ";
     }
@@ -88,7 +88,7 @@ class RiscVArmSemihost {
   }
 
  private:
-  using SemihostOperation = std::function<absl::Status(uint64_t, uint64_t *)>;
+  using SemihostOperation = std::function<absl::Status(uint64_t, uint64_t*)>;
 
   std::function<void()> exit_callback_;
   std::function<void(uint64_t)> exception_callback_;
@@ -122,29 +122,29 @@ class RiscVArmSemihost {
   static constexpr int kSysWrite0 = 0x04;
 
   // Functions that implement the semihosting operations.
-  absl::Status SysClose(uint64_t parameter, uint64_t *ret_val);
-  absl::Status SysClock(uint64_t parameter, uint64_t *ret_val);
-  absl::Status SysElapsed(uint64_t parameter, uint64_t *ret_val);
-  absl::Status SysErrno(uint64_t parameter, uint64_t *ret_val);
-  absl::Status SysException(uint64_t parameter, uint64_t *ret_val);
-  absl::Status SysFlen(uint64_t parameter, uint64_t *ret_val);
-  absl::Status SysGetCmdline(uint64_t parameter, uint64_t *ret_val);
-  absl::Status SysHeapInfo(uint64_t parameter, uint64_t *ret_val);
-  absl::Status SysIsError(uint64_t parameter, uint64_t *ret_val);
-  absl::Status SysIsTty(uint64_t parameter, uint64_t *ret_val);
-  absl::Status SysOpen(uint64_t parameter, uint64_t *ret_val);
-  absl::Status SysRead(uint64_t parameter, uint64_t *ret_val);
-  absl::Status SysReadc(uint64_t parameter, uint64_t *ret_val);
-  absl::Status SysRemove(uint64_t parameter, uint64_t *ret_val);
-  absl::Status SysRename(uint64_t parameter, uint64_t *ret_val);
-  absl::Status SysSeek(uint64_t parameter, uint64_t *ret_val);
-  absl::Status SysSystem(uint64_t parameter, uint64_t *ret_val);
-  absl::Status SysTickFreq(uint64_t parameter, uint64_t *ret_val);
-  absl::Status SysTime(uint64_t parameter, uint64_t *ret_val);
-  absl::Status SysTmpnam(uint64_t parameter, uint64_t *ret_val);
-  absl::Status SysWrite(uint64_t parameter, uint64_t *ret_val);
-  absl::Status SysWritec(uint64_t parameter, uint64_t *ret_val);
-  absl::Status SysWrite0(uint64_t parameter, uint64_t *ret_val);
+  absl::Status SysClose(uint64_t parameter, uint64_t* ret_val);
+  absl::Status SysClock(uint64_t parameter, uint64_t* ret_val);
+  absl::Status SysElapsed(uint64_t parameter, uint64_t* ret_val);
+  absl::Status SysErrno(uint64_t parameter, uint64_t* ret_val);
+  absl::Status SysException(uint64_t parameter, uint64_t* ret_val);
+  absl::Status SysFlen(uint64_t parameter, uint64_t* ret_val);
+  absl::Status SysGetCmdline(uint64_t parameter, uint64_t* ret_val);
+  absl::Status SysHeapInfo(uint64_t parameter, uint64_t* ret_val);
+  absl::Status SysIsError(uint64_t parameter, uint64_t* ret_val);
+  absl::Status SysIsTty(uint64_t parameter, uint64_t* ret_val);
+  absl::Status SysOpen(uint64_t parameter, uint64_t* ret_val);
+  absl::Status SysRead(uint64_t parameter, uint64_t* ret_val);
+  absl::Status SysReadc(uint64_t parameter, uint64_t* ret_val);
+  absl::Status SysRemove(uint64_t parameter, uint64_t* ret_val);
+  absl::Status SysRename(uint64_t parameter, uint64_t* ret_val);
+  absl::Status SysSeek(uint64_t parameter, uint64_t* ret_val);
+  absl::Status SysSystem(uint64_t parameter, uint64_t* ret_val);
+  absl::Status SysTickFreq(uint64_t parameter, uint64_t* ret_val);
+  absl::Status SysTime(uint64_t parameter, uint64_t* ret_val);
+  absl::Status SysTmpnam(uint64_t parameter, uint64_t* ret_val);
+  absl::Status SysWrite(uint64_t parameter, uint64_t* ret_val);
+  absl::Status SysWritec(uint64_t parameter, uint64_t* ret_val);
+  absl::Status SysWrite0(uint64_t parameter, uint64_t* ret_val);
 
   bool is_32_bit_;
   int sys_errno_ = 0;
@@ -152,14 +152,14 @@ class RiscVArmSemihost {
   // Data buffers used by some of the operations. Giving them lifetime of the
   // semihosting instance saves some on allocating and freeing them for each
   // operation.
-  generic::DataBuffer *db_inst_;  // Instruction word(s) data buffer.
-  generic::DataBuffer *db1_;      // 1 word data buffer.
-  generic::DataBuffer *db2_;      // 2 word data buffer.
-  generic::DataBuffer *db3_;      // 3 word data buffer.
-  generic::DataBuffer *db4_;      // 4 word data buffer.
+  generic::DataBuffer* db_inst_;  // Instruction word(s) data buffer.
+  generic::DataBuffer* db1_;      // 1 word data buffer.
+  generic::DataBuffer* db2_;      // 2 word data buffer.
+  generic::DataBuffer* db3_;      // 3 word data buffer.
+  generic::DataBuffer* db4_;      // 4 word data buffer.
   // Memory interfaces to use to access instruction and data memory.
-  util::MemoryInterface *i_memory_if_;
-  util::MemoryInterface *d_memory_if_;
+  util::MemoryInterface* i_memory_if_;
+  util::MemoryInterface* d_memory_if_;
   // Map from opcode to semihosting function.
   absl::flat_hash_map<uint64_t, SemihostOperation> semihost_operations_;
   // Map of target file descriptors to host file descriptors.

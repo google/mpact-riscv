@@ -58,7 +58,7 @@ struct ZfhTraits<32> {
   using XRegister = ::mpact::sim::riscv::RV32Register;
   using SelfEncoding = ZfhEncoding<32>;
   static constexpr int kXLen = 32;
-  static constexpr const char *const *kOpcodeNames =
+  static constexpr const char* const* kOpcodeNames =
       ::mpact::sim::riscv::zfh32::kOpcodeNames;
 };
 
@@ -78,7 +78,7 @@ struct ZfhTraits<64> {
   using XRegister = ::mpact::sim::riscv::RV64Register;
   using SelfEncoding = ZfhEncoding<64>;
   static constexpr int kXLen = 64;
-  static constexpr const char *const *kOpcodeNames =
+  static constexpr const char* const* kOpcodeNames =
       ::mpact::sim::riscv::zfh64::kOpcodeNames;
 };
 
@@ -98,7 +98,7 @@ class ZfhEncoding : public ZfhTraits<XLen>::EncodingBase,
   using Extractors = typename ZfhTraits<XLen>::Extractors;
   using XRegister = typename ZfhTraits<XLen>::XRegister;
 
-  explicit ZfhEncoding(RiscVState *state)
+  explicit ZfhEncoding(RiscVState* state)
       : state_(state),
         inst_word_(0),
         opcode_(OpcodeEnum::kNone),
@@ -167,24 +167,24 @@ class ZfhEncoding : public ZfhTraits<XLen>::EncodingBase,
   OpcodeEnum GetOpcode(SlotEnum, int) override { return opcode_; }
   FormatEnum GetFormat(SlotEnum, int) { return format_; }
 
-  ::mpact::sim::generic::PredicateOperandInterface *GetPredicate(
+  ::mpact::sim::generic::PredicateOperandInterface* GetPredicate(
       SlotEnum, int, OpcodeEnum, PredOpEnum) override {
     return nullptr;
   }
 
-  ResourceOperandInterface *GetSimpleResourceOperand(
-      SlotEnum, int, OpcodeEnum, SimpleResourceVector &resource_vec,
+  ResourceOperandInterface* GetSimpleResourceOperand(
+      SlotEnum, int, OpcodeEnum, SimpleResourceVector& resource_vec,
       int end) override {
     return nullptr;
   }
 
-  ResourceOperandInterface *GetComplexResourceOperand(
+  ResourceOperandInterface* GetComplexResourceOperand(
       SlotEnum, int, OpcodeEnum, ComplexResourceEnum resource, int begin,
       int end) override {
     return nullptr;
   }
 
-  DestinationOperandInterface *GetDestination(SlotEnum, int, OpcodeEnum opcode,
+  DestinationOperandInterface* GetDestination(SlotEnum, int, OpcodeEnum opcode,
                                               DestOpEnum dest_op, int dest_no,
                                               int latency) override {
     int index = static_cast<int>(dest_op);
@@ -198,7 +198,7 @@ class ZfhEncoding : public ZfhTraits<XLen>::EncodingBase,
     return (iter->second)(latency);
   }
 
-  SourceOperandInterface *GetSource(SlotEnum, int, OpcodeEnum opcode,
+  SourceOperandInterface* GetSource(SlotEnum, int, OpcodeEnum opcode,
                                     SourceOpEnum source_op,
                                     int source_no) override {
     int index = static_cast<int>(source_op);
@@ -217,25 +217,25 @@ class ZfhEncoding : public ZfhTraits<XLen>::EncodingBase,
   }
 
   // Methods inherited from RiscVEncodingCommon.
-  RiscVState *state() const override { return state_; }
-  generic::SimpleResourcePool *resource_pool() override {
+  RiscVState* state() const override { return state_; }
+  generic::SimpleResourcePool* resource_pool() override {
     return resource_pool_;
   }
   uint32_t inst_word() const override { return inst_word_; }
 
-  const SourceOpGetterMap &source_op_getters() { return source_op_getters_; }
-  const DestOpGetterMap &dest_op_getters() { return dest_op_getters_; }
-  const SimpleResourceGetterMap &simple_resource_getters() {
+  const SourceOpGetterMap& source_op_getters() { return source_op_getters_; }
+  const DestOpGetterMap& dest_op_getters() { return dest_op_getters_; }
+  const SimpleResourceGetterMap& simple_resource_getters() {
     return simple_resource_getters_;
   }
-  const ComplexResourceGetterMap &complex_resource_getters() {
+  const ComplexResourceGetterMap& complex_resource_getters() {
     return complex_resource_getters_;
   }
 
  private:
   std::string GetSimpleResourceName(SimpleResourceEnum resource_enum);
 
-  RiscVState *state_;
+  RiscVState* state_;
   uint32_t inst_word_;
   OpcodeEnum opcode_;
   FormatEnum format_;
@@ -243,8 +243,8 @@ class ZfhEncoding : public ZfhTraits<XLen>::EncodingBase,
   DestOpGetterMap dest_op_getters_;
   SimpleResourceGetterMap simple_resource_getters_;
   ComplexResourceGetterMap complex_resource_getters_;
-  generic::SimpleResourceDelayLine *resource_delay_line_ = nullptr;
-  generic::SimpleResourcePool *resource_pool_ = nullptr;
+  generic::SimpleResourceDelayLine* resource_delay_line_ = nullptr;
+  generic::SimpleResourcePool* resource_pool_ = nullptr;
 };
 }  // namespace mpact::sim::riscv::zfh
 

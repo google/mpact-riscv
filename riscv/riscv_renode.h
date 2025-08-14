@@ -97,10 +97,10 @@ class RiscVRenode : public util::renode::RenodeDebugInterface {
 
   // Constructor takes a name and a memory interface that is used for memory
   // transactions routed to the system bus.
-  RiscVRenode(std::string name, MemoryInterface *renode_sysbus, RiscVXlen xlen);
+  RiscVRenode(std::string name, MemoryInterface* renode_sysbus, RiscVXlen xlen);
   ~RiscVRenode() override;
 
-  absl::StatusOr<uint64_t> LoadExecutable(const char *elf_file_name,
+  absl::StatusOr<uint64_t> LoadExecutable(const char* elf_file_name,
                                           bool for_symbols_only) override;
   // Step the core by num instructions.
   absl::StatusOr<int> Step(int num) override;
@@ -111,18 +111,18 @@ class RiscVRenode : public util::renode::RenodeDebugInterface {
   absl::Status WriteRegister(uint32_t reg_id, uint64_t value) override;
   // Get register data buffer call. Not implemented, stubbed out to return null.
   // Read/write the buffers to memory.
-  absl::StatusOr<size_t> ReadMemory(uint64_t address, void *buf,
+  absl::StatusOr<size_t> ReadMemory(uint64_t address, void* buf,
                                     size_t length) override;
-  absl::StatusOr<size_t> WriteMemory(uint64_t address, const void *buf,
+  absl::StatusOr<size_t> WriteMemory(uint64_t address, const void* buf,
                                      size_t length) override;
   // Return register information.
   int32_t GetRenodeRegisterInfoSize() const override;
-  absl::Status GetRenodeRegisterInfo(int32_t index, int32_t max_len, char *name,
-                                     RenodeCpuRegister &info) override;
+  absl::Status GetRenodeRegisterInfo(int32_t index, int32_t max_len, char* name,
+                                     RenodeCpuRegister& info) override;
 
   // Set configuration value.
-  absl::Status SetConfig(const char *config_names[],
-                         const char *config_values[], int size) override;
+  absl::Status SetConfig(const char* config_names[],
+                         const char* config_values[], int size) override;
 
   // Set IRQ value for supported IRQs. Supported irq_nums are:
   //          MachineSoftwareInterrupt = 0x3
@@ -133,26 +133,26 @@ class RiscVRenode : public util::renode::RenodeDebugInterface {
 
  private:
   std::string name_;
-  MemoryInterface *renode_sysbus_ = nullptr;
-  RiscVState *rv_state_ = nullptr;
-  RiscVFPState *rv_fp_state_ = nullptr;
-  generic::DecoderInterface *rv_decoder_ = nullptr;
-  RiscVTop *riscv_top_ = nullptr;
-  RiscVArmSemihost *semihost_ = nullptr;
-  SingleInitiatorRouter *router_ = nullptr;
-  SingleInitiatorRouter *renode_router_ = nullptr;
+  MemoryInterface* renode_sysbus_ = nullptr;
+  RiscVState* rv_state_ = nullptr;
+  RiscVFPState* rv_fp_state_ = nullptr;
+  generic::DecoderInterface* rv_decoder_ = nullptr;
+  RiscVTop* riscv_top_ = nullptr;
+  RiscVArmSemihost* semihost_ = nullptr;
+  SingleInitiatorRouter* router_ = nullptr;
+  SingleInitiatorRouter* renode_router_ = nullptr;
   DataBufferFactory db_factory_;
-  AtomicMemory *atomic_memory_ = nullptr;
-  FlatDemandMemory *memory_ = nullptr;
-  RiscVClint *clint_ = nullptr;
-  SocketCLI *socket_cli_ = nullptr;
-  RiscVRenodeCLITop *riscv_renode_cli_top_ = nullptr;
-  RiscVCLIForwarder *riscv_cli_forwarder_ = nullptr;
-  ElfProgramLoader *program_loader_ = nullptr;
-  DebugCommandShell *cmd_shell_ = nullptr;
-  InstructionProfiler *inst_profiler_ = nullptr;
-  MemoryUseProfiler *mem_profiler_ = nullptr;
-  RiscVInstrumentationControl *instrumentation_control_ = nullptr;
+  AtomicMemory* atomic_memory_ = nullptr;
+  FlatDemandMemory* memory_ = nullptr;
+  RiscVClint* clint_ = nullptr;
+  SocketCLI* socket_cli_ = nullptr;
+  RiscVRenodeCLITop* riscv_renode_cli_top_ = nullptr;
+  RiscVCLIForwarder* riscv_cli_forwarder_ = nullptr;
+  ElfProgramLoader* program_loader_ = nullptr;
+  DebugCommandShell* cmd_shell_ = nullptr;
+  InstructionProfiler* inst_profiler_ = nullptr;
+  MemoryUseProfiler* mem_profiler_ = nullptr;
+  RiscVInstrumentationControl* instrumentation_control_ = nullptr;
   uint64_t stack_size_ = 32 * 1024;
   uint64_t stack_end_ = 0;
 };

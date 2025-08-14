@@ -17,10 +17,14 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <cstdint>
+#include <cstdio>
 #include <cstring>
 #include <string>
+#include <type_traits>
 
 #include "absl/log/check.h"
+#include "absl/strings/str_cat.h"
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/instruction.h"
@@ -61,7 +65,7 @@ constexpr int kTmpNamLength = L_tmpnam * 3 / 2;
 
 constexpr int kBufferSize = 128;
 
-// Opcode sequence that idenfifies the semihosting call. This consists
+// Opcode sequence that identifies the semihosting call. This consists
 // of a shift immediate on the x0 (constant 0 register), followed by
 // an ebreak instruction, followed by a different shift immediate on x0.
 constexpr uint32_t kSemihostCallSequence[] = {0x01f01013, 0x00100073,
@@ -103,19 +107,19 @@ struct RegisterType<uint64_t> {
 // Test fixture for RiscV Arm Semihosting.
 class RiscVArmSemihostTest : public testing::Test {
  public:
-  void SetTrue(bool *value) { *value = true; }
-  RiscVArmSemihost *semi32() const { return semi32_; }
-  RiscVArmSemihost *semi64() const { return semi64_; }
-  RV32Register *a0_32() const { return a0_32_; }
-  RV32Register *a1_32() const { return a1_32_; }
-  RV64Register *a0_64() const { return a0_64_; }
-  RV64Register *a1_64() const { return a1_64_; }
-  Instruction *semihost_inst_32() const { return semihost_inst_32_; }
-  Instruction *semihost_inst_64() const { return semihost_inst_64_; }
-  Instruction *non_semihost_inst_32() const { return non_semihost_inst_32_; }
-  Instruction *non_semihost_inst_64() const { return non_semihost_inst_64_; }
-  DataBufferFactory *db_factory() { return &db_factory_; }
-  mpact::sim::util::MemoryInterface *memory() const { return memory_; }
+  void SetTrue(bool* value) { *value = true; }
+  RiscVArmSemihost* semi32() const { return semi32_; }
+  RiscVArmSemihost* semi64() const { return semi64_; }
+  RV32Register* a0_32() const { return a0_32_; }
+  RV32Register* a1_32() const { return a1_32_; }
+  RV64Register* a0_64() const { return a0_64_; }
+  RV64Register* a1_64() const { return a1_64_; }
+  Instruction* semihost_inst_32() const { return semihost_inst_32_; }
+  Instruction* semihost_inst_64() const { return semihost_inst_64_; }
+  Instruction* non_semihost_inst_32() const { return non_semihost_inst_32_; }
+  Instruction* non_semihost_inst_64() const { return non_semihost_inst_64_; }
+  DataBufferFactory* db_factory() { return &db_factory_; }
+  mpact::sim::util::MemoryInterface* memory() const { return memory_; }
 
  protected:
   RiscVArmSemihostTest() {
@@ -171,15 +175,15 @@ class RiscVArmSemihostTest : public testing::Test {
   }
 
   DataBufferFactory db_factory_;
-  mpact::sim::util::FlatDemandMemory *memory_;
-  RiscVState *state32_;
-  RiscVState *state64_;
-  Instruction *semihost_inst_32_;
-  Instruction *semihost_inst_64_;
-  Instruction *non_semihost_inst_32_;
-  Instruction *non_semihost_inst_64_;
-  RiscVArmSemihost *semi32_;
-  RiscVArmSemihost *semi64_;
+  mpact::sim::util::FlatDemandMemory* memory_;
+  RiscVState* state32_;
+  RiscVState* state64_;
+  Instruction* semihost_inst_32_;
+  Instruction* semihost_inst_64_;
+  Instruction* non_semihost_inst_32_;
+  Instruction* non_semihost_inst_64_;
+  RiscVArmSemihost* semi32_;
+  RiscVArmSemihost* semi64_;
   RV32Register *a0_32_, *a1_32_;
   RV64Register *a0_64_, *a1_64_;
 };
@@ -188,24 +192,24 @@ class RiscVArmSemihostTest : public testing::Test {
 
 // Semihosting instance.
 template <typename T>
-RiscVArmSemihost *SemiHost(RiscVArmSemihostTest *test) {}
+RiscVArmSemihost* SemiHost(RiscVArmSemihostTest* test) {}
 
 template <>
-RiscVArmSemihost *SemiHost<uint32_t>(RiscVArmSemihostTest *test) {
+RiscVArmSemihost* SemiHost<uint32_t>(RiscVArmSemihostTest* test) {
   return test->semi32();
 }
 
 template <>
-RiscVArmSemihost *SemiHost<uint64_t>(RiscVArmSemihostTest *test) {
+RiscVArmSemihost* SemiHost<uint64_t>(RiscVArmSemihostTest* test) {
   return test->semi64();
 }
 
 // Register.
 template <typename T>
-typename RegisterType<T>::type *AReg(RiscVArmSemihostTest *test, T num) {}
+typename RegisterType<T>::type* AReg(RiscVArmSemihostTest* test, T num) {}
 
 template <>
-typename RegisterType<uint32_t>::type *AReg(RiscVArmSemihostTest *test,
+typename RegisterType<uint32_t>::type* AReg(RiscVArmSemihostTest* test,
                                             uint32_t num) {
   if (num == 0) return test->a0_32();
   if (num == 1) return test->a1_32();
@@ -213,7 +217,7 @@ typename RegisterType<uint32_t>::type *AReg(RiscVArmSemihostTest *test,
 }
 
 template <>
-typename RegisterType<uint64_t>::type *AReg(RiscVArmSemihostTest *test,
+typename RegisterType<uint64_t>::type* AReg(RiscVArmSemihostTest* test,
                                             uint64_t num) {
   if (num == 0) return test->a0_64();
   if (num == 1) return test->a1_64();
@@ -222,28 +226,28 @@ typename RegisterType<uint64_t>::type *AReg(RiscVArmSemihostTest *test,
 
 // Semihosting instruction instance.
 template <typename T>
-Instruction *SemihostInst(RiscVArmSemihostTest *test, T num = 0) {}
+Instruction* SemihostInst(RiscVArmSemihostTest* test, T num = 0) {}
 
 template <>
-Instruction *SemihostInst<uint32_t>(RiscVArmSemihostTest *test, uint32_t) {
+Instruction* SemihostInst<uint32_t>(RiscVArmSemihostTest* test, uint32_t) {
   return test->semihost_inst_32();
 }
 
 template <>
-Instruction *SemihostInst<uint64_t>(RiscVArmSemihostTest *test, uint64_t) {
+Instruction* SemihostInst<uint64_t>(RiscVArmSemihostTest* test, uint64_t) {
   return test->semihost_inst_64();
 }
 
 // Non-semihosting instruction instance.
 template <typename T>
-Instruction *NonSemihostInst(RiscVArmSemihostTest *test, T num = 0) {}
+Instruction* NonSemihostInst(RiscVArmSemihostTest* test, T num = 0) {}
 
 template <>
-Instruction *NonSemihostInst<uint32_t>(RiscVArmSemihostTest *test, uint32_t) {
+Instruction* NonSemihostInst<uint32_t>(RiscVArmSemihostTest* test, uint32_t) {
   return test->non_semihost_inst_32();
 }
 template <>
-Instruction *NonSemihostInst<uint64_t>(RiscVArmSemihostTest *test, uint64_t) {
+Instruction* NonSemihostInst<uint64_t>(RiscVArmSemihostTest* test, uint64_t) {
   return test->non_semihost_inst_64();
 }
 
@@ -251,7 +255,7 @@ Instruction *NonSemihostInst<uint64_t>(RiscVArmSemihostTest *test, uint64_t) {
 // call.
 
 template <typename T>
-void CallRecognitionTest(RiscVArmSemihostTest *test) {
+void CallRecognitionTest(RiscVArmSemihostTest* test) {
   AReg<T>(test, 0)->data_buffer()->template Set<T>(0, kSysTime);
   AReg<T>(test, 1)->data_buffer()->template Set<T>(0, 0);
   SemiHost<T>(test)->OnEBreak(SemihostInst<T>(test));
@@ -271,7 +275,7 @@ TEST_F(RiscVArmSemihostTest, CallRecognition64) {
 // Verify that a sequence that doesn't match doesn't trigger semihosting call.
 
 template <typename T>
-void CallNonRecognitionTest(RiscVArmSemihostTest *test) {
+void CallNonRecognitionTest(RiscVArmSemihostTest* test) {
   AReg<T>(test, 0)->data_buffer()->template Set<T>(0, kSysTime);
   AReg<T>(test, 1)->data_buffer()->template Set<T>(0, 0);
   SemiHost<T>(test)->OnEBreak(NonSemihostInst<T>(test));
@@ -313,7 +317,7 @@ TEST_F(RiscVArmSemihostTest, ApplicationExit64) {
       [&detected]() { detected = true; });
 
   // Write exception code to memory.
-  auto *db = db_factory()->Allocate<uint64_t>(1);
+  auto* db = db_factory()->Allocate<uint64_t>(1);
   db->template Set<uint64_t>(0, kAdpStoppedApplicationExit);
   memory_->Store(kParameterAddress, db);
   db->DecRef();
@@ -331,17 +335,17 @@ TEST_F(RiscVArmSemihostTest, ApplicationExit64) {
 
 // Test the Write system call (printf to stderr).
 template <typename T>
-void SysWriteTest(RiscVArmSemihostTest *test) {
+void SysWriteTest(RiscVArmSemihostTest* test) {
   testing::internal::CaptureStderr();
 
   // Write string to memory.
-  auto *str_db = test->db_factory()->Allocate<uint8_t>(strlen(kHelloWorld));
+  auto* str_db = test->db_factory()->Allocate<uint8_t>(strlen(kHelloWorld));
   std::memcpy(str_db->raw_ptr(), kHelloWorld, strlen(kHelloWorld));
   test->memory()->Store(kStringAddress, str_db);
   str_db->DecRef();
 
   // Set up parameter block.
-  auto *db = test->db_factory()->Allocate<T>(3);
+  auto* db = test->db_factory()->Allocate<T>(3);
   db->template Set<T>(0, 2);
   db->template Set<T>(1, kStringAddress);
   db->template Set<T>(2, strlen(kHelloWorld));
@@ -367,7 +371,7 @@ TEST_F(RiscVArmSemihostTest, SysWrite64) { SysWriteTest<uint64_t>(this); }
 // Systick should just return -1 for now.
 
 template <typename T>
-void SysTickTest(RiscVArmSemihostTest *test) {
+void SysTickTest(RiscVArmSemihostTest* test) {
   AReg<T>(test, 0)->data_buffer()->template Set<T>(0, kSysTickFreq);
   AReg<T>(test, 1)->data_buffer()->template Set<T>(0, 0);
   SemiHost<T>(test)->OnEBreak(SemihostInst<T>(test));
@@ -384,15 +388,15 @@ TEST_F(RiscVArmSemihostTest, SysTick64) { SysTickTest<uint64_t>(this); }
 // Test SysOpen
 
 template <typename T>
-void SysOpenTest(RiscVArmSemihostTest *test) {
+void SysOpenTest(RiscVArmSemihostTest* test) {
   std::string input_file = absl::StrCat(kDepotPath, "testfiles/", kFileName);
-  auto *str_db = test->db_factory()->Allocate<uint8_t>(input_file.length() + 1);
+  auto* str_db = test->db_factory()->Allocate<uint8_t>(input_file.length() + 1);
   std::memcpy(str_db->raw_ptr(), input_file.c_str(), input_file.length() + 1);
   test->memory()->Store(kStringAddress, str_db);
   str_db->DecRef();
 
   // Set up parameter block.
-  auto *db = test->db_factory()->Allocate<T>(3);
+  auto* db = test->db_factory()->Allocate<T>(3);
   db->template Set<T>(0, kStringAddress);
   db->template Set<T>(1, 0);
   db->template Set<T>(2, input_file.length());
@@ -446,15 +450,15 @@ TEST_F(RiscVArmSemihostTest, SysOpen64) { SysOpenTest<uint64_t>(this); }
 
 // Test sys open and close.
 template <typename T>
-void SysOpenCloseTest(RiscVArmSemihostTest *test) {
+void SysOpenCloseTest(RiscVArmSemihostTest* test) {
   std::string input_file = absl::StrCat(kDepotPath, "testfiles/", kFileName);
-  auto *str_db = test->db_factory()->Allocate<uint8_t>(input_file.length() + 1);
+  auto* str_db = test->db_factory()->Allocate<uint8_t>(input_file.length() + 1);
   std::memcpy(str_db->raw_ptr(), input_file.c_str(), input_file.length() + 1);
   test->memory()->Store(kStringAddress, str_db);
   str_db->DecRef();
 
   // Set up parameter block.
-  auto *db = test->db_factory()->Allocate<T>(3);
+  auto* db = test->db_factory()->Allocate<T>(3);
   db->template Set<T>(0, kStringAddress);
   db->template Set<T>(1, 0);
   db->template Set<T>(2, input_file.length());
@@ -512,16 +516,16 @@ TEST_F(RiscVArmSemihostTest, SysOpenClose64) {
 // Test open-read-close.
 
 template <typename T>
-void SysOpenReadClose(RiscVArmSemihostTest *test) {
+void SysOpenReadClose(RiscVArmSemihostTest* test) {
   // Open the file.
   std::string input_file = absl::StrCat(kDepotPath, "testfiles/", kFileName);
-  auto *str_db = test->db_factory()->Allocate<uint8_t>(input_file.length() + 1);
+  auto* str_db = test->db_factory()->Allocate<uint8_t>(input_file.length() + 1);
   std::memcpy(str_db->raw_ptr(), input_file.c_str(), input_file.length() + 1);
   test->memory()->Store(kStringAddress, str_db);
   str_db->DecRef();
 
   // Set up parameter block.
-  auto *db = test->db_factory()->Allocate<T>(3);
+  auto* db = test->db_factory()->Allocate<T>(3);
   db->template Set<T>(0, kStringAddress);
   db->template Set<T>(1, 0);
   db->template Set<T>(2, input_file.length());
@@ -556,7 +560,7 @@ void SysOpenReadClose(RiscVArmSemihostTest *test) {
 
   db = test->db_factory()->Allocate<uint8_t>(6);
   test->memory()->Load(kBufferAddress, db, nullptr, nullptr);
-  std::string file_value(reinterpret_cast<char *>(db->raw_ptr()), 6);
+  std::string file_value(reinterpret_cast<char*>(db->raw_ptr()), 6);
   db->DecRef();
 
   // Verify the number of characters read and that the characters are correct.
@@ -590,15 +594,15 @@ TEST_F(RiscVArmSemihostTest, SysOpenReadClose64) {
 // Test flen (file length).
 
 template <typename T>
-void SysFlenTest(RiscVArmSemihostTest *test) {  // Open the file.
+void SysFlenTest(RiscVArmSemihostTest* test) {  // Open the file.
   std::string input_file = absl::StrCat(kDepotPath, "testfiles/", kFileName);
-  auto *str_db = test->db_factory()->Allocate<uint8_t>(input_file.length() + 1);
+  auto* str_db = test->db_factory()->Allocate<uint8_t>(input_file.length() + 1);
   std::memcpy(str_db->raw_ptr(), input_file.c_str(), input_file.length() + 1);
   test->memory()->Store(kStringAddress, str_db);
   str_db->DecRef();
 
   // Set up parameter block.
-  auto *db = test->db_factory()->Allocate<T>(3);
+  auto* db = test->db_factory()->Allocate<T>(3);
   db->template Set<T>(0, kStringAddress);
   db->template Set<T>(1, 0);
   db->template Set<T>(2, input_file.length());
@@ -641,9 +645,9 @@ TEST_F(RiscVArmSemihostTest, SysFlen64) { SysFlenTest<uint64_t>(this); }
 // Test tmpnam call.
 
 template <typename T>
-void SysTmpnamTest(RiscVArmSemihostTest *test) {
+void SysTmpnamTest(RiscVArmSemihostTest* test) {
   // Set up parameter block.
-  auto *db = test->db_factory()->Allocate<T>(3);
+  auto* db = test->db_factory()->Allocate<T>(3);
   db->template Set<T>(0, kBufferAddress);
   db->template Set<T>(1, 1);
   db->template Set<T>(2, kTmpNamLength);
@@ -663,7 +667,7 @@ void SysTmpnamTest(RiscVArmSemihostTest *test) {
   auto tmpnam_db = test->db_factory()->Allocate<char>(kTmpNamLength);
   test->memory()->Load(kBufferAddress, tmpnam_db, nullptr, nullptr);
 
-  char *tmp_name = static_cast<char *>(tmpnam_db->raw_ptr());
+  char* tmp_name = static_cast<char*>(tmpnam_db->raw_ptr());
   auto length = strlen(tmp_name);
   EXPECT_LE(length, kTmpNamLength);
   EXPECT_GT(length, 0);
@@ -678,7 +682,7 @@ TEST_F(RiscVArmSemihostTest, SysTmpnam64) { SysTmpnamTest<uint64_t>(this); }
 // Test that HeapInfo returns a struct with all zeros.
 
 template <typename T>
-void SysHeapInfoTest(RiscVArmSemihostTest *test) {
+void SysHeapInfoTest(RiscVArmSemihostTest* test) {
   // Set up register values.
   AReg<T>(test, 0)->data_buffer()->template Set<T>(0, kSysHeapInfo);
   AReg<T>(test, 1)->data_buffer()->template Set<T>(0, kBufferAddress);
@@ -686,7 +690,7 @@ void SysHeapInfoTest(RiscVArmSemihostTest *test) {
   SemiHost<T>(test)->OnEBreak(SemihostInst<T>(test));
 
   // Fetch the returned values.
-  auto *db = test->db_factory()->Allocate<T>(4);
+  auto* db = test->db_factory()->Allocate<T>(4);
   test->memory()->Load(kBufferAddress, db, nullptr, nullptr);
   EXPECT_EQ(db->template Get<T>(0), 0);
   EXPECT_EQ(db->template Get<T>(1), 0);
@@ -702,15 +706,15 @@ TEST_F(RiscVArmSemihostTest, SysHeapInfo64) { SysHeapInfoTest<uint64_t>(this); }
 // Test that seek works by opening a file, seeking, then reading from the file.
 
 template <typename T>
-void SysSeekTest(RiscVArmSemihostTest *test) {
+void SysSeekTest(RiscVArmSemihostTest* test) {
   std::string input_file = absl::StrCat(kDepotPath, "testfiles/", kFileName);
-  auto *str_db = test->db_factory()->Allocate<uint8_t>(input_file.length() + 1);
+  auto* str_db = test->db_factory()->Allocate<uint8_t>(input_file.length() + 1);
   std::memcpy(str_db->raw_ptr(), input_file.c_str(), input_file.length() + 1);
   test->memory()->Store(kStringAddress, str_db);
   str_db->DecRef();
 
   // Set up parameter block.
-  auto *db = test->db_factory()->Allocate<T>(3);
+  auto* db = test->db_factory()->Allocate<T>(3);
   db->template Set<T>(0, kStringAddress);
   db->template Set<T>(1, 0);
   db->template Set<T>(2, input_file.length());
@@ -771,7 +775,7 @@ void SysSeekTest(RiscVArmSemihostTest *test) {
 
   db = test->db_factory()->Allocate<uint8_t>(6);
   test->memory()->Load(kBufferAddress, db, nullptr, nullptr);
-  std::string file_value(reinterpret_cast<char *>(db->raw_ptr()), 4);
+  std::string file_value(reinterpret_cast<char*>(db->raw_ptr()), 4);
   db->DecRef();
 
   // Verify the number of characters read and that the characters are correct.

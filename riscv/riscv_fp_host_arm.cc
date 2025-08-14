@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "absl/log/log.h"
+#include <cstdint>
+
 #include "mpact/sim/generic/type_helpers.h"
 #include "riscv/riscv_fp_host.h"
 #include "riscv/riscv_fp_info.h"
@@ -170,13 +171,13 @@ class ArmFloatingPointInterface : public HostFloatingPointInterface {
 };
 
 // Factory function.
-HostFloatingPointInterface *GetHostFloatingPointInterface() {
+HostFloatingPointInterface* GetHostFloatingPointInterface() {
   return new ArmFloatingPointInterface();
 }
 
 #pragma STDC FENV_ACCESS ON
 
-ScopedFPStatus::ScopedFPStatus(HostFloatingPointInterface *fp_interface)
+ScopedFPStatus::ScopedFPStatus(HostFloatingPointInterface* fp_interface)
     : fp_interface_(fp_interface) {
   uint64_t fpsr, fpcr;
   asm volatile(
@@ -186,8 +187,8 @@ ScopedFPStatus::ScopedFPStatus(HostFloatingPointInterface *fp_interface)
 
   // Pack fpsr and fpcr into cpu_fp_status
   cpu_fp_status_ = (fpsr << 32) | (fpcr & 0xffff'ffff);
-  auto *host_fp_interface =
-      static_cast<ArmFloatingPointInterface *>(fp_interface_);
+  auto* host_fp_interface =
+      static_cast<ArmFloatingPointInterface*>(fp_interface_);
   // Get the translated version of the simulated RiscV status.
   auto arm_fp_regs = host_fp_interface->arm_fp_regs();
   // Save current "dynamic" rounding mode.
@@ -201,7 +202,7 @@ ScopedFPStatus::ScopedFPStatus(HostFloatingPointInterface *fp_interface)
         "r"(arm_fp_regs.fpcr));  // NOLINT(google3-runtime-inline-assembly)
 }
 
-ScopedFPStatus::ScopedFPStatus(HostFloatingPointInterface *fp_interface,
+ScopedFPStatus::ScopedFPStatus(HostFloatingPointInterface* fp_interface,
                                uint32_t riscv_rm)
     : fp_interface_(fp_interface) {
   uint64_t fpsr, fpcr;
@@ -212,8 +213,8 @@ ScopedFPStatus::ScopedFPStatus(HostFloatingPointInterface *fp_interface,
 
   // Pack fpsr and fpcr into cpu_fp_status
   cpu_fp_status_ = (fpsr << 32) | (fpcr & 0xffff'ffff);
-  auto *host_fp_interface =
-      static_cast<ArmFloatingPointInterface *>(fp_interface_);
+  auto* host_fp_interface =
+      static_cast<ArmFloatingPointInterface*>(fp_interface_);
   // Get the translated version of the simulated RiscV status.
   auto arm_fp_regs = host_fp_interface->arm_fp_regs();
   // Save current "dynamic" rounding mode.
@@ -232,7 +233,7 @@ ScopedFPStatus::ScopedFPStatus(HostFloatingPointInterface *fp_interface,
         "r"(arm_fp_regs.fpcr));  // NOLINT(google3-runtime-inline-assembly)
 }
 
-ScopedFPStatus::ScopedFPStatus(HostFloatingPointInterface *fp_interface,
+ScopedFPStatus::ScopedFPStatus(HostFloatingPointInterface* fp_interface,
                                FPRoundingMode riscv_rm)
     : fp_interface_(fp_interface) {
   uint64_t fpsr, fpcr;
@@ -243,8 +244,8 @@ ScopedFPStatus::ScopedFPStatus(HostFloatingPointInterface *fp_interface,
 
   // Pack fpsr and fpcr into cpu_fp_status
   cpu_fp_status_ = (fpsr << 32) | (fpcr & 0xffff'ffff);
-  auto *host_fp_interface =
-      static_cast<ArmFloatingPointInterface *>(fp_interface_);
+  auto* host_fp_interface =
+      static_cast<ArmFloatingPointInterface*>(fp_interface_);
   // Get the translated version of the simulated RiscV status.
   auto arm_fp_regs = host_fp_interface->arm_fp_regs();
   // Save current "dynamic" rounding mode.
@@ -270,8 +271,8 @@ ScopedFPStatus::~ScopedFPStatus() {
                : "=r"(fpsr));  // NOLINT(google3-runtime-inline-assembly
 
   // Save the simulated status.
-  auto *host_fp_interface =
-      static_cast<ArmFloatingPointInterface *>(fp_interface_);
+  auto* host_fp_interface =
+      static_cast<ArmFloatingPointInterface*>(fp_interface_);
   host_fp_interface->set_arm_fp_regs({host_rm_, fpsr});
   // Restore the saved host status.
   fpcr = cpu_fp_status_ & 0xffff'ffff;
@@ -284,7 +285,7 @@ ScopedFPStatus::~ScopedFPStatus() {
 }
 
 ScopedFPRoundingMode::ScopedFPRoundingMode(
-    HostFloatingPointInterface *fp_interface, uint32_t riscv_rm_value) {
+    HostFloatingPointInterface* fp_interface, uint32_t riscv_rm_value) {
   uint64_t fpsr, fpcr;
   asm volatile(
       "MRS %x0, FPSR\n"
@@ -293,8 +294,8 @@ ScopedFPRoundingMode::ScopedFPRoundingMode(
 
   // Pack fpsr and fpcr into cpu_fp_status
   cpu_fp_status_ = (fpsr << 32) | (fpcr & 0xffff'ffff);
-  auto *host_fp_interface =
-      static_cast<ArmFloatingPointInterface *>(fp_interface);
+  auto* host_fp_interface =
+      static_cast<ArmFloatingPointInterface*>(fp_interface);
   // Get the translated version of the simulated RiscV status.
   auto arm_fp_regs = host_fp_interface->arm_fp_regs();
   if (riscv_rm_value != 0b111) {
@@ -312,7 +313,7 @@ ScopedFPRoundingMode::ScopedFPRoundingMode(
 }
 
 ScopedFPRoundingMode::ScopedFPRoundingMode(
-    HostFloatingPointInterface *fp_interface, FPRoundingMode rm) {
+    HostFloatingPointInterface* fp_interface, FPRoundingMode rm) {
   uint64_t fpsr, fpcr;
   asm volatile(
       "MRS %x0, FPSR\n"
@@ -321,8 +322,8 @@ ScopedFPRoundingMode::ScopedFPRoundingMode(
 
   // Pack fpsr and fpcr into cpu_fp_status
   cpu_fp_status_ = (fpsr << 32) | (fpcr & 0xffff'ffff);
-  auto *host_fp_interface =
-      static_cast<ArmFloatingPointInterface *>(fp_interface);
+  auto* host_fp_interface =
+      static_cast<ArmFloatingPointInterface*>(fp_interface);
   // Get the translated version of the simulated RiscV status.
   auto arm_fp_regs = host_fp_interface->arm_fp_regs();
   auto rm_value = static_cast<uint32_t>(rm);

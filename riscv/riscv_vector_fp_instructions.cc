@@ -35,9 +35,9 @@ namespace riscv {
 using ::mpact::sim::generic::FPTypeInfo;
 
 // Floating point add.
-void Vfadd(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfadd(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -62,9 +62,9 @@ void Vfadd(const Instruction *inst) {
 }
 
 // Floating point subtract.
-void Vfsub(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfsub(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -89,9 +89,9 @@ void Vfsub(const Instruction *inst) {
 }
 
 // Reverse floating point subtract (rs1 - vs2).
-void Vfrsub(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfrsub(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -116,9 +116,9 @@ void Vfrsub(const Instruction *inst) {
 }
 
 // Widening floating point add.
-void Vfwadd(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfwadd(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -142,9 +142,9 @@ void Vfwadd(const Instruction *inst) {
 }
 
 // Widening floating point subtract.
-void Vfwsub(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfwsub(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -168,9 +168,9 @@ void Vfwsub(const Instruction *inst) {
 }
 
 // Widening floating point add with wide operand (vs2).
-void Vfwaddw(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfwaddw(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -193,9 +193,9 @@ void Vfwaddw(const Instruction *inst) {
 }
 
 // Widening floating point subtract with wide operand (vs2).
-void Vfwsubw(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfwsubw(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -218,9 +218,9 @@ void Vfwsubw(const Instruction *inst) {
 }
 
 // Floating point multiply.
-void Vfmul(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfmul(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -245,9 +245,9 @@ void Vfmul(const Instruction *inst) {
 }
 
 // Floating point division vs2/vs1;
-void Vfdiv(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfdiv(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -272,9 +272,9 @@ void Vfdiv(const Instruction *inst) {
 }
 
 // Floating point reverse division vs1/vs2.
-void Vfrdiv(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfrdiv(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -299,9 +299,9 @@ void Vfrdiv(const Instruction *inst) {
 }
 
 // Widening floating point multiply.
-void Vfwmul(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfwmul(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -325,9 +325,9 @@ void Vfwmul(const Instruction *inst) {
 }
 
 // Floating point multiply and add vs2.
-void Vfmadd(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfmadd(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -354,9 +354,9 @@ void Vfmadd(const Instruction *inst) {
 }
 
 // Negated floating point multiply and add vs2.
-void Vfnmadd(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfnmadd(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -383,9 +383,9 @@ void Vfnmadd(const Instruction *inst) {
 }
 
 // Floating point multiply and subtract vs2.
-void Vfmsub(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfmsub(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -412,9 +412,9 @@ void Vfmsub(const Instruction *inst) {
 }
 
 // Negated floating point multiply and subtract vs2.
-void Vfnmsub(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfnmsub(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -441,9 +441,9 @@ void Vfnmsub(const Instruction *inst) {
 }
 
 // Floating point multiply and accumulate vd.
-void Vfmacc(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfmacc(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -470,9 +470,9 @@ void Vfmacc(const Instruction *inst) {
 }
 
 // Negated floating point multiply and accumulate vd.
-void Vfnmacc(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfnmacc(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -499,9 +499,9 @@ void Vfnmacc(const Instruction *inst) {
 }
 
 // Floating point multiply and subtract vd.
-void Vfmsac(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfmsac(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -528,9 +528,9 @@ void Vfmsac(const Instruction *inst) {
 }
 
 // Negated floating point multiply and subtract vd.
-void Vfnmsac(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfnmsac(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -557,9 +557,9 @@ void Vfnmsac(const Instruction *inst) {
 }
 
 // Widening floating point multiply and accumulate vd.
-void Vfwmacc(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfwmacc(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -583,9 +583,9 @@ void Vfwmacc(const Instruction *inst) {
 }
 
 // Widening negated floating point multiply and accumulate vd.
-void Vfwnmacc(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfwnmacc(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -609,9 +609,9 @@ void Vfwnmacc(const Instruction *inst) {
 }
 
 // Widening floating point multiply and subtract vd.
-void Vfwmsac(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfwmsac(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -635,9 +635,9 @@ void Vfwmsac(const Instruction *inst) {
 }
 
 // Widening negated floating point multiply and subtract vd.
-void Vfwnmsac(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfwnmsac(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -661,8 +661,8 @@ void Vfwnmsac(const Instruction *inst) {
 }
 
 // Change the sign of vs2 to the sign of vs1.
-void Vfsgnj(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfsgnj(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 4:
@@ -684,8 +684,8 @@ void Vfsgnj(const Instruction *inst) {
 }
 
 // Change the sign of vs2 to the negation of the sign of vs1.
-void Vfsgnjn(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfsgnjn(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 4:
@@ -707,8 +707,8 @@ void Vfsgnjn(const Instruction *inst) {
 }
 
 // Change the sign of vs2 to the xor of the sign of the two operands.
-void Vfsgnjx(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfsgnjx(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 4:
@@ -741,7 +741,7 @@ inline std::tuple<T, uint32_t> MaxMinHelper(T vs2, T vs1,
   }
   if (FPTypeInfo<T>::IsNaN(vs2) && FPTypeInfo<T>::IsNaN(vs1)) {
     auto c_nan = FPTypeInfo<T>::kCanonicalNaN;
-    return std::make_tuple(*reinterpret_cast<T *>(&c_nan), flag);
+    return std::make_tuple(*reinterpret_cast<T*>(&c_nan), flag);
   }
   // If either operand is a NaN return the other.
   if (FPTypeInfo<T>::IsNaN(vs2)) return std::tie(vs1, flag);
@@ -756,8 +756,8 @@ inline std::tuple<T, uint32_t> MaxMinHelper(T vs2, T vs1,
 }
 
 // Vector floating point min.
-void Vfmin(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfmin(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 4:
@@ -786,8 +786,8 @@ void Vfmin(const Instruction *inst) {
 }
 
 // Vector floating point max.
-void Vfmax(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfmax(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 4:
@@ -816,8 +816,8 @@ void Vfmax(const Instruction *inst) {
 }
 
 // Vector fp merge.
-void Vfmerge(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfmerge(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 4:

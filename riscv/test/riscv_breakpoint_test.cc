@@ -79,13 +79,13 @@ class RiscVBreakpointTest : public testing::Test, public Component {
 
   uint64_t latch_address_ = 0;
   int latch_size_ = -1;
-  RiscVActionPointMemoryInterface *rv_ap_memory_interface_;
-  ActionPointManagerBase *ap_manager_;
-  BreakpointManager *bp_manager_;
+  RiscVActionPointMemoryInterface* rv_ap_memory_interface_;
+  ActionPointManagerBase* ap_manager_;
+  BreakpointManager* bp_manager_;
   DataBufferFactory db_factory_;
-  FlatDemandMemory *memory_;
-  DataBuffer *db2_;
-  DataBuffer *db4_;
+  FlatDemandMemory* memory_;
+  DataBuffer* db2_;
+  DataBuffer* db4_;
 };
 
 TEST_F(RiscVBreakpointTest, Breakpoint16) {

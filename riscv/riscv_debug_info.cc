@@ -222,8 +222,8 @@ RiscVDebugInfo::RiscVDebugInfo()
                            {*DebugRegisterEnum::kV30, kV30Name},
                            {*DebugRegisterEnum::kV31, kV31Name}}) {}
 
-RiscVDebugInfo *RiscVDebugInfo::Instance() {
-  static RiscVDebugInfo *instance_ = nullptr;
+RiscVDebugInfo* RiscVDebugInfo::Instance() {
+  static RiscVDebugInfo* instance_ = nullptr;
   if (instance_ == nullptr) {
     instance_ = new RiscVDebugInfo();
   }

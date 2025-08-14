@@ -28,15 +28,15 @@ using ::mpact::sim::generic::Instruction;
 
 namespace RV32 {
 
-void RiscVCzeroEqz(const Instruction *inst);
-void RiscVCzeroNez(const Instruction *inst);
+void RiscVCzeroEqz(const Instruction* inst);
+void RiscVCzeroNez(const Instruction* inst);
 
 }  // namespace RV32
 
 namespace RV64 {
 
-void RiscVCzeroEqz(const Instruction *inst);
-void RiscVCzeroNez(const Instruction *inst);
+void RiscVCzeroEqz(const Instruction* inst);
+void RiscVCzeroNez(const Instruction* inst);
 
 }  // namespace RV64
 

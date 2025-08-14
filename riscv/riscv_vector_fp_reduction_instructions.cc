@@ -35,9 +35,9 @@ using ::mpact::sim::generic::FPTypeInfo;
 // separate entry in the destination vector.
 
 // Sum reduction.
-void Vfredosum(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfredosum(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -63,9 +63,9 @@ void Vfredosum(const Instruction *inst) {
   }
 }
 
-void Vfwredosum(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfwredosum(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -95,7 +95,7 @@ inline T MaxMinHelper(T vs2, T vs1, std::function<T(T, T)> operation) {
   if (FPTypeInfo<T>::IsSNaN(vs1) || FPTypeInfo<T>::IsSNaN(vs2) ||
       (FPTypeInfo<T>::IsNaN(vs2) && FPTypeInfo<T>::IsNaN(vs1))) {
     typename FPTypeInfo<T>::UIntType c_nan = FPTypeInfo<T>::kCanonicalNaN;
-    return *reinterpret_cast<T *>(&c_nan);
+    return *reinterpret_cast<T*>(&c_nan);
   }
   // If either operand is a NaN return the other.
   if (FPTypeInfo<T>::IsNaN(vs2)) return vs1;
@@ -105,9 +105,9 @@ inline T MaxMinHelper(T vs2, T vs1, std::function<T(T, T)> operation) {
 }
 
 // FP min reduction.
-void Vfredmin(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfredmin(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -141,9 +141,9 @@ void Vfredmin(const Instruction *inst) {
 }
 
 // FP max reduction.
-void Vfredmax(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfredmax(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();

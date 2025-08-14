@@ -89,19 +89,19 @@ constexpr std::string_view kDCache = "dCache";
 constexpr char kStackEndSymbolName[] = "__stack_end";
 constexpr char kStackSizeSymbolName[] = "__stack_size";
 
-RiscVRenode::RiscVRenode(std::string name, MemoryInterface *renode_sysbus,
+RiscVRenode::RiscVRenode(std::string name, MemoryInterface* renode_sysbus,
                          RiscVXlen xlen)
     : name_(name), renode_sysbus_(renode_sysbus) {
   router_ = new util::SingleInitiatorRouter(name + "_router");
   renode_router_ = new util::SingleInitiatorRouter(name + "_renode_router");
-  auto *data_memory = static_cast<MemoryInterface *>(router_);
+  auto* data_memory = static_cast<MemoryInterface*>(router_);
   // Instantiate memory profiler, but disable it until the config information
   // has been received.
   mem_profiler_ = new MemoryUseProfiler(data_memory);
   mem_profiler_->set_is_enabled(false);
   // Set up state, decoder, and top.
   rv_state_ = new RiscVState("RiscVRenode", xlen, mem_profiler_,
-                             static_cast<AtomicMemoryOpInterface *>(router_));
+                             static_cast<AtomicMemoryOpInterface*>(router_));
   rv_fp_state_ = new RiscVFPState(rv_state_->csr_set(), rv_state_);
   rv_state_->set_rv_fp(rv_fp_state_);
   std::string reg_name;
@@ -154,7 +154,7 @@ RiscVRenode::RiscVRenode(std::string name, MemoryInterface *renode_sysbus,
                                        : RiscVArmSemihost::BitWidth::kWord64,
                                    data_memory, data_memory);
   // Set up special handlers (ebreak, wfi, ecall).
-  riscv_top_->state()->AddEbreakHandler([this](const Instruction *inst) {
+  riscv_top_->state()->AddEbreakHandler([this](const Instruction* inst) {
     if (this->semihost_->IsSemihostingCall(inst)) {
       this->semihost_->OnEBreak(inst);
       return true;
@@ -165,8 +165,8 @@ RiscVRenode::RiscVRenode(std::string name, MemoryInterface *renode_sysbus,
     }
     return false;
   });
-  riscv_top_->state()->set_on_wfi([](const Instruction *) { return true; });
-  riscv_top_->state()->set_on_ecall([](const Instruction *) { return false; });
+  riscv_top_->state()->set_on_wfi([](const Instruction*) { return true; });
+  riscv_top_->state()->set_on_ecall([](const Instruction*) { return false; });
   semihost_->set_exit_callback([this]() {
     LOG(INFO) << "Simulation halting due to semihosting exit";
     this->riscv_top_->RequestHalt(HaltReason::kProgramDone, nullptr);
@@ -211,8 +211,8 @@ RiscVRenode::~RiscVRenode() {
   std::string serialized;
   if (!proto_file.good()) {
     LOG(ERROR) << "Failed to open proto file for writing";
-  } else if (!google::protobuf::TextFormat::PrintToString(
-                 *component_proto.get(), &serialized)) {
+  } else if (!google::protobuf::TextFormat::PrintToString(*component_proto,
+                                                          &serialized)) {
     LOG(ERROR) << "Failed to serialize protos";
   } else {
     proto_file << serialized;
@@ -239,7 +239,7 @@ RiscVRenode::~RiscVRenode() {
   delete clint_;
 }
 
-absl::StatusOr<uint64_t> RiscVRenode::LoadExecutable(const char *elf_file_name,
+absl::StatusOr<uint64_t> RiscVRenode::LoadExecutable(const char* elf_file_name,
                                                      bool for_symbols_only) {
   program_loader_ = new ElfProgramLoader(this);
   uint64_t entry_pt = 0;
@@ -264,12 +264,12 @@ absl::StatusOr<uint64_t> RiscVRenode::LoadExecutable(const char *elf_file_name,
     uint64_t tohost_addr = res.value().first;
     // Add to_host watchpoint that halts the execution when program exit is
     // signaled.
-    auto *db = riscv_top_->state()->db_factory()->Allocate<uint32_t>(2);
+    auto* db = riscv_top_->state()->db_factory()->Allocate<uint32_t>(2);
     auto status = riscv_top_->memory_watcher()->SetStoreWatchCallback(
         MemoryWatcher::AddressRange{tohost_addr,
                                     tohost_addr + 2 * sizeof(uint32_t) - 1},
         [this, tohost_addr, db](uint64_t addr, int sz) {
-          static DataBuffer *load_db = db;
+          static DataBuffer* load_db = db;
           if (load_db == nullptr) return;
           memory_->Load(tohost_addr, load_db, nullptr, nullptr);
           uint32_t code = load_db->Get<uint32_t>(0);
@@ -317,9 +317,9 @@ absl::StatusOr<HaltReasonValueType> RiscVRenode::GetLastHaltReason() {
 
 // Perform direct read of the memory through the renode router. The renode
 // router avoids routing the request back out to the sysbus.
-absl::StatusOr<size_t> RiscVRenode::ReadMemory(uint64_t address, void *buf,
+absl::StatusOr<size_t> RiscVRenode::ReadMemory(uint64_t address, void* buf,
                                                size_t length) {
-  auto *db = db_factory_.Allocate<uint8_t>(length);
+  auto* db = db_factory_.Allocate<uint8_t>(length);
   renode_router_->Load(address, db, nullptr, nullptr);
   std::memcpy(buf, db->raw_ptr(), length);
   db->DecRef();
@@ -329,9 +329,9 @@ absl::StatusOr<size_t> RiscVRenode::ReadMemory(uint64_t address, void *buf,
 // Perform direct write of the memory through the renode router. The renode
 // router avoids routing the request back out to the sysbus.
 absl::StatusOr<size_t> RiscVRenode::WriteMemory(uint64_t address,
-                                                const void *buf,
+                                                const void* buf,
                                                 size_t length) {
-  auto *db = db_factory_.Allocate<uint8_t>(length);
+  auto* db = db_factory_.Allocate<uint8_t>(length);
   std::memcpy(db->raw_ptr(), buf, length);
   renode_router_->Store(address, db);
   db->DecRef();
@@ -365,15 +365,15 @@ int32_t RiscVRenode::GetRenodeRegisterInfoSize() const {
 }
 
 absl::Status RiscVRenode::GetRenodeRegisterInfo(int32_t index, int32_t max_len,
-                                                char *name,
-                                                RenodeCpuRegister &info) {
-  auto const &register_info = RiscVRenodeRegisterInfo::GetRenodeRegisterInfo();
+                                                char* name,
+                                                RenodeCpuRegister& info) {
+  auto const& register_info = RiscVRenodeRegisterInfo::GetRenodeRegisterInfo();
   if ((index < 0) || (index >= register_info.size())) {
     return absl::OutOfRangeError(
         absl::StrCat("Register info index (", index, ") out of range"));
   }
   info = register_info[index];
-  auto const &reg_map = RiscVDebugInfo::Instance()->debug_register_map();
+  auto const& reg_map = RiscVDebugInfo::Instance()->debug_register_map();
   auto ptr = reg_map.find(info.index);
   if (ptr == reg_map.end()) {
     name[0] = '\0';
@@ -383,7 +383,7 @@ absl::Status RiscVRenode::GetRenodeRegisterInfo(int32_t index, int32_t max_len,
   return absl::OkStatus();
 }
 
-static absl::StatusOr<uint64_t> ParseNumber(const std::string &number) {
+static absl::StatusOr<uint64_t> ParseNumber(const std::string& number) {
   if (number.empty()) {
     return absl::InvalidArgumentError("Empty number");
   }
@@ -402,8 +402,8 @@ static absl::StatusOr<uint64_t> ParseNumber(const std::string &number) {
   return res.value();
 }
 
-absl::Status RiscVRenode::SetConfig(const char *config_names[],
-                                    const char *config_values[], int size) {
+absl::Status RiscVRenode::SetConfig(const char* config_names[],
+                                    const char* config_values[], int size) {
   std::string icache_cfg;
   std::string dcache_cfg;
   uint64_t memory_base = 0;
@@ -494,7 +494,7 @@ absl::Status RiscVRenode::SetConfig(const char *config_names[],
     instrumentation_control_ =
         new RiscVInstrumentationControl(cmd_shell_, riscv_top_, mem_profiler_);
     cmd_shell_->AddCore(
-        {static_cast<RiscVDebugInterface *>(riscv_cli_forwarder_),
+        {static_cast<RiscVDebugInterface*>(riscv_cli_forwarder_),
          [this]() { return program_loader_; }});
     cmd_shell_->AddCommand(
         instrumentation_control_->Usage(),
@@ -552,7 +552,7 @@ absl::Status RiscVRenode::SetConfig(const char *config_names[],
     ComponentValueEntry icache_value;
     icache_value.set_name("icache");
     icache_value.set_string_value(icache_cfg);
-    auto *cfg = riscv_top_->GetConfig("icache");
+    auto* cfg = riscv_top_->GetConfig("icache");
     auto status = cfg->Import(&icache_value);
     if (!status.ok()) return status;
   }
@@ -560,11 +560,11 @@ absl::Status RiscVRenode::SetConfig(const char *config_names[],
     ComponentValueEntry dcache_value;
     dcache_value.set_name("dcache");
     dcache_value.set_string_value(dcache_cfg);
-    auto *cfg = riscv_top_->GetConfig("dcache");
+    auto* cfg = riscv_top_->GetConfig("dcache");
     auto status = cfg->Import(&dcache_value);
     if (!status.ok()) return status;
     // Hook the cache into the memory port.
-    auto *dcache = riscv_top_->dcache();
+    auto* dcache = riscv_top_->dcache();
     dcache->set_memory(riscv_top_->state()->memory());
     riscv_top_->state()->set_memory(dcache);
   }

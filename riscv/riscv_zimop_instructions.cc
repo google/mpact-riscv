@@ -27,9 +27,9 @@ namespace RV32 {
 using RegType = RV32Register;
 using RegValue = typename RegType::ValueType;
 
-void RiscVMop(const Instruction *inst) {
+void RiscVMop(const Instruction* inst) {
   // Get the destination register and set it to zero.
-  auto *reg = static_cast<generic::RegisterDestinationOperand<RegValue> *>(
+  auto* reg = static_cast<generic::RegisterDestinationOperand<RegValue>*>(
                   inst->Destination(0))
                   ->GetRegister();
   reg->data_buffer()->template Set<RegValue>(0, 0);
@@ -42,9 +42,9 @@ namespace RV64 {
 using RegType = RV64Register;
 using RegValue = typename RegType::ValueType;
 
-void RiscVMop(const Instruction *inst) {
+void RiscVMop(const Instruction* inst) {
   // Get the destination register and set it to zero.
-  auto *reg = static_cast<generic::RegisterDestinationOperand<RegValue> *>(
+  auto* reg = static_cast<generic::RegisterDestinationOperand<RegValue>*>(
                   inst->Destination(0))
                   ->GetRegister();
   reg->data_buffer()->template Set<RegValue>(0, 0);

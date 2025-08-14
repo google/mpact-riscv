@@ -53,8 +53,8 @@ absl::NoDestructor<RE2> kSymRe(
     "^\\s*(%[a-zA-Z0-9_]+)?\\s*\\(?([a-zA-Z_][^)]+)\\)?\\s*$");
 
 absl::Status RelocateAddiIImm12(uint64_t address, absl::string_view text,
-                                ResolverInterface *resolver,
-                                std::vector<RelocationInfo> &relocations) {
+                                ResolverInterface* resolver,
+                                std::vector<RelocationInfo>& relocations) {
   std::string relo;
   std::string sym;
   if (!RE2::FullMatch(text, *kSymRe, &relo, &sym)) return absl::OkStatus();
@@ -74,8 +74,8 @@ absl::Status RelocateAddiIImm12(uint64_t address, absl::string_view text,
 }
 
 absl::Status RelocateJJImm20(uint64_t address, absl::string_view text,
-                             ResolverInterface *resolver,
-                             std::vector<RelocationInfo> &relocations) {
+                             ResolverInterface* resolver,
+                             std::vector<RelocationInfo>& relocations) {
   std::string relo;
   std::string sym;
   if (!RE2::FullMatch(text, *kSymRe, &relo, &sym)) return absl::OkStatus();
@@ -84,8 +84,8 @@ absl::Status RelocateJJImm20(uint64_t address, absl::string_view text,
 }
 
 absl::Status RelocateJrJImm12(uint64_t address, absl::string_view text,
-                              ResolverInterface *resolver,
-                              std::vector<RelocationInfo> &relocations) {
+                              ResolverInterface* resolver,
+                              std::vector<RelocationInfo>& relocations) {
   std::string relo;
   std::string sym;
   if (!RE2::FullMatch(text, *kSymRe, &relo, &sym)) return absl::OkStatus();
@@ -96,8 +96,8 @@ absl::Status RelocateJrJImm12(uint64_t address, absl::string_view text,
 }
 
 absl::Status RelocateLuiUImm20(uint64_t address, absl::string_view text,
-                               ResolverInterface *resolver,
-                               std::vector<RelocationInfo> &relocations) {
+                               ResolverInterface* resolver,
+                               std::vector<RelocationInfo>& relocations) {
   std::string relo;
   std::string sym;
   if (!RE2::FullMatch(text, *kSymRe, &relo, &sym)) return absl::OkStatus();
@@ -106,8 +106,8 @@ absl::Status RelocateLuiUImm20(uint64_t address, absl::string_view text,
 }
 
 absl::Status RelocateSdSImm12(uint64_t address, absl::string_view text,
-                              ResolverInterface *resolver,
-                              std::vector<RelocationInfo> &relocations) {
+                              ResolverInterface* resolver,
+                              std::vector<RelocationInfo>& relocations) {
   std::string relo;
   std::string sym;
   if (!RE2::FullMatch(text, *kSymRe, &relo, &sym)) return absl::OkStatus();
@@ -127,8 +127,8 @@ absl::Status RelocateSdSImm12(uint64_t address, absl::string_view text,
 }
 
 absl::Status RelocateAuipcUImm20(uint64_t address, absl::string_view text,
-                                 ResolverInterface *resolver,
-                                 std::vector<RelocationInfo> &relocations) {
+                                 ResolverInterface* resolver,
+                                 std::vector<RelocationInfo>& relocations) {
   std::string relo;
   std::string sym;
   if (!RE2::FullMatch(text, *kSymRe, &relo, &sym)) return absl::OkStatus();

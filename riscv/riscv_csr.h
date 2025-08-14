@@ -170,34 +170,34 @@ enum class RiscVCsrEnum {
 // the index.
 class RiscVCsrBase {
  public:
-  RiscVCsrBase(std::string name, uint64_t index, ArchState *state)
+  RiscVCsrBase(std::string name, uint64_t index, ArchState* state)
       : name_(name), index_(index), state_(state) {}
   RiscVCsrBase() = delete;
   virtual ~RiscVCsrBase() = default;
 
   // Source and destination creation interface.
-  virtual generic::SourceOperandInterface *CreateSourceOperand() = 0;
-  virtual generic::DestinationOperandInterface *CreateSetDestinationOperand(
+  virtual generic::SourceOperandInterface* CreateSourceOperand() = 0;
+  virtual generic::DestinationOperandInterface* CreateSetDestinationOperand(
       int latency, std::string op_name) = 0;
-  virtual generic::DestinationOperandInterface *CreateClearDestinationOperand(
+  virtual generic::DestinationOperandInterface* CreateClearDestinationOperand(
       int latency, std::string op_name) = 0;
-  virtual generic::DestinationOperandInterface *CreateWriteDestinationOperand(
+  virtual generic::DestinationOperandInterface* CreateWriteDestinationOperand(
       int latency, std::string op_name) = 0;
 
   // Three getters: name, index, and state
-  const std::string &name() { return name_; }
+  const std::string& name() { return name_; }
   uint64_t index() const { return index_; }
-  ArchState *state() { return state_; }
+  ArchState* state() { return state_; }
 
  private:
   std::string name_;
   uint64_t index_ = 0;
-  ArchState *state_;
+  ArchState* state_;
 };
 
 class RiscVCsrInterface : public RiscVCsrBase {
  public:
-  RiscVCsrInterface(std::string name, uint64_t index, ArchState *state)
+  RiscVCsrInterface(std::string name, uint64_t index, ArchState* state)
       : RiscVCsrBase(name, index, state) {}
   RiscVCsrInterface() = delete;
   ~RiscVCsrInterface() override = default;
@@ -228,34 +228,34 @@ class RiscVCsrInterface : public RiscVCsrBase {
 class RiscVCsrWriteDb : public generic::DataBufferDestination {
  public:
   RiscVCsrWriteDb() = delete;
-  explicit RiscVCsrWriteDb(RiscVCsrInterface *csr) : csr_(csr) {}
+  explicit RiscVCsrWriteDb(RiscVCsrInterface* csr) : csr_(csr) {}
 
-  void SetDataBuffer(generic::DataBuffer *db) override;
+  void SetDataBuffer(generic::DataBuffer* db) override;
 
  private:
-  RiscVCsrInterface *csr_;
+  RiscVCsrInterface* csr_;
 };
 
 class RiscVCsrClearBitsDb : public generic::DataBufferDestination {
  public:
   RiscVCsrClearBitsDb() = delete;
-  explicit RiscVCsrClearBitsDb(RiscVCsrInterface *csr) : csr_(csr) {}
+  explicit RiscVCsrClearBitsDb(RiscVCsrInterface* csr) : csr_(csr) {}
 
-  void SetDataBuffer(generic::DataBuffer *db) override;
+  void SetDataBuffer(generic::DataBuffer* db) override;
 
  private:
-  RiscVCsrInterface *csr_;
+  RiscVCsrInterface* csr_;
 };
 
 class RiscVCsrSetBitsDb : public generic::DataBufferDestination {
  public:
   RiscVCsrSetBitsDb() = delete;
-  explicit RiscVCsrSetBitsDb(RiscVCsrInterface *csr) : csr_(csr) {}
+  explicit RiscVCsrSetBitsDb(RiscVCsrInterface* csr) : csr_(csr) {}
 
-  void SetDataBuffer(generic::DataBuffer *db) override;
+  void SetDataBuffer(generic::DataBuffer* db) override;
 
  private:
-  RiscVCsrInterface *csr_;
+  RiscVCsrInterface* csr_;
 };
 
 // RiscV CSR class.
@@ -263,47 +263,47 @@ template <typename T>
 class RiscVSimpleCsr : public RiscVCsrInterface {
  public:
   // Enum index.
-  RiscVSimpleCsr(std::string name, RiscVCsrEnum index, ArchState *state)
+  RiscVSimpleCsr(std::string name, RiscVCsrEnum index, ArchState* state)
       : RiscVSimpleCsr(
             name, index, 0,
             std::numeric_limits<typename std::make_unsigned<T>::type>::max(),
             std::numeric_limits<typename std::make_unsigned<T>::type>::max(),
             state) {}
   RiscVSimpleCsr(std::string name, RiscVCsrEnum index, T initial_value,
-                 ArchState *state)
+                 ArchState* state)
       : RiscVSimpleCsr(
             name, index, initial_value,
             std::numeric_limits<typename std::make_unsigned<T>::type>::max(),
             std::numeric_limits<typename std::make_unsigned<T>::type>::max(),
             state) {}
   RiscVSimpleCsr(std::string name, RiscVCsrEnum index, T read_mask,
-                 T write_mask, ArchState *state)
+                 T write_mask, ArchState* state)
       : RiscVSimpleCsr(name, index, 0, read_mask, write_mask, state) {}
   // Uint64_t valued index. These are useful for other RiscV architecture
   // variants that add custom CSRs.
-  RiscVSimpleCsr(std::string name, uint64_t index, ArchState *state)
+  RiscVSimpleCsr(std::string name, uint64_t index, ArchState* state)
       : RiscVSimpleCsr(
             name, index, 0,
             std::numeric_limits<typename std::make_unsigned<T>::type>::max(),
             std::numeric_limits<typename std::make_unsigned<T>::type>::max(),
             state) {}
   RiscVSimpleCsr(std::string name, uint64_t index, T initial_value,
-                 ArchState *state)
+                 ArchState* state)
       : RiscVSimpleCsr(
             name, index, initial_value,
             std::numeric_limits<typename std::make_unsigned<T>::type>::max(),
             std::numeric_limits<typename std::make_unsigned<T>::type>::max(),
             state) {}
   RiscVSimpleCsr(std::string name, uint64_t index, T read_mask, T write_mask,
-                 ArchState *state)
+                 ArchState* state)
       : RiscVSimpleCsr(name, index, 0, read_mask, write_mask, state) {}
 
   RiscVSimpleCsr(std::string name, RiscVCsrEnum index, T initial_value,
-                 T read_mask, T write_mask, ArchState *state)
+                 T read_mask, T write_mask, ArchState* state)
       : RiscVSimpleCsr(name, static_cast<uint64_t>(index), initial_value,
                        read_mask, write_mask, state) {}
   RiscVSimpleCsr(std::string name, uint64_t index, T initial_value, T read_mask,
-                 T write_mask, ArchState *state)
+                 T write_mask, ArchState* state)
       : RiscVCsrInterface(name, index, state),
         value_(initial_value),
         read_mask_(read_mask),
@@ -320,8 +320,8 @@ class RiscVSimpleCsr : public RiscVCsrInterface {
 
   // Disable default and copy constructor, as well as assignment.
   RiscVSimpleCsr() = delete;
-  RiscVSimpleCsr(const RiscVSimpleCsr &) = delete;
-  RiscVSimpleCsr &operator=(const RiscVSimpleCsr &) = delete;
+  RiscVSimpleCsr(const RiscVSimpleCsr&) = delete;
+  RiscVSimpleCsr& operator=(const RiscVSimpleCsr&) = delete;
 
   // Return the value, modified as per read mask.
   uint32_t AsUint32() override {
@@ -353,12 +353,12 @@ class RiscVSimpleCsr : public RiscVCsrInterface {
   void Set(uint64_t value) override { value_ = static_cast<T>(value); }
 
   // Operand creation interface.
-  generic::SourceOperandInterface *CreateSourceOperand() override;
-  generic::DestinationOperandInterface *CreateSetDestinationOperand(
+  generic::SourceOperandInterface* CreateSourceOperand() override;
+  generic::DestinationOperandInterface* CreateSetDestinationOperand(
       int latency, std::string op_name) override;
-  generic::DestinationOperandInterface *CreateClearDestinationOperand(
+  generic::DestinationOperandInterface* CreateClearDestinationOperand(
       int latency, std::string op_name) override;
-  generic::DestinationOperandInterface *CreateWriteDestinationOperand(
+  generic::DestinationOperandInterface* CreateWriteDestinationOperand(
       int latency, std::string op_name) override;
 
   // Getters and setters.
@@ -367,9 +367,9 @@ class RiscVSimpleCsr : public RiscVCsrInterface {
   T write_mask() const { return write_mask_; }
   void set_write_mask(T value) { write_mask_ = value; }
 
-  RiscVCsrWriteDb *write_target() const { return write_target_; }
-  RiscVCsrSetBitsDb *set_bits_target() const { return set_bits_target_; }
-  RiscVCsrClearBitsDb *clear_bits_target() const { return clear_bits_target_; }
+  RiscVCsrWriteDb* write_target() const { return write_target_; }
+  RiscVCsrSetBitsDb* set_bits_target() const { return set_bits_target_; }
+  RiscVCsrClearBitsDb* clear_bits_target() const { return clear_bits_target_; }
 
   size_t size() const override { return sizeof(T); }
 
@@ -383,9 +383,9 @@ class RiscVSimpleCsr : public RiscVCsrInterface {
       std::numeric_limits<typename std::make_unsigned<T>::type>::max();
   T write_mask_ =
       std::numeric_limits<typename std::make_unsigned<T>::type>::max();
-  RiscVCsrWriteDb *write_target_;
-  RiscVCsrSetBitsDb *set_bits_target_;
-  RiscVCsrClearBitsDb *clear_bits_target_;
+  RiscVCsrWriteDb* write_target_;
+  RiscVCsrSetBitsDb* set_bits_target_;
+  RiscVCsrClearBitsDb* clear_bits_target_;
 };
 
 // The shadow csr class is used to implement a more restricted view of another
@@ -395,7 +395,7 @@ template <typename T>
 class RiscVShadowCsr : public RiscVCsrInterface {
  public:
   RiscVShadowCsr(std::string name, RiscVCsrEnum index, T read_mask,
-                 T write_mask, ArchState *state, RiscVCsrInterface *csr)
+                 T write_mask, ArchState* state, RiscVCsrInterface* csr)
       : RiscVCsrInterface(name, static_cast<uint64_t>(index), state),
         csr_(csr),
         read_mask_(read_mask),
@@ -404,8 +404,8 @@ class RiscVShadowCsr : public RiscVCsrInterface {
         set_bits_target_(new RiscVCsrSetBitsDb(this)),
         clear_bits_target_(new RiscVCsrClearBitsDb(this)) {}
   RiscVShadowCsr() = delete;
-  RiscVShadowCsr(const RiscVShadowCsr &) = delete;
-  RiscVShadowCsr &operator=(const RiscVShadowCsr &) = delete;
+  RiscVShadowCsr(const RiscVShadowCsr&) = delete;
+  RiscVShadowCsr& operator=(const RiscVShadowCsr&) = delete;
 
   ~RiscVShadowCsr() override {
     delete write_target_;
@@ -451,29 +451,29 @@ class RiscVShadowCsr : public RiscVCsrInterface {
   // Set to reset value.
   void Reset() override { /* Empty. */ }
   // Operand creation interface.
-  generic::SourceOperandInterface *CreateSourceOperand() override;
-  generic::DestinationOperandInterface *CreateSetDestinationOperand(
+  generic::SourceOperandInterface* CreateSourceOperand() override;
+  generic::DestinationOperandInterface* CreateSetDestinationOperand(
       int latency, std::string op_name) override;
-  generic::DestinationOperandInterface *CreateClearDestinationOperand(
+  generic::DestinationOperandInterface* CreateClearDestinationOperand(
       int latency, std::string op_name) override;
-  generic::DestinationOperandInterface *CreateWriteDestinationOperand(
+  generic::DestinationOperandInterface* CreateWriteDestinationOperand(
       int latency, std::string op_name) override;
 
-  RiscVCsrWriteDb *write_target() const { return write_target_; }
-  RiscVCsrSetBitsDb *set_bits_target() const { return set_bits_target_; }
-  RiscVCsrClearBitsDb *clear_bits_target() const { return clear_bits_target_; }
+  RiscVCsrWriteDb* write_target() const { return write_target_; }
+  RiscVCsrSetBitsDb* set_bits_target() const { return set_bits_target_; }
+  RiscVCsrClearBitsDb* clear_bits_target() const { return clear_bits_target_; }
 
-  RiscVCsrInterface *csr() const { return csr_; }
+  RiscVCsrInterface* csr() const { return csr_; }
   T read_mask() const { return read_mask_; }
   T write_mask() const { return write_mask_; }
 
  private:
-  RiscVCsrInterface *csr_;
+  RiscVCsrInterface* csr_;
   T read_mask_;
   T write_mask_;
-  RiscVCsrWriteDb *write_target_;
-  RiscVCsrSetBitsDb *set_bits_target_;
-  RiscVCsrClearBitsDb *clear_bits_target_;
+  RiscVCsrWriteDb* write_target_;
+  RiscVCsrSetBitsDb* set_bits_target_;
+  RiscVCsrClearBitsDb* clear_bits_target_;
 };
 
 using RiscV32SimpleCsr = RiscVSimpleCsr<uint32_t>;
@@ -483,30 +483,30 @@ class RiscVCsrSet {
  public:
   // Constructor.
   RiscVCsrSet() = default;
-  RiscVCsrSet(const RiscVCsrSet &) = delete;
-  RiscVCsrSet &operator=(const RiscVCsrSet &) = delete;
+  RiscVCsrSet(const RiscVCsrSet&) = delete;
+  RiscVCsrSet& operator=(const RiscVCsrSet&) = delete;
 
   // Add the CSR to the CsrSet. Return error if it already exists. The storage
   // is owned by the caller, and must remain valid for the duration of
   // the lifetime of the CsrSet instance, or explicitly removed.
-  absl::Status AddCsr(RiscVCsrInterface *csr);
+  absl::Status AddCsr(RiscVCsrInterface* csr);
   // Methods to get a handle to the CSR.
-  absl::StatusOr<RiscVCsrInterface *> GetCsr(absl::string_view name);
-  absl::StatusOr<RiscVCsrInterface *> GetCsr(uint64_t index);
+  absl::StatusOr<RiscVCsrInterface*> GetCsr(absl::string_view name);
+  absl::StatusOr<RiscVCsrInterface*> GetCsr(uint64_t index);
   // Remove the CSR from the CsrSet.
   absl::Status RemoveCsr(uint64_t csr_index);
 
  private:
-  absl::flat_hash_map<std::string, RiscVCsrInterface *> csr_name_map_;
-  absl::flat_hash_map<uint64_t, RiscVCsrInterface *> csr_index_map_;
+  absl::flat_hash_map<std::string, RiscVCsrInterface*> csr_name_map_;
+  absl::flat_hash_map<uint64_t, RiscVCsrInterface*> csr_index_map_;
 };
 
 // Source operand type for CSR.
 class RiscVCsrSourceOperand : public generic::SourceOperandInterface {
  public:
   // Constructor. Note, default constructor is deleted.
-  RiscVCsrSourceOperand(RiscVCsrInterface *csr, std::string op_name);
-  explicit RiscVCsrSourceOperand(RiscVCsrInterface *csr);
+  RiscVCsrSourceOperand(RiscVCsrInterface* csr, std::string op_name);
+  explicit RiscVCsrSourceOperand(RiscVCsrInterface* csr);
   RiscVCsrSourceOperand() = delete;
 
   // Methods to read the value of the CSR.
@@ -522,14 +522,14 @@ class RiscVCsrSourceOperand : public generic::SourceOperandInterface {
   // Returns the RiscVCsrInterface<T> object wrapped in absl::any.
   std::any GetObject() const final { return std::any(csr_); }
   // Non-inherited method to get the register object.
-  RiscVCsrInterface *GetCsr() const { return csr_; }
+  RiscVCsrInterface* GetCsr() const { return csr_; }
 
   std::vector<int> shape() const final { return {1}; }
 
   std::string AsString() const final { return op_name_; }
 
  private:
-  RiscVCsrInterface *csr_;
+  RiscVCsrInterface* csr_;
   std::string op_name_;
 };
 
@@ -537,26 +537,26 @@ class RiscVCsrSourceOperand : public generic::SourceOperandInterface {
 class RiscVCsrDestinationOperand : public generic::DestinationOperandInterface {
  public:
   // Constructor and Destructor
-  RiscVCsrDestinationOperand(RiscVCsrInterface *csr,
-                             generic::DataBufferDestination *db_dest,
+  RiscVCsrDestinationOperand(RiscVCsrInterface* csr,
+                             generic::DataBufferDestination* db_dest,
                              int latency);
-  RiscVCsrDestinationOperand(RiscVCsrInterface *csr,
-                             generic::DataBufferDestination *db_dest,
+  RiscVCsrDestinationOperand(RiscVCsrInterface* csr,
+                             generic::DataBufferDestination* db_dest,
                              int latency, std::string op_name);
   RiscVCsrDestinationOperand() = delete;
 
   // Initializes the DataBuffer instance so that when Submit is called, it can
   // be entered into the correct delay line, with the correct latency, targeting
   // the correct csr.
-  void InitializeDataBuffer(generic::DataBuffer *db) override;
+  void InitializeDataBuffer(generic::DataBuffer* db) override;
 
   // Allocates and returns an initialized DataBuffer instance that contains a
   // copy of the current value of the csr. This is useful when only part
   // of the destination register will be modified.
-  generic::DataBuffer *CopyDataBuffer() override;
+  generic::DataBuffer* CopyDataBuffer() override;
 
   // Allocates and returns an initialized DataBuffer instance.
-  generic::DataBuffer *AllocateDataBuffer() final;
+  generic::DataBuffer* AllocateDataBuffer() final;
 
   // Returns the latency associated with writes to this csr operand.
   int latency() const override { return latency_; }
@@ -567,21 +567,21 @@ class RiscVCsrDestinationOperand : public generic::DestinationOperandInterface {
   std::vector<int> shape() const override { return {1}; }
 
   // Non-inherited method to get the register object.
-  RiscVCsrInterface *GetRiscVCsr() const { return csr_; }
+  RiscVCsrInterface* GetRiscVCsr() const { return csr_; }
 
   std::string AsString() const override { return op_name_; }
 
  private:
-  RiscVCsrInterface *csr_;
-  generic::DataBufferDestination *db_dest_;
-  generic::DataBufferFactory *db_factory_;
+  RiscVCsrInterface* csr_;
+  generic::DataBufferDestination* db_dest_;
+  generic::DataBufferFactory* db_factory_;
   int latency_;
-  generic::DataBufferDelayLine *delay_line_;
+  generic::DataBufferDelayLine* delay_line_;
   std::string op_name_;
 };
 
 template <typename T>
-generic::DestinationOperandInterface *
+generic::DestinationOperandInterface*
 RiscVSimpleCsr<T>::CreateSetDestinationOperand(int latency,
                                                std::string op_name) {
   return new RiscVCsrDestinationOperand(this, this->set_bits_target(), latency,
@@ -589,7 +589,7 @@ RiscVSimpleCsr<T>::CreateSetDestinationOperand(int latency,
 }
 
 template <typename T>
-generic::DestinationOperandInterface *
+generic::DestinationOperandInterface*
 RiscVSimpleCsr<T>::CreateClearDestinationOperand(int latency,
                                                  std::string op_name) {
   return new RiscVCsrDestinationOperand(this, this->clear_bits_target(),
@@ -597,7 +597,7 @@ RiscVSimpleCsr<T>::CreateClearDestinationOperand(int latency,
 }
 
 template <typename T>
-generic::DestinationOperandInterface *
+generic::DestinationOperandInterface*
 RiscVSimpleCsr<T>::CreateWriteDestinationOperand(int latency,
                                                  std::string op_name) {
   return new RiscVCsrDestinationOperand(this, this->write_target(), latency,
@@ -605,12 +605,12 @@ RiscVSimpleCsr<T>::CreateWriteDestinationOperand(int latency,
 }
 
 template <typename T>
-generic::SourceOperandInterface *RiscVSimpleCsr<T>::CreateSourceOperand() {
+generic::SourceOperandInterface* RiscVSimpleCsr<T>::CreateSourceOperand() {
   return new RiscVCsrSourceOperand(this);
 }
 
 template <typename T>
-generic::DestinationOperandInterface *
+generic::DestinationOperandInterface*
 RiscVShadowCsr<T>::CreateSetDestinationOperand(int latency,
                                                std::string op_name) {
   return new RiscVCsrDestinationOperand(this, this->set_bits_target(), latency,
@@ -618,7 +618,7 @@ RiscVShadowCsr<T>::CreateSetDestinationOperand(int latency,
 }
 
 template <typename T>
-generic::DestinationOperandInterface *
+generic::DestinationOperandInterface*
 RiscVShadowCsr<T>::CreateClearDestinationOperand(int latency,
                                                  std::string op_name) {
   return new RiscVCsrDestinationOperand(this, this->clear_bits_target(),
@@ -626,7 +626,7 @@ RiscVShadowCsr<T>::CreateClearDestinationOperand(int latency,
 }
 
 template <typename T>
-generic::DestinationOperandInterface *
+generic::DestinationOperandInterface*
 RiscVShadowCsr<T>::CreateWriteDestinationOperand(int latency,
                                                  std::string op_name) {
   return new RiscVCsrDestinationOperand(this, this->write_target(), latency,
@@ -634,7 +634,7 @@ RiscVShadowCsr<T>::CreateWriteDestinationOperand(int latency,
 }
 
 template <typename T>
-generic::SourceOperandInterface *RiscVShadowCsr<T>::CreateSourceOperand() {
+generic::SourceOperandInterface* RiscVShadowCsr<T>::CreateSourceOperand() {
   return new RiscVCsrSourceOperand(this);
 }
 

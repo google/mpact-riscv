@@ -15,8 +15,12 @@
 #ifndef MPACT_RISCV_RISCV_RISCV_TEST_MEM_WATCHER_H_
 #define MPACT_RISCV_RISCV_RISCV_TEST_MEM_WATCHER_H_
 
+#include <cstdint>
 #include <string>
 
+#include "mpact/sim/generic/data_buffer.h"
+#include "mpact/sim/generic/instruction.h"
+#include "mpact/sim/generic/ref_count.h"
 #include "mpact/sim/util/memory/memory_interface.h"
 
 namespace mpact {
@@ -34,24 +38,24 @@ namespace riscv {
 
 class RiscVTestMemWatcher : public util::MemoryInterface {
  public:
-  explicit RiscVTestMemWatcher(util::MemoryInterface *memory)
+  explicit RiscVTestMemWatcher(util::MemoryInterface* memory)
       : memory_(memory) {}
 
-  void Load(uint64_t address, generic::DataBuffer *db,
-            generic::Instruction *inst,
-            generic::ReferenceCount *context) override;
-  void Load(generic::DataBuffer *address_db, generic::DataBuffer *mask_db,
-            int el_size, generic::DataBuffer *db, generic::Instruction *inst,
-            generic::ReferenceCount *context) override;
-  void Store(uint64_t address, generic::DataBuffer *db) override;
-  void Store(generic::DataBuffer *address_db, generic::DataBuffer *mask_db,
-             int el_size, generic::DataBuffer *db) override;
+  void Load(uint64_t address, generic::DataBuffer* db,
+            generic::Instruction* inst,
+            generic::ReferenceCount* context) override;
+  void Load(generic::DataBuffer* address_db, generic::DataBuffer* mask_db,
+            int el_size, generic::DataBuffer* db, generic::Instruction* inst,
+            generic::ReferenceCount* context) override;
+  void Store(uint64_t address, generic::DataBuffer* db) override;
+  void Store(generic::DataBuffer* address_db, generic::DataBuffer* mask_db,
+             int el_size, generic::DataBuffer* db) override;
 
-  const std::string &trace_str() const { return trace_str_; }
+  const std::string& trace_str() const { return trace_str_; }
   void clear_trace_str() { trace_str_.clear(); }
 
  private:
-  util::MemoryInterface *memory_;
+  util::MemoryInterface* memory_;
   std::string trace_str_;
 };
 

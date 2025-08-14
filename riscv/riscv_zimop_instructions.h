@@ -27,7 +27,7 @@ namespace RV32 {
 
 // This semantic function ignores the source operand(s) and takes one
 // destination operand.
-void RiscVMop(const Instruction *inst);
+void RiscVMop(const Instruction* inst);
 
 }  // namespace RV32
 
@@ -35,7 +35,7 @@ namespace RV64 {
 
 // This semantic function ignores the source operand(s) and takes one
 // destination operand.
-void RiscVMop(const Instruction *inst);
+void RiscVMop(const Instruction* inst);
 
 }  // namespace RV64
 

@@ -32,7 +32,7 @@ namespace riscv {
 using DataBuffer = generic::DataBuffer;
 
 RV32VectorSourceOperand::RV32VectorSourceOperand(
-    absl::Span<generic::RegisterBase *> reg_span, std::string op_name)
+    absl::Span<generic::RegisterBase*> reg_span, std::string op_name)
     : op_name_(op_name) {
   if (reg_span.empty()) return;
   if (reg_span[0] == nullptr) return;
@@ -58,10 +58,10 @@ RV32VectorSourceOperand::RV32VectorSourceOperand(
 }
 
 RV32VectorSourceOperand::RV32VectorSourceOperand(
-    absl::Span<generic::RegisterBase *> reg_span)
+    absl::Span<generic::RegisterBase*> reg_span)
     : RV32VectorSourceOperand(reg_span, reg_span[0]->name()) {}
 
-RV32VectorSourceOperand::RV32VectorSourceOperand(generic::RegisterBase *reg,
+RV32VectorSourceOperand::RV32VectorSourceOperand(generic::RegisterBase* reg,
                                                  std::string op_name)
     : op_name_(op_name) {
   if (reg == nullptr) return;
@@ -72,7 +72,7 @@ RV32VectorSourceOperand::RV32VectorSourceOperand(generic::RegisterBase *reg,
   registers_.push_back(reg);
 }
 
-RV32VectorSourceOperand::RV32VectorSourceOperand(generic::RegisterBase *reg)
+RV32VectorSourceOperand::RV32VectorSourceOperand(generic::RegisterBase* reg)
     : RV32VectorSourceOperand(reg, reg->name()) {}
 
 bool RV32VectorSourceOperand::AsBool(int i) {
@@ -130,11 +130,11 @@ uint64_t RV32VectorSourceOperand::AsUint64(int i) {
   return registers_[group]->data_buffer()->Get<uint64_t>(offset);
 }
 
-RV32VectorTrueOperand::RV32VectorTrueOperand(RiscVState *state)
+RV32VectorTrueOperand::RV32VectorTrueOperand(RiscVState* state)
     : RV32VectorSourceOperand(
           state->GetRegister<RVVectorRegister>(kName).first) {
   // Ensure the value is all ones.
-  auto *reg = state->GetRegister<RVVectorRegister>(kName).first;
+  auto* reg = state->GetRegister<RVVectorRegister>(kName).first;
   auto data = reg->data_buffer()->Get<uint64_t>();
   for (int i = 0; i < data.size(); i++) {
     data[i] = std::numeric_limits<uint64_t>::max();
@@ -142,7 +142,7 @@ RV32VectorTrueOperand::RV32VectorTrueOperand(RiscVState *state)
 }
 
 RV32VectorDestinationOperand::RV32VectorDestinationOperand(
-    absl::Span<generic::RegisterBase *> reg_span, int latency,
+    absl::Span<generic::RegisterBase*> reg_span, int latency,
     std::string op_name)
     : db_factory_(reg_span[0]->arch_state()->db_factory()),
       delay_line_(reg_span[0]->arch_state()->data_buffer_delay_line()),
@@ -172,11 +172,11 @@ RV32VectorDestinationOperand::RV32VectorDestinationOperand(
 }
 
 RV32VectorDestinationOperand::RV32VectorDestinationOperand(
-    absl::Span<generic::RegisterBase *> reg_span, int latency)
+    absl::Span<generic::RegisterBase*> reg_span, int latency)
     : RV32VectorDestinationOperand(reg_span, latency, reg_span[0]->name()) {}
 
 RV32VectorDestinationOperand::RV32VectorDestinationOperand(
-    generic::RegisterBase *reg, int latency, std::string op_name)
+    generic::RegisterBase* reg, int latency, std::string op_name)
     : op_name_(op_name) {
   if (reg == nullptr) return;
 
@@ -187,18 +187,18 @@ RV32VectorDestinationOperand::RV32VectorDestinationOperand(
 }
 
 RV32VectorDestinationOperand::RV32VectorDestinationOperand(
-    generic::RegisterBase *reg, int latency)
+    generic::RegisterBase* reg, int latency)
     : RV32VectorDestinationOperand(reg, latency, reg->name()) {}
 
-DataBuffer *RV32VectorDestinationOperand::AllocateDataBuffer() {
+DataBuffer* RV32VectorDestinationOperand::AllocateDataBuffer() {
   return AllocateDataBuffer(0);
 }
 
-void RV32VectorDestinationOperand::InitializeDataBuffer(DataBuffer *db) {
+void RV32VectorDestinationOperand::InitializeDataBuffer(DataBuffer* db) {
   InitializeDataBuffer(0, db);
 }
 
-DataBuffer *RV32VectorDestinationOperand::CopyDataBuffer() {
+DataBuffer* RV32VectorDestinationOperand::CopyDataBuffer() {
   return CopyDataBuffer(0);
 }
 
@@ -214,20 +214,20 @@ std::vector<int> RV32VectorDestinationOperand::shape() const {
 
 std::string RV32VectorDestinationOperand::AsString() const { return op_name_; }
 
-DataBuffer *RV32VectorDestinationOperand::AllocateDataBuffer(int i) {
-  DataBuffer *db = db_factory_->Allocate(registers_[i]->size());
+DataBuffer* RV32VectorDestinationOperand::AllocateDataBuffer(int i) {
+  DataBuffer* db = db_factory_->Allocate(registers_[i]->size());
   InitializeDataBuffer(i, db);
   return db;
 }
 
-void RV32VectorDestinationOperand::InitializeDataBuffer(int i, DataBuffer *db) {
+void RV32VectorDestinationOperand::InitializeDataBuffer(int i, DataBuffer* db) {
   db->set_destination(registers_[i]);
   db->set_latency(latency_);
   db->set_delay_line(delay_line_);
 }
 
-DataBuffer *RV32VectorDestinationOperand::CopyDataBuffer(int i) {
-  DataBuffer *db = db_factory_->MakeCopyOf(registers_[i]->data_buffer());
+DataBuffer* RV32VectorDestinationOperand::CopyDataBuffer(int i) {
+  DataBuffer* db = db_factory_->MakeCopyOf(registers_[i]->data_buffer());
   InitializeDataBuffer(i, db);
   return db;
 }

@@ -49,14 +49,14 @@ RiscV64GBinEncoderInterface::RiscV64GBinEncoderInterface() {
 absl::StatusOr<std::tuple<uint64_t, int>>
 RiscV64GBinEncoderInterface::GetOpcodeEncoding(SlotEnum slot, int entry,
                                                OpcodeEnum opcode,
-                                               ResolverInterface *resolver) {
+                                               ResolverInterface* resolver) {
   return encoding64::kOpcodeEncodings->at(opcode);
 }
 
 absl::StatusOr<uint64_t> RiscV64GBinEncoderInterface::GetSrcOpEncoding(
     uint64_t address, absl::string_view text, SlotEnum slot, int entry,
     OpcodeEnum opcode, SourceOpEnum source_op, int source_num,
-    ResolverInterface *resolver) {
+    ResolverInterface* resolver) {
   auto iter = source_op_map_.find(*source_op);
   if (iter == source_op_map_.end()) {
     return absl::NotFoundError(absl::StrCat(
@@ -68,7 +68,7 @@ absl::StatusOr<uint64_t> RiscV64GBinEncoderInterface::GetSrcOpEncoding(
 absl::Status RiscV64GBinEncoderInterface::AppendSrcOpRelocation(
     uint64_t address, absl::string_view text, SlotEnum slot, int entry,
     OpcodeEnum opcode, SourceOpEnum source_op, int source_num,
-    ResolverInterface *resolver, std::vector<RelocationInfo> &relocations) {
+    ResolverInterface* resolver, std::vector<RelocationInfo>& relocations) {
   auto iter = relocation_source_op_map_.find(std::tie(opcode, source_op));
   if (iter == relocation_source_op_map_.end()) return absl::OkStatus();
   return iter->second(address, text, resolver, relocations);
@@ -77,7 +77,7 @@ absl::Status RiscV64GBinEncoderInterface::AppendSrcOpRelocation(
 absl::StatusOr<uint64_t> RiscV64GBinEncoderInterface::GetDestOpEncoding(
     uint64_t address, absl::string_view text, SlotEnum slot, int entry,
     OpcodeEnum opcode, DestOpEnum dest_op, int dest_num,
-    ResolverInterface *resolver) {
+    ResolverInterface* resolver) {
   auto iter = dest_op_map_.find(*dest_op);
   if (iter == dest_op_map_.end()) {
     return absl::NotFoundError(
@@ -89,7 +89,7 @@ absl::StatusOr<uint64_t> RiscV64GBinEncoderInterface::GetDestOpEncoding(
 absl::StatusOr<uint64_t> RiscV64GBinEncoderInterface::GetListDestOpEncoding(
     uint64_t address, absl::string_view text, SlotEnum slot, int entry,
     OpcodeEnum opcode, ListDestOpEnum dest_op, int dest_num,
-    ResolverInterface *resolver) {
+    ResolverInterface* resolver) {
   auto iter = list_dest_op_map_.find(*dest_op);
   if (iter == list_dest_op_map_.end()) {
     return absl::NotFoundError(absl::StrCat(
@@ -101,7 +101,7 @@ absl::StatusOr<uint64_t> RiscV64GBinEncoderInterface::GetListDestOpEncoding(
 absl::Status RiscV64GBinEncoderInterface::AppendDestOpRelocation(
     uint64_t address, absl::string_view text, SlotEnum slot, int entry,
     OpcodeEnum opcode, DestOpEnum dest_op, int dest_num,
-    ResolverInterface *resolver, std::vector<RelocationInfo> &relocations) {
+    ResolverInterface* resolver, std::vector<RelocationInfo>& relocations) {
   // There are no destination operands that require relocation.
   return absl::OkStatus();
 }
@@ -109,7 +109,7 @@ absl::Status RiscV64GBinEncoderInterface::AppendDestOpRelocation(
 absl::StatusOr<uint64_t> RiscV64GBinEncoderInterface::GetListSrcOpEncoding(
     uint64_t address, absl::string_view text, SlotEnum slot, int entry,
     OpcodeEnum opcode, ListSourceOpEnum source_op, int source_num,
-    ResolverInterface *resolver) {
+    ResolverInterface* resolver) {
   auto iter = list_source_op_map_.find(*source_op);
   if (iter == list_source_op_map_.end()) {
     return absl::NotFoundError(absl::StrCat(
@@ -120,7 +120,7 @@ absl::StatusOr<uint64_t> RiscV64GBinEncoderInterface::GetListSrcOpEncoding(
 
 absl::StatusOr<uint64_t> RiscV64GBinEncoderInterface::GetPredOpEncoding(
     uint64_t address, absl::string_view text, SlotEnum slot, int entry,
-    OpcodeEnum opcode, PredOpEnum pred_op, ResolverInterface *resolver) {
+    OpcodeEnum opcode, PredOpEnum pred_op, ResolverInterface* resolver) {
   auto iter = pred_op_map_.find(*pred_op);
   if (iter == pred_op_map_.end()) {
     return absl::NotFoundError(absl::StrCat(

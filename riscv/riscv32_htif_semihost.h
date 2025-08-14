@@ -45,19 +45,19 @@ class RiscV32HtifSemiHost {
     uint64_t fromhost;
   };
 
-  RiscV32HtifSemiHost(util::MemoryWatcher *watcher,
-                      util::MemoryInterface *memory,
-                      const SemiHostAddresses &magic_addresses);
+  RiscV32HtifSemiHost(util::MemoryWatcher* watcher,
+                      util::MemoryInterface* memory,
+                      const SemiHostAddresses& magic_addresses);
 
-  RiscV32HtifSemiHost(util::MemoryWatcher *watcher,
-                      util::MemoryInterface *memory,
-                      const SemiHostAddresses &magic_addresses,
+  RiscV32HtifSemiHost(util::MemoryWatcher* watcher,
+                      util::MemoryInterface* memory,
+                      const SemiHostAddresses& magic_addresses,
                       HaltCallback halt_callback, ErrorCallback error_callback);
 
   ~RiscV32HtifSemiHost();
 
   // Set magic addresses.
-  void SetMagicAddresses(const SemiHostAddresses &magic_addresses);
+  void SetMagicAddresses(const SemiHostAddresses& magic_addresses);
   // Set the halt callback.
   void SetHaltCallback(HaltCallback halt_callback);
   // Set the error callback.
@@ -71,9 +71,9 @@ class RiscV32HtifSemiHost {
   HaltCallback halt_callback_;
   ErrorCallback error_callback_;
   // Memory watcher.
-  util::MemoryWatcher *watcher_;
+  util::MemoryWatcher* watcher_;
   // Memory interface (bypassing the watchpoints).
-  util::MemoryInterface *memory_;
+  util::MemoryInterface* memory_;
   SemiHostAddresses magic_addresses_;
   // File descriptor map.
   absl::flat_hash_map<int, int> fd_map_;

@@ -42,12 +42,12 @@ class RV32VectorTrueTest : public testing::Test {
   }
 
   FlatDemandMemory memory_;
-  RiscVState *state_;
-  RiscVVectorState *vstate_;
+  RiscVState* state_;
+  RiscVVectorState* vstate_;
 };
 
 TEST_F(RV32VectorTrueTest, Initial) {
-  auto *op = new RV32VectorTrueOperand(state_);
+  auto* op = new RV32VectorTrueOperand(state_);
   for (int i = 0; i < op->shape()[0]; ++i) {
     EXPECT_EQ(op->AsUint8(i), 0xff) << "element: " << i;
   }
@@ -55,8 +55,8 @@ TEST_F(RV32VectorTrueTest, Initial) {
 }
 
 TEST_F(RV32VectorTrueTest, Register) {
-  auto *op = new RV32VectorTrueOperand(state_);
-  auto *reg = op->GetRegister(0);
+  auto* op = new RV32VectorTrueOperand(state_);
+  auto* reg = op->GetRegister(0);
   auto span = reg->data_buffer()->Get<uint8_t>();
   for (int i = 0; i < op->shape()[0]; ++i) {
     EXPECT_EQ(span[i], 0xff) << "element: " << i;

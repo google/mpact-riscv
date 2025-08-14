@@ -71,29 +71,29 @@ class RV32IInstructionTest : public testing::Test {
 
   // Appends the source and destination operands for the register names
   // given in the two vectors.
-  void AppendRegisterOperands(Instruction *inst,
-                              const std::vector<std::string> &sources,
-                              const std::vector<std::string> &destinations) {
-    for (auto &reg_name : sources) {
-      auto *reg = state_->GetRegister<RV32Register>(reg_name).first;
+  void AppendRegisterOperands(Instruction* inst,
+                              const std::vector<std::string>& sources,
+                              const std::vector<std::string>& destinations) {
+    for (auto& reg_name : sources) {
+      auto* reg = state_->GetRegister<RV32Register>(reg_name).first;
       inst->AppendSource(reg->CreateSourceOperand());
     }
-    for (auto &reg_name : destinations) {
-      auto *reg = state_->GetRegister<RV32Register>(reg_name).first;
+    for (auto& reg_name : destinations) {
+      auto* reg = state_->GetRegister<RV32Register>(reg_name).first;
       inst->AppendDestination(reg->CreateDestinationOperand(0));
     }
   }
 
-  void AppendRegisterOperands(const std::vector<std::string> &sources,
-                              const std::vector<std::string> &destinations) {
+  void AppendRegisterOperands(const std::vector<std::string>& sources,
+                              const std::vector<std::string>& destinations) {
     AppendRegisterOperands(instruction_, sources, destinations);
   }
 
   // Appends immediate source operands with the given values.
   template <typename T>
-  void AppendImmediateOperands(const std::vector<T> &values) {
+  void AppendImmediateOperands(const std::vector<T>& values) {
     for (auto value : values) {
-      auto *src = new ImmediateOperand<T>(value);
+      auto* src = new ImmediateOperand<T>(value);
       instruction_->AppendSource(src);
     }
   }
@@ -102,9 +102,9 @@ class RV32IInstructionTest : public testing::Test {
   // named register and sets it to the corresponding value.
   template <typename T>
   void SetRegisterValues(const std::vector<std::tuple<std::string, T>> values) {
-    for (auto &[reg_name, value] : values) {
-      auto *reg = state_->GetRegister<RV32Register>(reg_name).first;
-      auto *db = state_->db_factory()->Allocate<RV32Register::ValueType>(1);
+    for (auto& [reg_name, value] : values) {
+      auto* reg = state_->GetRegister<RV32Register>(reg_name).first;
+      auto* db = state_->db_factory()->Allocate<RV32Register::ValueType>(1);
       db->Set<T>(0, value);
       reg->SetDataBuffer(db);
       db->DecRef();
@@ -119,13 +119,13 @@ class RV32IInstructionTest : public testing::Test {
   // Returns the value of the named register.
   template <typename T>
   T GetRegisterValue(absl::string_view reg_name) {
-    auto *reg = state_->GetRegister<RV32Register>(reg_name).first;
+    auto* reg = state_->GetRegister<RV32Register>(reg_name).first;
     return reg->data_buffer()->Get<T>(0);
   }
 
-  FlatDemandMemory *memory_;
-  RiscVState *state_;
-  Instruction *instruction_;
+  FlatDemandMemory* memory_;
+  RiscVState* state_;
+  Instruction* instruction_;
 };
 
 // Almost all the tests below follow the same pattern. There are two phases.
@@ -407,7 +407,7 @@ TEST_F(RV32IInstructionTest, RV32IBgeu) {
 
 TEST_F(RV32IInstructionTest, RV32ILw) {
   // Initialize memory.
-  auto *db = state_->db_factory()->Allocate<uint32_t>(1);
+  auto* db = state_->db_factory()->Allocate<uint32_t>(1);
   db->Set<uint32_t>(0, kMemValue);
   state_->StoreMemory(instruction_, kMemAddress + kOffset, db);
   db->DecRef();
@@ -416,7 +416,7 @@ TEST_F(RV32IInstructionTest, RV32ILw) {
   AppendRegisterOperands({kX1}, {});
   AppendImmediateOperands<uint32_t>({kOffset});
   SetSemanticFunction(&::mpact::sim::riscv::RV32::RiscVILw);
-  auto *child = new Instruction(state_);
+  auto* child = new Instruction(state_);
   child->set_semantic_function(&::mpact::sim::riscv::RV32::RiscVILwChild);
   AppendRegisterOperands(child, {}, {kX3});
   instruction_->AppendChild(child);
@@ -429,7 +429,7 @@ TEST_F(RV32IInstructionTest, RV32ILw) {
 
 TEST_F(RV32IInstructionTest, RV32ILh) {
   // Initialize memory.
-  auto *db = state_->db_factory()->Allocate<uint32_t>(1);
+  auto* db = state_->db_factory()->Allocate<uint32_t>(1);
   db->Set<uint32_t>(0, kMemValue);
   state_->StoreMemory(instruction_, kMemAddress + kOffset, db);
   db->DecRef();
@@ -438,7 +438,7 @@ TEST_F(RV32IInstructionTest, RV32ILh) {
   AppendRegisterOperands({kX1}, {});
   AppendImmediateOperands<uint32_t>({kOffset});
   SetSemanticFunction(&::mpact::sim::riscv::RV32::RiscVILh);
-  auto *child = new Instruction(state_);
+  auto* child = new Instruction(state_);
   child->set_semantic_function(&::mpact::sim::riscv::RV32::RiscVILhChild);
   AppendRegisterOperands(child, {}, {kX3});
   instruction_->AppendChild(child);
@@ -451,7 +451,7 @@ TEST_F(RV32IInstructionTest, RV32ILh) {
 
 TEST_F(RV32IInstructionTest, RV32ILhu) {
   // Initialize memory.
-  auto *db = state_->db_factory()->Allocate<uint32_t>(1);
+  auto* db = state_->db_factory()->Allocate<uint32_t>(1);
   db->Set<uint32_t>(0, kMemValue);
   state_->StoreMemory(instruction_, kMemAddress + kOffset, db);
   db->DecRef();
@@ -460,7 +460,7 @@ TEST_F(RV32IInstructionTest, RV32ILhu) {
   AppendRegisterOperands({kX1}, {});
   AppendImmediateOperands<uint32_t>({kOffset});
   SetSemanticFunction(&::mpact::sim::riscv::RV32::RiscVILhu);
-  auto *child = new Instruction(state_);
+  auto* child = new Instruction(state_);
   child->set_semantic_function(&::mpact::sim::riscv::RV32::RiscVILhuChild);
   AppendRegisterOperands(child, {}, {kX3});
   instruction_->AppendChild(child);
@@ -473,7 +473,7 @@ TEST_F(RV32IInstructionTest, RV32ILhu) {
 
 TEST_F(RV32IInstructionTest, RV32ILb) {
   // Initialize memory.
-  auto *db = state_->db_factory()->Allocate<uint32_t>(1);
+  auto* db = state_->db_factory()->Allocate<uint32_t>(1);
   db->Set<uint32_t>(0, kMemValue);
   state_->StoreMemory(instruction_, kMemAddress + kOffset, db);
   db->DecRef();
@@ -482,7 +482,7 @@ TEST_F(RV32IInstructionTest, RV32ILb) {
   AppendRegisterOperands({kX1}, {});
   AppendImmediateOperands<uint32_t>({kOffset});
   SetSemanticFunction(&::mpact::sim::riscv::RV32::RiscVILb);
-  auto *child = new Instruction(state_);
+  auto* child = new Instruction(state_);
   child->set_semantic_function(&::mpact::sim::riscv::RV32::RiscVILbChild);
   AppendRegisterOperands(child, {}, {kX3});
   instruction_->AppendChild(child);
@@ -495,7 +495,7 @@ TEST_F(RV32IInstructionTest, RV32ILb) {
 
 TEST_F(RV32IInstructionTest, RV32ILbu) {
   // Initialize memory.
-  auto *db = state_->db_factory()->Allocate<uint32_t>(1);
+  auto* db = state_->db_factory()->Allocate<uint32_t>(1);
   db->Set<uint32_t>(0, kMemValue);
   state_->StoreMemory(instruction_, kMemAddress + kOffset, db);
   db->DecRef();
@@ -504,7 +504,7 @@ TEST_F(RV32IInstructionTest, RV32ILbu) {
   AppendRegisterOperands({kX1}, {});
   AppendImmediateOperands<uint32_t>({kOffset});
   SetSemanticFunction(&::mpact::sim::riscv::RV32::RiscVILbu);
-  auto *child = new Instruction(state_);
+  auto* child = new Instruction(state_);
   child->set_semantic_function(&::mpact::sim::riscv::RV32::RiscVILbuChild);
   AppendRegisterOperands(child, {}, {kX3});
   instruction_->AppendChild(child);
@@ -526,7 +526,7 @@ TEST_F(RV32IInstructionTest, RV32ISw) {
 
   SetRegisterValues<uint32_t>({{kX1, kMemAddress}, {kX3, kMemValue}});
   instruction_->Execute(nullptr);
-  auto *db = state_->db_factory()->Allocate<uint32_t>(1);
+  auto* db = state_->db_factory()->Allocate<uint32_t>(1);
   state_->LoadMemory(instruction_, kMemAddress + kOffset, db, nullptr, nullptr);
   EXPECT_EQ(db->Get<uint32_t>(0), kMemValue);
   db->DecRef();
@@ -540,7 +540,7 @@ TEST_F(RV32IInstructionTest, RV32ISh) {
   SetRegisterValues<uint32_t>({{kX1, kMemAddress}, {kX3, kMemValue}});
   instruction_->Execute(nullptr);
 
-  auto *db = state_->db_factory()->Allocate<uint32_t>(1);
+  auto* db = state_->db_factory()->Allocate<uint32_t>(1);
   state_->LoadMemory(instruction_, kMemAddress + kOffset, db, nullptr, nullptr);
   EXPECT_EQ(db->Get<uint32_t>(0), static_cast<uint16_t>(kMemValue));
   db->DecRef();
@@ -554,7 +554,7 @@ TEST_F(RV32IInstructionTest, RV32ISb) {
   SetRegisterValues<uint32_t>({{kX1, kMemAddress}, {kX3, kMemValue}});
   instruction_->Execute(nullptr);
 
-  auto *db = state_->db_factory()->Allocate<uint32_t>(1);
+  auto* db = state_->db_factory()->Allocate<uint32_t>(1);
   state_->LoadMemory(instruction_, kMemAddress + kOffset, db, nullptr, nullptr);
   EXPECT_EQ(db->Get<uint32_t>(0), static_cast<uint8_t>(kMemValue));
   db->DecRef();

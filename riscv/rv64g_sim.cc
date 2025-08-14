@@ -150,7 +150,7 @@ constexpr char kStackEndSymbolName[] = "__stack_end";
 constexpr char kStackSizeSymbolName[] = "__stack_size";
 
 // Static pointer to the top instance. Used by the control-C handler.
-static mpact::sim::riscv::RiscVTop *top = nullptr;
+static mpact::sim::riscv::RiscVTop* top = nullptr;
 
 // Control-c handler to interrupt any running simulation.
 static void sim_sigint_handler(int arg) {
@@ -168,8 +168,8 @@ using ::mpact::sim::riscv::RiscVTop;
 // debug command shell.
 static bool PrintRegisters(
     absl::string_view input,
-    const mpact::sim::riscv::DebugCommandShell::CoreAccess &core_access,
-    std::string &output) {
+    const mpact::sim::riscv::DebugCommandShell::CoreAccess& core_access,
+    std::string& output) {
   static const LazyRE2 reg_info_re{R"(\s*reg\s+info\s*)"};
   if (!RE2::FullMatch(input, *reg_info_re)) {
     return false;
@@ -190,7 +190,7 @@ static bool PrintRegisters(
   return true;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   int return_code = 0;
   auto arg_vec = absl::ParseCommandLine(argc, argv);
 
@@ -211,9 +211,9 @@ int main(int argc, char **argv) {
       full_file_name.substr(full_file_name.find_last_of('/') + 1);
   std::string file_basename = file_name.substr(0, file_name.find_first_of('.'));
 
-  auto *memory = new mpact::sim::util::FlatDemandMemory();
-  mpact::sim::util::MemoryWatcher *memory_watcher = nullptr;
-  mpact::sim::util::AtomicMemory *atomic_memory = nullptr;
+  auto* memory = new mpact::sim::util::FlatDemandMemory();
+  mpact::sim::util::MemoryWatcher* memory_watcher = nullptr;
+  mpact::sim::util::AtomicMemory* atomic_memory = nullptr;
   if (absl::GetFlag(FLAGS_exit_on_tohost)) {
     memory_watcher = new mpact::sim::util::MemoryWatcher(memory);
     atomic_memory = new mpact::sim::util::AtomicMemory(memory_watcher);
@@ -230,7 +230,7 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  mpact::sim::util::MemoryInterface *memory_interface = memory;
+  mpact::sim::util::MemoryInterface* memory_interface = memory;
   if (memory_watcher != nullptr) {
     memory_interface = memory_watcher;
   }
@@ -262,7 +262,7 @@ int main(int argc, char **argv) {
   RiscVTop riscv_top("RiscV32Sim", &rv_state, &rv_decoder);
 
   if (absl::GetFlag(FLAGS_exit_on_ecall)) {
-    rv_state.set_on_ecall([&riscv_top](const Instruction *inst) -> bool {
+    rv_state.set_on_ecall([&riscv_top](const Instruction* inst) -> bool {
       riscv_top.RequestHalt(RiscVTop::HaltReason::kProgramDone, inst);
       return true;
     });
@@ -277,7 +277,7 @@ int main(int argc, char **argv) {
           [&riscv_top, tohost_addr, memory, &rv_state, &return_code, quiet](
               uint64_t, int) -> void {
             riscv_top.RequestHalt(RiscVTop::HaltReason::kProgramDone, nullptr);
-            auto *db = rv_state.db_factory()->Allocate<uint32_t>(1);
+            auto* db = rv_state.db_factory()->Allocate<uint32_t>(1);
             memory->Load(tohost_addr, db, nullptr, nullptr);
             auto word = db->Get<uint32_t>(0);
             db->DecRef();
@@ -358,14 +358,14 @@ int main(int argc, char **argv) {
   }
 
   // Set up arm semihosting if specified. Htif not supported for RiscV64.
-  RiscVArmSemihost *arm_semihost = nullptr;
+  RiscVArmSemihost* arm_semihost = nullptr;
   if (absl::GetFlag(FLAGS_semihost_arm)) {
     // Add ARM semihosting.
     arm_semihost = new RiscVArmSemihost(RiscVArmSemihost::BitWidth::kWord64,
                                         memory, memory);
     arm_semihost->SetCmdLine(arg_vec);
     riscv_top.state()->AddEbreakHandler(
-        [arm_semihost](const Instruction *inst) {
+        [arm_semihost](const Instruction* inst) {
           if (arm_semihost->IsSemihostingCall(inst)) {
             arm_semihost->OnEBreak(inst);
             return true;

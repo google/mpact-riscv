@@ -35,8 +35,8 @@ class RiscVMIsa : public RiscVSimpleCsr<uint64_t> {
  public:
   // Disable default constructor.
   RiscVMIsa() = delete;
-  RiscVMIsa(uint32_t initial_value, ArchState *state);
-  RiscVMIsa(uint64_t initial_value, ArchState *state);
+  RiscVMIsa(uint32_t initial_value, ArchState* state);
+  RiscVMIsa(uint64_t initial_value, ArchState* state);
   ~RiscVMIsa() override = default;
 
   // RiscVSimpleCsr method overrides.

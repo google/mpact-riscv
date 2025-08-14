@@ -38,8 +38,8 @@ namespace sim {
 namespace riscv {
 
 RiscVArmSemihost::RiscVArmSemihost(BitWidth bit_width,
-                                   util::MemoryInterface *i_memory_if,
-                                   util::MemoryInterface *d_memory_if)
+                                   util::MemoryInterface* i_memory_if,
+                                   util::MemoryInterface* d_memory_if)
     : i_memory_if_(i_memory_if),
       d_memory_if_(d_memory_if),
       // Put the functions that implement the different semihosting operations
@@ -102,7 +102,7 @@ RiscVArmSemihost::~RiscVArmSemihost() {
   db4_->DecRef();
 }
 
-bool RiscVArmSemihost::IsSemihostingCall(const Instruction *inst) {
+bool RiscVArmSemihost::IsSemihostingCall(const Instruction* inst) {
   if (inst == nullptr) return false;
   // Load the instruction words on either side of the ebreak instruction.
   uint64_t address = inst->address() - 4;
@@ -116,15 +116,15 @@ bool RiscVArmSemihost::IsSemihostingCall(const Instruction *inst) {
   return true;
 }
 
-void RiscVArmSemihost::OnEBreak(const Instruction *inst) {
+void RiscVArmSemihost::OnEBreak(const Instruction* inst) {
   if (!IsSemihostingCall(inst)) return;
 
   // Handle the semihosting call.
   auto registers = inst->state()->registers();
   auto iter = registers->find(kA0Name);
-  auto *a0 = iter == registers->end() ? nullptr : iter->second;
+  auto* a0 = iter == registers->end() ? nullptr : iter->second;
   iter = registers->find(kA1Name);
-  auto *a1 = iter == registers->end() ? nullptr : iter->second;
+  auto* a1 = iter == registers->end() ? nullptr : iter->second;
   if ((a0 == nullptr) || (a1 == nullptr)) {
     LOG(ERROR) << "Failed to fetch semihost argument registers";
   }
@@ -170,7 +170,7 @@ void RiscVArmSemihost::OnEBreak(const Instruction *inst) {
   }
 }
 
-absl::Status RiscVArmSemihost::SysClose(uint64_t parameter, uint64_t *ret_val) {
+absl::Status RiscVArmSemihost::SysClose(uint64_t parameter, uint64_t* ret_val) {
   // Load the file descriptor from the parameter block.
   d_memory_if_->Load(parameter, db1_, nullptr, nullptr);
   int target_fd = is_32_bit_ ? static_cast<int>(db1_->Get<uint32_t>(0))
@@ -201,26 +201,26 @@ absl::Status RiscVArmSemihost::SysClose(uint64_t parameter, uint64_t *ret_val) {
 }
 
 // Currently not implemented, will implement once there is need for it.
-absl::Status RiscVArmSemihost::SysClock(uint64_t parameter, uint64_t *ret_val) {
+absl::Status RiscVArmSemihost::SysClock(uint64_t parameter, uint64_t* ret_val) {
   return absl::UnimplementedError("SysClock not implemented");
   // TODO: Complete implementation.
 }
 
 // Currently not implemented, will implement once there is need for it.
 absl::Status RiscVArmSemihost::SysElapsed(uint64_t parameter,
-                                          uint64_t *ret_val) {
+                                          uint64_t* ret_val) {
   return absl::UnimplementedError("SysElapsed not implemented");
   // TODO: Complete implementation.
 }
 
 // Return the value of the simulated errno.
-absl::Status RiscVArmSemihost::SysErrno(uint64_t parameter, uint64_t *ret_val) {
+absl::Status RiscVArmSemihost::SysErrno(uint64_t parameter, uint64_t* ret_val) {
   *ret_val = sys_errno_;
   return absl::OkStatus();
 }
 
 // Exception notification. The program should be terminated.
-absl::Status RiscVArmSemihost::SysException(uint64_t parameter, uint64_t *) {
+absl::Status RiscVArmSemihost::SysException(uint64_t parameter, uint64_t*) {
   // In gcc it seems like the parameter value is passed in the parameter
   // register for RV32, but stored in memory, and then a pointer passed in the
   // parameter register for RV64. A bit odd...
@@ -247,7 +247,7 @@ absl::Status RiscVArmSemihost::SysException(uint64_t parameter, uint64_t *) {
 }
 
 // Return the length of a file given by the file descriptor.
-absl::Status RiscVArmSemihost::SysFlen(uint64_t parameter, uint64_t *ret_val) {
+absl::Status RiscVArmSemihost::SysFlen(uint64_t parameter, uint64_t* ret_val) {
   // Load the targeted file descriptor.
   d_memory_if_->Load(parameter, db1_, nullptr, nullptr);
   int target_fd = is_32_bit_ ? static_cast<int>(db1_->Get<uint32_t>(0))
@@ -273,7 +273,7 @@ absl::Status RiscVArmSemihost::SysFlen(uint64_t parameter, uint64_t *ret_val) {
 
 // Currently unimplemented. Will implement if there is a demand.
 absl::Status RiscVArmSemihost::SysGetCmdline(uint64_t parameter,
-                                             uint64_t *ret_val) {
+                                             uint64_t* ret_val) {
   d_memory_if_->Load(parameter, db2_, nullptr, nullptr);
   uint64_t buffer_address = is_32_bit_
                                 ? static_cast<uint64_t>(db2_->Get<uint32_t>(0))
@@ -284,7 +284,7 @@ absl::Status RiscVArmSemihost::SysGetCmdline(uint64_t parameter,
     *ret_val = -1ULL;
     return absl::OkStatus();
   }
-  auto *db = db_factory_.Allocate<uint8_t>(cmd_line_.size() + 1);
+  auto* db = db_factory_.Allocate<uint8_t>(cmd_line_.size() + 1);
   std::memcpy(db->raw_ptr(), cmd_line_.c_str(), cmd_line_.size());
   db->Set<uint8_t>(cmd_line_.size(), 0);
   d_memory_if_->Store(buffer_address, db);
@@ -301,13 +301,13 @@ absl::Status RiscVArmSemihost::SysGetCmdline(uint64_t parameter,
 
 // Returns 0 information indicating that the call doesn't provide this info.
 absl::Status RiscVArmSemihost::SysHeapInfo(uint64_t parameter,
-                                           uint64_t *ret_val) {
+                                           uint64_t* ret_val) {
   d_memory_if_->Load(parameter, db1_, nullptr, nullptr);
   uint64_t block_address = is_32_bit_
                                ? static_cast<int>(db1_->Get<uint32_t>(0))
                                : static_cast<int>(db1_->Get<uint64_t>(0));
   // Return all zeros.
-  auto *db = db_factory_.Allocate<uint32_t>(4);
+  auto* db = db_factory_.Allocate<uint32_t>(4);
   d_memory_if_->Load(block_address, db, nullptr, nullptr);
   db->Set<uint32_t>(0, 0);
   db->Set<uint32_t>(1, 0);
@@ -321,13 +321,13 @@ absl::Status RiscVArmSemihost::SysHeapInfo(uint64_t parameter,
 // This function is not implemented for now. Will look into it if there is
 // demand.
 absl::Status RiscVArmSemihost::SysIsError(uint64_t parameter,
-                                          uint64_t *ret_val) {
+                                          uint64_t* ret_val) {
   return absl::UnimplementedError("SysGetCmdline not implemented");
   // TODO: Complete implementation.
 }
 
 // Check if the fd is a tty.
-absl::Status RiscVArmSemihost::SysIsTty(uint64_t parameter, uint64_t *ret_val) {
+absl::Status RiscVArmSemihost::SysIsTty(uint64_t parameter, uint64_t* ret_val) {
   // Load the target file descriptor.
   d_memory_if_->Load(parameter, db1_, nullptr, nullptr);
   int target_fd = is_32_bit_ ? static_cast<int>(db1_->Get<uint32_t>(0))
@@ -349,7 +349,7 @@ absl::Status RiscVArmSemihost::SysIsTty(uint64_t parameter, uint64_t *ret_val) {
 }
 
 // Open a file, return the file descriptor if successful.
-absl::Status RiscVArmSemihost::SysOpen(uint64_t parameter, uint64_t *ret_val) {
+absl::Status RiscVArmSemihost::SysOpen(uint64_t parameter, uint64_t* ret_val) {
   // Load the parameter block consisiting of pointer to a string, the file open
   // mode, and the length of the string.
   d_memory_if_->Load(parameter, db3_, nullptr, nullptr);
@@ -365,10 +365,9 @@ absl::Status RiscVArmSemihost::SysOpen(uint64_t parameter, uint64_t *ret_val) {
   // a string variable with it.
   std::string file_name;
   if (file_name_len > 0) {
-    auto *db_c = db_factory_.Allocate<uint8_t>(file_name_len);
+    auto* db_c = db_factory_.Allocate<uint8_t>(file_name_len);
     d_memory_if_->Load(string_address, db_c, nullptr, nullptr);
-    file_name =
-        std::string(static_cast<char *>(db_c->raw_ptr()), file_name_len);
+    file_name = std::string(static_cast<char*>(db_c->raw_ptr()), file_name_len);
     db_c->DecRef();
   }
   // If the name is ":tt" then it's either cin or cout depending on the mode.
@@ -402,7 +401,7 @@ absl::Status RiscVArmSemihost::SysOpen(uint64_t parameter, uint64_t *ret_val) {
   return absl::OkStatus();
 }
 
-absl::Status RiscVArmSemihost::SysRead(uint64_t parameter, uint64_t *ret_val) {
+absl::Status RiscVArmSemihost::SysRead(uint64_t parameter, uint64_t* ret_val) {
   // Load the parameter block, consisting of the target file descriptor, the
   // target buffer address, and buffer length.
   d_memory_if_->Load(parameter, db3_, nullptr, nullptr);
@@ -421,7 +420,7 @@ absl::Status RiscVArmSemihost::SysRead(uint64_t parameter, uint64_t *ret_val) {
   }
   auto host_fd = iter->second;
   // Allocate a data buffer sufficient for the target buffer length.
-  auto *db = db_factory_.Allocate<uint8_t>(length);
+  auto* db = db_factory_.Allocate<uint8_t>(length);
   // Read from the file/
   int res = read(host_fd, db->raw_ptr(), length);
   *ret_val = static_cast<uint64_t>(res);
@@ -436,25 +435,25 @@ absl::Status RiscVArmSemihost::SysRead(uint64_t parameter, uint64_t *ret_val) {
 }
 
 // Read a byte from the debug console. This is not implemented for now.
-absl::Status RiscVArmSemihost::SysReadc(uint64_t parameter, uint64_t *ret_val) {
+absl::Status RiscVArmSemihost::SysReadc(uint64_t parameter, uint64_t* ret_val) {
   return absl::UnimplementedError("SysReadc not implemented");
   // TODO: Complete implementation.
 }
 
 // Remove a file from the host file system. This will not be implemented.
 absl::Status RiscVArmSemihost::SysRemove(uint64_t parameter,
-                                         uint64_t *ret_val) {
+                                         uint64_t* ret_val) {
   return absl::UnimplementedError("SysRemove not implemented");
 }
 
 // Rename a file in the host file system. This will not be implemented.
 absl::Status RiscVArmSemihost::SysRename(uint64_t parameter,
-                                         uint64_t *ret_val) {
+                                         uint64_t* ret_val) {
   return absl::UnimplementedError("SysRename not implemented");
 }
 
 // Seek in the file specified by the target file descriptor.
-absl::Status RiscVArmSemihost::SysSeek(uint64_t parameter, uint64_t *ret_val) {
+absl::Status RiscVArmSemihost::SysSeek(uint64_t parameter, uint64_t* ret_val) {
   // Load the parameters consisting of the target fd and the desired seek
   // offset.
   d_memory_if_->Load(parameter, db2_, nullptr, nullptr);
@@ -483,27 +482,27 @@ absl::Status RiscVArmSemihost::SysSeek(uint64_t parameter, uint64_t *ret_val) {
 
 // Execute a command in the shell of the host. This will not be implemented.
 absl::Status RiscVArmSemihost::SysSystem(uint64_t parameter,
-                                         uint64_t *ret_val) {
+                                         uint64_t* ret_val) {
   return absl::UnimplementedError("SysSystem not implemented");
 }
 
 // Return the system tick frequency. For now just return -1 to indicate that
 // this call is not fully supported.
 absl::Status RiscVArmSemihost::SysTickFreq(uint64_t parameter,
-                                           uint64_t *ret_val) {
+                                           uint64_t* ret_val) {
   *ret_val = -1ULL;
   return absl::OkStatus();
 }
 
 // Return unix time in seconds.
-absl::Status RiscVArmSemihost::SysTime(uint64_t parameter, uint64_t *ret_val) {
+absl::Status RiscVArmSemihost::SysTime(uint64_t parameter, uint64_t* ret_val) {
   *ret_val = time(nullptr);
   return absl::OkStatus();
 }
 
 // Return a temporary file name.
 absl::Status RiscVArmSemihost::SysTmpnam(uint64_t parameter,
-                                         uint64_t *ret_val) {
+                                         uint64_t* ret_val) {
   // Load parameters consisting of a pointer to a buffer, an int (0-255) that
   // is a target identifier for this filename, and the length of the buffer.
   d_memory_if_->Load(parameter, db3_, nullptr, nullptr);
@@ -526,14 +525,14 @@ absl::Status RiscVArmSemihost::SysTmpnam(uint64_t parameter,
   }
   // Allocate a data buffer and call tmpnam, then write the name to the buffer.
   auto tmpnam_db = db_factory_.Allocate<uint8_t>(length);
-  tmpnam(static_cast<char *>(tmpnam_db->raw_ptr()));
+  tmpnam(static_cast<char*>(tmpnam_db->raw_ptr()));
   d_memory_if_->Store(buffer_address, tmpnam_db);
   tmpnam_db->DecRef();
   return absl::OkStatus();
 }
 
 // Write data to a file.
-absl::Status RiscVArmSemihost::SysWrite(uint64_t parameter, uint64_t *ret_val) {
+absl::Status RiscVArmSemihost::SysWrite(uint64_t parameter, uint64_t* ret_val) {
   // Load parameters consisting of target fd, target buffer address, and
   // length.
   d_memory_if_->Load(parameter, db3_, nullptr, nullptr);
@@ -553,7 +552,7 @@ absl::Status RiscVArmSemihost::SysWrite(uint64_t parameter, uint64_t *ret_val) {
   auto host_fd = iter->second;
   // Allocate the data buffer necessary to read the data to be written to the
   // file.
-  auto *db = db_factory_.Allocate<uint8_t>(length);
+  auto* db = db_factory_.Allocate<uint8_t>(length);
   d_memory_if_->Load(buffer_address, db, nullptr, nullptr);
   // Write the data to the file.
   int res = write(host_fd, db->raw_ptr(), length);
@@ -568,14 +567,14 @@ absl::Status RiscVArmSemihost::SysWrite(uint64_t parameter, uint64_t *ret_val) {
 
 // Write a byte to the degbug console. This is not implemented for now.
 absl::Status RiscVArmSemihost::SysWritec(uint64_t parameter,
-                                         uint64_t *ret_val) {
+                                         uint64_t* ret_val) {
   return absl::UnimplementedError("SysWritec not implemented");
 }
 
 // Write a null terminated string to the debug console. This is not implemented
 // for now.
 absl::Status RiscVArmSemihost::SysWrite0(uint64_t parameter,
-                                         uint64_t *ret_val) {
+                                         uint64_t* ret_val) {
   return absl::UnimplementedError("SysWrite0 not implemented");
 }
 

@@ -39,23 +39,23 @@ using ::mpact::sim::generic::ResourceOperandInterface;
 using ::mpact::sim::generic::SourceOperandInterface;
 
 using SourceOpGetterMap =
-    absl::flat_hash_map<int, absl::AnyInvocable<SourceOperandInterface *()>>;
+    absl::flat_hash_map<int, absl::AnyInvocable<SourceOperandInterface*()>>;
 using ListSourceOpGetterMap = absl::flat_hash_map<
-    int, absl::AnyInvocable<std::vector<SourceOperandInterface *>()>>;
+    int, absl::AnyInvocable<std::vector<SourceOperandInterface*>()>>;
 using DestOpGetterMap =
     absl::flat_hash_map<int,
-                        absl::AnyInvocable<DestinationOperandInterface *(int)>>;
+                        absl::AnyInvocable<DestinationOperandInterface*(int)>>;
 using ListDestOpGetterMap = absl::flat_hash_map<
-    int, absl::AnyInvocable<std::vector<DestinationOperandInterface *>(int)>>;
+    int, absl::AnyInvocable<std::vector<DestinationOperandInterface*>(int)>>;
 using SimpleResourceGetterMap =
-    absl::flat_hash_map<int, absl::AnyInvocable<generic::SimpleResource *()>>;
+    absl::flat_hash_map<int, absl::AnyInvocable<generic::SimpleResource*()>>;
 using ComplexResourceGetterMap = absl::flat_hash_map<
-    int, absl::AnyInvocable<ResourceOperandInterface *(int, int)>>;
+    int, absl::AnyInvocable<ResourceOperandInterface*(int, int)>>;
 
 // Helper function to insert and entry into a "getter" map. This is used in
 // the riscv_*_getter.h files.
 template <typename M, typename E, typename G>
-inline void Insert(M &map, E entry, G getter) {
+inline void Insert(M& map, E entry, G getter) {
   if (!map.contains(static_cast<int>(entry))) {
     map.insert(std::make_pair(static_cast<int>(entry), getter));
   } else {
@@ -64,7 +64,7 @@ inline void Insert(M &map, E entry, G getter) {
 }
 
 template <typename M, typename E1, typename E2, typename G>
-inline void Insert(M &map, E1 entry1, E2 entry2, G getter) {
+inline void Insert(M& map, E1 entry1, E2 entry2, G getter) {
   auto key = std::tie(entry1, entry2);
   if (!map.contains(key)) {
     map.insert(std::make_pair(key, getter));
@@ -75,48 +75,48 @@ inline void Insert(M &map, E1 entry1, E2 entry2, G getter) {
 
 // Generic helper functions to create register operands.
 template <typename RegType>
-inline DestinationOperandInterface *GetRegisterDestinationOp(RiscVState *state,
+inline DestinationOperandInterface* GetRegisterDestinationOp(RiscVState* state,
                                                              std::string name,
                                                              int latency) {
-  auto *reg = state->GetRegister<RegType>(name).first;
+  auto* reg = state->GetRegister<RegType>(name).first;
   return reg->CreateDestinationOperand(latency);
 }
 
 template <typename RegType>
-inline DestinationOperandInterface *GetRegisterDestinationOp(
-    RiscVState *state, std::string name, int latency, std::string op_name) {
-  auto *reg = state->GetRegister<RegType>(name).first;
-  auto *op = reg->CreateDestinationOperand(latency, op_name);
+inline DestinationOperandInterface* GetRegisterDestinationOp(
+    RiscVState* state, std::string name, int latency, std::string op_name) {
+  auto* reg = state->GetRegister<RegType>(name).first;
+  auto* op = reg->CreateDestinationOperand(latency, op_name);
   return op;
 }
 
 template <typename T>
-inline DestinationOperandInterface *GetCSRSetBitsDestinationOp(
-    RiscVState *state, std::string name, int latency, std::string op_name) {
+inline DestinationOperandInterface* GetCSRSetBitsDestinationOp(
+    RiscVState* state, std::string name, int latency, std::string op_name) {
   auto result = state->csr_set()->GetCsr(name);
   if (!result.ok()) {
     LOG(ERROR) << "No such CSR '" << name << "'";
     return nullptr;
   }
-  auto *csr = result.value();
-  auto *op = csr->CreateSetDestinationOperand(latency, op_name);
+  auto* csr = result.value();
+  auto* op = csr->CreateSetDestinationOperand(latency, op_name);
   return op;
 }
 
 template <typename RegType>
-inline SourceOperandInterface *GetRegisterSourceOp(RiscVState *state,
+inline SourceOperandInterface* GetRegisterSourceOp(RiscVState* state,
                                                    std::string name) {
-  auto *reg = state->GetRegister<RegType>(name).first;
-  auto *op = reg->CreateSourceOperand();
+  auto* reg = state->GetRegister<RegType>(name).first;
+  auto* op = reg->CreateSourceOperand();
   return op;
 }
 
 template <typename RegType>
-inline SourceOperandInterface *GetRegisterSourceOp(RiscVState *state,
+inline SourceOperandInterface* GetRegisterSourceOp(RiscVState* state,
                                                    std::string name,
                                                    std::string op_name) {
-  auto *reg = state->GetRegister<RegType>(name).first;
-  auto *op = reg->CreateSourceOperand(op_name);
+  auto* reg = state->GetRegister<RegType>(name).first;
+  auto* op = reg->CreateSourceOperand(op_name);
   return op;
 }
 

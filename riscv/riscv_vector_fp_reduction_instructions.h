@@ -30,10 +30,10 @@ using Instruction = ::mpact::sim::generic::Instruction;
 // destination operand. Source 0 is a vector register group, source 1 is a
 // vector register, and source 2 is the vector mask register. Destination
 // operand 0 is a vector register group.
-void Vfredosum(const Instruction *inst);
-void Vfwredosum(const Instruction *inst);
-void Vfredmin(const Instruction *inst);
-void Vfredmax(const Instruction *inst);
+void Vfredosum(const Instruction* inst);
+void Vfwredosum(const Instruction* inst);
+void Vfredmin(const Instruction* inst);
+void Vfredmax(const Instruction* inst);
 
 }  // namespace riscv
 }  // namespace sim

@@ -15,21 +15,20 @@
 #include "riscv/riscv_vector_fp_reduction_instructions.h"
 
 #include <algorithm>
-#include <cstring>
-#include <ios>
-#include <limits>
-#include <string>
-#include <type_traits>
+#include <cstdint>
+#include <functional>
 #include <vector>
 
 #include "absl/random/random.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/instruction.h"
+#include "riscv/riscv_fp_host.h"
+#include "riscv/riscv_fp_info.h"
 #include "riscv/riscv_fp_state.h"
 #include "riscv/riscv_register.h"
-#include "riscv/riscv_vector_state.h"
 #include "riscv/test/riscv_vector_fp_test_utilities.h"
 #include "riscv/test/riscv_vector_instructions_test_base.h"
 
@@ -69,7 +68,7 @@ class RiscVFPReductionInstructionsTest
   // Helper function for floating point reduction operations.
   template <typename Vd, typename Vs2, typename Vs1>
   void ReductionOpFPTestHelper(absl::string_view name, int sew,
-                               Instruction *inst, int delta_position,
+                               Instruction* inst, int delta_position,
                                std::function<Vd(Vs1, Vs2)> operation) {
     int byte_sew = sew / 8;
     if (byte_sew != sizeof(Vd) && byte_sew != sizeof(Vs2) &&
@@ -195,8 +194,8 @@ TEST_F(RiscVFPReductionInstructionsTest, Vfwredosum) {
 template <typename T>
 T MaxMinHelper(T vs2, T vs1, std::function<T(T, T)> operation) {
   using UInt = typename FPTypeInfo<T>::IntType;
-  UInt vs2_uint = *reinterpret_cast<UInt *>(&vs2);
-  UInt vs1_uint = *reinterpret_cast<UInt *>(&vs1);
+  UInt vs2_uint = *reinterpret_cast<UInt*>(&vs2);
+  UInt vs1_uint = *reinterpret_cast<UInt*>(&vs1);
   UInt mask = 1ULL << (FPTypeInfo<T>::kSigSize - 1);
   bool nan_vs2 = std::isnan(vs2);
   bool nan_vs1 = std::isnan(vs1);
@@ -205,7 +204,7 @@ T MaxMinHelper(T vs2, T vs1, std::function<T(T, T)> operation) {
     // Canonical NaN.
     UInt canonical = ((1ULL << (FPTypeInfo<T>::kExpSize + 1)) - 1)
                      << (FPTypeInfo<T>::kSigSize - 1);
-    T canonical_fp = *reinterpret_cast<T *>(&canonical);
+    T canonical_fp = *reinterpret_cast<T*>(&canonical);
     return canonical_fp;
   }
   if (nan_vs2) return vs1;

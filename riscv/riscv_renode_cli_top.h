@@ -35,7 +35,7 @@ namespace riscv {
 // CherIoT CLI.
 class RiscVRenodeCLITop : public util::renode::RenodeCLITop {
  public:
-  RiscVRenodeCLITop(RiscVTop *riscv_top, bool wait_for_cli);
+  RiscVRenodeCLITop(RiscVTop* riscv_top, bool wait_for_cli);
 
   absl::Status CLISetDataWatchpoint(uint64_t address, size_t length,
                                     AccessType access_type);
@@ -48,7 +48,7 @@ class RiscVRenodeCLITop : public util::renode::RenodeCLITop {
   absl::Status CLIDisableAction(uint64_t address, int id);
 
  private:
-  RiscVTop *riscv_top_ = nullptr;
+  RiscVTop* riscv_top_ = nullptr;
 };
 
 }  // namespace riscv

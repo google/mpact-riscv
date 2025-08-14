@@ -150,15 +150,15 @@ class RiscVPlicTest : public ::testing::Test {
   }
 
   // Accessors.
-  RiscVPlic *plic() { return plic_; }
-  DataBufferFactory &db_factory() { return db_factory_; }
-  MockRiscVInterruptTarget *target(int i) { return target_[i]; }
+  RiscVPlic* plic() { return plic_; }
+  DataBufferFactory& db_factory() { return db_factory_; }
+  MockRiscVInterruptTarget* target(int i) { return target_[i]; }
 
  private:
-  DataBuffer *db_;
+  DataBuffer* db_;
   DataBufferFactory db_factory_;
-  RiscVPlic *plic_ = nullptr;
-  MockRiscVInterruptTarget *target_[kNumContexts];
+  RiscVPlic* plic_ = nullptr;
+  MockRiscVInterruptTarget* target_[kNumContexts];
 };
 
 // Test that the initial state of the PLIC is as expected. Nothing enabled,

@@ -41,7 +41,7 @@ using ::mpact::sim::generic::operator*;  // NOLINT: clang-tidy false positive.
 class RV64GZBIsaFactory : public isa64gzb::RiscV64GZBInstructionSetFactory {
  public:
   std::unique_ptr<isa64gzb::Riscv64gzbSlot> CreateRiscv64gzbSlot(
-      ArchState *state) override {
+      ArchState* state) override {
     return std::make_unique<isa64gzb::Riscv64gzbSlot>(state);
   }
 };
@@ -53,33 +53,33 @@ class RiscV64GBitmanipDecoder : public generic::DecoderInterface {
   using SlotEnum = isa64gzb::SlotEnum;
   using OpcodeEnum = isa64gzb::OpcodeEnum;
 
-  RiscV64GBitmanipDecoder(RiscVState *state, util::MemoryInterface *memory);
+  RiscV64GBitmanipDecoder(RiscVState* state, util::MemoryInterface* memory);
   RiscV64GBitmanipDecoder() = delete;
   ~RiscV64GBitmanipDecoder() override;
 
   // This will always return a valid instruction that can be executed. In the
   // case of a decode error, the semantic function in the instruction object
   // instance will raise an internal simulator error when executed.
-  generic::Instruction *DecodeInstruction(uint64_t address) override;
+  generic::Instruction* DecodeInstruction(uint64_t address) override;
   // Return the number of opcodes supported by this decoder.
   int GetNumOpcodes() const override { return *OpcodeEnum::kPastMaxValue; }
   // Return the name of the opcode at the given index.
-  const char *GetOpcodeName(int index) const override {
+  const char* GetOpcodeName(int index) const override {
     return isa64gzb::kOpcodeNames[index];
   }
 
   // Getter.
-  isa64gzb::RiscV64GZBEncoding *riscv_encoding() const {
+  isa64gzb::RiscV64GZBEncoding* riscv_encoding() const {
     return riscv_encoding_;
   }
 
  private:
-  RiscVState *state_;
-  util::MemoryInterface *memory_;
-  generic::DataBuffer *inst_db_;
-  isa64gzb::RiscV64GZBEncoding *riscv_encoding_;
-  RV64GZBIsaFactory *riscv_isa_factory_;
-  isa64gzb::RiscV64GZBInstructionSet *riscv_isa_;
+  RiscVState* state_;
+  util::MemoryInterface* memory_;
+  generic::DataBuffer* inst_db_;
+  isa64gzb::RiscV64GZBEncoding* riscv_encoding_;
+  RV64GZBIsaFactory* riscv_isa_factory_;
+  isa64gzb::RiscV64GZBInstructionSet* riscv_isa_;
 };
 
 }  // namespace riscv

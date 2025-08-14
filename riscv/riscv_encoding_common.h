@@ -34,8 +34,8 @@ class RiscVEncodingCommon {
   virtual ~RiscVEncodingCommon() = default;
 
   // Accessors.
-  virtual RiscVState *state() const = 0;
-  virtual generic::SimpleResourcePool *resource_pool() = 0;
+  virtual RiscVState* state() const = 0;
+  virtual generic::SimpleResourcePool* resource_pool() = 0;
   virtual uint32_t inst_word() const = 0;
 };
 

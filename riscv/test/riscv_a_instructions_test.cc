@@ -14,12 +14,16 @@
 
 #include "riscv/riscv_a_instructions.h"
 
+#include <algorithm>
 #include <cstdint>
 #include <ios>
 #include <string>
+#include <tuple>
+#include <type_traits>
 #include <vector>
 
 #include "absl/log/check.h"
+#include "absl/strings/string_view.h"
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/instruction.h"
@@ -120,21 +124,21 @@ class RiscVAInstructionsTest : public ::testing::Test {
 
   // Appends the source and destination operands for the register names
   // given in the two vectors.
-  void AppendRegisterOperands(Instruction *inst,
-                              const std::vector<std::string> &sources,
-                              const std::vector<std::string> &destinations) {
-    for (auto &reg_name : sources) {
-      auto *reg = state_->GetRegister<RV64Register>(reg_name).first;
+  void AppendRegisterOperands(Instruction* inst,
+                              const std::vector<std::string>& sources,
+                              const std::vector<std::string>& destinations) {
+    for (auto& reg_name : sources) {
+      auto* reg = state_->GetRegister<RV64Register>(reg_name).first;
       inst->AppendSource(reg->CreateSourceOperand());
     }
-    for (auto &reg_name : destinations) {
-      auto *reg = state_->GetRegister<RV64Register>(reg_name).first;
+    for (auto& reg_name : destinations) {
+      auto* reg = state_->GetRegister<RV64Register>(reg_name).first;
       inst->AppendDestination(reg->CreateDestinationOperand(0));
     }
   }
 
-  void AppendRegisterOperands(const std::vector<std::string> &sources,
-                              const std::vector<std::string> &destinations) {
+  void AppendRegisterOperands(const std::vector<std::string>& sources,
+                              const std::vector<std::string>& destinations) {
     AppendRegisterOperands(instruction_, sources, destinations);
   }
 
@@ -142,9 +146,9 @@ class RiscVAInstructionsTest : public ::testing::Test {
   // named register and sets it to the corresponding value.
   template <typename T>
   void SetRegisterValues(const std::vector<std::tuple<std::string, T>> values) {
-    for (auto &[reg_name, value] : values) {
-      auto *reg = state_->GetRegister<RV64Register>(reg_name).first;
-      auto *db = state_->db_factory()->Allocate<RV64Register::ValueType>(1);
+    for (auto& [reg_name, value] : values) {
+      auto* reg = state_->GetRegister<RV64Register>(reg_name).first;
+      auto* db = state_->db_factory()->Allocate<RV64Register::ValueType>(1);
       db->Set<T>(0, value);
       reg->SetDataBuffer(db);
       db->DecRef();
@@ -163,7 +167,7 @@ class RiscVAInstructionsTest : public ::testing::Test {
   // Returns the value of the named register.
   template <typename T>
   T GetRegisterValue(absl::string_view reg_name) {
-    auto *reg = state_->GetRegister<RV64Register>(reg_name).first;
+    auto* reg = state_->GetRegister<RV64Register>(reg_name).first;
     if (std::is_signed<T>::value) {
       return static_cast<T>(reg->data_buffer()->Get<int64_t>(0));
     } else {
@@ -171,13 +175,13 @@ class RiscVAInstructionsTest : public ::testing::Test {
     }
   }
 
-  DataBuffer *db_w_;
-  DataBuffer *db_d_;
-  FlatDemandMemory *memory_;
-  AtomicMemory *atomic_memory_;
-  RiscVState *state_;
-  Instruction *instruction_;
-  Instruction *child_instruction_;
+  DataBuffer* db_w_;
+  DataBuffer* db_d_;
+  FlatDemandMemory* memory_;
+  AtomicMemory* atomic_memory_;
+  RiscVState* state_;
+  Instruction* instruction_;
+  Instruction* child_instruction_;
 };
 
 TEST_F(RiscVAInstructionsTest, ALrw) {

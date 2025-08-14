@@ -46,7 +46,7 @@ class RiscVActionPointMemoryInterface : public ActionPointMemoryInterface {
   // The constructor takes a pointer to the memory interface through which
   // instructions can be read and written,and a function to invalidate the
   // decoding of an instruction.
-  RiscVActionPointMemoryInterface(MemoryInterface *memory,
+  RiscVActionPointMemoryInterface(MemoryInterface* memory,
                                   InvalidateFcn invalidate_fcn);
   ~RiscVActionPointMemoryInterface() override;
 
@@ -70,12 +70,12 @@ class RiscVActionPointMemoryInterface : public ActionPointMemoryInterface {
   // Data buffer factory and two data buffer pointers to use for reading and
   // writing instructions.
   DataBufferFactory db_factory_;
-  DataBuffer *db4_ = nullptr;
-  DataBuffer *db2_ = nullptr;
+  DataBuffer* db4_ = nullptr;
+  DataBuffer* db2_ = nullptr;
   // Maps from address to information about the instruction.
-  absl::flat_hash_map<uint64_t, InstructionInfo *> instruction_map_;
+  absl::flat_hash_map<uint64_t, InstructionInfo*> instruction_map_;
   // Interface to program memory.
-  MemoryInterface *memory_;
+  MemoryInterface* memory_;
   // Function to be called to invalidate any stored decoding of an instruction.
   InvalidateFcn invalidate_fcn_;
 };

@@ -35,7 +35,7 @@ using RunStatus = ::mpact::sim::generic::CoreDebugInterface::RunStatus;
 using HaltReasonValueType =
     ::mpact::sim::generic::CoreDebugInterface::HaltReasonValueType;
 
-RiscVCLIForwarder::RiscVCLIForwarder(RiscVRenodeCLITop *riscv_cli_top)
+RiscVCLIForwarder::RiscVCLIForwarder(RiscVRenodeCLITop* riscv_cli_top)
     : riscv_cli_top_(riscv_cli_top) {}
 
 // Forward the calls to the RiscVRenodeCLITop class - CLI methods.
@@ -100,28 +100,28 @@ absl::StatusOr<HaltReasonValueType> RiscVCLIForwarder::GetLastHaltReason() {
 
 // Read/write the named registers.
 absl::StatusOr<uint64_t> RiscVCLIForwarder::ReadRegister(
-    const std::string &name) {
+    const std::string& name) {
   return riscv_cli_top_->CLIReadRegister(name);
 }
 
-absl::Status RiscVCLIForwarder::WriteRegister(const std::string &name,
+absl::Status RiscVCLIForwarder::WriteRegister(const std::string& name,
                                               uint64_t value) {
   return riscv_cli_top_->CLIWriteRegister(name, value);
 }
 
-absl::StatusOr<DataBuffer *> RiscVCLIForwarder::GetRegisterDataBuffer(
-    const std::string &name) {
+absl::StatusOr<DataBuffer*> RiscVCLIForwarder::GetRegisterDataBuffer(
+    const std::string& name) {
   return riscv_cli_top_->CLIGetRegisterDataBuffer(name);
 }
 
 // Read/write the buffers to memory.
 absl::StatusOr<size_t> RiscVCLIForwarder::ReadMemory(uint64_t address,
-                                                     void *buf, size_t length) {
+                                                     void* buf, size_t length) {
   return riscv_cli_top_->CLIReadMemory(address, buf, length);
 }
 
 absl::StatusOr<size_t> RiscVCLIForwarder::WriteMemory(uint64_t address,
-                                                      const void *buf,
+                                                      const void* buf,
                                                       size_t length) {
   return riscv_cli_top_->CLIWriteMemory(address, buf, length);
 }
@@ -142,7 +142,7 @@ absl::Status RiscVCLIForwarder::ClearAllSwBreakpoints() {
   return riscv_cli_top_->CLIClearAllSwBreakpoints();
 }
 
-absl::StatusOr<Instruction *> RiscVCLIForwarder::GetInstruction(
+absl::StatusOr<Instruction*> RiscVCLIForwarder::GetInstruction(
     uint64_t address) {
   return riscv_cli_top_->CLIGetInstruction(address);
 }

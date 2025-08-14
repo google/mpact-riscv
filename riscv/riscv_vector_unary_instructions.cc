@@ -36,12 +36,12 @@ using SignedXregType =
                                           int64_t>::type;
 
 // Move scalar to vector register.
-void VmvToScalar(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void VmvToScalar(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (rv_vector->vstart()) return;
   if (rv_vector->vector_length() == 0) return;
   int sew = rv_vector->selected_element_width();
-  auto *dest_db = inst->Destination(0)->AllocateDataBuffer();
+  auto* dest_db = inst->Destination(0)->AllocateDataBuffer();
   SignedXregType value;
   switch (sew) {
     case 1:
@@ -69,12 +69,12 @@ void VmvToScalar(Instruction *inst) {
   dest_db->Submit();
 }
 
-void VmvFromScalar(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void VmvFromScalar(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (rv_vector->vstart()) return;
   if (rv_vector->vector_length() == 0) return;
   int sew = rv_vector->selected_element_width();
-  auto *dest_db = inst->Destination(0)->CopyDataBuffer();
+  auto* dest_db = inst->Destination(0)->CopyDataBuffer();
   switch (sew) {
     case 1:
       dest_db->Set<int8_t>(0, generic::GetInstructionSource<int8_t>(inst, 0));
@@ -98,19 +98,19 @@ void VmvFromScalar(Instruction *inst) {
 
 // Population count of vector mask register. The value is written to a scalar
 // register.
-void Vcpop(Instruction *inst) {
-  auto *rv_state = static_cast<RiscVState *>(inst->state());
-  auto *rv_vector = rv_state->rv_vector();
+void Vcpop(Instruction* inst) {
+  auto* rv_state = static_cast<RiscVState*>(inst->state());
+  auto* rv_vector = rv_state->rv_vector();
   if (rv_vector->vstart()) {
     rv_vector->set_vector_exception();
     return;
   }
   int vlen = rv_vector->vector_length();
-  auto src_op = static_cast<RV32VectorSourceOperand *>(inst->Source(0));
+  auto src_op = static_cast<RV32VectorSourceOperand*>(inst->Source(0));
   auto src_span = src_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
-  auto mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(1));
+  auto mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(1));
   auto mask_span = mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
-  auto *dest_db = inst->Destination(0)->AllocateDataBuffer();
+  auto* dest_db = inst->Destination(0)->AllocateDataBuffer();
   uint64_t count = 0;
   for (int i = 0; i < vlen; i++) {
     int index = i >> 3;
@@ -136,18 +136,18 @@ void Vcpop(Instruction *inst) {
 
 // Find first set of vector mask register. The value is written to a scalar
 // register.
-void Vfirst(Instruction *inst) {
-  auto *rv_state = static_cast<RiscVState *>(inst->state());
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfirst(Instruction* inst) {
+  auto* rv_state = static_cast<RiscVState*>(inst->state());
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (rv_vector->vstart()) {
     rv_vector->set_vector_exception();
     return;
   }
-  auto src_op = static_cast<RV32VectorSourceOperand *>(inst->Source(0));
+  auto src_op = static_cast<RV32VectorSourceOperand*>(inst->Source(0));
   auto src_span = src_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
-  auto mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(1));
+  auto mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(1));
   auto mask_span = mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
-  auto *dest_db = inst->Destination(0)->AllocateDataBuffer();
+  auto* dest_db = inst->Destination(0)->AllocateDataBuffer();
   // Initialize the element index to -1.
   uint64_t element_index = -1LL;
   int vlen = rv_vector->vector_length();
@@ -176,8 +176,8 @@ void Vfirst(Instruction *inst) {
 }
 
 // Vector integer sign and zero extension instructions.
-void Vzext2(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vzext2(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 2:
@@ -199,8 +199,8 @@ void Vzext2(Instruction *inst) {
   }
 }
 
-void Vsext2(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vsext2(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 2:
@@ -222,8 +222,8 @@ void Vsext2(Instruction *inst) {
   }
 }
 
-void Vzext4(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vzext4(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 4:
@@ -241,8 +241,8 @@ void Vzext4(Instruction *inst) {
   }
 }
 
-void Vsext4(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vsext4(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 4:
@@ -260,8 +260,8 @@ void Vsext4(Instruction *inst) {
   }
 }
 
-void Vzext8(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vzext8(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 8:
@@ -275,8 +275,8 @@ void Vzext8(Instruction *inst) {
   }
 }
 
-void Vsext8(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vsext8(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 8:
@@ -291,20 +291,20 @@ void Vsext8(Instruction *inst) {
 }
 
 // Vector mask set-before-first mask bit.
-void Vmsbf(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmsbf(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (rv_vector->vstart()) {
     rv_vector->set_vector_exception();
     return;
   }
   int vlen = rv_vector->vector_length();
-  auto src_op = static_cast<RV32VectorSourceOperand *>(inst->Source(0));
+  auto src_op = static_cast<RV32VectorSourceOperand*>(inst->Source(0));
   auto src_span = src_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
-  auto mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(1));
+  auto mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(1));
   auto mask_span = mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
   auto dest_op =
-      static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
-  auto *dest_db = dest_op->CopyDataBuffer(0);
+      static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
+  auto* dest_db = dest_op->CopyDataBuffer(0);
   auto dest_span = dest_db->Get<uint8_t>();
   bool before_first = true;
   int last = 0;
@@ -333,20 +333,20 @@ void Vmsbf(Instruction *inst) {
 }
 
 // Vector mask set-including-first mask bit.
-void Vmsif(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmsif(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (rv_vector->vstart()) {
     rv_vector->set_vector_exception();
     return;
   }
   int vlen = rv_vector->vector_length();
-  auto src_op = static_cast<RV32VectorSourceOperand *>(inst->Source(0));
+  auto src_op = static_cast<RV32VectorSourceOperand*>(inst->Source(0));
   auto src_span = src_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
-  auto mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(1));
+  auto mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(1));
   auto mask_span = mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
   auto dest_op =
-      static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
-  auto *dest_db = dest_op->CopyDataBuffer(0);
+      static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
+  auto* dest_db = dest_op->CopyDataBuffer(0);
   auto dest_span = dest_db->Get<uint8_t>();
   uint8_t value = 1;
   for (int i = 0; i < vlen; i++) {
@@ -370,20 +370,20 @@ void Vmsif(Instruction *inst) {
 }
 
 // Vector maks set-only-first mask bit.
-void Vmsof(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmsof(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (rv_vector->vstart()) {
     rv_vector->set_vector_exception();
     return;
   }
   int vlen = rv_vector->vector_length();
-  auto src_op = static_cast<RV32VectorSourceOperand *>(inst->Source(0));
+  auto src_op = static_cast<RV32VectorSourceOperand*>(inst->Source(0));
   auto src_span = src_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
-  auto mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(1));
+  auto mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(1));
   auto mask_span = mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
   auto dest_op =
-      static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
-  auto *dest_db = dest_op->CopyDataBuffer(0);
+      static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
+  auto* dest_db = dest_op->CopyDataBuffer(0);
   auto dest_span = dest_db->Get<uint8_t>();
   bool first = true;
   for (int i = 0; i < vlen; i++) {
@@ -408,8 +408,8 @@ void Vmsof(Instruction *inst) {
 // writes to each element of the destination vector register group the sum
 // of all bits of elements in the mask register whose index is less than the
 // element. This is subject to masking.
-void Viota(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Viota(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   int count = 0;
   switch (sew) {
@@ -446,8 +446,8 @@ void Viota(Instruction *inst) {
 
 // Writes the index of each active (mask true) element to the destination
 // vector elements.
-void Vid(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vid(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   int index = 0;
   switch (sew) {

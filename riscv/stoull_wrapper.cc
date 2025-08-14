@@ -14,8 +14,13 @@
 
 #include "riscv/stoull_wrapper.h"
 
+#include <cstddef>
+#include <cstdint>
 #include <stdexcept>
 #include <string>
+
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 
 // Google3 does not allow for exceptions, however, std:stoull can throw
 // exceptions when no number can be parsed. This wraps these exceptions,
@@ -27,13 +32,14 @@ namespace sim {
 namespace riscv {
 namespace internal {
 
-absl::StatusOr<uint64_t> stoull(const std::string str, size_t *indx, int base) {
+absl::StatusOr<uint64_t> stoull(const std::string& str, size_t* indx,
+                                int base) {
   uint64_t value;
   try {
     value = std::stoull(str, indx, base);
-  } catch (const std::invalid_argument &e) {
+  } catch (const std::invalid_argument& e) {
     return absl::InvalidArgumentError("Conversion failed");
-  } catch (const std::out_of_range &e) {
+  } catch (const std::out_of_range& e) {
     return absl::OutOfRangeError("Conversion failed");
   } catch (...) {
     return absl::InternalError("Oops");

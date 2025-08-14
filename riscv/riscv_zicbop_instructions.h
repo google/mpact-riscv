@@ -28,9 +28,9 @@ namespace RV32 {
 
 // Each of these instructions take two source operands, rs1 and a 12 bit
 // immediate offset.
-void RiscVPrefetchI(const Instruction *inst);
-void RiscVPrefetchR(const Instruction *inst);
-void RiscVPrefetchW(const Instruction *inst);
+void RiscVPrefetchI(const Instruction* inst);
+void RiscVPrefetchR(const Instruction* inst);
+void RiscVPrefetchW(const Instruction* inst);
 
 }  // namespace RV32
 
@@ -38,9 +38,9 @@ namespace RV64 {
 
 // Each of these instructions take two source operands, rs1 and a 12 bit
 // immediate offset.
-void RiscVPrefetchI(const Instruction *inst);
-void RiscVPrefetchR(const Instruction *inst);
-void RiscVPrefetchW(const Instruction *inst);
+void RiscVPrefetchI(const Instruction* inst);
+void RiscVPrefetchR(const Instruction* inst);
+void RiscVPrefetchW(const Instruction* inst);
 
 }  // namespace RV64
 

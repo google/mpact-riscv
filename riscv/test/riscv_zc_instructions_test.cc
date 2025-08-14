@@ -73,7 +73,7 @@ class RV32ZcInstructionTest : public testing::Test {
     instruction_->set_size(4);
     // Set the jump table address to 0x4000.
     state_->jvt()->Set(static_cast<uint32_t>(0x4000));
-    auto *db = state_->db_factory()->Allocate<uint32_t>(256);
+    auto* db = state_->db_factory()->Allocate<uint32_t>(256);
     auto db_span = db->Get<uint32_t>();
     for (auto i = 0; i < 256; ++i) {
       db_span[i] = 0x8000 + i * sizeof(uint64_t);
@@ -90,29 +90,29 @@ class RV32ZcInstructionTest : public testing::Test {
 
   // Appends the source and destination operands for the register names
   // given in the two vectors.
-  void AppendRegisterOperands(Instruction *inst,
-                              const std::vector<std::string> &sources,
-                              const std::vector<std::string> &destinations) {
-    for (auto &reg_name : sources) {
-      auto *reg = state_->GetRegister<RV32Register>(reg_name).first;
+  void AppendRegisterOperands(Instruction* inst,
+                              const std::vector<std::string>& sources,
+                              const std::vector<std::string>& destinations) {
+    for (auto& reg_name : sources) {
+      auto* reg = state_->GetRegister<RV32Register>(reg_name).first;
       inst->AppendSource(reg->CreateSourceOperand());
     }
-    for (auto &reg_name : destinations) {
-      auto *reg = state_->GetRegister<RV32Register>(reg_name).first;
+    for (auto& reg_name : destinations) {
+      auto* reg = state_->GetRegister<RV32Register>(reg_name).first;
       inst->AppendDestination(reg->CreateDestinationOperand(0));
     }
   }
 
-  void AppendRegisterOperands(const std::vector<std::string> &sources,
-                              const std::vector<std::string> &destinations) {
+  void AppendRegisterOperands(const std::vector<std::string>& sources,
+                              const std::vector<std::string>& destinations) {
     AppendRegisterOperands(instruction_, sources, destinations);
   }
 
   // Appends immediate source operands with the given values.
   template <typename T>
-  void AppendImmediateOperands(const std::vector<T> &values) {
+  void AppendImmediateOperands(const std::vector<T>& values) {
     for (auto value : values) {
-      auto *src = new ImmediateOperand<T>(value);
+      auto* src = new ImmediateOperand<T>(value);
       instruction_->AppendSource(src);
     }
   }
@@ -121,8 +121,8 @@ class RV32ZcInstructionTest : public testing::Test {
   // named register and sets it to the corresponding value.
   template <typename T>
   void SetRegisterValues(const std::vector<std::tuple<std::string, T>> values) {
-    for (auto &[reg_name, value] : values) {
-      auto *reg = state_->GetRegister<RV32Register>(reg_name).first;
+    for (auto& [reg_name, value] : values) {
+      auto* reg = state_->GetRegister<RV32Register>(reg_name).first;
       reg->data_buffer()->template Set<T>(0, value);
     }
   }
@@ -135,7 +135,7 @@ class RV32ZcInstructionTest : public testing::Test {
   // Returns the value of the named register.
   template <typename T>
   T GetRegisterValue(absl::string_view reg_name) {
-    auto *reg = state_->GetRegister<RV32Register>(reg_name).first;
+    auto* reg = state_->GetRegister<RV32Register>(reg_name).first;
     return reg->data_buffer()->Get<T>(0);
   }
 
@@ -176,19 +176,19 @@ class RV32ZcInstructionTest : public testing::Test {
   }
 
   void ResetMemory() {
-    auto *db = state_->db_factory()->Allocate<uint8_t>(0x2000);
+    auto* db = state_->db_factory()->Allocate<uint8_t>(0x2000);
     std::memset(db->raw_ptr(), 0, 0x2000);
     state_->StoreMemory(instruction_, 0, db);
     db->DecRef();
   }
 
-  FlatDemandMemory *memory_;
-  RiscVState *state_;
-  Instruction *instruction_;
+  FlatDemandMemory* memory_;
+  RiscVState* state_;
+  Instruction* instruction_;
 };
 
 constexpr int kNumReg[] = {0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13};
-constexpr char const *kRegMap[] = {kX1,  kX8,  kX9,  kX18, kX19, kX20, kX21,
+constexpr char const* kRegMap[] = {kX1,  kX8,  kX9,  kX18, kX19, kX20, kX21,
                                    kX22, kX23, kX24, kX25, kX26, kX27};
 constexpr int kStackAdjBase[] = {
     0, 0, 0, 0, 16, 16, 16, 16, 32, 32, 32, 32, 48, 48, 48, 64,
@@ -227,7 +227,7 @@ TEST_F(RV32ZcInstructionTest, RV32ZCmpPush) {
       instruction_->Execute(nullptr);
 
       // Fetch memory content.
-      auto *db = state_->db_factory()->Allocate<uint32_t>(13);
+      auto* db = state_->db_factory()->Allocate<uint32_t>(13);
       state_->LoadMemory(instruction_,
                          kMemAddress - kNumReg[rlist] * sizeof(uint32_t), db,
                          nullptr, nullptr);
@@ -256,7 +256,7 @@ TEST_F(RV32ZcInstructionTest, RV32ZCmpPush) {
 }
 
 TEST_F(RV32ZcInstructionTest, RV32ZCmpPop) {
-  auto *db = state_->db_factory()->Allocate<uint32_t>(13);
+  auto* db = state_->db_factory()->Allocate<uint32_t>(13);
   // Test each combination of rlist and spimm6.
   for (int rlist = 4; rlist < 16; ++rlist) {
     for (int spimm6 = 0; spimm6 < 64; spimm6 += 16) {
@@ -323,7 +323,7 @@ TEST_F(RV32ZcInstructionTest, RV32ZCmpPop) {
 }
 
 TEST_F(RV32ZcInstructionTest, RV32ZCmpPopRet) {
-  auto *db = state_->db_factory()->Allocate<uint32_t>(13);
+  auto* db = state_->db_factory()->Allocate<uint32_t>(13);
   // Test each combination of rlist and spimm6.
   for (int rlist = 4; rlist < 16; ++rlist) {
     for (int spimm6 = 0; spimm6 < 64; spimm6 += 16) {
@@ -392,7 +392,7 @@ TEST_F(RV32ZcInstructionTest, RV32ZCmpPopRet) {
 }
 
 TEST_F(RV32ZcInstructionTest, RV32ZCmpPopRetz) {
-  auto *db = state_->db_factory()->Allocate<uint32_t>(13);
+  auto* db = state_->db_factory()->Allocate<uint32_t>(13);
   // Test each combination of rlist and spimm6.
   for (int rlist = 4; rlist < 16; ++rlist) {
     for (int spimm6 = 0; spimm6 < 64; spimm6 += 16) {

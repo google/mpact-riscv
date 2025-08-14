@@ -31,7 +31,7 @@ namespace mpact {
 namespace sim {
 namespace riscv {
 
-RiscVRenodeCLITop::RiscVRenodeCLITop(RiscVTop *riscv_top, bool wait_for_cli)
+RiscVRenodeCLITop::RiscVRenodeCLITop(RiscVTop* riscv_top, bool wait_for_cli)
     : util::renode::RenodeCLITop(riscv_top, wait_for_cli),
       riscv_top_(riscv_top) {}
 

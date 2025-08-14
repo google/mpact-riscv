@@ -7,10 +7,10 @@
 #include "riscv/riscv_renode.h"
 #include "riscv/riscv_state.h"
 
-::mpact::sim::util::renode::RenodeDebugInterface *CreateMpactSim(
+::mpact::sim::util::renode::RenodeDebugInterface* CreateMpactSim(
     std::string name, std::string cpu_type,
-    ::mpact::sim::util::MemoryInterface *renode_sysbus) {
-  auto *top = new ::mpact::sim::riscv::RiscVRenode(
+    ::mpact::sim::util::MemoryInterface* renode_sysbus) {
+  auto* top = new ::mpact::sim::riscv::RiscVRenode(
       name, renode_sysbus, ::mpact::sim::riscv::RiscVXlen::RV64);
   return top;
 }

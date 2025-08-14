@@ -132,11 +132,11 @@ struct Zfh32Config {
   static constexpr RiscVXlen rvXLen = RiscVXlen::RV32;
   static constexpr int kXLen = 32;
   static constexpr int slot = static_cast<int>(SlotEnum::kRiscv32Zfh);
-  static constexpr const char *const *kSourceOpNames =
+  static constexpr const char* const* kSourceOpNames =
       ::mpact::sim::riscv::zfh32::kSourceOpNames;
-  static constexpr const char *const *kDestOpNames =
+  static constexpr const char* const* kDestOpNames =
       ::mpact::sim::riscv::zfh32::kDestOpNames;
-  static constexpr const char *const *kComplexResourceNames =
+  static constexpr const char* const* kComplexResourceNames =
       ::mpact::sim::riscv::zfh32::kComplexResourceNames;
 };
 
@@ -152,11 +152,11 @@ struct Zfh64Config {
   static constexpr RiscVXlen rvXLen = RiscVXlen::RV64;
   static constexpr int kXLen = 64;
   static constexpr int slot = static_cast<int>(SlotEnum::kRiscv64Zfh);
-  static constexpr const char *const *kSourceOpNames =
+  static constexpr const char* const* kSourceOpNames =
       ::mpact::sim::riscv::zfh64::kSourceOpNames;
-  static constexpr const char *const *kDestOpNames =
+  static constexpr const char* const* kDestOpNames =
       ::mpact::sim::riscv::zfh64::kDestOpNames;
-  static constexpr const char *const *kComplexResourceNames =
+  static constexpr const char* const* kComplexResourceNames =
       ::mpact::sim::riscv::zfh64::kComplexResourceNames;
 };
 
@@ -189,8 +189,8 @@ struct ZfhEncodingTest : public testing::Test {
   typename ConfigT::OpcodeEnum GetOpcode();
 
   FlatDemandMemory memory_;
-  RiscVState *state_;
-  ZfhEncoding<ConfigT::kXLen> *enc_;
+  RiscVState* state_;
+  ZfhEncoding<ConfigT::kXLen>* enc_;
   absl::BitGen gen_;
   typename ConfigT::SlotEnum expected_slot_;
 };
@@ -209,7 +209,7 @@ typename ConfigT::XValue ZfhEncodingTest<ConfigT>::RandomizeScalarRegister(
   using XRegister = typename ConfigT::XRegister;
   using XValue = typename ConfigT::XValue;
   XValue register_value = register_index ? absl::Uniform<XValue>(gen_) : 0;
-  XRegister *rs1_reg;
+  XRegister* rs1_reg;
   std::tie(rs1_reg, std::ignore) = state_->GetRegister<XRegister>(
       absl::StrCat("x", static_cast<uint32_t>(register_index)));
   rs1_reg->data_buffer()->template Set<XValue>(0, register_value);
@@ -254,7 +254,7 @@ typename ConfigT::XValue ZfhEncodingTest<ConfigT>::GetRdDestinationValue(
   using XValue = typename ConfigT::XValue;
   using XRegister = typename ConfigT::XRegister;
   std::unique_ptr<RegisterDestinationOperand<XRegister>> dst(
-      static_cast<RegisterDestinationOperand<XRegister> *>(enc_->GetDestination(
+      static_cast<RegisterDestinationOperand<XRegister>*>(enc_->GetDestination(
           expected_slot_, 0, opcode_enum, ConfigT::DestOpEnum::kRd, 0, 0)));
   std::unique_ptr<DataBuffer> db(dst->CopyDataBuffer());
   return db->template Get<XValue>(0);
@@ -271,7 +271,7 @@ void ZfhEncodingTest<ConfigT>::FloatFrdHelper(
     uint32_t frd_adjustment = static_cast<uint32_t>(frd_index) << frd_offset;
 
     // Set the register value with a test value.
-    RVFpRegister *frd_reg;
+    RVFpRegister* frd_reg;
     std::tie(frd_reg, std::ignore) =
         state_->GetRegister<RVFpRegister>(absl::StrCat("f", frd_index));
     frd_reg->data_buffer()->Set<uint64_t>(0, expected_value);
@@ -279,7 +279,7 @@ void ZfhEncodingTest<ConfigT>::FloatFrdHelper(
     // Parse the instruction and get the destination operand.
     enc_->ParseInstruction(base_instruction | frd_adjustment);
     std::unique_ptr<RegisterDestinationOperand<RVFpRegister>> dst(
-        static_cast<RegisterDestinationOperand<RVFpRegister> *>(
+        static_cast<RegisterDestinationOperand<RVFpRegister>*>(
             enc_->GetDestination(expected_slot_, 0, opcode_enum,
                                  ConfigT::DestOpEnum::kFrd, 0, 0)));
 
@@ -307,7 +307,7 @@ void ZfhEncodingTest<ConfigT>::FloatSourceHelper(
     RegisterValue expected_value = absl::Uniform<RegisterValue>(gen_);
 
     // Set the register value with a test value.
-    RVFpRegister *frs1_reg;
+    RVFpRegister* frs1_reg;
     std::tie(frs1_reg, std::ignore) =
         state_->GetRegister<RVFpRegister>(absl::StrCat("f", frs1_index));
     frs1_reg->data_buffer()->Set<RegisterValue>(0, expected_value);
@@ -365,7 +365,7 @@ using MyTypes = ::testing::Types<Zfh32Config, Zfh64Config>;
 TYPED_TEST_SUITE(ZfhEncodingTest, MyTypes);
 
 TYPED_TEST(ZfhEncodingTest, SourceOperands) {
-  auto &getters = this->enc_->source_op_getters();
+  auto& getters = this->enc_->source_op_getters();
   for (int i = *TypeParam::SourceOpEnum::kNone;
        i < *TypeParam::SourceOpEnum::kPastMaxValue; ++i) {
     EXPECT_TRUE(getters.contains(i))
@@ -375,7 +375,7 @@ TYPED_TEST(ZfhEncodingTest, SourceOperands) {
 }
 
 TYPED_TEST(ZfhEncodingTest, DestOperands) {
-  auto &getters = this->enc_->dest_op_getters();
+  auto& getters = this->enc_->dest_op_getters();
   for (int i = *TypeParam::DestOpEnum::kNone;
        i < *TypeParam::DestOpEnum::kPastMaxValue; ++i) {
     EXPECT_TRUE(getters.contains(i))
@@ -388,7 +388,7 @@ TYPED_TEST(ZfhEncodingTest, DestOperands) {
 // them.
 
 TYPED_TEST(ZfhEncodingTest, ComplexResources) {
-  auto &getters = this->enc_->source_op_getters();
+  auto& getters = this->enc_->source_op_getters();
   for (int i = *TypeParam::ComplexResourceEnum::kNone;
        i < *TypeParam::ComplexResourceEnum::kPastMaxValue; ++i) {
     EXPECT_TRUE(getters.contains(i))
@@ -411,7 +411,7 @@ TYPED_TEST(ZfhEncodingTest, Flh_imm12) {
         (sign ? 0x8000'0000 : 0) | ((expected_imm & 0x0000'07FF) << 20);
     this->enc_->ParseInstruction(kFlh | imm_adjustment);
     std::unique_ptr<ImmediateOperand<int32_t>> src(
-        static_cast<ImmediateOperand<int32_t> *>(this->enc_->GetSource(
+        static_cast<ImmediateOperand<int32_t>*>(this->enc_->GetSource(
             this->expected_slot_, 0, TypeParam::OpcodeEnum::kFlh,
             TypeParam::SourceOpEnum::kIImm12, 0)));
     EXPECT_EQ(src->AsInt32(0), expected_imm);
@@ -451,7 +451,7 @@ TYPED_TEST(ZfhEncodingTest, Fsh_imm12) {
                               ((expected_imm & 0x0000'07E0) << 20);
     this->enc_->ParseInstruction(kFsh | imm_adjustment);
     std::unique_ptr<ImmediateOperand<int32_t>> src(
-        static_cast<ImmediateOperand<int32_t> *>(this->enc_->GetSource(
+        static_cast<ImmediateOperand<int32_t>*>(this->enc_->GetSource(
             this->expected_slot_, 0, TypeParam::OpcodeEnum::kFsh,
             TypeParam::SourceOpEnum::kSImm12, 0)));
     EXPECT_EQ(src->AsInt32(0), expected_imm);
@@ -491,14 +491,14 @@ TYPED_TEST(ZfhEncodingTest, FmvXh_rd) {
   for (uint32_t rd_index = 1; rd_index < 32; ++rd_index) {
     uint32_t rd_adjustment = rd_index << 7;
     XValue expected_value = absl::Uniform<XValue>(this->gen_);
-    XRegister *rd_reg;
+    XRegister* rd_reg;
     std::tie(rd_reg, std::ignore) =
         this->state_->template GetRegister<XRegister>(
             absl::StrCat("x", rd_index));
     rd_reg->data_buffer()->template Set<XValue>(0, expected_value);
     this->enc_->ParseInstruction(kFmvXh | rd_adjustment);
     std::unique_ptr<RegisterDestinationOperand<XRegister>> dst(
-        static_cast<RegisterDestinationOperand<XRegister> *>(
+        static_cast<RegisterDestinationOperand<XRegister>*>(
             this->enc_->GetDestination(this->expected_slot_, 0,
                                        TypeParam::OpcodeEnum::kFmvXh,
                                        TypeParam::DestOpEnum::kRd, 0, 0)));

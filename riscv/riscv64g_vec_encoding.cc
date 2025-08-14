@@ -47,13 +47,13 @@ using ::mpact::sim::generic::operator*;  // NOLINT: is used below.
 constexpr int kNumRegTable[8] = {8, 1, 2, 1, 4, 1, 2, 1};
 
 template <typename M, typename E, typename G>
-inline void Insert(M &map, E entry, G getter) {
+inline void Insert(M& map, E entry, G getter) {
   map.insert(std::make_pair(static_cast<int>(entry), getter));
 }
 
 template <typename RegType>
-inline void GetVRegGroup(RiscVState *state, int reg_num,
-                         std::vector<generic::RegisterBase *> *vreg_group) {
+inline void GetVRegGroup(RiscVState* state, int reg_num,
+                         std::vector<generic::RegisterBase*>* vreg_group) {
   // The number of registers in a vector register group depends on the register
   // index: 0, 8, 16, 24 each have 8 registers, 4, 12, 20, 28 each have 4,
   // 2, 6, 10, 14, 18, 22, 26, 30 each have two, and all odd numbered register
@@ -65,109 +65,109 @@ inline void GetVRegGroup(RiscVState *state, int reg_num,
   }
 }
 template <typename RegType>
-inline SourceOperandInterface *GetVectorRegisterSourceOp(RiscVState *state,
+inline SourceOperandInterface* GetVectorRegisterSourceOp(RiscVState* state,
                                                          int reg_num) {
-  std::vector<generic::RegisterBase *> vreg_group;
+  std::vector<generic::RegisterBase*> vreg_group;
   GetVRegGroup<RegType>(state, reg_num, &vreg_group);
-  auto *v_src_op = new RV32VectorSourceOperand(
-      absl::Span<generic::RegisterBase *>(vreg_group),
+  auto* v_src_op = new RV32VectorSourceOperand(
+      absl::Span<generic::RegisterBase*>(vreg_group),
       absl::StrCat(RiscVState::kVregPrefix, reg_num));
   return v_src_op;
 }
 
 template <typename RegType>
-inline DestinationOperandInterface *GetVectorRegisterDestinationOp(
-    RiscVState *state, int latency, int reg_num) {
-  std::vector<generic::RegisterBase *> vreg_group;
+inline DestinationOperandInterface* GetVectorRegisterDestinationOp(
+    RiscVState* state, int latency, int reg_num) {
+  std::vector<generic::RegisterBase*> vreg_group;
   GetVRegGroup<RegType>(state, reg_num, &vreg_group);
-  auto *v_dst_op = new RV32VectorDestinationOperand(
-      absl::Span<generic::RegisterBase *>(vreg_group), latency,
+  auto* v_dst_op = new RV32VectorDestinationOperand(
+      absl::Span<generic::RegisterBase*>(vreg_group), latency,
       absl::StrCat(RiscVState::kVregPrefix, reg_num));
   return v_dst_op;
 }
 
 template <typename RegType>
-inline SourceOperandInterface *GetVectorMaskRegisterSourceOp(RiscVState *state,
+inline SourceOperandInterface* GetVectorMaskRegisterSourceOp(RiscVState* state,
                                                              int reg_num) {
   // Mask register groups only have a single register.
-  std::vector<generic::RegisterBase *> vreg_group;
+  std::vector<generic::RegisterBase*> vreg_group;
   vreg_group.push_back(
       state
           ->GetRegister<RegType>(absl::StrCat(RiscVState::kVregPrefix, reg_num))
           .first);
-  auto *v_src_op = new RV32VectorSourceOperand(
-      absl::Span<generic::RegisterBase *>(vreg_group),
+  auto* v_src_op = new RV32VectorSourceOperand(
+      absl::Span<generic::RegisterBase*>(vreg_group),
       absl::StrCat(RiscVState::kVregPrefix, reg_num));
   return v_src_op;
 }
 
 template <typename RegType>
-inline DestinationOperandInterface *GetVectorMaskRegisterDestinationOp(
-    RiscVState *state, int latency, int reg_num) {
+inline DestinationOperandInterface* GetVectorMaskRegisterDestinationOp(
+    RiscVState* state, int latency, int reg_num) {
   // Mask register groups only have a single register.
-  std::vector<generic::RegisterBase *> vreg_group;
+  std::vector<generic::RegisterBase*> vreg_group;
   vreg_group.push_back(
       state
           ->GetRegister<RegType>(absl::StrCat(RiscVState::kVregPrefix, reg_num))
           .first);
-  auto *v_dst_op = new RV32VectorDestinationOperand(
-      absl::Span<generic::RegisterBase *>(vreg_group), latency,
+  auto* v_dst_op = new RV32VectorDestinationOperand(
+      absl::Span<generic::RegisterBase*>(vreg_group), latency,
       absl::StrCat(RiscVState::kVregPrefix, reg_num));
   return v_dst_op;
 }
 
 // Generic helper functions to create register operands.
 template <typename RegType>
-inline DestinationOperandInterface *GetRegisterDestinationOp(RiscVState *state,
+inline DestinationOperandInterface* GetRegisterDestinationOp(RiscVState* state,
                                                              std::string name,
                                                              int latency) {
-  auto *reg = state->GetRegister<RegType>(name).first;
+  auto* reg = state->GetRegister<RegType>(name).first;
   return reg->CreateDestinationOperand(latency);
 }
 
 template <typename RegType>
-inline DestinationOperandInterface *GetRegisterDestinationOp(
-    RiscVState *state, std::string name, int latency, std::string op_name) {
-  auto *reg = state->GetRegister<RegType>(name).first;
+inline DestinationOperandInterface* GetRegisterDestinationOp(
+    RiscVState* state, std::string name, int latency, std::string op_name) {
+  auto* reg = state->GetRegister<RegType>(name).first;
   return reg->CreateDestinationOperand(latency, op_name);
 }
 
 template <typename T>
-inline DestinationOperandInterface *GetCSRSetBitsDestinationOp(
-    RiscVState *state, std::string name, int latency, std::string op_name) {
+inline DestinationOperandInterface* GetCSRSetBitsDestinationOp(
+    RiscVState* state, std::string name, int latency, std::string op_name) {
   auto result = state->csr_set()->GetCsr(name);
   if (!result.ok()) {
     LOG(ERROR) << "No such CSR '" << name << "'";
     return nullptr;
   }
-  auto *csr = result.value();
-  auto *op = csr->CreateSetDestinationOperand(latency, op_name);
+  auto* csr = result.value();
+  auto* op = csr->CreateSetDestinationOperand(latency, op_name);
   return op;
 }
 
 template <typename RegType>
-inline SourceOperandInterface *GetRegisterSourceOp(RiscVState *state,
+inline SourceOperandInterface* GetRegisterSourceOp(RiscVState* state,
                                                    std::string name) {
-  auto *reg = state->GetRegister<RegType>(name).first;
-  auto *op = reg->CreateSourceOperand();
+  auto* reg = state->GetRegister<RegType>(name).first;
+  auto* op = reg->CreateSourceOperand();
   return op;
 }
 
 template <typename RegType>
-inline SourceOperandInterface *GetRegisterSourceOp(RiscVState *state,
+inline SourceOperandInterface* GetRegisterSourceOp(RiscVState* state,
                                                    std::string name,
                                                    std::string op_name) {
-  auto *reg = state->GetRegister<RegType>(name).first;
-  auto *op = reg->CreateSourceOperand(op_name);
+  auto* reg = state->GetRegister<RegType>(name).first;
+  auto* op = reg->CreateSourceOperand(op_name);
   return op;
 }
 
 }  // namespace
 
-RiscV64GVecEncoding::RiscV64GVecEncoding(RiscVState *state)
+RiscV64GVecEncoding::RiscV64GVecEncoding(RiscVState* state)
     : RiscV64GVecEncoding(state, true) {}
 
-RiscV64GVecEncoding::RiscV64GVecEncoding(RiscVState *state, bool use_abi_names)
+RiscV64GVecEncoding::RiscV64GVecEncoding(RiscVState* state, bool use_abi_names)
     : state_(state) {
   if (use_abi_names) {
     xreg_alias_ = xreg_abi_names_;
@@ -200,7 +200,7 @@ void RiscV64GVecEncoding::InitializeSourceOperandGetters() {
   // Source operand getters.
   source_op_getters_.insert(
       std::make_pair(static_cast<int>(SourceOpEnum::kAAq),
-                     [this]() -> SourceOperandInterface * {
+                     [this]() -> SourceOperandInterface* {
                        if (encoding64::inst32_format::ExtractAq(inst_word_)) {
                          return new generic::IntLiteralOperand<1>();
                        }
@@ -208,7 +208,7 @@ void RiscV64GVecEncoding::InitializeSourceOperandGetters() {
                      }));
   source_op_getters_.insert(
       std::make_pair(static_cast<int>(SourceOpEnum::kARl),
-                     [this]() -> SourceOperandInterface * {
+                     [this]() -> SourceOperandInterface* {
                        if (encoding64::inst32_format::ExtractRl(inst_word_)) {
                          return new generic::IntLiteralOperand<1>();
                        }
@@ -296,7 +296,7 @@ void RiscV64GVecEncoding::InitializeSourceOperandGetters() {
         if (!res.ok()) {
           return new generic::ImmediateOperand<uint32_t>(csr_indx);
         }
-        auto *csr = res.value();
+        auto* csr = res.value();
         return new generic::ImmediateOperand<uint32_t>(csr_indx, csr->name());
       }));
   source_op_getters_.insert(
@@ -425,34 +425,32 @@ void RiscV64GVecEncoding::InitializeSourceOperandGetters() {
         return new generic::ImmediateOperand<uint32_t>(
             encoding64::fence::ExtractPred(inst_word_));
       }));
-  source_op_getters_.insert(
-      std::make_pair(static_cast<int>(SourceOpEnum::kRm),
-                     [this]() -> SourceOperandInterface * {
-                       uint32_t rm = (inst_word_ >> 12) & 0x7;
-                       switch (rm) {
-                         case 0:
-                           return new generic::IntLiteralOperand<0>();
-                         case 1:
-                           return new generic::IntLiteralOperand<1>();
-                         case 2:
-                           return new generic::IntLiteralOperand<2>();
-                         case 3:
-                           return new generic::IntLiteralOperand<3>();
-                         case 4:
-                           return new generic::IntLiteralOperand<4>();
-                         case 5:
-                           return new generic::IntLiteralOperand<5>();
-                         case 6:
-                           return new generic::IntLiteralOperand<6>();
-                         case 7:
-                           return new generic::IntLiteralOperand<7>();
-                         default:
-                           return nullptr;
-                       }
-                     }));
   source_op_getters_.insert(std::make_pair(
-      static_cast<int>(SourceOpEnum::kRd),
-      [this]() -> SourceOperandInterface * {
+      static_cast<int>(SourceOpEnum::kRm), [this]() -> SourceOperandInterface* {
+        uint32_t rm = (inst_word_ >> 12) & 0x7;
+        switch (rm) {
+          case 0:
+            return new generic::IntLiteralOperand<0>();
+          case 1:
+            return new generic::IntLiteralOperand<1>();
+          case 2:
+            return new generic::IntLiteralOperand<2>();
+          case 3:
+            return new generic::IntLiteralOperand<3>();
+          case 4:
+            return new generic::IntLiteralOperand<4>();
+          case 5:
+            return new generic::IntLiteralOperand<5>();
+          case 6:
+            return new generic::IntLiteralOperand<6>();
+          case 7:
+            return new generic::IntLiteralOperand<7>();
+          default:
+            return nullptr;
+        }
+      }));
+  source_op_getters_.insert(std::make_pair(
+      static_cast<int>(SourceOpEnum::kRd), [this]() -> SourceOperandInterface* {
         int num = encoding64::r_type::ExtractRd(inst_word_);
         if (num == 0)
           return new generic::IntLiteralOperand<0>({1}, xreg_alias_[0]);
@@ -467,7 +465,7 @@ void RiscV64GVecEncoding::InitializeSourceOperandGetters() {
       }));
   source_op_getters_.insert(std::make_pair(
       static_cast<int>(SourceOpEnum::kRs1),
-      [this]() -> SourceOperandInterface * {
+      [this]() -> SourceOperandInterface* {
         int num = encoding64::r_type::ExtractRs1(inst_word_);
         if (num == 0)
           return new generic::IntLiteralOperand<0>({1}, xreg_alias_[0]);
@@ -482,7 +480,7 @@ void RiscV64GVecEncoding::InitializeSourceOperandGetters() {
       }));
   source_op_getters_.insert(std::make_pair(
       static_cast<int>(SourceOpEnum::kRs2),
-      [this]() -> SourceOperandInterface * {
+      [this]() -> SourceOperandInterface* {
         int num = encoding64::r_type::ExtractRs2(inst_word_);
         if (num == 0)
           return new generic::IntLiteralOperand<0>({1}, xreg_alias_[0]);
@@ -592,7 +590,7 @@ void RiscV64GVecEncoding::InitializeDestinationOperandGetters() {
       }));
   dest_op_getters_.insert(
       std::make_pair(static_cast<int>(DestOpEnum::kRd),
-                     [this](int latency) -> DestinationOperandInterface * {
+                     [this](int latency) -> DestinationOperandInterface* {
                        int num = encoding64::r_type::ExtractRd(inst_word_);
                        if (num == 0) {
                          return GetRegisterDestinationOp<RV64Register>(
@@ -651,12 +649,12 @@ void RiscV64GVecEncoding::InitializeDestinationOperandGetters() {
 
 void RiscV64GVecEncoding::InitializeVectorSourceOperandGetters() {
   Insert(source_op_getters_, SourceOpEnum::kVd,
-         [this]() -> SourceOperandInterface * {
+         [this]() -> SourceOperandInterface* {
            auto num = encoding64::v_arith::ExtractVd(inst_word_);
            return GetVectorRegisterSourceOp<RVVectorRegister>(state_, num);
          });
   Insert(source_op_getters_, SourceOpEnum::kVmask,
-         [this]() -> SourceOperandInterface * {
+         [this]() -> SourceOperandInterface* {
            auto vm = encoding64::v_arith::ExtractVm(inst_word_);
            if (vm == 1) {
              // Unmasked, return the True mask.
@@ -666,79 +664,79 @@ void RiscV64GVecEncoding::InitializeVectorSourceOperandGetters() {
            return GetVectorMaskRegisterSourceOp<RVVectorRegister>(state_, 0);
          });
   Insert(source_op_getters_, SourceOpEnum::kVmaskTrue,
-         [this]() -> SourceOperandInterface * {
+         [this]() -> SourceOperandInterface* {
            return new RV32VectorTrueOperand(state_);
          });
   Insert(source_op_getters_, SourceOpEnum::kVm,
-         [this]() -> SourceOperandInterface * {
+         [this]() -> SourceOperandInterface* {
            auto vm = encoding64::v_arith::ExtractVm(inst_word_);
            return new generic::ImmediateOperand<bool>(
                vm, absl::StrCat("vm.", vm ? "t" : "f"));
          });
   Insert(source_op_getters_, SourceOpEnum::kVs1,
-         [this]() -> SourceOperandInterface * {
+         [this]() -> SourceOperandInterface* {
            auto num = encoding64::v_arith::ExtractVs1(inst_word_);
            return GetVectorRegisterSourceOp<RVVectorRegister>(state_, num);
          });
   Insert(source_op_getters_, SourceOpEnum::kVs2,
-         [this]() -> SourceOperandInterface * {
+         [this]() -> SourceOperandInterface* {
            auto num = encoding64::v_arith::ExtractVs2(inst_word_);
            return GetVectorRegisterSourceOp<RVVectorRegister>(state_, num);
          });
   Insert(source_op_getters_, SourceOpEnum::kVs3,
-         [this]() -> SourceOperandInterface * {
+         [this]() -> SourceOperandInterface* {
            auto num = encoding64::v_mem::ExtractVs3(inst_word_);
            return GetVectorRegisterSourceOp<RVVectorRegister>(state_, num);
          });
 
   Insert(source_op_getters_, SourceOpEnum::kSimm5,
-         [this]() -> SourceOperandInterface * {
+         [this]() -> SourceOperandInterface* {
            const auto num = encoding64::inst32_format::ExtractSimm5(inst_word_);
            return new generic::ImmediateOperand<int32_t>(num);
          });
 
   Insert(source_op_getters_, SourceOpEnum::kUimm5,
-         [this]() -> SourceOperandInterface * {
+         [this]() -> SourceOperandInterface* {
            const auto num = encoding64::inst32_format::ExtractUimm5(inst_word_);
            return new generic::ImmediateOperand<int32_t>(num);
          });
 
   Insert(source_op_getters_, SourceOpEnum::kZimm10,
-         [this]() -> SourceOperandInterface * {
+         [this]() -> SourceOperandInterface* {
            const auto num =
                encoding64::inst32_format::ExtractZimm10(inst_word_);
            return new generic::ImmediateOperand<int32_t>(num);
          });
 
   Insert(source_op_getters_, SourceOpEnum::kZimm11,
-         [this]() -> SourceOperandInterface * {
+         [this]() -> SourceOperandInterface* {
            const auto num =
                encoding64::inst32_format::ExtractZimm11(inst_word_);
            return new generic::ImmediateOperand<int32_t>(num);
          });
 
   Insert(source_op_getters_, SourceOpEnum::kConst1,
-         []() -> SourceOperandInterface * {
+         []() -> SourceOperandInterface* {
            return new generic::ImmediateOperand<int32_t>(1);
          });
 
   Insert(source_op_getters_, SourceOpEnum::kConst2,
-         []() -> SourceOperandInterface * {
+         []() -> SourceOperandInterface* {
            return new generic::ImmediateOperand<int32_t>(2);
          });
 
   Insert(source_op_getters_, SourceOpEnum::kConst4,
-         []() -> SourceOperandInterface * {
+         []() -> SourceOperandInterface* {
            return new generic::ImmediateOperand<int32_t>(4);
          });
 
   Insert(source_op_getters_, SourceOpEnum::kConst8,
-         []() -> SourceOperandInterface * {
+         []() -> SourceOperandInterface* {
            return new generic::ImmediateOperand<int32_t>(8);
          });
 
   Insert(source_op_getters_, SourceOpEnum::kNf,
-         [this]() -> SourceOperandInterface * {
+         [this]() -> SourceOperandInterface* {
            auto num_fields = encoding64::v_mem::ExtractNf(inst_word_);
            return new generic::ImmediateOperand<uint8_t>(
                num_fields, absl::StrCat(num_fields + 1));
@@ -747,7 +745,7 @@ void RiscV64GVecEncoding::InitializeVectorSourceOperandGetters() {
 
 void RiscV64GVecEncoding::InitializeVectorDestinationOperandGetters() {
   Insert(dest_op_getters_, DestOpEnum::kVd,
-         [this](int latency) -> DestinationOperandInterface * {
+         [this](int latency) -> DestinationOperandInterface* {
            auto num = encoding64::v_arith::ExtractVd(inst_word_);
            return GetVectorRegisterDestinationOp<RVVectorRegister>(
                state_, latency, num);
@@ -772,7 +770,7 @@ void RiscV64GVecEncoding::InitializeComplexResourceOperandGetters() {
                      [](int begin, int end) { return nullptr; }));
 }
 
-ResourceOperandInterface *RiscV64GVecEncoding::GetComplexResourceOperand(
+ResourceOperandInterface* RiscV64GVecEncoding::GetComplexResourceOperand(
     SlotEnum, int, OpcodeEnum, ComplexResourceEnum resource, int begin,
     int end) {
   int index = static_cast<int>(resource);
@@ -789,19 +787,19 @@ void RiscV64GVecEncoding::InitializeSimpleResourceGetters() {
       static_cast<int>(SimpleResourceEnum::kNone), []() { return nullptr; }));
   simple_resource_getters_.insert(std::make_pair(
       static_cast<int>(SimpleResourceEnum::kC3drd),
-      [this]() -> generic::SimpleResource * {
+      [this]() -> generic::SimpleResource* {
         int num = encoding64::inst16_format::ExtractClRd(inst_word_);
         return resource_pool_->GetOrAddResource(absl::StrCat("d", num));
       }));
   simple_resource_getters_.insert(std::make_pair(
       static_cast<int>(SimpleResourceEnum::kC3drs2),
-      [this]() -> generic::SimpleResource * {
+      [this]() -> generic::SimpleResource* {
         int num = encoding64::inst16_format::ExtractCsRs2(inst_word_);
         return resource_pool_->GetOrAddResource(absl::StrCat("d", num));
       }));
   simple_resource_getters_.insert(std::make_pair(
       static_cast<int>(SimpleResourceEnum::kC3rd),
-      [this]() -> generic::SimpleResource * {
+      [this]() -> generic::SimpleResource* {
         int num = encoding64::inst16_format::ExtractClRd(inst_word_);
         // If num is 0 it refers to the zero register. No resource.
         if (num == 0) return nullptr;
@@ -809,7 +807,7 @@ void RiscV64GVecEncoding::InitializeSimpleResourceGetters() {
       }));
   simple_resource_getters_.insert(std::make_pair(
       static_cast<int>(SimpleResourceEnum::kC3rs1),
-      [this]() -> generic::SimpleResource * {
+      [this]() -> generic::SimpleResource* {
         int num = encoding64::inst16_format::ExtractClRs1(inst_word_);
         // If num is 0 it refers to the zero register. No resource.
         if (num == 0) return nullptr;
@@ -817,7 +815,7 @@ void RiscV64GVecEncoding::InitializeSimpleResourceGetters() {
       }));
   simple_resource_getters_.insert(std::make_pair(
       static_cast<int>(SimpleResourceEnum::kC3rs2),
-      [this]() -> generic::SimpleResource * {
+      [this]() -> generic::SimpleResource* {
         int num = encoding64::inst16_format::ExtractCsRs2(inst_word_);
         // If num is 0 it refers to the zero register. No resource.
         if (num == 0) return nullptr;
@@ -825,13 +823,13 @@ void RiscV64GVecEncoding::InitializeSimpleResourceGetters() {
       }));
   simple_resource_getters_.insert(std::make_pair(
       static_cast<int>(SimpleResourceEnum::kCdrs2),
-      [this]() -> generic::SimpleResource * {
+      [this]() -> generic::SimpleResource* {
         auto num = encoding64::c_r::ExtractRs2(inst_word_);
         return resource_pool_->GetOrAddResource(absl::StrCat("d", num));
       }));
   simple_resource_getters_.insert(std::make_pair(
       static_cast<int>(SimpleResourceEnum::kCrs1),
-      [this]() -> generic::SimpleResource * {
+      [this]() -> generic::SimpleResource* {
         auto num = encoding64::c_r::ExtractRs1(inst_word_);
         // If num is 0 it refers to the zero register. No resource.
         if (num == 0) return nullptr;
@@ -839,7 +837,7 @@ void RiscV64GVecEncoding::InitializeSimpleResourceGetters() {
       }));
   simple_resource_getters_.insert(std::make_pair(
       static_cast<int>(SimpleResourceEnum::kCrs2),
-      [this]() -> generic::SimpleResource * {
+      [this]() -> generic::SimpleResource* {
         auto num = encoding64::c_r::ExtractRs2(inst_word_);
         // If num is 0 it refers to the zero register. No resource.
         if (num == 0) return nullptr;
@@ -847,65 +845,65 @@ void RiscV64GVecEncoding::InitializeSimpleResourceGetters() {
       }));
   simple_resource_getters_.insert(
       std::make_pair(static_cast<int>(SimpleResourceEnum::kCsr),
-                     [this]() -> generic::SimpleResource * {
+                     [this]() -> generic::SimpleResource* {
                        return resource_pool_->GetOrAddResource("csr");
                      }));
   simple_resource_getters_.insert(std::make_pair(
       static_cast<int>(SimpleResourceEnum::kDrd),
-      [this]() -> generic::SimpleResource * {
+      [this]() -> generic::SimpleResource* {
         auto num = encoding64::r4_type::ExtractRd(inst_word_);
         return resource_pool_->GetOrAddResource(absl::StrCat("d", num));
       }));
   simple_resource_getters_.insert(std::make_pair(
       static_cast<int>(SimpleResourceEnum::kDrs1),
-      [this]() -> generic::SimpleResource * {
+      [this]() -> generic::SimpleResource* {
         auto num = encoding64::a_type::ExtractRs1(inst_word_);
         return resource_pool_->GetOrAddResource(absl::StrCat("d", num));
       }));
   simple_resource_getters_.insert(std::make_pair(
       static_cast<int>(SimpleResourceEnum::kDrs2),
-      [this]() -> generic::SimpleResource * {
+      [this]() -> generic::SimpleResource* {
         auto num = encoding64::a_type::ExtractRs2(inst_word_);
         return resource_pool_->GetOrAddResource(absl::StrCat("d", num));
       }));
   simple_resource_getters_.insert(std::make_pair(
       static_cast<int>(SimpleResourceEnum::kDrs3),
-      [this]() -> generic::SimpleResource * {
+      [this]() -> generic::SimpleResource* {
         auto num = encoding64::r4_type::ExtractRs3(inst_word_);
         return resource_pool_->GetOrAddResource(absl::StrCat("d", num));
       }));
   simple_resource_getters_.insert(std::make_pair(
       static_cast<int>(SimpleResourceEnum::kFrd),
-      [this]() -> generic::SimpleResource * {
+      [this]() -> generic::SimpleResource* {
         auto num = encoding64::r4_type::ExtractRd(inst_word_);
         return resource_pool_->GetOrAddResource(absl::StrCat("d", num));
       }));
   simple_resource_getters_.insert(std::make_pair(
       static_cast<int>(SimpleResourceEnum::kFrs1),
-      [this]() -> generic::SimpleResource * {
+      [this]() -> generic::SimpleResource* {
         auto num = encoding64::r4_type::ExtractRs1(inst_word_);
         return resource_pool_->GetOrAddResource(absl::StrCat("d", num));
       }));
   simple_resource_getters_.insert(std::make_pair(
       static_cast<int>(SimpleResourceEnum::kFrs2),
-      [this]() -> generic::SimpleResource * {
+      [this]() -> generic::SimpleResource* {
         auto num = encoding64::r4_type::ExtractRs2(inst_word_);
         return resource_pool_->GetOrAddResource(absl::StrCat("d", num));
       }));
   simple_resource_getters_.insert(std::make_pair(
       static_cast<int>(SimpleResourceEnum::kFrs3),
-      [this]() -> generic::SimpleResource * {
+      [this]() -> generic::SimpleResource* {
         auto num = encoding64::r4_type::ExtractRs3(inst_word_);
         return resource_pool_->GetOrAddResource(absl::StrCat("d", num));
       }));
   simple_resource_getters_.insert(
       std::make_pair(static_cast<int>(SimpleResourceEnum::kNextPc),
-                     [this]() -> generic::SimpleResource * {
+                     [this]() -> generic::SimpleResource* {
                        return resource_pool_->GetOrAddResource("next_pc");
                      }));
   simple_resource_getters_.insert(std::make_pair(
       static_cast<int>(SimpleResourceEnum::kRd),
-      [this]() -> generic::SimpleResource * {
+      [this]() -> generic::SimpleResource* {
         auto num = encoding64::a_type::ExtractRd(inst_word_);
         // If num is 0 it refers to the zero register. No resource.
         if (num == 0) return nullptr;
@@ -913,7 +911,7 @@ void RiscV64GVecEncoding::InitializeSimpleResourceGetters() {
       }));
   simple_resource_getters_.insert(std::make_pair(
       static_cast<int>(SimpleResourceEnum::kRs1),
-      [this]() -> generic::SimpleResource * {
+      [this]() -> generic::SimpleResource* {
         auto num = encoding64::a_type::ExtractRs1(inst_word_);
         // If num is 0 it refers to the zero register. No resource.
         if (num == 0) return nullptr;
@@ -921,7 +919,7 @@ void RiscV64GVecEncoding::InitializeSimpleResourceGetters() {
       }));
   simple_resource_getters_.insert(std::make_pair(
       static_cast<int>(SimpleResourceEnum::kRs2),
-      [this]() -> generic::SimpleResource * {
+      [this]() -> generic::SimpleResource* {
         auto num = encoding64::a_type::ExtractRs2(inst_word_);
         // If num is 0 it refers to the zero register. No resource.
         if (num == 0) return nullptr;
@@ -930,23 +928,23 @@ void RiscV64GVecEncoding::InitializeSimpleResourceGetters() {
   // X0 is constant 0, so no resource issue.
   simple_resource_getters_.insert(
       std::make_pair(static_cast<int>(SimpleResourceEnum::kX0),
-                     []() -> generic::SimpleResource * { return nullptr; }));
+                     []() -> generic::SimpleResource* { return nullptr; }));
   simple_resource_getters_.insert(
       std::make_pair(static_cast<int>(SimpleResourceEnum::kX1),
-                     [this]() -> generic::SimpleResource * {
+                     [this]() -> generic::SimpleResource* {
                        return resource_pool_->GetOrAddResource("x1");
                      }));
   simple_resource_getters_.insert(
       std::make_pair(static_cast<int>(SimpleResourceEnum::kX2),
-                     [this]() -> generic::SimpleResource * {
+                     [this]() -> generic::SimpleResource* {
                        return resource_pool_->GetOrAddResource("x2");
                      }));
 }
 
-ResourceOperandInterface *RiscV64GVecEncoding::GetSimpleResourceOperand(
-    SlotEnum, int, OpcodeEnum, SimpleResourceVector &resource_vec, int end) {
+ResourceOperandInterface* RiscV64GVecEncoding::GetSimpleResourceOperand(
+    SlotEnum, int, OpcodeEnum, SimpleResourceVector& resource_vec, int end) {
   if (resource_vec.empty()) return nullptr;
-  auto *resource_set = resource_pool_->CreateResourceSet();
+  auto* resource_set = resource_pool_->CreateResourceSet();
   for (auto resource_enum : resource_vec) {
     int index = static_cast<int>(resource_enum);
     auto iter = simple_resource_getters_.find(index);
@@ -954,18 +952,18 @@ ResourceOperandInterface *RiscV64GVecEncoding::GetSimpleResourceOperand(
       LOG(WARNING) << "No getter for simple resource " << index;
       continue;
     }
-    auto *resource = (iter->second)();
+    auto* resource = (iter->second)();
     auto status = resource_set->AddResource(resource);
     if (!status.ok()) {
       LOG(ERROR) << "Unable to add resource to resource set ("
                  << static_cast<int>(resource_enum) << ")";
     }
   }
-  auto *op = new SimpleResourceOperand(resource_set, end, resource_delay_line_);
+  auto* op = new SimpleResourceOperand(resource_set, end, resource_delay_line_);
   return op;
 }
 
-DestinationOperandInterface *RiscV64GVecEncoding::GetDestination(
+DestinationOperandInterface* RiscV64GVecEncoding::GetDestination(
     SlotEnum, int, OpcodeEnum, DestOpEnum dest_op, int dest_no, int latency) {
   int index = static_cast<int>(dest_op);
   auto iter = dest_op_getters_.find(index);
@@ -976,7 +974,7 @@ DestinationOperandInterface *RiscV64GVecEncoding::GetDestination(
   return (iter->second)(latency);
 }
 
-SourceOperandInterface *RiscV64GVecEncoding::GetSource(SlotEnum, int,
+SourceOperandInterface* RiscV64GVecEncoding::GetSource(SlotEnum, int,
                                                        OpcodeEnum,
                                                        SourceOpEnum source_op,
                                                        int source_no) {

@@ -71,7 +71,7 @@ class RiscVFPCompareInstructionsTest
   // use the mask bit.
   template <typename Vs2, typename Vs1>
   void BinaryMaskFPOpWithMaskTestHelperVV(
-      absl::string_view name, int sew, Instruction *inst,
+      absl::string_view name, int sew, Instruction* inst,
       std::function<uint8_t(Vs2, Vs1, bool)> operation) {
     int byte_sew = sew / 8;
     if (byte_sew != sizeof(Vs2) && byte_sew != sizeof(Vs1)) {
@@ -95,14 +95,14 @@ class RiscVFPCompareInstructionsTest
     // Overwrite the first few values of the input data with infinities,
     // zeros, denormals and NaNs.
     using Vs2Int = typename FPTypeInfo<Vs2>::IntType;
-    *reinterpret_cast<Vs2Int *>(&vs2_span[0]) = FPTypeInfo<Vs2>::kQNaN;
-    *reinterpret_cast<Vs2Int *>(&vs2_span[1]) = FPTypeInfo<Vs2>::kSNaN;
-    *reinterpret_cast<Vs2Int *>(&vs2_span[2]) = FPTypeInfo<Vs2>::kPosInf;
-    *reinterpret_cast<Vs2Int *>(&vs2_span[3]) = FPTypeInfo<Vs2>::kNegInf;
-    *reinterpret_cast<Vs2Int *>(&vs2_span[4]) = FPTypeInfo<Vs2>::kPosZero;
-    *reinterpret_cast<Vs2Int *>(&vs2_span[5]) = FPTypeInfo<Vs2>::kNegZero;
-    *reinterpret_cast<Vs2Int *>(&vs2_span[6]) = FPTypeInfo<Vs2>::kPosDenorm;
-    *reinterpret_cast<Vs2Int *>(&vs2_span[7]) = FPTypeInfo<Vs2>::kNegDenorm;
+    *reinterpret_cast<Vs2Int*>(&vs2_span[0]) = FPTypeInfo<Vs2>::kQNaN;
+    *reinterpret_cast<Vs2Int*>(&vs2_span[1]) = FPTypeInfo<Vs2>::kSNaN;
+    *reinterpret_cast<Vs2Int*>(&vs2_span[2]) = FPTypeInfo<Vs2>::kPosInf;
+    *reinterpret_cast<Vs2Int*>(&vs2_span[3]) = FPTypeInfo<Vs2>::kNegInf;
+    *reinterpret_cast<Vs2Int*>(&vs2_span[4]) = FPTypeInfo<Vs2>::kPosZero;
+    *reinterpret_cast<Vs2Int*>(&vs2_span[5]) = FPTypeInfo<Vs2>::kNegZero;
+    *reinterpret_cast<Vs2Int*>(&vs2_span[6]) = FPTypeInfo<Vs2>::kPosDenorm;
+    *reinterpret_cast<Vs2Int*>(&vs2_span[7]) = FPTypeInfo<Vs2>::kNegDenorm;
     // Make every third value the same (at least if the types are same sized).
     for (int i = 0; i < std::min(vs1_size, vs2_size); i += 3) {
       vs1_span[i] = static_cast<Vs1>(vs2_span[i]);
@@ -172,10 +172,10 @@ class RiscVFPCompareInstructionsTest
               uint8_t expected_value =
                   operation(vs2_value[i], vs1_value[i], mask_value);
               auto int_vs2_val =
-                  *reinterpret_cast<typename FPTypeInfo<Vs2>::IntType *>(
+                  *reinterpret_cast<typename FPTypeInfo<Vs2>::IntType*>(
                       &vs2_value[i]);
               auto int_vs1_val =
-                  *reinterpret_cast<typename FPTypeInfo<Vs1>::IntType *>(
+                  *reinterpret_cast<typename FPTypeInfo<Vs1>::IntType*>(
                       &vs1_value[i]);
               EXPECT_EQ(expected_value, inst_value)
                   << absl::StrCat(name, "[", i, "] op(", vs2_value[i], "[0x",
@@ -197,7 +197,7 @@ class RiscVFPCompareInstructionsTest
   // not use the mask bit.
   template <typename Vs2, typename Vs1>
   void BinaryMaskFPOpTestHelperVV(absl::string_view name, int sew,
-                                  Instruction *inst,
+                                  Instruction* inst,
                                   std::function<uint8_t(Vs2, Vs1)> operation) {
     BinaryMaskFPOpWithMaskTestHelperVV<Vs2, Vs1>(
         name, sew, inst,
@@ -213,7 +213,7 @@ class RiscVFPCompareInstructionsTest
   // use the mask bit.
   template <typename Vs2, typename Fs1>
   void BinaryMaskFPOpWithMaskTestHelperVX(
-      absl::string_view name, int sew, Instruction *inst,
+      absl::string_view name, int sew, Instruction* inst,
       std::function<uint8_t(Vs2, Fs1, bool)> operation) {
     int byte_sew = sew / 8;
     if (byte_sew != sizeof(Vs2) && byte_sew != sizeof(Fs1)) {
@@ -297,10 +297,10 @@ class RiscVFPCompareInstructionsTest
               uint8_t expected_value =
                   operation(vs2_value[i], fs1_value, mask_value);
               auto int_vs2_val =
-                  *reinterpret_cast<typename FPTypeInfo<Vs2>::IntType *>(
+                  *reinterpret_cast<typename FPTypeInfo<Vs2>::IntType*>(
                       &vs2_value[i]);
               auto int_fs1_val =
-                  *reinterpret_cast<typename FPTypeInfo<Fs1>::IntType *>(
+                  *reinterpret_cast<typename FPTypeInfo<Fs1>::IntType*>(
                       &fs1_value);
               EXPECT_EQ(expected_value, inst_value)
                   << absl::StrCat(name, "[", i, "] op(", vs2_value[i], "[0x",
@@ -321,7 +321,7 @@ class RiscVFPCompareInstructionsTest
   // use the mask bit.
   template <typename Vs2, typename Fs1>
   void BinaryMaskFPOpTestHelperVX(absl::string_view name, int sew,
-                                  Instruction *inst,
+                                  Instruction* inst,
                                   std::function<uint8_t(Vs2, Fs1)> operation) {
     BinaryMaskFPOpWithMaskTestHelperVX<Vs2, Fs1>(
         name, sew, inst,

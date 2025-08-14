@@ -32,15 +32,15 @@ class RiscVRenodeRegisterInfo {
  public:
   using RenodeRegisterInfo = std::vector<util::renode::RenodeCpuRegister>;
 
-  static const RenodeRegisterInfo &GetRenodeRegisterInfo();
+  static const RenodeRegisterInfo& GetRenodeRegisterInfo();
 
  private:
   RiscVRenodeRegisterInfo();
-  static RiscVRenodeRegisterInfo *Instance();
+  static RiscVRenodeRegisterInfo* Instance();
   void InitializeRenodeRegisterInfo();
-  const RenodeRegisterInfo &GetRenodeRegisterInfoPrivate();
+  const RenodeRegisterInfo& GetRenodeRegisterInfoPrivate();
 
-  static RiscVRenodeRegisterInfo *instance_;
+  static RiscVRenodeRegisterInfo* instance_;
   RenodeRegisterInfo renode_register_info_;
 };
 

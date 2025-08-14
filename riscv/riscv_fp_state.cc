@@ -50,7 +50,7 @@ static inline void LogIfError(absl::Status status) {
   LOG(ERROR) << status.message();
 }
 
-RiscVFPState::RiscVFPState(RiscVCsrSet *csr_set, ArchState *rv_state)
+RiscVFPState::RiscVFPState(RiscVCsrSet* csr_set, ArchState* rv_state)
     : rv_state_(rv_state) {
   fcsr_ = new RiscVFcsr(this);
   frm_ = new RiscVFrm(this);
@@ -95,7 +95,7 @@ void RiscVFPState::SetRoundingMode(FPRoundingMode mode) {
 }
 
 // The RiscV fp csr.
-RiscVFcsr::RiscVFcsr(RiscVFPState *fp_state)
+RiscVFcsr::RiscVFcsr(RiscVFPState* fp_state)
     : RiscVSimpleCsr<uint32_t>(kFcsrName, RiscVCsrEnum::kFCsr, kFcsrInitial,
                                kFcsrReadMask, kFcsrWriteMask,
                                fp_state->rv_state()),
@@ -124,7 +124,7 @@ void RiscVFcsr::Write(uint32_t value) {
 void RiscVFcsr::Write(uint64_t value) { Write(static_cast<uint32_t>(value)); }
 
 // RiscVFflags translates reads and writes into reads and writes of fcsr.
-RiscVFflags::RiscVFflags(RiscVFPState *fp_state)
+RiscVFflags::RiscVFflags(RiscVFPState* fp_state)
     : RiscVSimpleCsr<uint32_t>(kFflagsName, RiscVCsrEnum::kFFlags,
                                kFflagsInitial, kFflagsReadMask,
                                kFflagsWriteMask, fp_state->rv_state()),
@@ -149,7 +149,7 @@ void RiscVFflags::Set(uint32_t value) { Write(value); }
 
 // RiscV rm (rounding mode) csr translates reads and writes into reads
 // and writes of fcsr.
-RiscVFrm::RiscVFrm(RiscVFPState *fp_state)
+RiscVFrm::RiscVFrm(RiscVFPState* fp_state)
     : RiscVSimpleCsr<uint32_t>(kFrmName, RiscVCsrEnum::kFrm, kFrmInitial,
                                kFrmReadMask, kFrmWriteMask,
                                fp_state->rv_state()),

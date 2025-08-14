@@ -239,8 +239,8 @@ class RiscV64GEncodingTest : public testing::Test {
   }
 
   FlatDemandMemory memory_;
-  RiscVState *state_;
-  RiscV64GEncoding *enc_;
+  RiscVState* state_;
+  RiscV64GEncoding* enc_;
 };
 
 constexpr int kRdValue = 1;
@@ -272,7 +272,7 @@ static uint32_t Set16Rs2(uint32_t iword, uint32_t val) {
 }
 
 TEST_F(RiscV64GEncodingTest, SourceOperands) {
-  auto &getters = enc_->source_op_getters();
+  auto& getters = enc_->source_op_getters();
   for (int i = *SourceOpEnum::kNone; i < *SourceOpEnum::kPastMaxValue; ++i) {
     EXPECT_TRUE(getters.contains(i)) << "No source operand for enum value " << i
                                      << " (" << kSourceOpNames[i] << ")";
@@ -280,7 +280,7 @@ TEST_F(RiscV64GEncodingTest, SourceOperands) {
 }
 
 TEST_F(RiscV64GEncodingTest, DestOperands) {
-  auto &getters = enc_->dest_op_getters();
+  auto& getters = enc_->dest_op_getters();
   for (int i = *DestOpEnum::kNone; i < *DestOpEnum::kPastMaxValue; ++i) {
     EXPECT_TRUE(getters.contains(i)) << "No dest operand for enum value " << i
                                      << " (" << kDestOpNames[i] << ")";
@@ -288,7 +288,7 @@ TEST_F(RiscV64GEncodingTest, DestOperands) {
 }
 
 TEST_F(RiscV64GEncodingTest, SimpleResources) {
-  auto &getters = enc_->simple_resource_getters();
+  auto& getters = enc_->simple_resource_getters();
   for (int i = *SimpleResourceEnum::kNone;
        i < *SimpleResourceEnum::kPastMaxValue; ++i) {
     EXPECT_TRUE(getters.contains(i)) << "No source operand for enum value " << i
@@ -297,7 +297,7 @@ TEST_F(RiscV64GEncodingTest, SimpleResources) {
 }
 
 TEST_F(RiscV64GEncodingTest, ComplexResources) {
-  auto &getters = enc_->source_op_getters();
+  auto& getters = enc_->source_op_getters();
   for (int i = *ComplexResourceEnum::kNone;
        i < *ComplexResourceEnum::kPastMaxValue; ++i) {
     EXPECT_TRUE(getters.contains(i)) << "No source operand for enum value " << i

@@ -46,8 +46,8 @@ using ::mpact::sim::generic::SourceOperandInterface;
 // types for the instruction set.
 template <typename Enum, typename Extractors, typename IntRegister,
           typename FpRegister>
-void AddRiscV64SourceGetters(SourceOpGetterMap &getter_map,
-                             RiscVEncodingCommon *common) {
+void AddRiscV64SourceGetters(SourceOpGetterMap& getter_map,
+                             RiscVEncodingCommon* common) {
   // Source operand getters.
   Insert(getter_map, *Enum::kIUimm6, [common]() {
     return new ImmediateOperand<uint32_t>(
@@ -62,8 +62,8 @@ void AddRiscV64SourceGetters(SourceOpGetterMap &getter_map,
 // to construct the register operand.
 template <typename Enum, typename Extractors, typename IntRegister,
           typename FpRegister>
-void AddRiscV64DestGetters(DestOpGetterMap &getter_map,
-                           RiscVEncodingCommon *common) {
+void AddRiscV64DestGetters(DestOpGetterMap& getter_map,
+                           RiscVEncodingCommon* common) {
   // Empty.
 }
 
@@ -73,8 +73,8 @@ void AddRiscV64DestGetters(DestOpGetterMap &getter_map,
 // extraction functions, and the IntRegister and FpRegister types that are used
 // to construct the register operand.
 template <typename Enum, typename Extractors>
-void AddRiscV64SimpleResourceGetters(SimpleResourceGetterMap &getter_map,
-                                     RiscVEncodingCommon *common) {
+void AddRiscV64SimpleResourceGetters(SimpleResourceGetterMap& getter_map,
+                                     RiscVEncodingCommon* common) {
   // Empty.
 }
 

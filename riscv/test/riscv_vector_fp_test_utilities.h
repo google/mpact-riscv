@@ -120,12 +120,12 @@ inline void FPCompare<float>(float op, float reg, int delta_position,
     if (exp > delta_position) {
       exp -= delta_position;
       UInt udelta = exp << FPTypeInfo<T>::kSigSize;
-      delta = *reinterpret_cast<T *>(&udelta);
+      delta = *reinterpret_cast<T*>(&udelta);
     } else {
       // Becomes a denormal
       int diff = delta_position - exp;
       UInt udelta = 1ULL << (FPTypeInfo<T>::kSigSize - 1 - diff);
-      delta = *reinterpret_cast<T *>(&udelta);
+      delta = *reinterpret_cast<T*>(&udelta);
     }
     EXPECT_THAT(reg, testing::NanSensitiveFloatNear(op, delta)) << str;
   } else {
@@ -145,12 +145,12 @@ inline void FPCompare<double>(double op, double reg, int delta_position,
     if (exp > delta_position) {
       exp -= delta_position;
       UInt udelta = exp << FPTypeInfo<T>::kSigSize;
-      delta = *reinterpret_cast<T *>(&udelta);
+      delta = *reinterpret_cast<T*>(&udelta);
     } else {
       // Becomes a denormal
       int diff = delta_position - exp;
       UInt udelta = 1ULL << (FPTypeInfo<T>::kSigSize - 1 - diff);
-      delta = *reinterpret_cast<T *>(&udelta);
+      delta = *reinterpret_cast<T*>(&udelta);
     }
     EXPECT_THAT(reg, testing::NanSensitiveDoubleNear(op, delta)) << str;
   } else {
@@ -179,7 +179,7 @@ template <typename S, typename D>
 struct GreaterSize {
   static const bool value =
       sizeof(S) > sizeof(D) &&
-      std::is_floating_point<S>::value &&std::is_integral<D>::value;
+      std::is_floating_point<S>::value&& std::is_integral<D>::value;
 };
 
 template <typename S, typename D>
@@ -204,16 +204,16 @@ template <typename S, typename D>
 inline typename std::enable_if<internal::LessSize<S, D>::value, D>::type NaNBox(
     S value) {
   using SInt = typename FPTypeInfo<S>::IntType;
-  SInt sval = *reinterpret_cast<SInt *>(&value);
+  SInt sval = *reinterpret_cast<SInt*>(&value);
   D dval = (~static_cast<D>(0) << (sizeof(S) * 8)) | sval;
-  return *reinterpret_cast<D *>(&dval);
+  return *reinterpret_cast<D*>(&dval);
 }
 
 // This version does a straight copy - as the data types are the same size.
 template <typename S, typename D>
 inline typename std::enable_if<internal::EqualSize<S, D>::value, D>::type
 NaNBox(S value) {
-  return *reinterpret_cast<D *>(&value);
+  return *reinterpret_cast<D*>(&value);
 }
 
 // Signal error if the register is smaller than the floating point value.
@@ -248,14 +248,14 @@ class RiscVFPInstructionsTestBase
                              1ULL << FPTypeInfo<T>::kSigSize);
     UInt value = (sign & 1) << (FPTypeInfo<T>::kBitSize - 1) |
                  (exp << FPTypeInfo<T>::kSigSize) | sig;
-    T val = *reinterpret_cast<T *>(&value);
+    T val = *reinterpret_cast<T*>(&value);
     return val;
   }
 
   // This method uses random values for each field in the fp number.
   template <typename T>
   void FillArrayWithRandomFPValues(absl::Span<T> span) {
-    for (auto &val : span) {
+    for (auto& val : span) {
       val = RandomFPValue<T>();
     }
   }
@@ -270,41 +270,41 @@ class RiscVFPInstructionsTestBase
     using Vs1Int = typename FPTypeInfo<Vs1>::IntType;
     // Overwrite the first few values of the input data with infinities,
     // zeros, denormals and NaNs.
-    *reinterpret_cast<Vs2Int *>(&vs2_span[0]) = FPTypeInfo<Vs2>::kQNaN;
-    *reinterpret_cast<Vs2Int *>(&vs2_span[1]) = FPTypeInfo<Vs2>::kSNaN;
-    *reinterpret_cast<Vs2Int *>(&vs2_span[2]) = FPTypeInfo<Vs2>::kPosInf;
-    *reinterpret_cast<Vs2Int *>(&vs2_span[3]) = FPTypeInfo<Vs2>::kNegInf;
-    *reinterpret_cast<Vs2Int *>(&vs2_span[4]) = FPTypeInfo<Vs2>::kPosZero;
-    *reinterpret_cast<Vs2Int *>(&vs2_span[5]) = FPTypeInfo<Vs2>::kNegZero;
-    *reinterpret_cast<Vs2Int *>(&vs2_span[6]) = FPTypeInfo<Vs2>::kPosDenorm;
-    *reinterpret_cast<Vs2Int *>(&vs2_span[7]) = FPTypeInfo<Vs2>::kNegDenorm;
+    *reinterpret_cast<Vs2Int*>(&vs2_span[0]) = FPTypeInfo<Vs2>::kQNaN;
+    *reinterpret_cast<Vs2Int*>(&vs2_span[1]) = FPTypeInfo<Vs2>::kSNaN;
+    *reinterpret_cast<Vs2Int*>(&vs2_span[2]) = FPTypeInfo<Vs2>::kPosInf;
+    *reinterpret_cast<Vs2Int*>(&vs2_span[3]) = FPTypeInfo<Vs2>::kNegInf;
+    *reinterpret_cast<Vs2Int*>(&vs2_span[4]) = FPTypeInfo<Vs2>::kPosZero;
+    *reinterpret_cast<Vs2Int*>(&vs2_span[5]) = FPTypeInfo<Vs2>::kNegZero;
+    *reinterpret_cast<Vs2Int*>(&vs2_span[6]) = FPTypeInfo<Vs2>::kPosDenorm;
+    *reinterpret_cast<Vs2Int*>(&vs2_span[7]) = FPTypeInfo<Vs2>::kNegDenorm;
     if (count == 4) {
-      *reinterpret_cast<Vs1Int *>(&vs1_span[0]) = FPTypeInfo<Vs1>::kQNaN;
-      *reinterpret_cast<Vs1Int *>(&vs1_span[1]) = FPTypeInfo<Vs1>::kSNaN;
-      *reinterpret_cast<Vs1Int *>(&vs1_span[2]) = FPTypeInfo<Vs1>::kPosInf;
-      *reinterpret_cast<Vs1Int *>(&vs1_span[3]) = FPTypeInfo<Vs1>::kNegInf;
-      *reinterpret_cast<Vs1Int *>(&vs1_span[4]) = FPTypeInfo<Vs1>::kPosZero;
-      *reinterpret_cast<Vs1Int *>(&vs1_span[5]) = FPTypeInfo<Vs1>::kNegZero;
-      *reinterpret_cast<Vs1Int *>(&vs1_span[6]) = FPTypeInfo<Vs1>::kPosDenorm;
-      *reinterpret_cast<Vs1Int *>(&vs1_span[7]) = FPTypeInfo<Vs1>::kNegDenorm;
+      *reinterpret_cast<Vs1Int*>(&vs1_span[0]) = FPTypeInfo<Vs1>::kQNaN;
+      *reinterpret_cast<Vs1Int*>(&vs1_span[1]) = FPTypeInfo<Vs1>::kSNaN;
+      *reinterpret_cast<Vs1Int*>(&vs1_span[2]) = FPTypeInfo<Vs1>::kPosInf;
+      *reinterpret_cast<Vs1Int*>(&vs1_span[3]) = FPTypeInfo<Vs1>::kNegInf;
+      *reinterpret_cast<Vs1Int*>(&vs1_span[4]) = FPTypeInfo<Vs1>::kPosZero;
+      *reinterpret_cast<Vs1Int*>(&vs1_span[5]) = FPTypeInfo<Vs1>::kNegZero;
+      *reinterpret_cast<Vs1Int*>(&vs1_span[6]) = FPTypeInfo<Vs1>::kPosDenorm;
+      *reinterpret_cast<Vs1Int*>(&vs1_span[7]) = FPTypeInfo<Vs1>::kNegDenorm;
     } else if (count == 5) {
-      *reinterpret_cast<Vs1Int *>(&vs1_span[7]) = FPTypeInfo<Vs1>::kQNaN;
-      *reinterpret_cast<Vs1Int *>(&vs1_span[6]) = FPTypeInfo<Vs1>::kSNaN;
-      *reinterpret_cast<Vs1Int *>(&vs1_span[5]) = FPTypeInfo<Vs1>::kPosInf;
-      *reinterpret_cast<Vs1Int *>(&vs1_span[4]) = FPTypeInfo<Vs1>::kNegInf;
-      *reinterpret_cast<Vs1Int *>(&vs1_span[3]) = FPTypeInfo<Vs1>::kPosZero;
-      *reinterpret_cast<Vs1Int *>(&vs1_span[2]) = FPTypeInfo<Vs1>::kNegZero;
-      *reinterpret_cast<Vs1Int *>(&vs1_span[1]) = FPTypeInfo<Vs1>::kPosDenorm;
-      *reinterpret_cast<Vs1Int *>(&vs1_span[0]) = FPTypeInfo<Vs1>::kNegDenorm;
+      *reinterpret_cast<Vs1Int*>(&vs1_span[7]) = FPTypeInfo<Vs1>::kQNaN;
+      *reinterpret_cast<Vs1Int*>(&vs1_span[6]) = FPTypeInfo<Vs1>::kSNaN;
+      *reinterpret_cast<Vs1Int*>(&vs1_span[5]) = FPTypeInfo<Vs1>::kPosInf;
+      *reinterpret_cast<Vs1Int*>(&vs1_span[4]) = FPTypeInfo<Vs1>::kNegInf;
+      *reinterpret_cast<Vs1Int*>(&vs1_span[3]) = FPTypeInfo<Vs1>::kPosZero;
+      *reinterpret_cast<Vs1Int*>(&vs1_span[2]) = FPTypeInfo<Vs1>::kNegZero;
+      *reinterpret_cast<Vs1Int*>(&vs1_span[1]) = FPTypeInfo<Vs1>::kPosDenorm;
+      *reinterpret_cast<Vs1Int*>(&vs1_span[0]) = FPTypeInfo<Vs1>::kNegDenorm;
     } else if (count == 6) {
-      *reinterpret_cast<Vs1Int *>(&vs1_span[0]) = FPTypeInfo<Vs1>::kQNaN;
-      *reinterpret_cast<Vs1Int *>(&vs1_span[1]) = FPTypeInfo<Vs1>::kSNaN;
-      *reinterpret_cast<Vs1Int *>(&vs1_span[2]) = FPTypeInfo<Vs1>::kNegInf;
-      *reinterpret_cast<Vs1Int *>(&vs1_span[3]) = FPTypeInfo<Vs1>::kPosInf;
-      *reinterpret_cast<Vs1Int *>(&vs1_span[4]) = FPTypeInfo<Vs1>::kNegZero;
-      *reinterpret_cast<Vs1Int *>(&vs1_span[5]) = FPTypeInfo<Vs1>::kPosZero;
-      *reinterpret_cast<Vs1Int *>(&vs1_span[6]) = FPTypeInfo<Vs1>::kNegDenorm;
-      *reinterpret_cast<Vs1Int *>(&vs1_span[7]) = FPTypeInfo<Vs1>::kPosDenorm;
+      *reinterpret_cast<Vs1Int*>(&vs1_span[0]) = FPTypeInfo<Vs1>::kQNaN;
+      *reinterpret_cast<Vs1Int*>(&vs1_span[1]) = FPTypeInfo<Vs1>::kSNaN;
+      *reinterpret_cast<Vs1Int*>(&vs1_span[2]) = FPTypeInfo<Vs1>::kNegInf;
+      *reinterpret_cast<Vs1Int*>(&vs1_span[3]) = FPTypeInfo<Vs1>::kPosInf;
+      *reinterpret_cast<Vs1Int*>(&vs1_span[4]) = FPTypeInfo<Vs1>::kNegZero;
+      *reinterpret_cast<Vs1Int*>(&vs1_span[5]) = FPTypeInfo<Vs1>::kPosZero;
+      *reinterpret_cast<Vs1Int*>(&vs1_span[6]) = FPTypeInfo<Vs1>::kNegDenorm;
+      *reinterpret_cast<Vs1Int*>(&vs1_span[7]) = FPTypeInfo<Vs1>::kPosDenorm;
     }
     // Modify the first mask bits to use each of the special floating
     // point values.
@@ -315,7 +315,7 @@ class RiscVFPInstructionsTestBase
   // NaN etc.) during testing, not just random values.
   template <typename Vd, typename Vs2, typename Vs1>
   void BinaryOpFPTestHelperVV(absl::string_view name, int sew,
-                              Instruction *inst, int delta_position,
+                              Instruction* inst, int delta_position,
                               std::function<Vd(Vs2, Vs1)> operation) {
     int byte_sew = sew / 8;
     if (byte_sew != sizeof(Vd) && byte_sew != sizeof(Vs2) &&
@@ -410,19 +410,19 @@ class RiscVFPInstructionsTestBase
                 }
                 auto reg_val = vreg_[reg]->data_buffer()->Get<Vd>(i);
                 auto int_reg_val =
-                    *reinterpret_cast<typename FPTypeInfo<Vd>::IntType *>(
+                    *reinterpret_cast<typename FPTypeInfo<Vd>::IntType*>(
                         &reg_val);
                 if ((count >= vstart) && mask_value && (count < num_values)) {
                   ScopedFPStatus set_fpstatus(rv_fp_->host_fp_interface());
                   auto op_val = operation(vs2_value[count], vs1_value[count]);
                   auto int_op_val =
-                      *reinterpret_cast<typename FPTypeInfo<Vd>::IntType *>(
+                      *reinterpret_cast<typename FPTypeInfo<Vd>::IntType*>(
                           &op_val);
                   auto int_vs2_val =
-                      *reinterpret_cast<typename FPTypeInfo<Vs2>::IntType *>(
+                      *reinterpret_cast<typename FPTypeInfo<Vs2>::IntType*>(
                           &vs2_value[count]);
                   auto int_vs1_val =
-                      *reinterpret_cast<typename FPTypeInfo<Vs1>::IntType *>(
+                      *reinterpret_cast<typename FPTypeInfo<Vs1>::IntType*>(
                           &vs1_value[count]);
                   FPCompare<Vd>(
                       op_val, reg_val, delta_position,
@@ -456,7 +456,7 @@ class RiscVFPInstructionsTestBase
   // NaN etc.) during testing, not just random values.
   template <typename Vd, typename Vs2, typename Vs1>
   void BinaryOpWithFflagsFPTestHelperVV(
-      absl::string_view name, int sew, Instruction *inst, int delta_position,
+      absl::string_view name, int sew, Instruction* inst, int delta_position,
       std::function<std::tuple<Vd, uint32_t>(Vs2, Vs1)> operation) {
     using VdInt = typename FPTypeInfo<Vd>::IntType;
     using Vs2Int = typename FPTypeInfo<Vs2>::IntType;
@@ -478,7 +478,7 @@ class RiscVFPInstructionsTestBase
     auto vs2_span = Span<Vs2>(vs2_value);
     auto vs1_span = Span<Vs1>(vs1_value);
     AppendVectorRegisterOperands({kVs2, kVs1, kVmask}, {kVd});
-    auto *flag_op = rv_fp_->fflags()->CreateSetDestinationOperand(0, "fflags");
+    auto* flag_op = rv_fp_->fflags()->CreateSetDestinationOperand(0, "fflags");
     instruction_->AppendDestination(flag_op);
     SetVectorRegisterValues<uint8_t>(
         {{kVmaskName, Span<const uint8_t>(kA5Mask)}});
@@ -558,7 +558,7 @@ class RiscVFPInstructionsTestBase
                       ((kA5Mask[mask_index] >> mask_offset) & 0b1) != 0;
                 }
                 auto reg_val = vreg_[reg]->data_buffer()->Get<Vd>(i);
-                auto int_reg_val = *reinterpret_cast<VdInt *>(&reg_val);
+                auto int_reg_val = *reinterpret_cast<VdInt*>(&reg_val);
                 if ((count >= vstart) && mask_value && (count < num_values)) {
                   Vd op_val;
                   uint32_t flag;
@@ -569,11 +569,11 @@ class RiscVFPInstructionsTestBase
                     op_val = op_val_tmp;
                     flag = flag_tmp;
                   }
-                  auto int_op_val = *reinterpret_cast<VdInt *>(&op_val);
+                  auto int_op_val = *reinterpret_cast<VdInt*>(&op_val);
                   auto int_vs2_val =
-                      *reinterpret_cast<Vs2Int *>(&vs2_value[count]);
+                      *reinterpret_cast<Vs2Int*>(&vs2_value[count]);
                   auto int_vs1_val =
-                      *reinterpret_cast<Vs1Int *>(&vs1_value[count]);
+                      *reinterpret_cast<Vs1Int*>(&vs1_value[count]);
                   FPCompare<Vd>(
                       op_val, reg_val, delta_position,
                       absl::StrCat(name, "[", count, "] op(", vs2_value[count],
@@ -609,7 +609,7 @@ class RiscVFPInstructionsTestBase
   // NaN etc.) during testing, not just random values.
   template <typename Vd, typename Vs2, typename Fs1, typename ScalarReg>
   void BinaryOpWithFflagsFPTestHelperVX(
-      absl::string_view name, int sew, Instruction *inst, int delta_position,
+      absl::string_view name, int sew, Instruction* inst, int delta_position,
       std::function<std::tuple<Vd, uint32_t>(Vs2, Fs1)> operation) {
     using VdInt = typename FPTypeInfo<Vd>::IntType;
     using Vs2Int = typename FPTypeInfo<Vs2>::IntType;
@@ -629,7 +629,7 @@ class RiscVFPInstructionsTestBase
     auto vs2_span = Span<Vs2>(vs2_value);
     AppendVectorRegisterOperands({kVs2}, {kVd});
     AppendRegisterOperands<ScalarReg>({kFs1Name}, {});
-    auto *flag_op = rv_fp_->fflags()->CreateSetDestinationOperand(0, "fflags");
+    auto* flag_op = rv_fp_->fflags()->CreateSetDestinationOperand(0, "fflags");
     instruction_->AppendDestination(flag_op);
     AppendVectorRegisterOperands({kVmask}, {});
     SetVectorRegisterValues<uint8_t>(
@@ -640,14 +640,14 @@ class RiscVFPInstructionsTestBase
       FillArrayWithRandomFPValues<Vs2>(vs2_span);
       // Overwrite the first few values of the input data with infinities,
       // zeros, denormals and NaNs.
-      *reinterpret_cast<Vs2Int *>(&vs2_span[0]) = FPTypeInfo<Vs2>::kQNaN;
-      *reinterpret_cast<Vs2Int *>(&vs2_span[1]) = FPTypeInfo<Vs2>::kSNaN;
-      *reinterpret_cast<Vs2Int *>(&vs2_span[2]) = FPTypeInfo<Vs2>::kPosInf;
-      *reinterpret_cast<Vs2Int *>(&vs2_span[3]) = FPTypeInfo<Vs2>::kNegInf;
-      *reinterpret_cast<Vs2Int *>(&vs2_span[4]) = FPTypeInfo<Vs2>::kPosZero;
-      *reinterpret_cast<Vs2Int *>(&vs2_span[5]) = FPTypeInfo<Vs2>::kNegZero;
-      *reinterpret_cast<Vs2Int *>(&vs2_span[6]) = FPTypeInfo<Vs2>::kPosDenorm;
-      *reinterpret_cast<Vs2Int *>(&vs2_span[7]) = FPTypeInfo<Vs2>::kNegDenorm;
+      *reinterpret_cast<Vs2Int*>(&vs2_span[0]) = FPTypeInfo<Vs2>::kQNaN;
+      *reinterpret_cast<Vs2Int*>(&vs2_span[1]) = FPTypeInfo<Vs2>::kSNaN;
+      *reinterpret_cast<Vs2Int*>(&vs2_span[2]) = FPTypeInfo<Vs2>::kPosInf;
+      *reinterpret_cast<Vs2Int*>(&vs2_span[3]) = FPTypeInfo<Vs2>::kNegInf;
+      *reinterpret_cast<Vs2Int*>(&vs2_span[4]) = FPTypeInfo<Vs2>::kPosZero;
+      *reinterpret_cast<Vs2Int*>(&vs2_span[5]) = FPTypeInfo<Vs2>::kNegZero;
+      *reinterpret_cast<Vs2Int*>(&vs2_span[6]) = FPTypeInfo<Vs2>::kPosDenorm;
+      *reinterpret_cast<Vs2Int*>(&vs2_span[7]) = FPTypeInfo<Vs2>::kNegDenorm;
       // Modify the first mask bits to use each of the special floating
       // point values.
       vreg_[kVmask]->data_buffer()->Set<uint8_t>(0, 0xff);
@@ -728,7 +728,7 @@ class RiscVFPInstructionsTestBase
                       ((kA5Mask[mask_index] >> mask_offset) & 0b1) != 0;
                 }
                 auto reg_val = vreg_[reg]->data_buffer()->Get<Vd>(i);
-                auto int_reg_val = *reinterpret_cast<VdInt *>(&reg_val);
+                auto int_reg_val = *reinterpret_cast<VdInt*>(&reg_val);
                 if ((count >= vstart) && mask_value && (count < num_values)) {
                   Vd op_val;
                   uint32_t flag;
@@ -739,10 +739,10 @@ class RiscVFPInstructionsTestBase
                     op_val = op_val_tmp;
                     flag = flag_tmp;
                   }
-                  auto int_op_val = *reinterpret_cast<VdInt *>(&op_val);
+                  auto int_op_val = *reinterpret_cast<VdInt*>(&op_val);
                   auto int_vs2_val =
-                      *reinterpret_cast<Vs2Int *>(&vs2_value[count]);
-                  auto int_fs1_val = *reinterpret_cast<Fs1Int *>(&fs1_value);
+                      *reinterpret_cast<Vs2Int*>(&vs2_value[count]);
+                  auto int_fs1_val = *reinterpret_cast<Fs1Int*>(&fs1_value);
                   FPCompare<Vd>(
                       op_val, reg_val, delta_position,
                       absl::StrCat(name, "[", count, "] op(", vs2_value[count],
@@ -778,7 +778,7 @@ class RiscVFPInstructionsTestBase
   // vector scalar instructions.
   template <typename Vd, typename Vs2, typename Fs1, typename ScalarReg>
   void BinaryOpFPWithMaskTestHelperVX(
-      absl::string_view name, int sew, Instruction *inst, int delta_position,
+      absl::string_view name, int sew, Instruction* inst, int delta_position,
       std::function<Vd(Vs2, Fs1, bool)> operation) {
     using VdInt = typename FPTypeInfo<Vd>::IntType;
     using Vs2Int = typename FPTypeInfo<Vs2>::IntType;
@@ -807,14 +807,14 @@ class RiscVFPInstructionsTestBase
       FillArrayWithRandomFPValues<Vs2>(vs2_span);
       // Overwrite the first few values of the input data with infinities,
       // zeros, denormals and NaNs.
-      *reinterpret_cast<Vs2Int *>(&vs2_span[0]) = FPTypeInfo<Vs2>::kQNaN;
-      *reinterpret_cast<Vs2Int *>(&vs2_span[1]) = FPTypeInfo<Vs2>::kSNaN;
-      *reinterpret_cast<Vs2Int *>(&vs2_span[2]) = FPTypeInfo<Vs2>::kPosInf;
-      *reinterpret_cast<Vs2Int *>(&vs2_span[3]) = FPTypeInfo<Vs2>::kNegInf;
-      *reinterpret_cast<Vs2Int *>(&vs2_span[4]) = FPTypeInfo<Vs2>::kPosZero;
-      *reinterpret_cast<Vs2Int *>(&vs2_span[5]) = FPTypeInfo<Vs2>::kNegZero;
-      *reinterpret_cast<Vs2Int *>(&vs2_span[6]) = FPTypeInfo<Vs2>::kPosDenorm;
-      *reinterpret_cast<Vs2Int *>(&vs2_span[7]) = FPTypeInfo<Vs2>::kNegDenorm;
+      *reinterpret_cast<Vs2Int*>(&vs2_span[0]) = FPTypeInfo<Vs2>::kQNaN;
+      *reinterpret_cast<Vs2Int*>(&vs2_span[1]) = FPTypeInfo<Vs2>::kSNaN;
+      *reinterpret_cast<Vs2Int*>(&vs2_span[2]) = FPTypeInfo<Vs2>::kPosInf;
+      *reinterpret_cast<Vs2Int*>(&vs2_span[3]) = FPTypeInfo<Vs2>::kNegInf;
+      *reinterpret_cast<Vs2Int*>(&vs2_span[4]) = FPTypeInfo<Vs2>::kPosZero;
+      *reinterpret_cast<Vs2Int*>(&vs2_span[5]) = FPTypeInfo<Vs2>::kNegZero;
+      *reinterpret_cast<Vs2Int*>(&vs2_span[6]) = FPTypeInfo<Vs2>::kPosDenorm;
+      *reinterpret_cast<Vs2Int*>(&vs2_span[7]) = FPTypeInfo<Vs2>::kNegDenorm;
       // Modify the first mask bits to use each of the special floating
       // point values.
       vreg_[kVmask]->data_buffer()->Set<uint8_t>(0, 0xff);
@@ -892,15 +892,15 @@ class RiscVFPInstructionsTestBase
                       ((kA5Mask[mask_index] >> mask_offset) & 0b1) != 0;
                 }
                 auto reg_val = vreg_[reg]->data_buffer()->Get<Vd>(i);
-                auto int_reg_val = *reinterpret_cast<VdInt *>(&reg_val);
+                auto int_reg_val = *reinterpret_cast<VdInt*>(&reg_val);
                 if ((count >= vstart) && (count < num_values)) {
                   ScopedFPStatus set_fpstatus(rv_fp_->host_fp_interface());
                   auto op_val =
                       operation(vs2_value[count], fs1_value, mask_value);
-                  auto int_op_val = *reinterpret_cast<VdInt *>(&op_val);
+                  auto int_op_val = *reinterpret_cast<VdInt*>(&op_val);
                   auto int_vs2_val =
-                      *reinterpret_cast<Vs2Int *>(&vs2_value[count]);
-                  auto int_fs1_val = *reinterpret_cast<Fs1Int *>(&fs1_value);
+                      *reinterpret_cast<Vs2Int*>(&vs2_value[count]);
+                  auto int_fs1_val = *reinterpret_cast<Fs1Int*>(&fs1_value);
                   FPCompare<Vd>(
                       op_val, reg_val, delta_position,
                       absl::StrCat(name, "[", count, "] op(", vs2_value[count],
@@ -932,7 +932,7 @@ class RiscVFPInstructionsTestBase
   // not use the value of the mask bit.
   template <typename Vd, typename Vs2, typename Vs1, typename ScalarReg>
   void BinaryOpFPTestHelperVX(absl::string_view name, int sew,
-                              Instruction *inst, int delta_position,
+                              Instruction* inst, int delta_position,
                               std::function<Vd(Vs2, Vs1)> operation) {
     BinaryOpFPWithMaskTestHelperVX<Vd, Vs2, Vs1, ScalarReg>(
         name, sew, inst, delta_position,
@@ -945,7 +945,7 @@ class RiscVFPInstructionsTestBase
   }
 
  protected:
-  mpact::sim::riscv::RiscVFPState *rv_fp_;
+  mpact::sim::riscv::RiscVFPState* rv_fp_;
 };
 
 }  // namespace test

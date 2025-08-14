@@ -36,8 +36,8 @@ using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 // types for the instruction set.
 template <typename Enum, typename Extractors, typename IntRegister,
           typename FpRegister>
-void AddRiscVZbb64SourceGetters(SourceOpGetterMap &getter_map,
-                                RiscVEncodingCommon *common) {
+void AddRiscVZbb64SourceGetters(SourceOpGetterMap& getter_map,
+                                RiscVEncodingCommon* common) {
   // Source operand getters.
   Insert(getter_map, *Enum::kRUimm6, [common]() {
     uint32_t uimm = Extractors::RSType::ExtractRUimm6(common->inst_word());

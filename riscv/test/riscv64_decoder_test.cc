@@ -57,7 +57,7 @@ class RiscV64DecoderTest : public testing::Test {
     auto result = loader_.LoadProgram(input_file);
     CHECK_OK(result.status());
     elf_reader_.load(input_file);
-    auto *symtab = elf_reader_.sections[".symtab"];
+    auto* symtab = elf_reader_.sections[".symtab"];
     CHECK_NE(symtab, nullptr);
     symbol_accessor_ = new SymbolAccessor(elf_reader_, symtab);
   }
@@ -69,11 +69,11 @@ class RiscV64DecoderTest : public testing::Test {
   mpact::sim::util::FlatDemandMemory memory_;
   mpact::sim::util::ElfProgramLoader loader_;
   RiscV64Decoder decoder_;
-  SymbolAccessor *symbol_accessor_;
+  SymbolAccessor* symbol_accessor_;
 };
 
 TEST_F(RiscV64DecoderTest, Getters) {
-  RiscV64Decoder *decoder = nullptr;
+  RiscV64Decoder* decoder = nullptr;
   LogSink log_sink;
   absl::AddLogSink(&log_sink);
   decoder = new RiscV64Decoder(&state_, &memory_);
@@ -99,15 +99,15 @@ TEST_F(RiscV64DecoderTest, HelloWorldMain) {
   uint64_t address = value;
   while (address < value + size) {
     EXPECT_FALSE(state_.program_error_controller()->HasError());
-    auto *inst = decoder_.DecodeInstruction(address);
+    auto* inst = decoder_.DecodeInstruction(address);
     ASSERT_NE(inst, nullptr);
     inst->Execute(nullptr);
     if (state_.program_error_controller()->HasError()) {
       auto errvec = state_.program_error_controller()->GetUnmaskedErrorNames();
-      for (auto &err : errvec) {
+      for (auto& err : errvec) {
         LOG(INFO) << "Error: " << err;
         auto msgvec = state_.program_error_controller()->GetErrorMessages(err);
-        for (auto &msg : msgvec) {
+        for (auto& msg : msgvec) {
           LOG(INFO) << "    " << msg;
         }
       }
@@ -122,7 +122,7 @@ TEST_F(RiscV64DecoderTest, HelloWorldMain) {
 
 // Even with a bad address, a valid instruction object should be returned.
 TEST_F(RiscV64DecoderTest, BadAddress) {
-  auto *inst = decoder_.DecodeInstruction(0x4321);
+  auto* inst = decoder_.DecodeInstruction(0x4321);
   ASSERT_NE(inst, nullptr);
   inst->Execute(nullptr);
   inst->DecRef();

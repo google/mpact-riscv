@@ -52,12 +52,12 @@ class RiscV32CsrTest : public testing::Test {
   ~RiscV32CsrTest() override { delete state_; }
 
   FlatDemandMemory memory_;
-  RiscVState *state_;
+  RiscVState* state_;
 };
 
 // Test that the simple csr constructs properly and with the expected values.
 TEST_F(RiscV32CsrTest, SimpleCsrConstruction) {
-  auto *csr0 = new RiscV32SimpleCsr(kCsrName0, RiscVCsrEnum::kUScratch,
+  auto* csr0 = new RiscV32SimpleCsr(kCsrName0, RiscVCsrEnum::kUScratch,
                                     kDeadBeef, state_);
   EXPECT_EQ(csr0->name(), kCsrName0);
   EXPECT_EQ(csr0->index(), static_cast<int>(RiscVCsrEnum::kUScratch));
@@ -68,7 +68,7 @@ TEST_F(RiscV32CsrTest, SimpleCsrConstruction) {
   EXPECT_EQ(csr0->read_mask(), kReadMask);
   EXPECT_EQ(csr0->write_mask(), kWriteMask);
 
-  auto *csr1 = new RiscV32SimpleCsr(kCsrName1, RiscVCsrEnum::kMScratch, kA5,
+  auto* csr1 = new RiscV32SimpleCsr(kCsrName1, RiscVCsrEnum::kMScratch, kA5,
                                     kReadMask, kWriteMask, state_);
   EXPECT_EQ(csr1->name(), kCsrName1);
   EXPECT_EQ(csr1->index(), static_cast<int>(RiscVCsrEnum::kMScratch));
@@ -81,7 +81,7 @@ TEST_F(RiscV32CsrTest, SimpleCsrConstruction) {
 
 // Read and write values from/to the csr.
 TEST_F(RiscV32CsrTest, SimpleCsrReadWrite) {
-  auto *csr = new RiscV32SimpleCsr(kCsrName1, RiscVCsrEnum::kMScratch, kA5,
+  auto* csr = new RiscV32SimpleCsr(kCsrName1, RiscVCsrEnum::kMScratch, kA5,
                                    kReadMask, kWriteMask, state_);
   EXPECT_EQ(csr->AsUint32(), kA5 & kReadMask);
   csr->Write(kAllOnes);
@@ -93,7 +93,7 @@ TEST_F(RiscV32CsrTest, SimpleCsrReadWrite) {
 
 // Raw read/writes.
 TEST_F(RiscV32CsrTest, SimpleCsrSetGet) {
-  auto *csr = new RiscV32SimpleCsr(kCsrName1, RiscVCsrEnum::kMScratch, kA5,
+  auto* csr = new RiscV32SimpleCsr(kCsrName1, RiscVCsrEnum::kMScratch, kA5,
                                    kReadMask, kWriteMask, state_);
   EXPECT_EQ(csr->GetUint32(), kA5);
   csr->Set(kAllOnes);
@@ -105,7 +105,7 @@ TEST_F(RiscV32CsrTest, SimpleCsrSetGet) {
 // Test the csr-set class.
 TEST_F(RiscV32CsrTest, CsrSet) {
   // Allocate new csr.
-  auto *csr = new RiscV32SimpleCsr(kCsrName1, RiscVCsrEnum::kUScratch, kA5,
+  auto* csr = new RiscV32SimpleCsr(kCsrName1, RiscVCsrEnum::kUScratch, kA5,
                                    kReadMask, kWriteMask, state_);
   // Add it to the set, then try to add it again. The second attempt should
   // fail.
@@ -116,7 +116,7 @@ TEST_F(RiscV32CsrTest, CsrSet) {
   auto result =
       state_->csr_set()->GetCsr(static_cast<int>(RiscVCsrEnum::kUScratch));
   EXPECT_OK(result.status());
-  auto *stored_csr = result.value();
+  auto* stored_csr = result.value();
   EXPECT_EQ(stored_csr, csr);
   EXPECT_EQ(stored_csr->AsUint32(), (kA5 & kReadMask));
   // Getting a different csr should fail.
@@ -127,12 +127,12 @@ TEST_F(RiscV32CsrTest, CsrSet) {
 
 // Test that the shadow csr constructs properly and with the expected values.
 TEST_F(RiscV32CsrTest, ShadowCsrConstruction) {
-  auto *csr0 = new RiscV32SimpleCsr(kCsrName0, RiscVCsrEnum::kMScratch,
+  auto* csr0 = new RiscV32SimpleCsr(kCsrName0, RiscVCsrEnum::kMScratch,
                                     kDeadBeef, state_);
   EXPECT_EQ(csr0->name(), kCsrName0);
   EXPECT_EQ(csr0->index(), static_cast<int>(RiscVCsrEnum::kMScratch));
 
-  auto *csr1 = new RiscVShadowCsr<uint32_t>(
+  auto* csr1 = new RiscVShadowCsr<uint32_t>(
       kCsrName1, RiscVCsrEnum::kUScratch, kReadMask, kWriteMask, state_, csr0);
   EXPECT_EQ(csr1->name(), kCsrName1);
   EXPECT_EQ(csr1->index(), static_cast<int>(RiscVCsrEnum::kUScratch));

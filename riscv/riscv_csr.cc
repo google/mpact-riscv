@@ -28,7 +28,7 @@ namespace mpact {
 namespace sim {
 namespace riscv {
 
-void RiscVCsrWriteDb::SetDataBuffer(generic::DataBuffer *db) {
+void RiscVCsrWriteDb::SetDataBuffer(generic::DataBuffer* db) {
   auto db_size = db->size<uint8_t>();
   if (db_size == 4) {
     csr_->Write(db->Get<uint32_t>(0));
@@ -41,7 +41,7 @@ void RiscVCsrWriteDb::SetDataBuffer(generic::DataBuffer *db) {
   LOG(ERROR) << "Attempted to write CSR with width != 32 or 64";
 }
 
-void RiscVCsrClearBitsDb::SetDataBuffer(generic::DataBuffer *db) {
+void RiscVCsrClearBitsDb::SetDataBuffer(generic::DataBuffer* db) {
   auto db_size = db->size<uint8_t>();
   if (db_size == 4) {
     csr_->ClearBits(db->Get<uint32_t>(0));
@@ -54,7 +54,7 @@ void RiscVCsrClearBitsDb::SetDataBuffer(generic::DataBuffer *db) {
   LOG(ERROR) << "Attempted to clear CSR with width != 32 or 64";
 }
 
-void RiscVCsrSetBitsDb::SetDataBuffer(generic::DataBuffer *db) {
+void RiscVCsrSetBitsDb::SetDataBuffer(generic::DataBuffer* db) {
   auto db_size = db->size<uint8_t>();
   if (db_size == 4) {
     csr_->SetBits(db->Get<uint32_t>(0));
@@ -67,7 +67,7 @@ void RiscVCsrSetBitsDb::SetDataBuffer(generic::DataBuffer *db) {
   LOG(ERROR) << "Attempted to set CSR with width != 32 or 64";
 }
 
-absl::Status RiscVCsrSet::AddCsr(RiscVCsrInterface *csr) {
+absl::Status RiscVCsrSet::AddCsr(RiscVCsrInterface* csr) {
   if (csr == nullptr) {
     return absl::InvalidArgumentError("csr is nullptr");
   }
@@ -87,8 +87,7 @@ absl::Status RiscVCsrSet::AddCsr(RiscVCsrInterface *csr) {
   return absl::OkStatus();
 }
 
-absl::StatusOr<RiscVCsrInterface *> RiscVCsrSet::GetCsr(
-    absl::string_view name) {
+absl::StatusOr<RiscVCsrInterface*> RiscVCsrSet::GetCsr(absl::string_view name) {
   auto name_ptr = csr_name_map_.find(name);
   if (name_ptr == csr_name_map_.end()) {
     return absl::NotFoundError(absl::StrCat("No such CSR: '", name, "'"));
@@ -96,7 +95,7 @@ absl::StatusOr<RiscVCsrInterface *> RiscVCsrSet::GetCsr(
   return name_ptr->second;
 }
 
-absl::StatusOr<RiscVCsrInterface *> RiscVCsrSet::GetCsr(uint64_t index) {
+absl::StatusOr<RiscVCsrInterface*> RiscVCsrSet::GetCsr(uint64_t index) {
   auto index_ptr = csr_index_map_.find(index);
   if (index_ptr == csr_index_map_.end()) {
     return absl::NotFoundError(absl::StrCat("No such CSR index: ", index));
@@ -116,11 +115,11 @@ absl::Status RiscVCsrSet::RemoveCsr(uint64_t csr_index) {
   return absl::OkStatus();
 }
 
-RiscVCsrSourceOperand::RiscVCsrSourceOperand(RiscVCsrInterface *csr,
+RiscVCsrSourceOperand::RiscVCsrSourceOperand(RiscVCsrInterface* csr,
                                              std::string op_name)
     : csr_(csr), op_name_(op_name) {}
 
-RiscVCsrSourceOperand::RiscVCsrSourceOperand(RiscVCsrInterface *csr)
+RiscVCsrSourceOperand::RiscVCsrSourceOperand(RiscVCsrInterface* csr)
     : RiscVCsrSourceOperand(csr, csr->name()) {}
 
 bool RiscVCsrSourceOperand::AsBool(int i) {
@@ -153,7 +152,7 @@ uint64_t RiscVCsrSourceOperand::AsUint64(int i) {
 
 // Implementation of the destination op templated class methods.
 RiscVCsrDestinationOperand::RiscVCsrDestinationOperand(
-    RiscVCsrInterface *csr, generic::DataBufferDestination *db_dest,
+    RiscVCsrInterface* csr, generic::DataBufferDestination* db_dest,
     int latency, std::string op_name)
     : csr_(csr),
       db_dest_(db_dest),
@@ -163,18 +162,18 @@ RiscVCsrDestinationOperand::RiscVCsrDestinationOperand(
       op_name_(op_name) {}
 
 RiscVCsrDestinationOperand::RiscVCsrDestinationOperand(
-    RiscVCsrInterface *csr, generic::DataBufferDestination *db_dest,
+    RiscVCsrInterface* csr, generic::DataBufferDestination* db_dest,
     int latency)
     : RiscVCsrDestinationOperand(csr, db_dest, latency, csr->name()) {}
 
-void RiscVCsrDestinationOperand::InitializeDataBuffer(generic::DataBuffer *db) {
+void RiscVCsrDestinationOperand::InitializeDataBuffer(generic::DataBuffer* db) {
   db->set_destination(db_dest_);
   db->set_latency(latency_);
   db->set_delay_line(delay_line_);
 }
 
-generic::DataBuffer *RiscVCsrDestinationOperand::CopyDataBuffer() {
-  generic::DataBuffer *db = db_factory_->Allocate(csr_->size());
+generic::DataBuffer* RiscVCsrDestinationOperand::CopyDataBuffer() {
+  generic::DataBuffer* db = db_factory_->Allocate(csr_->size());
   if (csr_->size() == 4) {
     db->Set<uint32_t>(0, csr_->AsUint32());
   } else if (csr_->size() == 8) {
@@ -184,8 +183,8 @@ generic::DataBuffer *RiscVCsrDestinationOperand::CopyDataBuffer() {
   return db;
 }
 
-generic::DataBuffer *RiscVCsrDestinationOperand::AllocateDataBuffer() {
-  generic::DataBuffer *db = db_factory_->Allocate(csr_->size());
+generic::DataBuffer* RiscVCsrDestinationOperand::AllocateDataBuffer() {
+  generic::DataBuffer* db = db_factory_->Allocate(csr_->size());
   InitializeDataBuffer(db);
   return db;
 }

@@ -6,9 +6,9 @@ namespace mpact::sim::riscv {
 
 using ::mpact::sim::generic::Instruction;
 
-void RiscVNtlP1(const Instruction *) { /* empty */ }
-void RiscVNtlPall(const Instruction *) { /* empty */ }
-void RiscVNtlS1(const Instruction *) { /* empty */ }
-void RiscVNtlAll(const Instruction *) { /* empty */ }
+void RiscVNtlP1(const Instruction*) { /* empty */ }
+void RiscVNtlPall(const Instruction*) { /* empty */ }
+void RiscVNtlS1(const Instruction*) { /* empty */ }
+void RiscVNtlAll(const Instruction*) { /* empty */ }
 
 }  // namespace mpact::sim::riscv

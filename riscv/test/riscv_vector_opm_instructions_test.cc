@@ -139,7 +139,7 @@ class RiscVVectorOpmInstructionsTest : public RiscVVectorInstructionsTestBase {
 
 // Helper functions for averaging add and subtract.
 template <typename T>
-T VaaddHelper(RiscVVectorOpmInstructionsTest *tester, T vs2, T vs1) {
+T VaaddHelper(RiscVVectorOpmInstructionsTest* tester, T vs2, T vs1) {
   // Create two sums, lower nibble, and the upper part. Then combine after
   // rounding.
   T vs2_l = vs2 & 0xf;
@@ -157,7 +157,7 @@ T VaaddHelper(RiscVVectorOpmInstructionsTest *tester, T vs2, T vs1) {
 }
 
 template <typename T>
-T VasubHelper(RiscVVectorOpmInstructionsTest *tester, T vs2, T vs1) {
+T VasubHelper(RiscVVectorOpmInstructionsTest* tester, T vs2, T vs1) {
   // Create two diffs, lower nibble, and the upper part. Then combine after
   // rounding.
   T vs2_l = vs2 & 0xf;
@@ -176,7 +176,7 @@ T VasubHelper(RiscVVectorOpmInstructionsTest *tester, T vs2, T vs1) {
 
 // Vaaddu vector-vector test helper function.
 template <typename T>
-inline void VaadduVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VaadduVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   tester->SetSemanticFunction(&Vaaddu);
   tester->BinaryOpTestHelperVV<T, T, T>(
       absl::StrCat("Vaaddu", sizeof(T) * 8, "vv"), /*sew*/ sizeof(T) * 8,
@@ -187,7 +187,7 @@ inline void VaadduVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 
 // Vaaddu vector-scalar test helper function.
 template <typename T>
-inline void VaadduVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VaadduVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   tester->SetSemanticFunction(&Vaaddu);
   tester->BinaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vaaddu", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
@@ -219,7 +219,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vaaddu) {
 
 // Vaadd vector-vector test helper function.
 template <typename T>
-inline void VaaddVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VaaddVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   tester->SetSemanticFunction(&Vaadd);
   tester->BinaryOpTestHelperVV<T, T, T>(
       absl::StrCat("Vaaddu", sizeof(T) * 8, "vv"), /*sew*/ sizeof(T) * 8,
@@ -230,7 +230,7 @@ inline void VaaddVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 
 // Vaadd vector-vector test helper function.
 template <typename T>
-inline void VaaddVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VaaddVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   tester->SetSemanticFunction(&Vaadd);
   tester->BinaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vaaddu", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
@@ -262,7 +262,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vaadd) {
 
 // Vasubu vector-vector test helper function.
 template <typename T>
-inline void VasubuVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VasubuVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   tester->SetSemanticFunction(&Vasubu);
   tester->BinaryOpTestHelperVV<T, T, T>(
       absl::StrCat("Vasubu", sizeof(T) * 8, "vv"), /*sew*/ sizeof(T) * 8,
@@ -272,7 +272,7 @@ inline void VasubuVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 }
 // Vasubu vector-scalar test helper function.
 template <typename T>
-inline void VasubuVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VasubuVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   tester->SetSemanticFunction(&Vasubu);
   tester->BinaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vasubu", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
@@ -304,7 +304,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vasubu) {
 
 // Vasub vector-vector test helper function.
 template <typename T>
-inline void VasubVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VasubVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   tester->SetSemanticFunction(&Vasub);
   tester->BinaryOpTestHelperVV<T, T, T>(
       absl::StrCat("Vasub", sizeof(T) * 8, "vv"), /*sew*/ sizeof(T) * 8,
@@ -314,7 +314,7 @@ inline void VasubVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 }
 // Vasub vector-scalar test helper function.
 template <typename T>
-inline void VasubVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VasubVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   tester->SetSemanticFunction(&Vasub);
   tester->BinaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vasub", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
@@ -397,7 +397,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vmxnor) {
 
 // Vdivu vector-vector test helper function.
 template <typename T>
-inline void VdivuVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VdivuVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   tester->SetSemanticFunction(&Vdivu);
   tester->BinaryOpTestHelperVV<T, T, T>(
       absl::StrCat("Vdivu", sizeof(T) * 8, "vv"), /*sew*/ sizeof(T) * 8,
@@ -408,7 +408,7 @@ inline void VdivuVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 }
 // Vdivu vector-scalar test helper function.
 template <typename T>
-inline void VdivuVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VdivuVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   tester->SetSemanticFunction(&Vdivu);
   tester->BinaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vdivu", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
@@ -441,7 +441,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vdivu) {
 
 // Vdiv vector-vector test helper function.
 template <typename T>
-inline void VdivVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VdivVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   tester->SetSemanticFunction(&Vdiv);
   tester->BinaryOpTestHelperVV<T, T, T>(
       absl::StrCat("Vdiv", sizeof(T) * 8, "vv"), /*sew*/ sizeof(T) * 8,
@@ -452,7 +452,7 @@ inline void VdivVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 }
 // Vdiv vector-scalar test helper function.
 template <typename T>
-inline void VdivVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VdivVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   tester->SetSemanticFunction(&Vdiv);
   tester->BinaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vdiv", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
@@ -485,7 +485,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vdiv) {
 
 // Vremu vector-vector test helper function.
 template <typename T>
-inline void VremuVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VremuVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   tester->SetSemanticFunction(&Vremu);
   tester->BinaryOpTestHelperVV<T, T, T>(
       absl::StrCat("Vremu", sizeof(T) * 8, "vv"), /*sew*/ sizeof(T) * 8,
@@ -496,7 +496,7 @@ inline void VremuVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 }
 // Vremu vector-scalar test helper function.
 template <typename T>
-inline void VremuVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VremuVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   tester->SetSemanticFunction(&Vremu);
   tester->BinaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vremu", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
@@ -529,7 +529,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vremu) {
 
 // Vrem vector-vector test helper function.
 template <typename T>
-inline void VremVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VremVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   tester->SetSemanticFunction(&Vrem);
   tester->BinaryOpTestHelperVV<T, T, T>(
       absl::StrCat("Vrem", sizeof(T) * 8, "vv"), /*sew*/ sizeof(T) * 8,
@@ -540,7 +540,7 @@ inline void VremVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 }
 // Vrem vector-scalar test helper function.
 template <typename T>
-inline void VremVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VremVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   tester->SetSemanticFunction(&Vrem);
   tester->BinaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vrem", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
@@ -573,7 +573,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vrem) {
 
 // Vmulhu vector-vector test helper function.
 template <typename T>
-inline void VmulhuVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VmulhuVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   tester->SetSemanticFunction(&Vmulhu);
   tester->BinaryOpTestHelperVV<T, T, T>(
       absl::StrCat("Vmulhu", sizeof(T) * 8, "vv"), /*sew*/ sizeof(T) * 8,
@@ -586,7 +586,7 @@ inline void VmulhuVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 }
 // Vmulhu vector-scalar test helper function.
 template <typename T>
-inline void VmulhuVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VmulhuVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   tester->SetSemanticFunction(&Vmulhu);
   tester->BinaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vmulhu", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
@@ -621,7 +621,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vmulhu) {
 
 // Vmulh vector-vector test helper function.
 template <typename T>
-inline void VmulhVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VmulhVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   tester->SetSemanticFunction(&Vmulh);
   tester->BinaryOpTestHelperVV<T, T, T>(
       absl::StrCat("Vmulh", sizeof(T) * 8, "vv"), /*sew*/ sizeof(T) * 8,
@@ -635,7 +635,7 @@ inline void VmulhVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 
 // Vmulh vector-scalar test helper function.
 template <typename T>
-inline void VmulhVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VmulhVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   tester->SetSemanticFunction(&Vmulh);
   tester->BinaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vmulh", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
@@ -670,7 +670,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vmulh) {
 
 // Vmul vector-vector test helper function.
 template <typename T>
-inline void VmulVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VmulVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vmul);
   tester->BinaryOpTestHelperVV<T, T, T>(
@@ -682,7 +682,7 @@ inline void VmulVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 
 // Vmul vector-scalar test helper function.
 template <typename T>
-inline void VmulVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VmulVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vmul);
   tester->BinaryOpTestHelperVX<T, T, T, RVScalarRegister>(
@@ -715,7 +715,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vmul) {
 
 // Vmulhsu vector-vector test helper function.
 template <typename T>
-inline void VmulhsuVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VmulhsuVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   using ST = typename std::make_signed<T>::type;
   tester->SetSemanticFunction(&Vmulhsu);
   tester->BinaryOpTestHelperVV<T, ST, T>(
@@ -730,7 +730,7 @@ inline void VmulhsuVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 
 // Vmulhsu vector-scalar test helper function.
 template <typename T>
-inline void VmulhsuVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VmulhsuVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   using ST = typename std::make_signed<T>::type;
   tester->SetSemanticFunction(&Vmulhsu);
   tester->BinaryOpTestHelperVX<T, ST, T, RVScalarRegister>(
@@ -766,7 +766,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vmulhsu) {
 
 // Vmadd vector-vector test helper function.
 template <typename T>
-inline void VmaddVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VmaddVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   tester->SetSemanticFunction(&Vmadd);
   tester->TernaryOpTestHelperVV<T, T, T>(
       absl::StrCat("Vmadd", sizeof(T) * 8, "vv"), /*sew*/ sizeof(T) * 8,
@@ -784,7 +784,7 @@ inline void VmaddVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 
 // Vmadd vector-scalar test helper function.
 template <typename T>
-inline void VmaddVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VmaddVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   tester->SetSemanticFunction(&Vmadd);
   tester->TernaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vmadd", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
@@ -823,7 +823,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vmadd) {
 
 // Vnmsub vector-vector test helper function.
 template <typename T>
-inline void VnmsubVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VnmsubVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   tester->SetSemanticFunction(&Vnmsub);
   tester->TernaryOpTestHelperVV<T, T, T>(
       absl::StrCat("Vnmsub", sizeof(T) * 8, "vv"), /*sew*/ sizeof(T) * 8,
@@ -841,7 +841,7 @@ inline void VnmsubVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 
 // Vnmsub vector-scalar test helper function.
 template <typename T>
-inline void VnmsubVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VnmsubVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   tester->SetSemanticFunction(&Vnmsub);
   tester->TernaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vnmsub", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
@@ -880,7 +880,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vnmsub) {
 
 // Vmacc vector-vector test helper function.
 template <typename T>
-inline void VmaccVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VmaccVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   tester->SetSemanticFunction(&Vmacc);
   tester->TernaryOpTestHelperVV<T, T, T>(
       absl::StrCat("Vmacc", sizeof(T) * 8, "vv"), /*sew*/ sizeof(T) * 8,
@@ -898,7 +898,7 @@ inline void VmaccVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 
 // Vmacc vector-scalar test helper function.
 template <typename T>
-inline void VmaccVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VmaccVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   tester->SetSemanticFunction(&Vmacc);
   tester->TernaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vmacc", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
@@ -937,7 +937,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vmacc) {
 
 // Vnmsac vector-vector test helper function.
 template <typename T>
-inline void VnmsacVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VnmsacVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   tester->SetSemanticFunction(&Vnmsac);
   tester->TernaryOpTestHelperVV<T, T, T>(
       absl::StrCat("Vnmsac", sizeof(T) * 8, "vv"), /*sew*/ sizeof(T) * 8,
@@ -955,7 +955,7 @@ inline void VnmsacVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 
 // Vnmsac vector-scalar test helper function.
 template <typename T>
-inline void VnmsacVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VnmsacVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   tester->SetSemanticFunction(&Vnmsac);
   tester->TernaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vnmsac", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
@@ -994,7 +994,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vnmsac) {
 
 // Vwaddu vector-vector test helper function.
 template <typename T>
-inline void VwadduVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwadduVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwaddu);
   tester->BinaryOpTestHelperVV<WT, T, T>(
@@ -1006,7 +1006,7 @@ inline void VwadduVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 
 // Vwaddu vector-scalar test helper function.
 template <typename T>
-inline void VwadduVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwadduVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwaddu);
   tester->BinaryOpTestHelperVX<WT, T, T, RVScalarRegister>(
@@ -1037,7 +1037,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vwaddu) {
 
 // Vwsubu vector-vector test helper function.
 template <typename T>
-inline void VwsubuVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwsubuVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwsubu);
   tester->BinaryOpTestHelperVV<WT, T, T>(
@@ -1049,7 +1049,7 @@ inline void VwsubuVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 
 // Vwsubu vector-scalar test helper function.
 template <typename T>
-inline void VwsubuVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwsubuVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwsubu);
   tester->BinaryOpTestHelperVX<WT, T, T, RVScalarRegister>(
@@ -1080,7 +1080,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vwsubu) {
 
 // Vwadd vector-vector test helper function.
 template <typename T>
-inline void VwaddVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwaddVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwadd);
   tester->BinaryOpTestHelperVV<WT, T, T>(
@@ -1092,7 +1092,7 @@ inline void VwaddVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 
 // Vwadd vector-scalar test helper function.
 template <typename T>
-inline void VwaddVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwaddVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwadd);
   tester->BinaryOpTestHelperVX<WT, T, T, RVScalarRegister>(
@@ -1123,7 +1123,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vwadd) {
 
 // Vwsub vector-vector test helper function.
 template <typename T>
-inline void VwsubVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwsubVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwsub);
   tester->BinaryOpTestHelperVV<WT, T, T>(
@@ -1138,7 +1138,7 @@ inline void VwsubVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 
 // Vwsub vector-scalar test helper function.
 template <typename T>
-inline void VwsubVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwsubVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwsub);
   tester->BinaryOpTestHelperVX<WT, T, T, RVScalarRegister>(
@@ -1172,7 +1172,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vwsub) {
 
 // Vwadduw vector-vector test helper function.
 template <typename T>
-inline void VwadduwVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwadduwVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwadduw);
   tester->BinaryOpTestHelperVV<WT, WT, T>(
@@ -1183,7 +1183,7 @@ inline void VwadduwVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 
 // Vwadduw vector-scalar test helper function.
 template <typename T>
-inline void VwadduwVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwadduwVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwadduw);
   tester->BinaryOpTestHelperVX<WT, WT, T, RVScalarRegister>(
@@ -1213,7 +1213,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vwadduw) {
 
 // Vwsubuw vector-vector test helper function.
 template <typename T>
-inline void VwsubuwVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwsubuwVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwsubuw);
   tester->BinaryOpTestHelperVV<WT, WT, T>(
@@ -1224,7 +1224,7 @@ inline void VwsubuwVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 
 // Vwsubuw vector-scalar test helper function.
 template <typename T>
-inline void VwsubuwVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwsubuwVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwsubuw);
   tester->BinaryOpTestHelperVX<WT, WT, T, RVScalarRegister>(
@@ -1254,7 +1254,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vwsubuw) {
 
 // Vwaddw vector-vector test helper function.
 template <typename T>
-inline void VwaddwVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwaddwVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwaddw);
   tester->BinaryOpTestHelperVV<WT, WT, T>(
@@ -1265,7 +1265,7 @@ inline void VwaddwVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 
 // Vwaddw vector-scalar test helper function.
 template <typename T>
-inline void VwaddwVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwaddwVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwaddw);
   tester->BinaryOpTestHelperVX<WT, WT, T, RVScalarRegister>(
@@ -1295,7 +1295,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vwaddw) {
 
 // Vwsubw vector-vector test helper function.
 template <typename T>
-inline void VwsubwVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwsubwVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwsubw);
   tester->BinaryOpTestHelperVV<WT, WT, T>(
@@ -1306,7 +1306,7 @@ inline void VwsubwVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 
 // Vwsubw vector-scalar test helper function.
 template <typename T>
-inline void VwsubwVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwsubwVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwsubw);
   tester->BinaryOpTestHelperVX<WT, WT, T, RVScalarRegister>(
@@ -1336,7 +1336,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vwsubw) {
 
 // Vwmul vector-vector test helper function.
 template <typename T>
-inline void VwmuluVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwmuluVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwmulu);
   tester->BinaryOpTestHelperVV<WT, T, T>(
@@ -1348,7 +1348,7 @@ inline void VwmuluVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 
 // Vwmulu vector-scalar test helper function.
 template <typename T>
-inline void VwmuluVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwmuluVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwmulu);
   tester->BinaryOpTestHelperVX<WT, T, T, RVScalarRegister>(
@@ -1379,7 +1379,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vwmulu) {
 
 // Vwmul vector-vector test helper function.
 template <typename T>
-inline void VwmulVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwmulVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwmul);
   tester->BinaryOpTestHelperVV<WT, T, T>(
@@ -1391,7 +1391,7 @@ inline void VwmulVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 
 // Vwmul vector-scalar test helper function.
 template <typename T>
-inline void VwmulVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwmulVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwmul);
   tester->BinaryOpTestHelperVX<WT, T, T, RVScalarRegister>(
@@ -1422,7 +1422,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vwmul) {
 
 // Vwmul vector-vector test helper function.
 template <typename T>
-inline void VwmulsuVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwmulsuVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   using UT = typename std::make_unsigned<T>::type;
   tester->SetSemanticFunction(&Vwmulsu);
@@ -1435,7 +1435,7 @@ inline void VwmulsuVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 
 // Vwmulsu vector-scalar test helper function.
 template <typename T>
-inline void VwmulsuVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwmulsuVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   using UT = typename std::make_unsigned<T>::type;
   tester->SetSemanticFunction(&Vwmulsu);
@@ -1467,7 +1467,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vwmulsu) {
 
 // Vmaccu vector-vector test helper function.
 template <typename T>
-inline void VwmaccuVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwmaccuVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwmaccu);
   tester->TernaryOpTestHelperVV<WT, T, T>(
@@ -1479,7 +1479,7 @@ inline void VwmaccuVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 
 // Vwmaccu vector-scalar test helper function.
 template <typename T>
-inline void VwmaccuVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwmaccuVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwmaccu);
   tester->TernaryOpTestHelperVX<WT, T, T, RVScalarRegister>(
@@ -1508,7 +1508,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vwmaccu) {
 
 // Vmacc vector-vector test helper function.
 template <typename T>
-inline void VwmaccVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwmaccVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwmacc);
   tester->TernaryOpTestHelperVV<WT, T, T>(
@@ -1525,7 +1525,7 @@ inline void VwmaccVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 
 // Vwmacc vector-scalar test helper function.
 template <typename T>
-inline void VwmaccVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwmaccVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwmacc);
   tester->TernaryOpTestHelperVX<WT, T, T, RVScalarRegister>(
@@ -1559,7 +1559,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vwmacc) {
 
 // Vmaccus vector-vector test helper function.
 template <typename T>
-inline void VwmaccusVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwmaccusVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   using UT = typename std::make_unsigned<T>::type;
   tester->SetSemanticFunction(&Vwmaccus);
@@ -1577,7 +1577,7 @@ inline void VwmaccusVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 
 // Vwmaccus vector-scalar test helper function.
 template <typename T>
-inline void VwmaccusVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwmaccusVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   using UT = typename std::make_unsigned<T>::type;
   tester->SetSemanticFunction(&Vwmaccus);
@@ -1612,7 +1612,7 @@ TEST_F(RiscVVectorOpmInstructionsTest, Vwmaccus) {
 
 // Vmaccsu vector-vector test helper function.
 template <typename T>
-inline void VwmaccsuVVHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwmaccsuVVHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   using UT = typename std::make_unsigned<T>::type;
   tester->SetSemanticFunction(&Vwmaccsu);
@@ -1630,7 +1630,7 @@ inline void VwmaccsuVVHelper(RiscVVectorOpmInstructionsTest *tester) {
 
 // Vwmaccsu vector-scalar test helper function.
 template <typename T>
-inline void VwmaccsuVXHelper(RiscVVectorOpmInstructionsTest *tester) {
+inline void VwmaccsuVXHelper(RiscVVectorOpmInstructionsTest* tester) {
   using WT = typename WideType<T>::type;
   using UT = typename std::make_unsigned<T>::type;
   tester->SetSemanticFunction(&Vwmaccsu);

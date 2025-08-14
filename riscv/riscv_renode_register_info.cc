@@ -23,7 +23,7 @@ namespace riscv {
 
 using ::mpact::sim::generic::operator*;  // NOLINT - used below.
 
-RiscVRenodeRegisterInfo *RiscVRenodeRegisterInfo::instance_ = nullptr;
+RiscVRenodeRegisterInfo* RiscVRenodeRegisterInfo::instance_ = nullptr;
 
 void RiscVRenodeRegisterInfo::InitializeRenodeRegisterInfo() {
   using DbgReg = DebugRegisterEnum;
@@ -69,19 +69,19 @@ RiscVRenodeRegisterInfo::RiscVRenodeRegisterInfo() {
   InitializeRenodeRegisterInfo();
 }
 
-const RiscVRenodeRegisterInfo::RenodeRegisterInfo &
+const RiscVRenodeRegisterInfo::RenodeRegisterInfo&
 RiscVRenodeRegisterInfo::GetRenodeRegisterInfo() {
   return Instance()->GetRenodeRegisterInfoPrivate();
 }
 
-RiscVRenodeRegisterInfo *RiscVRenodeRegisterInfo::Instance() {
+RiscVRenodeRegisterInfo* RiscVRenodeRegisterInfo::Instance() {
   if (instance_ == nullptr) {
     instance_ = new RiscVRenodeRegisterInfo();
   }
   return instance_;
 }
 
-const RiscVRenodeRegisterInfo::RenodeRegisterInfo &
+const RiscVRenodeRegisterInfo::RenodeRegisterInfo&
 RiscVRenodeRegisterInfo::GetRenodeRegisterInfoPrivate() {
   return renode_register_info_;
 }

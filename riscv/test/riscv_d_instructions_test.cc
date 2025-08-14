@@ -62,7 +62,7 @@ class RV32DInstructionTest
 
 static bool is_snan(double a) {
   if (!std::isnan(a)) return false;
-  auto ua = *reinterpret_cast<uint64_t *>(&a);
+  auto ua = *reinterpret_cast<uint64_t*>(&a);
   if ((ua & (1ULL << (FPTypeInfo<double>::kSigSize - 1))) == 0) return true;
   return false;
 }
@@ -107,13 +107,13 @@ TEST_F(RV32DInstructionTest, RiscVDsqrt) {
         double res;
         if (lhs > 0) {
           res = sqrt(lhs);
-          uint64_t dhls = *reinterpret_cast<uint64_t *>(&lhs);
+          uint64_t dhls = *reinterpret_cast<uint64_t*>(&lhs);
           // Get exponent of source value.
           int exp = (dhls & FPTypeInfo<double>::kExpMask) >>
                     FPTypeInfo<double>::kSigSize;
           exp -= FPTypeInfo<double>::kExpBias;
           // Get significand of result.
-          uint64_t dres = *reinterpret_cast<uint64_t *>(&res);
+          uint64_t dres = *reinterpret_cast<uint64_t*>(&res);
           uint64_t sig = dres & FPTypeInfo<double>::kSigMask;
           bool is_square;
           // Slightly different test based on whether the exponent of the source
@@ -132,7 +132,7 @@ TEST_F(RV32DInstructionTest, RiscVDsqrt) {
           flags = *FPExceptions::kInvalidOp;
         }
         uint64_t val = FPTypeInfo<double>::kCanonicalNaN;
-        res = *reinterpret_cast<const double *>(&val);
+        res = *reinterpret_cast<const double*>(&val);
         return std::tie(res, flags);
       });
 }
@@ -149,7 +149,7 @@ TEST_F(RV32DInstructionTest, RiscVDmin) {
         }
         if (std::isnan(lhs) && std::isnan(rhs)) {
           uint64_t val = FPTypeInfo<double>::kCanonicalNaN;
-          return std::tie(*reinterpret_cast<const double *>(&val), flag);
+          return std::tie(*reinterpret_cast<const double*>(&val), flag);
         }
         if (std::isnan(lhs)) return std::tie(rhs, flag);
         if (std::isnan(rhs)) return std::tie(lhs, flag);
@@ -171,7 +171,7 @@ TEST_F(RV32DInstructionTest, RiscVDmax) {
         }
         if (std::isnan(lhs) && std::isnan(rhs)) {
           uint64_t val = FPTypeInfo<double>::kCanonicalNaN;
-          return std::tie(*reinterpret_cast<const double *>(&val), flag);
+          return std::tie(*reinterpret_cast<const double*>(&val), flag);
         }
         if (std::isnan(lhs)) return std::tie(rhs, flag);
         if (std::isnan(rhs)) return std::tie(lhs, flag);
@@ -299,10 +299,10 @@ TEST_F(RV32DInstructionTest, RiscVDSgnjx) {
   BinaryOpFPTestHelper<double, double, double>(
       "dsgnjn", instruction_, {"d", "d", "d"}, 64,
       [](double lhs, double rhs) -> double {
-        auto lhs_u = *reinterpret_cast<uint64_t *>(&lhs);
-        auto rhs_u = *reinterpret_cast<uint64_t *>(&rhs);
+        auto lhs_u = *reinterpret_cast<uint64_t*>(&lhs);
+        auto rhs_u = *reinterpret_cast<uint64_t*>(&rhs);
         auto res_u = (lhs_u ^ rhs_u) & 0x8000'0000'0000'0000;
-        auto res = *reinterpret_cast<double *>(&res_u);
+        auto res = *reinterpret_cast<double*>(&res_u);
         return copysign(abs(lhs), res);
       });
 }
@@ -358,7 +358,7 @@ TEST_F(RV32DInstructionTest, RiscVDClass) {
             return std::signbit(lhs) ? 1 : 1 << 7;
           case FP_NAN: {
             auto uint_val =
-                *reinterpret_cast<typename FPTypeInfo<double>::IntType *>(&lhs);
+                *reinterpret_cast<typename FPTypeInfo<double>::IntType*>(&lhs);
             bool quiet_nan =
                 (uint_val >> (FPTypeInfo<double>::kSigSize - 1)) & 1;
             return quiet_nan ? 1 << 9 : 1 << 8;

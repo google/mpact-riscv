@@ -71,25 +71,25 @@ class ZicsrInstructionsTest : public testing::Test {
 
   // Appends the source and destination operands for the register names
   // given in the two vectors.
-  void AppendRegisterOperands(Instruction *inst,
-                              const std::vector<std::string> &sources,
-                              const std::vector<std::string> &destinations) {
-    for (auto &reg_name : sources) {
-      auto *reg = state_->GetRegister<RV32Register>(reg_name).first;
+  void AppendRegisterOperands(Instruction* inst,
+                              const std::vector<std::string>& sources,
+                              const std::vector<std::string>& destinations) {
+    for (auto& reg_name : sources) {
+      auto* reg = state_->GetRegister<RV32Register>(reg_name).first;
       inst->AppendSource(reg->CreateSourceOperand());
     }
-    for (auto &reg_name : destinations) {
-      auto *reg = state_->GetRegister<RV32Register>(reg_name).first;
+    for (auto& reg_name : destinations) {
+      auto* reg = state_->GetRegister<RV32Register>(reg_name).first;
       inst->AppendDestination(reg->CreateDestinationOperand(0));
     }
   }
 
   // Appends immediate source operands with the given values.
   template <typename T>
-  void AppendImmediateOperands(Instruction *inst,
-                               const std::vector<T> &values) {
+  void AppendImmediateOperands(Instruction* inst,
+                               const std::vector<T>& values) {
     for (auto value : values) {
-      auto *src = new ImmediateOperand<T>(value);
+      auto* src = new ImmediateOperand<T>(value);
       inst->AppendSource(src);
     }
   }
@@ -98,9 +98,9 @@ class ZicsrInstructionsTest : public testing::Test {
   // named register and sets it to the corresponding value.
   template <typename T>
   void SetRegisterValues(const std::vector<std::tuple<std::string, T>> values) {
-    for (auto &[reg_name, value] : values) {
-      auto *reg = state_->GetRegister<RV32Register>(reg_name).first;
-      auto *db = state_->db_factory()->Allocate<RV32Register::ValueType>(1);
+    for (auto& [reg_name, value] : values) {
+      auto* reg = state_->GetRegister<RV32Register>(reg_name).first;
+      auto* db = state_->db_factory()->Allocate<RV32Register::ValueType>(1);
       db->Set<T>(0, value);
       reg->SetDataBuffer(db);
       db->DecRef();
@@ -115,14 +115,14 @@ class ZicsrInstructionsTest : public testing::Test {
   // Returns the value of the named register.
   template <typename T>
   T GetRegisterValue(absl::string_view reg_name) {
-    auto *reg = state_->GetRegister<RV32Register>(reg_name).first;
+    auto* reg = state_->GetRegister<RV32Register>(reg_name).first;
     return reg->data_buffer()->Get<T>(0);
   }
 
   FlatDemandMemory memory_;
-  RiscV32SimpleCsr *csr_;
-  RiscVState *state_;
-  Instruction *instruction_;
+  RiscV32SimpleCsr* csr_;
+  RiscVState* state_;
+  Instruction* instruction_;
 };
 
 constexpr uint32_t kCsrValue1 = 0xaaaa5555;
@@ -137,7 +137,7 @@ constexpr uint32_t kCsrValue2 = 0xa5a5a5a5;
 TEST_F(ZicsrInstructionsTest, RiscVZiCsrrw) {
   auto result = state_->csr_set()->GetCsr(kUScratchValue);
   CHECK_OK(result);
-  auto *csr = result.value();
+  auto* csr = result.value();
   CHECK_NE(csr, nullptr);
   csr->Set(kCsrValue1);
   SetRegisterValues<uint32_t>({{kX1, kCsrValue2}, {kX3, 0}});
@@ -157,7 +157,7 @@ TEST_F(ZicsrInstructionsTest, RiscVZiCsrrw) {
 TEST_F(ZicsrInstructionsTest, RiscVZiCsrrs) {
   auto result = state_->csr_set()->GetCsr(kUScratchValue);
   CHECK_OK(result);
-  auto *csr = result.value();
+  auto* csr = result.value();
   CHECK_NE(csr, nullptr);
   csr->Set(kCsrValue1);
   SetRegisterValues<uint32_t>({{kX1, kCsrValue2}, {kX3, 0}});
@@ -176,7 +176,7 @@ TEST_F(ZicsrInstructionsTest, RiscVZiCsrrs) {
 TEST_F(ZicsrInstructionsTest, RiscVZiCsrrc) {
   auto result = state_->csr_set()->GetCsr(kUScratchValue);
   CHECK_OK(result);
-  auto *csr = result.value();
+  auto* csr = result.value();
   CHECK_NE(csr, nullptr);
   csr->Set(kCsrValue1);
   SetRegisterValues<uint32_t>({{kX1, kCsrValue2}, {kX3, 0}});
@@ -195,7 +195,7 @@ TEST_F(ZicsrInstructionsTest, RiscVZiCsrrc) {
 TEST_F(ZicsrInstructionsTest, RiscVZiCsrrwNr) {
   auto result = state_->csr_set()->GetCsr(kUScratchValue);
   CHECK_OK(result);
-  auto *csr = result.value();
+  auto* csr = result.value();
   CHECK_NE(csr, nullptr);
   csr->Set(kCsrValue1);
   SetRegisterValues<uint32_t>({{kX1, kCsrValue2}, {kX3, 0}});
@@ -214,7 +214,7 @@ TEST_F(ZicsrInstructionsTest, RiscVZiCsrrwNr) {
 TEST_F(ZicsrInstructionsTest, RiscVZiCsrrNw) {
   auto result = state_->csr_set()->GetCsr(kUScratchValue);
   CHECK_OK(result);
-  auto *csr = result.value();
+  auto* csr = result.value();
   CHECK_NE(csr, nullptr);
   csr->Set(kCsrValue1);
   SetRegisterValues<uint32_t>({{kX1, kCsrValue2}, {kX3, 0}});

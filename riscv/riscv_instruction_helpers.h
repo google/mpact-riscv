@@ -73,20 +73,20 @@ inline std::tuple<To, uint32_t> CvtHelper(From value) {
 // Generic helper function for floating op instructions that do not require
 // NaN boxing since they produce non fp-values, but set fflags.
 template <typename Result, typename From, typename To>
-inline void RiscVConvertFloatWithFflagsOp(const Instruction *instruction) {
+inline void RiscVConvertFloatWithFflagsOp(const Instruction* instruction) {
   constexpr To kMax = std::numeric_limits<To>::max();
   constexpr To kMin = std::numeric_limits<To>::min();
 
   From lhs = generic::GetInstructionSource<From>(instruction, 0);
   using FromUint = typename FPTypeInfo<From>::UIntType;
-  FromUint lhs_u = *reinterpret_cast<FromUint *>(&lhs);
+  FromUint lhs_u = *reinterpret_cast<FromUint*>(&lhs);
   auto constexpr kExpMask = FPTypeInfo<From>::kExpMask;
   auto constexpr kSigMask = FPTypeInfo<From>::kSigMask;
   uint32_t flags = 0;
   uint32_t rm = generic::GetInstructionSource<uint32_t>(instruction, 1);
   // Dynamic rounding mode will get rounding mode from the global state.
   if (rm == *FPRoundingMode::kDynamic) {
-    auto *rv_fp = static_cast<RiscVState *>(instruction->state())->rv_fp();
+    auto* rv_fp = static_cast<RiscVState*>(instruction->state())->rv_fp();
     if (!rv_fp->rounding_mode_valid()) {
       LOG(ERROR) << "Invalid rounding mode";
       return;
@@ -111,7 +111,7 @@ inline void RiscVConvertFloatWithFflagsOp(const Instruction *instruction) {
     auto constexpr kSigSize = FPTypeInfo<From>::kSigSize;
     auto constexpr kSigMask = FPTypeInfo<From>::kSigMask;
     auto constexpr kBitSize = FPTypeInfo<From>::kBitSize;
-    FromUint lhs_u = *reinterpret_cast<FromUint *>(&lhs);
+    FromUint lhs_u = *reinterpret_cast<FromUint*>(&lhs);
     const bool sign = (lhs_u & (1ULL << (kBitSize - 1))) != 0;
     FromUint exp = kExpMask & lhs_u;
     int exp_value = exp >> kSigSize;
@@ -264,17 +264,17 @@ inline void RiscVConvertFloatWithFflagsOp(const Instruction *instruction) {
     }
   }
   using SignedTo = typename std::make_signed<To>::type;
-  auto *dest = instruction->Destination(0);
-  auto *reg_dest =
-      static_cast<generic::RegisterDestinationOperand<Result> *>(dest);
-  auto *reg = reg_dest->GetRegister();
+  auto* dest = instruction->Destination(0);
+  auto* reg_dest =
+      static_cast<generic::RegisterDestinationOperand<Result>*>(dest);
+  auto* reg = reg_dest->GetRegister();
   // The final value is sign-extended to the register width, even if it's
   // conversion to an unsigned value.
   SignedTo signed_value = static_cast<SignedTo>(value);
   Result dest_value = static_cast<Result>(signed_value);
   reg->data_buffer()->template Set<Result>(0, dest_value);
   if (flags) {
-    auto *flag_db = instruction->Destination(1)->AllocateDataBuffer();
+    auto* flag_db = instruction->Destination(1)->AllocateDataBuffer();
     flag_db->Set<uint32_t>(0, flags);
     flag_db->Submit();
   }
@@ -283,7 +283,7 @@ inline void RiscVConvertFloatWithFflagsOp(const Instruction *instruction) {
 // Helper function to read a NaN boxed source value, converting it to NaN if
 // it isn't formatted properly.
 template <typename RegValue, typename Argument>
-inline Argument GetNaNBoxedSource(const Instruction *instruction, int arg) {
+inline Argument GetNaNBoxedSource(const Instruction* instruction, int arg) {
   if (sizeof(RegValue) <= sizeof(Argument)) {
     return generic::GetInstructionSource<Argument>(instruction, arg);
   } else {
@@ -291,7 +291,7 @@ inline Argument GetNaNBoxedSource(const Instruction *instruction, int arg) {
     UInt uval = generic::GetInstructionSource<UInt>(instruction, arg);
     UInt mask = std::numeric_limits<UInt>::max() << (sizeof(Argument) * 8);
     if (((mask & uval) != mask)) {
-      return *reinterpret_cast<const Argument *>(
+      return *reinterpret_cast<const Argument*>(
           &FPTypeInfo<Argument>::kCanonicalNaN);
     }
     return generic::GetInstructionSource<Argument>(instruction, arg);
@@ -300,13 +300,13 @@ inline Argument GetNaNBoxedSource(const Instruction *instruction, int arg) {
 
 // Generic helper function for binary instructions.
 template <typename Register, typename Result, typename Argument>
-inline void RiscVBinaryOp(const Instruction *instruction,
+inline void RiscVBinaryOp(const Instruction* instruction,
                           std::function<Result(Argument, Argument)> operation) {
   using RegValue = typename Register::ValueType;
   Argument lhs = generic::GetInstructionSource<Argument>(instruction, 0);
   Argument rhs = generic::GetInstructionSource<Argument>(instruction, 1);
   Result dest_value = operation(lhs, rhs);
-  auto *reg = static_cast<generic::RegisterDestinationOperand<RegValue> *>(
+  auto* reg = static_cast<generic::RegisterDestinationOperand<RegValue>*>(
                   instruction->Destination(0))
                   ->GetRegister();
   reg->data_buffer()->template Set<Result>(0, dest_value);
@@ -315,9 +315,9 @@ inline void RiscVBinaryOp(const Instruction *instruction,
 // Generic helper function for writing a value to a register by destination
 // operand index.
 template <typename Register, typename Value>
-inline void RiscVWriteReg(const Instruction *instruction, int index,
+inline void RiscVWriteReg(const Instruction* instruction, int index,
                           Value value) {
-  auto *reg = static_cast<generic::RegisterDestinationOperand<Value> *>(
+  auto* reg = static_cast<generic::RegisterDestinationOperand<Value>*>(
                   instruction->Destination(index))
                   ->GetRegister();
   reg->data_buffer()->template Set<Value>(0, value);
@@ -325,12 +325,12 @@ inline void RiscVWriteReg(const Instruction *instruction, int index,
 
 // Generic helper function for unary instructions.
 template <typename Register, typename Result, typename Argument>
-inline void RiscVUnaryOp(const Instruction *instruction,
+inline void RiscVUnaryOp(const Instruction* instruction,
                          std::function<Result(Argument)> operation) {
   using RegValue = typename Register::ValueType;
   auto lhs = generic::GetInstructionSource<Argument>(instruction, 0);
   Result dest_value = operation(lhs);
-  auto *reg = static_cast<generic::RegisterDestinationOperand<RegValue> *>(
+  auto* reg = static_cast<generic::RegisterDestinationOperand<RegValue>*>(
                   instruction->Destination(0))
                   ->GetRegister();
   reg->data_buffer()->template Set<Result>(0, dest_value);
@@ -339,7 +339,7 @@ inline void RiscVUnaryOp(const Instruction *instruction,
 // Helper function for conditional branches.
 template <typename RegisterType, typename ValueType>
 static inline void BranchConditional(
-    const Instruction *instruction,
+    const Instruction* instruction,
     std::function<bool(ValueType, ValueType)> cond) {
   using UIntType =
       typename std::make_unsigned<typename RegisterType::ValueType>::type;
@@ -348,26 +348,26 @@ static inline void BranchConditional(
   if (cond(a, b)) {
     UIntType offset = generic::GetInstructionSource<UIntType>(instruction, 2);
     UIntType target = offset + instruction->address();
-    auto *db = instruction->Destination(0)->AllocateDataBuffer();
+    auto* db = instruction->Destination(0)->AllocateDataBuffer();
     db->SetSubmit<UIntType>(0, target);
-    auto state = static_cast<RiscVState *>(instruction->state());
+    auto state = static_cast<RiscVState*>(instruction->state());
     state->set_branch(true);
   }
 }
 
 // Generic helper function for load instructions.
 template <typename Register, typename ValueType>
-inline void RVLoad(const Instruction *instruction) {
+inline void RVLoad(const Instruction* instruction) {
   using RegVal = typename Register::ValueType;
   using URegVal = typename std::make_unsigned<RegVal>::type;
   URegVal base = generic::GetInstructionSource<URegVal>(instruction, 0);
   RegVal offset = generic::GetInstructionSource<RegVal>(instruction, 1);
   URegVal address = base + offset;
-  auto *value_db =
+  auto* value_db =
       instruction->state()->db_factory()->Allocate(sizeof(ValueType));
   value_db->set_latency(0);
-  auto *context = new LoadContext(value_db);
-  auto *state = static_cast<RiscVState *>(instruction->state());
+  auto* context = new LoadContext(value_db);
+  auto* state = static_cast<RiscVState*>(instruction->state());
   state->LoadMemory(instruction, address, value_db, instruction->child(),
                     context);
   context->DecRef();
@@ -375,12 +375,12 @@ inline void RVLoad(const Instruction *instruction) {
 
 // Generic helper function for load instructions' "child instruction".
 template <typename Register, typename ValueType>
-inline void RVLoadChild(const Instruction *instruction) {
+inline void RVLoadChild(const Instruction* instruction) {
   using RegVal = typename Register::ValueType;
   using URegVal = typename std::make_unsigned<RegVal>::type;
   using SRegVal = typename std::make_signed<URegVal>::type;
-  LoadContext *context = static_cast<LoadContext *>(instruction->context());
-  auto *reg = static_cast<generic::RegisterDestinationOperand<RegVal> *>(
+  LoadContext* context = static_cast<LoadContext*>(instruction->context());
+  auto* reg = static_cast<generic::RegisterDestinationOperand<RegVal>*>(
                   instruction->Destination(0))
                   ->GetRegister();
   if (std::is_signed<ValueType>::value) {
@@ -394,7 +394,7 @@ inline void RVLoadChild(const Instruction *instruction) {
 
 // Generic helper function for store instructions.
 template <typename RegisterType, typename ValueType>
-inline void RVStore(const Instruction *instruction) {
+inline void RVStore(const Instruction* instruction) {
   using URegVal =
       typename std::make_unsigned<typename RegisterType::ValueType>::type;
   using SRegVal = typename std::make_signed<URegVal>::type;
@@ -402,8 +402,8 @@ inline void RVStore(const Instruction *instruction) {
   SRegVal offset = generic::GetInstructionSource<SRegVal>(instruction, 1);
   URegVal address = base + offset;
   ValueType value = generic::GetInstructionSource<ValueType>(instruction, 2);
-  auto *state = static_cast<RiscVState *>(instruction->state());
-  auto *db = state->db_factory()->Allocate(sizeof(ValueType));
+  auto* state = static_cast<RiscVState*>(instruction->state());
+  auto* db = state->db_factory()->Allocate(sizeof(ValueType));
   db->Set<ValueType>(0, value);
   state->StoreMemory(instruction, address, db);
   db->DecRef();
@@ -414,12 +414,12 @@ inline void RVStore(const Instruction *instruction) {
 // not really executing an fp operation that requires rounding.
 template <typename RegValue, typename Result, typename Argument>
 inline void RiscVBinaryNaNBoxOp(
-    const Instruction *instruction,
+    const Instruction* instruction,
     std::function<Result(Argument, Argument)> operation) {
   Argument lhs = GetNaNBoxedSource<RegValue, Argument>(instruction, 0);
   Argument rhs = GetNaNBoxedSource<RegValue, Argument>(instruction, 1);
   Result dest_value = operation(lhs, rhs);
-  auto *reg = static_cast<generic::RegisterDestinationOperand<RegValue> *>(
+  auto* reg = static_cast<generic::RegisterDestinationOperand<RegValue>*>(
                   instruction->Destination(0))
                   ->GetRegister();
   // Check to see if we need to NaN box the result.
@@ -428,7 +428,7 @@ inline void RiscVBinaryNaNBoxOp(
     // bits have to be set to all ones.
     using UReg = typename std::make_unsigned<RegValue>::type;
     using UInt = typename FPTypeInfo<Result>::UIntType;
-    auto dest_u_value = *reinterpret_cast<UInt *>(&dest_value);
+    auto dest_u_value = *reinterpret_cast<UInt*>(&dest_value);
     UReg reg_value = std::numeric_limits<UReg>::max();
     int shift = 8 * (sizeof(RegValue) - sizeof(Result));
     reg_value = (reg_value << shift) | dest_u_value;
@@ -441,11 +441,11 @@ inline void RiscVBinaryNaNBoxOp(
 // Generic helper function for unary instructions with NaN boxing.
 template <typename DstRegValue, typename SrcRegValue, typename Result,
           typename Argument>
-inline void RiscVUnaryNaNBoxOp(const Instruction *instruction,
+inline void RiscVUnaryNaNBoxOp(const Instruction* instruction,
                                std::function<Result(Argument)> operation) {
   Argument lhs = GetNaNBoxedSource<SrcRegValue, Argument>(instruction, 0);
   Result dest_value = operation(lhs);
-  auto *reg = static_cast<generic::RegisterDestinationOperand<DstRegValue> *>(
+  auto* reg = static_cast<generic::RegisterDestinationOperand<DstRegValue>*>(
                   instruction->Destination(0))
                   ->GetRegister();
   // Check to see if we need to NaN box the result.
@@ -454,7 +454,7 @@ inline void RiscVUnaryNaNBoxOp(const Instruction *instruction,
     // bits have to be set to all ones.
     using UReg = typename std::make_unsigned<DstRegValue>::type;
     using UInt = typename FPTypeInfo<Result>::UIntType;
-    auto dest_u_value = *reinterpret_cast<UInt *>(&dest_value);
+    auto dest_u_value = *reinterpret_cast<UInt*>(&dest_value);
     UReg reg_value = std::numeric_limits<UReg>::max();
     int shift = 8 * (sizeof(DstRegValue) - sizeof(Result));
     reg_value = (reg_value << shift) | dest_u_value;
@@ -468,7 +468,7 @@ inline void RiscVUnaryNaNBoxOp(const Instruction *instruction,
 // difference is that it handles rounding mode and performs NaN boxing.
 template <typename DstRegValue, typename SrcRegValue, typename Result,
           typename Argument>
-inline void RiscVUnaryFloatNaNBoxOp(const Instruction *instruction,
+inline void RiscVUnaryFloatNaNBoxOp(const Instruction* instruction,
                                     std::function<Result(Argument)> operation) {
   using ResUint = typename FPTypeInfo<Result>::UIntType;
   Argument lhs = GetNaNBoxedSource<SrcRegValue, Argument>(instruction, 0);
@@ -476,7 +476,7 @@ inline void RiscVUnaryFloatNaNBoxOp(const Instruction *instruction,
   int rm_value = generic::GetInstructionSource<int>(instruction, 1);
 
   // If the rounding mode is dynamic, read it from the current state.
-  auto *rv_fp = static_cast<RiscVState *>(instruction->state())->rv_fp();
+  auto* rv_fp = static_cast<RiscVState*>(instruction->state())->rv_fp();
   if (rm_value == *FPRoundingMode::kDynamic) {
     if (!rv_fp->rounding_mode_valid()) {
       LOG(ERROR) << "Invalid rounding mode";
@@ -491,21 +491,21 @@ inline void RiscVUnaryFloatNaNBoxOp(const Instruction *instruction,
   }
   if (FPTypeInfo<Result>::IsNaN(dest_value) &&
       FPTypeInfo<Result>::SignBit(dest_value)) {
-    ResUint res_value = *reinterpret_cast<ResUint *>(&dest_value);
+    ResUint res_value = *reinterpret_cast<ResUint*>(&dest_value);
     res_value &= FPTypeInfo<Result>::kInfMask;
-    dest_value = *reinterpret_cast<Result *>(&res_value);
+    dest_value = *reinterpret_cast<Result*>(&res_value);
   }
-  auto *dest = instruction->Destination(0);
-  auto *reg_dest =
-      static_cast<generic::RegisterDestinationOperand<DstRegValue> *>(dest);
-  auto *reg = reg_dest->GetRegister();
+  auto* dest = instruction->Destination(0);
+  auto* reg_dest =
+      static_cast<generic::RegisterDestinationOperand<DstRegValue>*>(dest);
+  auto* reg = reg_dest->GetRegister();
   // Check to see if we need to NaN box the result.
   if (sizeof(DstRegValue) > sizeof(Result)) {
     // If the floating point Value is narrower than the register, the upper
     // bits have to be set to all ones.
     using UReg = typename std::make_unsigned<DstRegValue>::type;
     using UInt = typename FPTypeInfo<Result>::UIntType;
-    auto dest_u_value = *reinterpret_cast<UInt *>(&dest_value);
+    auto dest_u_value = *reinterpret_cast<UInt*>(&dest_value);
     UReg reg_value = std::numeric_limits<UReg>::max();
     int shift = 8 * (sizeof(DstRegValue) - sizeof(Result));
     reg_value = (reg_value << shift) | dest_u_value;
@@ -518,13 +518,13 @@ inline void RiscVUnaryFloatNaNBoxOp(const Instruction *instruction,
 // Generic helper function for floating op instructions that do not require
 // NaN boxing since they produce non fp-values.
 template <typename Result, typename Argument>
-inline void RiscVUnaryFloatOp(const Instruction *instruction,
+inline void RiscVUnaryFloatOp(const Instruction* instruction,
                               std::function<Result(Argument)> operation) {
   Argument lhs = generic::GetInstructionSource<Argument>(instruction, 0);
   // Get the rounding mode.
   int rm_value = generic::GetInstructionSource<int>(instruction, 1);
 
-  auto *rv_fp = static_cast<RiscVState *>(instruction->state())->rv_fp();
+  auto* rv_fp = static_cast<RiscVState*>(instruction->state())->rv_fp();
   // If the rounding mode is dynamic, read it from the current state.
   if (rm_value == *FPRoundingMode::kDynamic) {
     if (!rv_fp->rounding_mode_valid()) {
@@ -538,11 +538,11 @@ inline void RiscVUnaryFloatOp(const Instruction *instruction,
     ScopedFPStatus set_fp_status(rv_fp->host_fp_interface(), rm_value);
     dest_value = operation(lhs);
   }
-  auto *dest = instruction->Destination(0);
+  auto* dest = instruction->Destination(0);
   using UInt = typename FPTypeInfo<Result>::UIntType;
-  auto *reg_dest =
-      static_cast<generic::RegisterDestinationOperand<UInt> *>(dest);
-  auto *reg = reg_dest->GetRegister();
+  auto* reg_dest =
+      static_cast<generic::RegisterDestinationOperand<UInt>*>(dest);
+  auto* reg = reg_dest->GetRegister();
   reg->data_buffer()->template Set<Result>(0, dest_value);
 }
 
@@ -550,13 +550,13 @@ inline void RiscVUnaryFloatOp(const Instruction *instruction,
 // NaN boxing since they produce non fp-values, but set fflags.
 template <typename Result, typename Argument>
 inline void RiscVUnaryFloatWithFflagsOp(
-    const Instruction *instruction,
-    std::function<Result(Argument, uint32_t &)> operation) {
+    const Instruction* instruction,
+    std::function<Result(Argument, uint32_t&)> operation) {
   Argument lhs = generic::GetInstructionSource<Argument>(instruction, 0);
   // Get the rounding mode.
   int rm_value = generic::GetInstructionSource<int>(instruction, 1);
 
-  auto *rv_fp = static_cast<RiscVState *>(instruction->state())->rv_fp();
+  auto* rv_fp = static_cast<RiscVState*>(instruction->state())->rv_fp();
   // If the rounding mode is dynamic, read it from the current state.
   if (rm_value == *FPRoundingMode::kDynamic) {
     if (!rv_fp->rounding_mode_valid()) {
@@ -571,13 +571,13 @@ inline void RiscVUnaryFloatWithFflagsOp(
     ScopedFPStatus set_fp_status(rv_fp->host_fp_interface(), rm_value);
     dest_value = operation(lhs, flag);
   }
-  auto *dest = instruction->Destination(0);
+  auto* dest = instruction->Destination(0);
   using UInt = typename FPTypeInfo<Result>::UIntType;
-  auto *reg_dest =
-      static_cast<generic::RegisterDestinationOperand<UInt> *>(dest);
-  auto *reg = reg_dest->GetRegister();
+  auto* reg_dest =
+      static_cast<generic::RegisterDestinationOperand<UInt>*>(dest);
+  auto* reg = reg_dest->GetRegister();
   reg->data_buffer()->template Set<Result>(0, dest_value);
-  auto *flag_db = instruction->Destination(1)->AllocateDataBuffer();
+  auto* flag_db = instruction->Destination(1)->AllocateDataBuffer();
   flag_db->Set<uint32_t>(0, flag);
   flag_db->Submit();
 }
@@ -586,7 +586,7 @@ inline void RiscVUnaryFloatWithFflagsOp(
 // difference is that it handles rounding mode.
 template <typename Register, typename Result, typename Argument>
 inline void RiscVBinaryFloatNaNBoxOp(
-    const Instruction *instruction,
+    const Instruction* instruction,
     std::function<Result(Argument, Argument)> operation) {
   Argument lhs = GetNaNBoxedSource<Register, Argument>(instruction, 0);
   Argument rhs = GetNaNBoxedSource<Register, Argument>(instruction, 1);
@@ -594,7 +594,7 @@ inline void RiscVBinaryFloatNaNBoxOp(
   // Get the rounding mode.
   int rm_value = generic::GetInstructionSource<int>(instruction, 2);
 
-  auto *rv_fp = static_cast<RiscVState *>(instruction->state())->rv_fp();
+  auto* rv_fp = static_cast<RiscVState*>(instruction->state())->rv_fp();
   // If the rounding mode is dynamic, read it from the current state.
   if (rm_value == *FPRoundingMode::kDynamic) {
     if (!rv_fp->rounding_mode_valid()) {
@@ -609,10 +609,10 @@ inline void RiscVBinaryFloatNaNBoxOp(
     dest_value = operation(lhs, rhs);
   }
   if (FPTypeInfo<Result>::IsNaN(dest_value)) {
-    *reinterpret_cast<typename FPTypeInfo<Result>::UIntType *>(&dest_value) =
+    *reinterpret_cast<typename FPTypeInfo<Result>::UIntType*>(&dest_value) =
         FPTypeInfo<Result>::kCanonicalNaN;
   }
-  auto *reg = static_cast<generic::RegisterDestinationOperand<Register> *>(
+  auto* reg = static_cast<generic::RegisterDestinationOperand<Register>*>(
                   instruction->Destination(0))
                   ->GetRegister();
   // Check to see if we need to NaN box the result.
@@ -621,7 +621,7 @@ inline void RiscVBinaryFloatNaNBoxOp(
     // bits have to be set to all ones.
     using UReg = typename std::make_unsigned<Register>::type;
     using UInt = typename FPTypeInfo<Result>::UIntType;
-    auto dest_u_value = *reinterpret_cast<UInt *>(&dest_value);
+    auto dest_u_value = *reinterpret_cast<UInt*>(&dest_value);
     UReg reg_value = std::numeric_limits<UReg>::max();
     int shift = 8 * (sizeof(Register) - sizeof(Result));
     reg_value = (reg_value << shift) | dest_u_value;
@@ -634,7 +634,7 @@ inline void RiscVBinaryFloatNaNBoxOp(
 // Generic helper function for ternary floating point instructions.
 template <typename Register, typename Result, typename Argument>
 inline void RiscVTernaryFloatNaNBoxOp(
-    const Instruction *instruction,
+    const Instruction* instruction,
     std::function<Result(Argument, Argument, Argument)> operation) {
   Argument rs1 = generic::GetInstructionSource<Argument>(instruction, 0);
   Argument rs2 = generic::GetInstructionSource<Argument>(instruction, 1);
@@ -642,7 +642,7 @@ inline void RiscVTernaryFloatNaNBoxOp(
   // Get the rounding mode.
   int rm_value = generic::GetInstructionSource<int>(instruction, 3);
 
-  auto *rv_fp = static_cast<RiscVState *>(instruction->state())->rv_fp();
+  auto* rv_fp = static_cast<RiscVState*>(instruction->state())->rv_fp();
   // If the rounding mode is dynamic, read it from the current state.
   if (rm_value == *FPRoundingMode::kDynamic) {
     if (!rv_fp->rounding_mode_valid()) {
@@ -656,7 +656,7 @@ inline void RiscVTernaryFloatNaNBoxOp(
     ScopedFPStatus fp_status(rv_fp->host_fp_interface(), rm_value);
     dest_value = operation(rs1, rs2, rs3);
   }
-  auto *reg = static_cast<generic::RegisterDestinationOperand<Register> *>(
+  auto* reg = static_cast<generic::RegisterDestinationOperand<Register>*>(
                   instruction->Destination(0))
                   ->GetRegister();
   // Check to see if we need to NaN box the result.
@@ -665,7 +665,7 @@ inline void RiscVTernaryFloatNaNBoxOp(
     // bits have to be set to all ones.
     using UReg = typename std::make_unsigned<Register>::type;
     using UInt = typename FPTypeInfo<Result>::UIntType;
-    auto dest_u_value = *reinterpret_cast<UInt *>(&dest_value);
+    auto dest_u_value = *reinterpret_cast<UInt*>(&dest_value);
     UReg reg_value = std::numeric_limits<UReg>::max();
     int shift = 8 * (sizeof(Register) - sizeof(Result));
     reg_value = (reg_value << shift) | dest_u_value;
@@ -679,7 +679,7 @@ inline void RiscVTernaryFloatNaNBoxOp(
 template <typename T>
 typename FPTypeInfo<T>::UIntType ClassifyFP(T val) {
   using UIntType = typename FPTypeInfo<T>::UIntType;
-  auto int_value = *reinterpret_cast<UIntType *>(&val);
+  auto int_value = *reinterpret_cast<UIntType*>(&val);
   UIntType sign = int_value >> (FPTypeInfo<T>::kBitSize - 1);
   UIntType exp_mask = (1 << FPTypeInfo<T>::kExpSize) - 1;
   UIntType exp = (int_value >> FPTypeInfo<T>::kSigSize) & exp_mask;

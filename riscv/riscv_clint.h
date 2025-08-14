@@ -64,30 +64,30 @@ using ::mpact::sim::util::MemoryInterface;
 class RiscVClint : public CounterValueSetInterface<uint64_t>,
                    public MemoryInterface {
  public:
-  RiscVClint(int period, MipExternalWriteInterface *mip_interface);
+  RiscVClint(int period, MipExternalWriteInterface* mip_interface);
   RiscVClint() = delete;
-  RiscVClint(const RiscVClint &) = delete;
-  RiscVClint &operator=(const RiscVClint &) = delete;
+  RiscVClint(const RiscVClint&) = delete;
+  RiscVClint& operator=(const RiscVClint&) = delete;
   ~RiscVClint() override = default;
   // Resets the interrupt controller.
   void Reset();
   // CounterValueSetInterface override. This is called when the value of the
   // bound counter is modified.
-  void SetValue(const uint64_t &val) override;
+  void SetValue(const uint64_t& val) override;
 
   // MemoryInterface overrides.
   // Non-vector load method.
-  void Load(uint64_t address, DataBuffer *db, Instruction *inst,
-            ReferenceCount *context) override;
+  void Load(uint64_t address, DataBuffer* db, Instruction* inst,
+            ReferenceCount* context) override;
   // Vector load method - this is stubbed out.
-  void Load(DataBuffer *address_db, DataBuffer *mask_db, int el_size,
-            DataBuffer *db, Instruction *inst,
-            ReferenceCount *context) override;
+  void Load(DataBuffer* address_db, DataBuffer* mask_db, int el_size,
+            DataBuffer* db, Instruction* inst,
+            ReferenceCount* context) override;
   // Non-vector store method.
-  void Store(uint64_t address, DataBuffer *db) override;
+  void Store(uint64_t address, DataBuffer* db) override;
   // Vector store method - this is stubbed out.
-  void Store(DataBuffer *address, DataBuffer *mask, int el_size,
-             DataBuffer *db) override;
+  void Store(DataBuffer* address, DataBuffer* mask, int el_size,
+             DataBuffer* db) override;
 
  private:
   // Helpers.
@@ -108,7 +108,7 @@ class RiscVClint : public CounterValueSetInterface<uint64_t>,
   uint64_t mtimecmp_ = 0;
   int mtip_ = 0;
   // mip write interface.
-  MipExternalWriteInterface *mip_interface_;
+  MipExternalWriteInterface* mip_interface_;
   // Counter for how many updates there have been in current period.
   int update_counter_ = 0;
   int period_ = 0;

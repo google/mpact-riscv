@@ -25,7 +25,7 @@ namespace mpact::sim::riscv {
 using ::mpact::sim::generic::Instruction;
 
 // This instruction semantic function takes no source or destination operands.
-void RiscVPause(const Instruction *inst);
+void RiscVPause(const Instruction* inst);
 
 }  // namespace mpact::sim::riscv
 

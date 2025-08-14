@@ -92,29 +92,29 @@ class RV64BitmanipInstructionTest : public testing::Test {
   // Appends the source and destination operands for the register names
   // given in the two vectors.
   void AppendRegisterOperands(
-      Instruction *inst, const std::vector<std::string_view> &sources,
-      const std::vector<std::string_view> &destinations) {
-    for (auto &reg_name : sources) {
-      auto *reg = state_->GetRegister<RV64Register>(reg_name).first;
+      Instruction* inst, const std::vector<std::string_view>& sources,
+      const std::vector<std::string_view>& destinations) {
+    for (auto& reg_name : sources) {
+      auto* reg = state_->GetRegister<RV64Register>(reg_name).first;
       inst->AppendSource(reg->CreateSourceOperand());
     }
-    for (auto &reg_name : destinations) {
-      auto *reg = state_->GetRegister<RV64Register>(reg_name).first;
+    for (auto& reg_name : destinations) {
+      auto* reg = state_->GetRegister<RV64Register>(reg_name).first;
       inst->AppendDestination(reg->CreateDestinationOperand(0));
     }
   }
 
   void AppendRegisterOperands(
-      const std::vector<std::string_view> &sources,
-      const std::vector<std::string_view> &destinations) {
+      const std::vector<std::string_view>& sources,
+      const std::vector<std::string_view>& destinations) {
     AppendRegisterOperands(instruction_.get(), sources, destinations);
   }
 
   // Appends immediate source operands with the given values.
   template <typename T>
-  void AppendImmediateOperands(const std::vector<T> &values) {
+  void AppendImmediateOperands(const std::vector<T>& values) {
     for (auto value : values) {
-      auto *src = new ImmediateOperand<T>(value);
+      auto* src = new ImmediateOperand<T>(value);
       instruction_->AppendSource(src);
     }
   }
@@ -124,9 +124,9 @@ class RV64BitmanipInstructionTest : public testing::Test {
   template <typename T>
   void SetRegisterValues(
       const std::vector<std::tuple<std::string_view, T>> values) {
-    for (auto &[reg_name, value] : values) {
-      auto *reg = state_->GetRegister<RV64Register>(reg_name).first;
-      auto *db = state_->db_factory()->Allocate<RV64Register::ValueType>(1);
+    for (auto& [reg_name, value] : values) {
+      auto* reg = state_->GetRegister<RV64Register>(reg_name).first;
+      auto* db = state_->db_factory()->Allocate<RV64Register::ValueType>(1);
       db->Set<T>(0, value);
       reg->SetDataBuffer(db);
       db->DecRef();
@@ -141,7 +141,7 @@ class RV64BitmanipInstructionTest : public testing::Test {
   // Returns the value of the named register.
   template <typename T>
   T GetRegisterValue(absl::string_view reg_name) {
-    auto *reg = state_->GetRegister<RV64Register>(reg_name).first;
+    auto* reg = state_->GetRegister<RV64Register>(reg_name).first;
     return reg->data_buffer()->Get<T>(0);
   }
 
@@ -163,7 +163,7 @@ TEST_F(RV64BitmanipInstructionTest, RV64VAddUw) {
   EXPECT_EQ(GetRegisterValue<int64_t>(kX3), (kUVal1 & 0xffff'ffffLL) + kUVal2);
 }
 
-void VshNaddTestHelper(RV64BitmanipInstructionTest &test, int shift) {
+void VshNaddTestHelper(RV64BitmanipInstructionTest& test, int shift) {
   test.AppendRegisterOperands({kX1, kX2, kX4}, {kX3});
 
   test.SetRegisterValues<uint64_t>(
@@ -187,7 +187,7 @@ TEST_F(RV64BitmanipInstructionTest, RV64VSh3add) {
   VshNaddTestHelper(*this, 3);
 }
 
-void VshNadduwTestHelper(RV64BitmanipInstructionTest &test, int shift) {
+void VshNadduwTestHelper(RV64BitmanipInstructionTest& test, int shift) {
   test.AppendRegisterOperands({kX1, kX2, kX4}, {kX3});
 
   test.SetRegisterValues<uint64_t>(

@@ -23,8 +23,8 @@ namespace mpact {
 namespace sim {
 namespace riscv {
 
-RiscV32GVecDecoder::RiscV32GVecDecoder(RiscVState *state,
-                                       util::MemoryInterface *memory)
+RiscV32GVecDecoder::RiscV32GVecDecoder(RiscVState* state,
+                                       util::MemoryInterface* memory)
     : state_(state), memory_(memory) {
   // Get a handle to the internal error in the program error controller.
   decode_error_ = state->program_error_controller()->GetProgramError(
@@ -49,15 +49,15 @@ RiscV32GVecDecoder::~RiscV32GVecDecoder() {
   delete riscv_encoding_;
 }
 
-generic::Instruction *RiscV32GVecDecoder::DecodeInstruction(uint64_t address) {
+generic::Instruction* RiscV32GVecDecoder::DecodeInstruction(uint64_t address) {
   // First check that the address is aligned properly. If not, create and return
   // an instruction object that generates an internal simulator error when
   // executed.
   if (address & 0x1) {
-    auto *inst = new generic::Instruction(address, state_);
+    auto* inst = new generic::Instruction(address, state_);
     std::string error =
         absl::StrCat(absl::Hex(address), ": unaligned instruction address");
-    inst->set_semantic_function([error, this](generic::Instruction *inst) {
+    inst->set_semantic_function([error, this](generic::Instruction* inst) {
       decode_error_->Raise(error);
     });
     inst->set_size(1);
@@ -71,7 +71,7 @@ generic::Instruction *RiscV32GVecDecoder::DecodeInstruction(uint64_t address) {
 
   // Call the isa decoder to obtain a new instruction object for the instruction
   // word that was parsed above.
-  auto *instruction = riscv_isa_->Decode(address, riscv_encoding_);
+  auto* instruction = riscv_isa_->Decode(address, riscv_encoding_);
   return instruction;
 }
 

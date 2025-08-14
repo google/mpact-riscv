@@ -27,18 +27,18 @@ using ::mpact::sim::generic::Instruction;
 namespace RV32 {
 
 // These instructions are not implemented for now.
-void RiscVPrefetchI(const Instruction *inst) { /* empty */ }
-void RiscVPrefetchR(const Instruction *inst) { /* empty */ }
-void RiscVPrefetchW(const Instruction *inst) { /* empty */ }
+void RiscVPrefetchI(const Instruction* inst) { /* empty */ }
+void RiscVPrefetchR(const Instruction* inst) { /* empty */ }
+void RiscVPrefetchW(const Instruction* inst) { /* empty */ }
 
 }  // namespace RV32
 
 namespace RV64 {
 
 // These instructions are not implemented for now.
-void RiscVPrefetchI(const Instruction *inst) { /* empty */ }
-void RiscVPrefetchR(const Instruction *inst) { /* empty */ }
-void RiscVPrefetchW(const Instruction *inst) { /* empty */ }
+void RiscVPrefetchI(const Instruction* inst) { /* empty */ }
+void RiscVPrefetchR(const Instruction* inst) { /* empty */ }
+void RiscVPrefetchW(const Instruction* inst) { /* empty */ }
 
 }  // namespace RV64
 

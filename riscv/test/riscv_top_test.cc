@@ -69,8 +69,8 @@ constexpr char kDepotPath[] = "riscv/test/";
 
 // Helper function to get symbol addresses from the loader.
 static bool GetMagicAddresses(
-    mpact::sim::util::ElfProgramLoader *loader,
-    mpact::sim::riscv::RiscV32HtifSemiHost::SemiHostAddresses *magic) {
+    mpact::sim::util::ElfProgramLoader* loader,
+    mpact::sim::riscv::RiscV32HtifSemiHost::SemiHostAddresses* magic) {
   auto result = loader->GetSymbol("tohost_ready");
   if (!result.ok()) return false;
   magic->tohost_ready = result.value().first;
@@ -93,8 +93,8 @@ static bool GetMagicAddresses(
 // Helper RAII style class for setting up HTIF semihosting.
 class HtifSemihostSetup {
  public:
-  HtifSemihostSetup(RiscVTop *top, mpact::sim::util::ElfProgramLoader *loader,
-                    mpact::sim::util::MemoryInterface *memory)
+  HtifSemihostSetup(RiscVTop* top, mpact::sim::util::ElfProgramLoader* loader,
+                    mpact::sim::util::MemoryInterface* memory)
       : memory_(memory), state_(top->state()) {
     mpact::sim::riscv::RiscV32HtifSemiHost::SemiHostAddresses magic;
     if (GetMagicAddresses(loader, &magic)) {
@@ -120,17 +120,17 @@ class HtifSemihostSetup {
   }
 
  private:
-  mpact::sim::util::MemoryInterface *memory_ = nullptr;
-  mpact::sim::riscv::RiscVState *state_ = nullptr;
-  mpact::sim::util::MemoryWatcher *watcher_ = nullptr;
-  mpact::sim::riscv::RiscV32HtifSemiHost *semihost_ = nullptr;
+  mpact::sim::util::MemoryInterface* memory_ = nullptr;
+  mpact::sim::riscv::RiscVState* state_ = nullptr;
+  mpact::sim::util::MemoryWatcher* watcher_ = nullptr;
+  mpact::sim::riscv::RiscV32HtifSemiHost* semihost_ = nullptr;
 };
 
 // Helper RAII style class for setting up ARM semihosting.
 class ArmSemihostSetup {
  public:
-  explicit ArmSemihostSetup(RiscVTop *top,
-                            mpact::sim::util::MemoryInterface *memory) {
+  explicit ArmSemihostSetup(RiscVTop* top,
+                            mpact::sim::util::MemoryInterface* memory) {
     auto xlen = top->state()->xlen();
     if (xlen == RiscVXlen::RV64) {
       semihost_ = new RiscVArmSemihost(RiscVArmSemihost::BitWidth::kWord64,
@@ -141,7 +141,7 @@ class ArmSemihostSetup {
     }
     auto semihost = semihost_;
     top->state()->AddEbreakHandler([semihost,
-                                    top](const Instruction *inst) -> bool {
+                                    top](const Instruction* inst) -> bool {
       if (semihost->IsSemihostingCall(inst)) {
         semihost->OnEBreak(inst);
       } else {
@@ -157,7 +157,7 @@ class ArmSemihostSetup {
   ~ArmSemihostSetup() { delete semihost_; }
 
  private:
-  mpact::sim::riscv::RiscVArmSemihost *semihost_ = nullptr;
+  mpact::sim::riscv::RiscVArmSemihost* semihost_ = nullptr;
 };
 
 class RiscVTopTest : public testing::Test {
@@ -207,12 +207,12 @@ class RiscVTopTest : public testing::Test {
   }
 
   uint64_t entry_point_;
-  RiscVTop *riscv_top_ = nullptr;
-  mpact::sim::util::ElfProgramLoader *loader_ = nullptr;
-  FlatDemandMemory *memory_ = nullptr;
-  RiscVState *state_ = nullptr;
-  RiscVFPState *fp_state_ = nullptr;
-  DecoderInterface *decoder_ = nullptr;
+  RiscVTop* riscv_top_ = nullptr;
+  mpact::sim::util::ElfProgramLoader* loader_ = nullptr;
+  FlatDemandMemory* memory_ = nullptr;
+  RiscVState* state_ = nullptr;
+  RiscVFPState* fp_state_ = nullptr;
+  DecoderInterface* decoder_ = nullptr;
 };
 
 // Runs the program from beginning to end using HTIF semihosting.
@@ -460,7 +460,7 @@ TEST_F(RiscVTopTest, RegisterNames) {
   EXPECT_EQ(riscv_top_->WriteRegister("x32", word_value).code(),
             absl::StatusCode::kNotFound);
   // Aliases.
-  for (auto &[name, alias] : {std::tuple<std::string, std::string>{"x1", "ra"},
+  for (auto& [name, alias] : {std::tuple<std::string, std::string>{"x1", "ra"},
                               {"x4", "tp"},
                               {"x8", "s0"}}) {
     uint32_t write_value = 0xba5eba11;

@@ -27,7 +27,7 @@ template <typename T>
 class RiscVJvtCsr : public RiscVSimpleCsr<T> {
  public:
   RiscVJvtCsr(std::string name, RiscVCsrEnum index, T initial_value,
-              RiscVState *state)
+              RiscVState* state)
       : RiscVSimpleCsr<T>(name, index, initial_value, state) {}
   // Clear the low 6 bits of the value (sets mode to 0b00'0000). This will be
   // modified as any new modes are added.

@@ -15,7 +15,6 @@
 #include "riscv/riscv_vector_fp_compare_instructions.h"
 
 #include "absl/log/log.h"
-#include "mpact/sim/generic/instruction.h"
 #include "riscv/riscv_state.h"
 #include "riscv/riscv_vector_instruction_helpers.h"
 #include "riscv/riscv_vector_state.h"
@@ -25,8 +24,8 @@ namespace sim {
 namespace riscv {
 
 // Vector floating point compare equal.
-void Vmfeq(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmfeq(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 4:
@@ -45,8 +44,8 @@ void Vmfeq(const Instruction *inst) {
 }
 
 // Vector floating point compare less than or equal.
-void Vmfle(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmfle(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 4:
@@ -65,8 +64,8 @@ void Vmfle(const Instruction *inst) {
 }
 
 // Vector floating compare less than.
-void Vmflt(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmflt(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 4:
@@ -85,8 +84,8 @@ void Vmflt(const Instruction *inst) {
 }
 
 // Vector floating point compare not equal.
-void Vmfne(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmfne(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 4:
@@ -105,8 +104,8 @@ void Vmfne(const Instruction *inst) {
 }
 
 // Vector floating point compare greater than.
-void Vmfgt(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmfgt(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 4:
@@ -125,8 +124,8 @@ void Vmfgt(const Instruction *inst) {
 }
 
 // Vector floating point compare greater than or equal.
-void Vmfge(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmfge(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 4:

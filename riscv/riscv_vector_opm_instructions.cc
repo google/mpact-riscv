@@ -17,7 +17,6 @@
 #include <cstdint>
 #include <functional>
 #include <limits>
-#include <optional>
 #include <type_traits>
 
 #include "absl/log/log.h"
@@ -34,7 +33,7 @@ using ::mpact::sim::generic::WideType;
 
 // Helper function used to factor out some code from Vaadd* instructions.
 template <typename T>
-inline T VaaddHelper(RiscVVectorState *rv_vector, T vs2, T vs1) {
+inline T VaaddHelper(RiscVVectorState* rv_vector, T vs2, T vs1) {
   // Perform the addition using a wider type, then shift and round.
   using WT = typename WideType<T>::type;
   WT vs2_w = static_cast<WT>(vs2);
@@ -45,8 +44,8 @@ inline T VaaddHelper(RiscVVectorState *rv_vector, T vs2, T vs1) {
 
 // Average unsigned add. The two sources are added, then shifted right by one
 // and rounded.
-void Vaaddu(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vaaddu(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -78,8 +77,8 @@ void Vaaddu(const Instruction *inst) {
 
 // Average signed add. The two sources are added, then shifted right by one and
 // rounded.
-void Vaadd(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vaadd(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -112,7 +111,7 @@ void Vaadd(const Instruction *inst) {
 // Helper function for Vasub* instructions. Subract using a wider type, then
 // round.
 template <typename T>
-inline T VasubHelper(RiscVVectorState *rv_vector, T vs2, T vs1) {
+inline T VasubHelper(RiscVVectorState* rv_vector, T vs2, T vs1) {
   using WT = typename WideType<T>::type;
   WT vs2_w = static_cast<WT>(vs2);
   WT vs1_w = static_cast<WT>(vs1);
@@ -121,8 +120,8 @@ inline T VasubHelper(RiscVVectorState *rv_vector, T vs2, T vs1) {
 }
 
 // Averaging unsigned subtract - subtract then shift right by 1 and round.
-void Vasubu(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vasubu(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -153,8 +152,8 @@ void Vasubu(const Instruction *inst) {
 }
 
 // Averaging signed subtract. Subtract then shift right by 1 and round.
-void Vasub(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vasub(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -188,19 +187,19 @@ void Vasub(const Instruction *inst) {
 // is used by the following bitwise mask manipulation instruction semantic
 // functions.
 static inline void BitwiseMaskBinaryOp(
-    RiscVVectorState *rv_vector, const Instruction *inst,
+    RiscVVectorState* rv_vector, const Instruction* inst,
     std::function<uint8_t(uint8_t, uint8_t)> op) {
   if (rv_vector->vector_exception()) return;
   int vstart = rv_vector->vstart();
   int vlen = rv_vector->vector_length();
   // Get spans for vector source and destination registers.
-  auto *vs2_op = static_cast<RV32VectorSourceOperand *>(inst->Source(0));
+  auto* vs2_op = static_cast<RV32VectorSourceOperand*>(inst->Source(0));
   auto vs2_span = vs2_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
-  auto *vs1_op = static_cast<RV32VectorSourceOperand *>(inst->Source(1));
+  auto* vs1_op = static_cast<RV32VectorSourceOperand*>(inst->Source(1));
   auto vs1_span = vs1_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
-  auto *vd_op =
-      static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
-  auto *vd_db = vd_op->CopyDataBuffer();
+  auto* vd_op =
+      static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
+  auto* vd_db = vd_op->CopyDataBuffer();
   auto vd_span = vd_db->Get<uint8_t>();
   // Compute start and end locations.
   int start_byte = vstart / 8;
@@ -226,51 +225,51 @@ static inline void BitwiseMaskBinaryOp(
 }
 
 // Bitwise vector mask instructions. The operation is clear by their name.
-void Vmandnot(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmandnot(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   BitwiseMaskBinaryOp(rv_vector, inst, [](uint8_t vs2, uint8_t vs1) -> uint8_t {
     return vs2 & ~vs1;
   });
 }
 
-void Vmand(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmand(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   BitwiseMaskBinaryOp(rv_vector, inst, [](uint8_t vs2, uint8_t vs1) -> uint8_t {
     return vs2 & vs1;
   });
 }
-void Vmor(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmor(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   BitwiseMaskBinaryOp(rv_vector, inst, [](uint8_t vs2, uint8_t vs1) -> uint8_t {
     return vs2 | vs1;
   });
 }
-void Vmxor(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmxor(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   BitwiseMaskBinaryOp(rv_vector, inst, [](uint8_t vs2, uint8_t vs1) -> uint8_t {
     return vs2 ^ vs1;
   });
 }
-void Vmornot(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmornot(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   BitwiseMaskBinaryOp(rv_vector, inst, [](uint8_t vs2, uint8_t vs1) -> uint8_t {
     return vs2 | ~vs1;
   });
 }
-void Vmnand(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmnand(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   BitwiseMaskBinaryOp(rv_vector, inst, [](uint8_t vs2, uint8_t vs1) -> uint8_t {
     return ~(vs2 & vs1);
   });
 }
-void Vmnor(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmnor(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   BitwiseMaskBinaryOp(rv_vector, inst, [](uint8_t vs2, uint8_t vs1) -> uint8_t {
     return ~(vs2 | vs1);
   });
 }
-void Vmxnor(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmxnor(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   BitwiseMaskBinaryOp(rv_vector, inst, [](uint8_t vs2, uint8_t vs1) -> uint8_t {
     return ~(vs2 ^ vs1);
   });
@@ -278,8 +277,8 @@ void Vmxnor(const Instruction *inst) {
 
 // Vector unsigned divide. Note, just like the scalar divide instruction, a
 // divide by zero does not cause an exception, instead it returns all 1s.
-void Vdivu(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vdivu(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -315,8 +314,8 @@ void Vdivu(const Instruction *inst) {
 
 // Signed divide. Divide by 0 returns all 1s. If -1 is divided by the largest
 // magnitude negative number, it returns that negative number.
-void Vdiv(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vdiv(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -363,8 +362,8 @@ void Vdiv(const Instruction *inst) {
 }
 
 // Unsigned remainder. If the denominator is 0, it returns the enumerator.
-void Vremu(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vremu(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -399,8 +398,8 @@ void Vremu(const Instruction *inst) {
 }
 
 // Signed remainder. If the denominator is 0, it returns the enumerator.
-void Vrem(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vrem(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -447,8 +446,8 @@ inline T VmulHighHelper(T vs2, T vs1) {
 }
 
 // Multiply high, unsigned.
-void Vmulhu(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmulhu(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -480,8 +479,8 @@ void Vmulhu(const Instruction *inst) {
 
 // Signed multiply. Note, that signed and unsigned multiply operations have the
 // same result for the low half of the product.
-void Vmul(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmul(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -533,8 +532,8 @@ inline typename std::make_signed<T>::type VmulHighSUHelper(
 }
 
 // Multiply signed unsigned and return the high half.
-void Vmulhsu(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmulhsu(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -565,8 +564,8 @@ void Vmulhsu(const Instruction *inst) {
 }
 
 // Signed multiply, return high half.
-void Vmulh(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmulh(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -597,8 +596,8 @@ void Vmulh(const Instruction *inst) {
 }
 
 // Multiply-add.
-void Vmadd(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmadd(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -636,8 +635,8 @@ void Vmadd(const Instruction *inst) {
 }
 
 // Negated multiply and add.
-void Vnmsub(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vnmsub(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -674,8 +673,8 @@ void Vnmsub(const Instruction *inst) {
 }
 
 // Multiply add overwriting the sum.
-void Vmacc(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmacc(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -712,8 +711,8 @@ void Vmacc(const Instruction *inst) {
 }
 
 // Negated multiply add, overwriting sum.
-void Vnmsac(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vnmsac(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -750,8 +749,8 @@ void Vnmsac(const Instruction *inst) {
 }
 
 // Widening unsigned add.
-void Vwaddu(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vwaddu(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -777,8 +776,8 @@ void Vwaddu(const Instruction *inst) {
 }
 
 // Widening unsigned subtract.
-void Vwsubu(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vwsubu(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -804,8 +803,8 @@ void Vwsubu(const Instruction *inst) {
 }
 
 // Widening signed add.
-void Vwadd(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vwadd(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   // LMUL8 cannot be 64.
   if (rv_vector->vector_length_multiplier() > 32) {
@@ -844,8 +843,8 @@ void Vwadd(const Instruction *inst) {
 }
 
 // Widening signed subtract.
-void Vwsub(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vwsub(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   // LMUL8 cannot be 64.
   if (rv_vector->vector_length_multiplier() > 32) {
@@ -883,8 +882,8 @@ void Vwsub(const Instruction *inst) {
 }
 
 // Widening unsigned add with wide source.
-void Vwadduw(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vwadduw(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   // LMUL8 cannot be 64.
   if (rv_vector->vector_length_multiplier() > 32) {
@@ -917,8 +916,8 @@ void Vwadduw(const Instruction *inst) {
 }
 
 // Widening unsigned subtract with wide source.
-void Vwsubuw(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vwsubuw(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   // LMUL8 cannot be 64.
   if (rv_vector->vector_length_multiplier() > 32) {
@@ -951,8 +950,8 @@ void Vwsubuw(const Instruction *inst) {
 }
 
 // Widening signed add with wide source.
-void Vwaddw(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vwaddw(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   // LMUL8 cannot be 64.
   if (rv_vector->vector_length_multiplier() > 32) {
@@ -985,8 +984,8 @@ void Vwaddw(const Instruction *inst) {
 }
 
 // Widening signed subtract with wide source.
-void Vwsubw(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vwsubw(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   // LMUL8 cannot be 64.
   if (rv_vector->vector_length_multiplier() > 32) {
@@ -1029,8 +1028,8 @@ inline typename WideType<T>::type VwmulHelper(T vs2, T vs1) {
 }
 
 // Unsigned widening multiply.
-void Vwmulu(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vwmulu(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   // LMUL8 cannot be 64.
   if (rv_vector->vector_length_multiplier() > 32) {
@@ -1076,8 +1075,8 @@ VwmulSuHelper(typename std::make_signed<T>::type vs2,
 }
 
 // Widening multiply signed-unsigned.
-void Vwmulsu(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vwmulsu(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   // LMUL8 cannot be 64.
   if (rv_vector->vector_length_multiplier() > 32) {
@@ -1110,8 +1109,8 @@ void Vwmulsu(const Instruction *inst) {
 }
 
 // Widening signed multiply.
-void Vwmul(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vwmul(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   // LMUL8 cannot be 64.
   if (rv_vector->vector_length_multiplier() > 32) {
@@ -1155,8 +1154,8 @@ Vd VwmaccHelper(Vs2 vs2, Vs1 vs1, Vd vd) {
 }
 
 // Unsigned widening multiply and add.
-void Vwmaccu(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vwmaccu(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   // LMUL8 cannot be 64.
   if (rv_vector->vector_length_multiplier() > 32) {
@@ -1192,8 +1191,8 @@ void Vwmaccu(const Instruction *inst) {
 }
 
 // Widening signed multiply and add.
-void Vwmacc(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vwmacc(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   // LMUL8 cannot be 64.
   if (rv_vector->vector_length_multiplier() > 32) {
@@ -1226,8 +1225,8 @@ void Vwmacc(const Instruction *inst) {
 }
 
 // Widening unsigned-signed multiply and add.
-void Vwmaccus(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vwmaccus(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   // LMUL8 cannot be 64.
   if (rv_vector->vector_length_multiplier() > 32) {
@@ -1262,8 +1261,8 @@ void Vwmaccus(const Instruction *inst) {
 }
 
 // Widening signed-unsigned multiply and add.
-void Vwmaccsu(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vwmaccsu(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   // LMUL8 cannot be 64.
   if (rv_vector->vector_length_multiplier() > 32) {

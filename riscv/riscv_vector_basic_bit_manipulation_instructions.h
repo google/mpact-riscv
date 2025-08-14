@@ -23,26 +23,26 @@ namespace riscv {
 
 using Instruction = ::mpact::sim::generic::Instruction;
 
-void RV32VUnimplementedInstruction(const Instruction *inst);
+void RV32VUnimplementedInstruction(const Instruction* inst);
 
 // Vector bit manipulation instructions.
 
 // Zvkb subset of instructions
-void Vandn(Instruction *);
-void Vbrev8(Instruction *);
-void Vrev8(Instruction *);
-void Vrol(Instruction *);
-void Vror(Instruction *);
+void Vandn(Instruction*);
+void Vbrev8(Instruction*);
+void Vrev8(Instruction*);
+void Vrol(Instruction*);
+void Vror(Instruction*);
 
 // Zvbb instructions
-void Vbrev(Instruction *);
-void Vclz(Instruction *);
-void Vctz(Instruction *);
+void Vbrev(Instruction*);
+void Vclz(Instruction*);
+void Vctz(Instruction*);
 // There is a name collision with an existing Vcpop instruction that stores the
 // result in a scalar register. This implementation stores the result in a
 // vector register.
-void VectorVcpop(Instruction *);
-void Vwsll(Instruction *);
+void VectorVcpop(Instruction*);
+void Vwsll(Instruction*);
 
 }  // namespace riscv
 }  // namespace sim

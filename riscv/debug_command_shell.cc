@@ -165,19 +165,19 @@ DebugCommandShell::DebugCommandShell()
 )raw";
 }
 
-void DebugCommandShell::AddCore(const CoreAccess &core_access) {
+void DebugCommandShell::AddCore(const CoreAccess& core_access) {
   core_access_.push_back(core_access);
   core_action_point_id_.push_back(0);
   core_action_point_info_.emplace_back();
 }
 
-void DebugCommandShell::AddCores(const std::vector<CoreAccess> &core_access) {
-  for (auto &core : core_access) {
+void DebugCommandShell::AddCores(const std::vector<CoreAccess>& core_access) {
+  for (auto& core : core_access) {
     AddCore(core);
   }
 }
 // NOLINTBEGIN(readability/fn_size)
-void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
+void DebugCommandShell::Run(std::istream& is, std::ostream& os) {
   // Assumes the max linesize is 512.
   command_streams_.push_back(&is);
   constexpr int kLineSize = 512;
@@ -219,7 +219,7 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
       }
     }
     if (pc_result.ok()) {
-      auto *loader = core_access_[current_core_].loader_getter();
+      auto* loader = core_access_[current_core_].loader_getter();
       if (loader != nullptr) {
         auto fcn_result = loader->GetFunctionName(pc_result.value());
         if (fcn_result.ok()) {
@@ -242,7 +242,7 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
     }
     absl::StrAppend(&prompt, "[", current_core_, "] > ");
     while (!command_streams_.empty()) {
-      auto &current_is = *command_streams_.back();
+      auto& current_is = *command_streams_.back();
       // Ignore comments or empty lines.
       bool is_file = command_streams_.size() > 1;
       // Read a command from the input stream. If it's from a file, then ignore
@@ -286,7 +286,7 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
 
     // First try any added custom commands.
     bool executed = false;
-    for (auto &fcn : command_functions_) {
+    for (auto& fcn : command_functions_) {
       std::string output;
       executed = fcn(line_view, core_access_[current_core_], output);
       if (executed) {
@@ -442,7 +442,7 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
         os.flush();
         continue;
       }
-      auto *db = result.value();
+      auto* db = result.value();
       // Check for null data buffer.
       if (db == nullptr) {
         os << "Error: register '" << name << "' has no data buffer\n";
@@ -488,7 +488,7 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
         os << "Error: " << result.status().message() << std::endl;
         continue;
       }
-      auto *db = result.value();
+      auto* db = result.value();
       // Check for null data buffer.
       if (db == nullptr) {
         os << "Error: register '" << name << "' has no data buffer\n";
@@ -649,7 +649,7 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
         bool active =
             core_access_[current_core_].debug_interface->HasBreakpoint(address);
         std::string symbol;
-        auto *loader = core_access_[current_core_].loader_getter();
+        auto* loader = core_access_[current_core_].loader_getter();
         if (loader != nullptr) {
           auto res = loader->GetFcnSymbolName(address);
           if (res.ok()) symbol = std::move(res.value());
@@ -665,7 +665,7 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
 
     // help
     if (RE2::FullMatch(line_view, *help_re_)) {
-      for (auto const &usage : command_usage_) {
+      for (auto const& usage : command_usage_) {
         os << usage << std::endl;
       }
       os << help_message_;
@@ -745,7 +745,7 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
         continue;
       }
       size_t length = result.value();
-      auto *riscv_interface = reinterpret_cast<RiscVDebugInterface *>(
+      auto* riscv_interface = reinterpret_cast<RiscVDebugInterface*>(
           core_access_[current_core_].debug_interface);
       auto cmd_result =
           riscv_interface->SetDataWatchpoint(address, length, access_type);
@@ -784,7 +784,7 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
       uint64_t address = iter->second.address;
       size_t length = iter->second.length;
       AccessType access_type = iter->second.access_type;
-      auto *riscv_interface = reinterpret_cast<RiscVDebugInterface *>(
+      auto* riscv_interface = reinterpret_cast<RiscVDebugInterface*>(
           core_access_[current_core_].debug_interface);
       auto status =
           riscv_interface->SetDataWatchpoint(address, length, access_type);
@@ -813,7 +813,7 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
       if (!iter->second.active) continue;
       uint64_t address = iter->second.address;
       auto access_type = iter->second.access_type;
-      auto *riscv_interface = reinterpret_cast<RiscVDebugInterface *>(
+      auto* riscv_interface = reinterpret_cast<RiscVDebugInterface*>(
           core_access_[current_core_].debug_interface);
       auto status = riscv_interface->ClearDataWatchpoint(address, access_type);
       if (!status.ok()) {
@@ -826,12 +826,12 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
 
     // watch clear-all
     if (RE2::FullMatch(line_view, *clear_all_watch_re_)) {
-      for (auto &[index, info] : core_access_[current_core_].watchpoint_map) {
+      for (auto& [index, info] : core_access_[current_core_].watchpoint_map) {
         if (!info.active) continue;
 
         uint64_t address = info.address;
         auto access_type = info.access_type;
-        auto *riscv_interface = reinterpret_cast<RiscVDebugInterface *>(
+        auto* riscv_interface = reinterpret_cast<RiscVDebugInterface*>(
             core_access_[current_core_].debug_interface);
         auto status =
             riscv_interface->ClearDataWatchpoint(address, access_type);
@@ -866,10 +866,10 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
         access_type = AccessType::kLoadStore;
       }
       bool done = false;
-      for (auto &[index, info] : core_access_[current_core_].watchpoint_map) {
+      for (auto& [index, info] : core_access_[current_core_].watchpoint_map) {
         if ((info.address == result.value()) &&
             (info.access_type == access_type)) {
-          auto *riscv_interface = reinterpret_cast<RiscVDebugInterface *>(
+          auto* riscv_interface = reinterpret_cast<RiscVDebugInterface*>(
               core_access_[current_core_].debug_interface);
           auto cmd_result =
               riscv_interface->ClearDataWatchpoint(result.value(), access_type);
@@ -921,7 +921,7 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
         continue;
       }
       size_t length = result.value();
-      auto *riscv_interface = reinterpret_cast<RiscVDebugInterface *>(
+      auto* riscv_interface = reinterpret_cast<RiscVDebugInterface*>(
           core_access_[current_core_].debug_interface);
       auto cmd_result =
           riscv_interface->SetDataWatchpoint(address, length, access_type);
@@ -942,10 +942,10 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
     // watch list
     if (RE2::FullMatch(line_view, *list_watch_re_)) {
       std::string bp_list;
-      for (auto const &[index, info] :
+      for (auto const& [index, info] :
            core_access_[current_core_].watchpoint_map) {
         std::string symbol;
-        auto *loader = core_access_[current_core_].loader_getter();
+        auto* loader = core_access_[current_core_].loader_getter();
         if (loader != nullptr) {
           auto res = loader->GetFcnSymbolName(info.address);
           if (res.ok()) symbol = std::move(res.value());
@@ -1027,7 +1027,7 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
         os << "Error: " << result.status().message() << "\n";
         continue;
       }
-      auto *db = result.value();
+      auto* db = result.value();
       // Check for null data buffer.
       if (db == nullptr) {
         os << "Error: register '$branch_trace' has no data buffer\n";
@@ -1052,7 +1052,7 @@ void DebugCommandShell::Run(std::istream &is, std::ostream &os) {
 
     if (std::string file_name;
         RE2::FullMatch(line_view, *exec_re_, &file_name)) {
-      auto *ifile = new std::ifstream(file_name);
+      auto* ifile = new std::ifstream(file_name);
       if (!ifile->is_open() || !ifile->good()) {
         os << "Error: unable to open '" << file_name << "'\n";
         os.flush();
@@ -1116,7 +1116,7 @@ const absl::ParsedFormat<'X'> HexFormat<uint64_t>::format_cap{"%016X"};
 
 // Templated helper function to help format integer values of different widths.
 template <typename T>
-std::string FormatDbValue(generic::DataBuffer *db, const std::string &format,
+std::string FormatDbValue(generic::DataBuffer* db, const std::string& format,
                           int index) {
   std::string output;
   if (index < 0 || index >= db->size<T>()) return "Error: index out of range";
@@ -1145,9 +1145,9 @@ std::string FormatDbValue(generic::DataBuffer *db, const std::string &format,
 }
 
 template <typename T>
-absl::Status WriteDbValue(const std::string &str_value,
-                          const std::string &format, int index,
-                          generic::DataBuffer *db) {
+absl::Status WriteDbValue(const std::string& str_value,
+                          const std::string& format, int index,
+                          generic::DataBuffer* db) {
   if (index < 0 || index >= db->size<T>())
     return absl::OutOfRangeError("Error: index out of range");
   if (format[0] == 'd') {
@@ -1182,8 +1182,8 @@ absl::Status WriteDbValue(const std::string &str_value,
 
 }  // namespace
 
-std::string DebugCommandShell::FormatSingleDbValue(generic::DataBuffer *db,
-                                                   const std::string &format,
+std::string DebugCommandShell::FormatSingleDbValue(generic::DataBuffer* db,
+                                                   const std::string& format,
                                                    int width, int index) const {
   switch (width) {
     case 8:
@@ -1199,8 +1199,8 @@ std::string DebugCommandShell::FormatSingleDbValue(generic::DataBuffer *db,
   }
 }
 
-std::string DebugCommandShell::FormatAllDbValues(generic::DataBuffer *db,
-                                                 const std::string &format,
+std::string DebugCommandShell::FormatAllDbValues(generic::DataBuffer* db,
+                                                 const std::string& format,
                                                  int width) const {
   std::string output;
   std::string sep;
@@ -1237,7 +1237,7 @@ std::string DebugCommandShell::FormatAllDbValues(generic::DataBuffer *db,
 }
 
 absl::Status DebugCommandShell::WriteSingleValueToDb(
-    const std::string &str_value, generic::DataBuffer *db, std::string format,
+    const std::string& str_value, generic::DataBuffer* db, std::string format,
     int width, int index) const {
   switch (width) {
     case 8:
@@ -1255,8 +1255,8 @@ absl::Status DebugCommandShell::WriteSingleValueToDb(
 }
 
 std::string DebugCommandShell::ReadMemory(int core,
-                                          const std::string &str_value,
-                                          const std::string &format) {
+                                          const std::string& str_value,
+                                          const std::string& format) {
   int size = 0;
   char format_char = 'x';
   int bit_width = 32;
@@ -1310,15 +1310,15 @@ std::string DebugCommandShell::ReadMemory(int core,
   }
 
   // Get the result and format it.
-  void *void_buffer = mem_buffer_;
+  void* void_buffer = mem_buffer_;
   std::string output;
   if ((format_char == 'f') && (bit_width >= 32)) {
     switch (bit_width) {
       case 32:
-        output = absl::StrCat(*reinterpret_cast<float *>(void_buffer));
+        output = absl::StrCat(*reinterpret_cast<float*>(void_buffer));
         break;
       case 64:
-        output = absl::StrCat(*reinterpret_cast<double *>(void_buffer));
+        output = absl::StrCat(*reinterpret_cast<double*>(void_buffer));
         break;
       default:
         break;
@@ -1326,16 +1326,16 @@ std::string DebugCommandShell::ReadMemory(int core,
   } else if (format_char == 'd') {
     switch (bit_width) {
       case 8:
-        output = absl::StrCat(*static_cast<int8_t *>(void_buffer));
+        output = absl::StrCat(*static_cast<int8_t*>(void_buffer));
         break;
       case 16:
-        output = absl::StrCat(*static_cast<int16_t *>(void_buffer));
+        output = absl::StrCat(*static_cast<int16_t*>(void_buffer));
         break;
       case 32:
-        output = absl::StrCat(*static_cast<int32_t *>(void_buffer));
+        output = absl::StrCat(*static_cast<int32_t*>(void_buffer));
         break;
       case 64:
-        output = absl::StrCat(*static_cast<int64_t *>(void_buffer));
+        output = absl::StrCat(*static_cast<int64_t*>(void_buffer));
         break;
       default:
         break;
@@ -1345,19 +1345,19 @@ std::string DebugCommandShell::ReadMemory(int core,
     auto pad = absl::PadSpec::kNoPad;
     switch (bit_width) {
       case 8:
-        val = *static_cast<uint8_t *>(void_buffer);
+        val = *static_cast<uint8_t*>(void_buffer);
         pad = absl::PadSpec::kZeroPad2;
         break;
       case 16:
-        val = *static_cast<uint16_t *>(void_buffer);
+        val = *static_cast<uint16_t*>(void_buffer);
         pad = absl::PadSpec::kZeroPad4;
         break;
       case 32:
-        val = *static_cast<uint32_t *>(void_buffer);
+        val = *static_cast<uint32_t*>(void_buffer);
         pad = absl::PadSpec::kZeroPad8;
         break;
       case 64:
-        val = *static_cast<uint64_t *>(void_buffer);
+        val = *static_cast<uint64_t*>(void_buffer);
         pad = absl::PadSpec::kZeroPad16;
         break;
     }
@@ -1375,9 +1375,9 @@ std::string DebugCommandShell::ReadMemory(int core,
 }
 
 std::string DebugCommandShell::WriteMemory(int core,
-                                           const std::string &str_value1,
-                                           const std::string &format,
-                                           const std::string &str_value2) {
+                                           const std::string& str_value1,
+                                           const std::string& format,
+                                           const std::string& str_value2) {
   int size = 0;
   char format_char = '\0';
   int radix = 0;
@@ -1446,7 +1446,7 @@ std::string DebugCommandShell::WriteMemory(int core,
 }
 
 absl::StatusOr<uint64_t> DebugCommandShell::GetValueFromString(
-    int core, const std::string &str_value, int radix) {
+    int core, const std::string& str_value, int radix) {
   size_t index;
   // Attempt to convert to a number.
   auto convert_result = internal::stoull(str_value, &index, radix);
@@ -1459,7 +1459,7 @@ absl::StatusOr<uint64_t> DebugCommandShell::GetValueFromString(
     return convert_result.status();
   }
   // If all else fails, let's see if it's a symbol.
-  auto *loader = core_access_[current_core_].loader_getter();
+  auto* loader = core_access_[current_core_].loader_getter();
   if (loader == nullptr) return absl::NotFoundError("No symbol table");
   auto result = loader->GetSymbol(str_value);
   if (!result.ok()) return result.status();
@@ -1467,7 +1467,7 @@ absl::StatusOr<uint64_t> DebugCommandShell::GetValueFromString(
 }
 
 std::string DebugCommandShell::FormatRegister(
-    int core, const std::string &reg_name) const {
+    int core, const std::string& reg_name) const {
   std::string output;
   auto result =
       core_access_[current_core_].debug_interface->ReadRegister(reg_name);
@@ -1482,7 +1482,7 @@ std::string DebugCommandShell::FormatRegister(
 
 std::string DebugCommandShell::FormatAllRegisters(int core) const {
   std::string output;
-  for (auto const &reg_name : reg_vector_) {
+  for (auto const& reg_name : reg_vector_) {
     absl::StrAppend(&output, FormatRegister(current_core_, reg_name), "\n");
   }
   return output;
@@ -1491,8 +1491,8 @@ std::string DebugCommandShell::FormatAllRegisters(int core) const {
 // Action point methods.
 std::string DebugCommandShell::ListActionPoints() {
   std::string output;
-  auto &action_map = core_action_point_info_[current_core_];
-  for (auto const &[local_id, info] : action_map) {
+  auto& action_map = core_action_point_info_[current_core_];
+  for (auto const& [local_id, info] : action_map) {
     absl::StrAppend(
         &output,
         absl::StrFormat("%02d  [0x%08lx] %8s  %s\n", local_id, info.address,
@@ -1502,24 +1502,24 @@ std::string DebugCommandShell::ListActionPoints() {
 }
 
 std::string DebugCommandShell::EnableActionPointN(
-    const std::string &index_str) {
+    const std::string& index_str) {
   auto res = riscv::internal::stoull(index_str, nullptr, 10);
   if (!res.ok()) {
     return std::string(res.status().message());
   }
-  auto &action_map = core_action_point_info_[current_core_];
+  auto& action_map = core_action_point_info_[current_core_];
   int index = res.value();
   auto it = action_map.find(index);
   if (it == action_map.end()) {
     return absl::StrCat("Action point ", index, " not found");
   }
-  auto &info = it->second;
+  auto& info = it->second;
   if (info.is_enabled) {
     return absl::StrCat("Action point ", index, " is already enabled");
   }
   info.is_enabled = true;
-  auto *dbg_if = core_access_[current_core_].debug_interface;
-  auto *riscv_dbg_if = static_cast<RiscVDebugInterface *>(dbg_if);
+  auto* dbg_if = core_access_[current_core_].debug_interface;
+  auto* riscv_dbg_if = static_cast<RiscVDebugInterface*>(dbg_if);
   auto status = riscv_dbg_if->EnableAction(info.address, info.id);
   if (!status.ok()) {
     return absl::StrCat("Error: ", status.message());
@@ -1528,24 +1528,24 @@ std::string DebugCommandShell::EnableActionPointN(
 }
 
 std::string DebugCommandShell::DisableActionPointN(
-    const std::string &index_str) {
+    const std::string& index_str) {
   auto res = riscv::internal::stoull(index_str, nullptr, 10);
   if (!res.ok()) {
     return std::string(res.status().message());
   }
-  auto &action_map = core_action_point_info_[current_core_];
+  auto& action_map = core_action_point_info_[current_core_];
   int index = res.value();
   auto it = action_map.find(index);
   if (it == action_map.end()) {
     return absl::StrCat("Action point ", index, " not found");
   }
-  auto &info = it->second;
+  auto& info = it->second;
   if (!info.is_enabled) {
     return absl::StrCat("Action point ", index, " is already disabled");
   }
   info.is_enabled = false;
-  auto *dbg_if = core_access_[current_core_].debug_interface;
-  auto *riscv_dbg_if = static_cast<RiscVDebugInterface *>(dbg_if);
+  auto* dbg_if = core_access_[current_core_].debug_interface;
+  auto* riscv_dbg_if = static_cast<RiscVDebugInterface*>(dbg_if);
   auto status = riscv_dbg_if->DisableAction(info.address, info.id);
   if (!status.ok()) {
     return absl::StrCat("Error: ", status.message());
@@ -1553,20 +1553,20 @@ std::string DebugCommandShell::DisableActionPointN(
   return "";
 }
 
-std::string DebugCommandShell::ClearActionPointN(const std::string &index_str) {
+std::string DebugCommandShell::ClearActionPointN(const std::string& index_str) {
   auto res = riscv::internal::stoull(index_str, nullptr, 10);
   if (!res.ok()) {
     return std::string(res.status().message());
   }
-  auto &action_map = core_action_point_info_[current_core_];
+  auto& action_map = core_action_point_info_[current_core_];
   int index = res.value();
   auto it = action_map.find(index);
   if (it == action_map.end()) {
     return absl::StrCat("Action point ", index, " not found");
   }
-  auto &info = it->second;
-  auto *dbg_if = core_access_[current_core_].debug_interface;
-  auto *riscv_dbg_if = static_cast<RiscVDebugInterface *>(dbg_if);
+  auto& info = it->second;
+  auto* dbg_if = core_access_[current_core_].debug_interface;
+  auto* riscv_dbg_if = static_cast<RiscVDebugInterface*>(dbg_if);
   auto status = riscv_dbg_if->ClearActionPoint(info.address, info.id);
   if (!status.ok()) {
     return absl::StrCat("Error: ", status.message());
@@ -1577,9 +1577,9 @@ std::string DebugCommandShell::ClearActionPointN(const std::string &index_str) {
 
 std::string DebugCommandShell::ClearAllActionPoints() {
   std::string output;
-  auto *dbg_if = core_access_[current_core_].debug_interface;
-  auto *riscv_dbg_if = static_cast<RiscVDebugInterface *>(dbg_if);
-  for (auto &[local_id, info] : core_action_point_info_[current_core_]) {
+  auto* dbg_if = core_access_[current_core_].debug_interface;
+  auto* riscv_dbg_if = static_cast<RiscVDebugInterface*>(dbg_if);
+  for (auto& [local_id, info] : core_action_point_info_[current_core_]) {
     auto status = riscv_dbg_if->ClearActionPoint(info.address, info.id);
     if (!status.ok()) {
       absl::StrAppend(&output, "Error: ", status.message());
@@ -1591,15 +1591,15 @@ std::string DebugCommandShell::ClearAllActionPoints() {
 absl::Status DebugCommandShell::SetActionPoint(
     uint64_t address, std::string name,
     absl::AnyInvocable<void(uint64_t, int)> function) {
-  auto *dbg_if = core_access_[current_core_].debug_interface;
-  auto *riscv_dbg_if = static_cast<RiscVDebugInterface *>(dbg_if);
+  auto* dbg_if = core_access_[current_core_].debug_interface;
+  auto* riscv_dbg_if = static_cast<RiscVDebugInterface*>(dbg_if);
   auto result = riscv_dbg_if->SetActionPoint(address, std::move(function));
   if (!result.ok()) {
     return absl::InternalError(result.status().message());
   }
   int id = result.value();
   int local_id = core_action_point_id_[current_core_]++;
-  auto &action_map = core_action_point_info_[current_core_];
+  auto& action_map = core_action_point_info_[current_core_];
   action_map.emplace(local_id, ActionPointInfo{address, id, name, true});
   return absl::OkStatus();
 }

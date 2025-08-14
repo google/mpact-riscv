@@ -61,15 +61,15 @@ static const int kRecipMantissaTable[128] = {
     4,   3,   3,   2,   2,   1,   1,   0};
 
 // Move float from scalar fp register to vector register(all elements).
-void Vfmvvf(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfmvvf(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   const int vl = rv_vector->vector_length();
   if (rv_vector->vstart() > 0) return;
   if (vl == 0) return;
 
   const int sew = rv_vector->selected_element_width();
   auto dest_op =
-      static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+      static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
   auto dest_db = dest_op->CopyDataBuffer();
   switch (sew) {
     case 4:
@@ -95,13 +95,13 @@ void Vfmvvf(const Instruction *inst) {
 }
 
 // Move float from vector to scalar fp register(first element).
-void Vfmvsf(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfmvsf(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (rv_vector->vstart() > 0) return;
   if (rv_vector->vector_length() == 0) return;
   int sew = rv_vector->selected_element_width();
   auto dest_op =
-      static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+      static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
   auto dest_db = dest_op->CopyDataBuffer();
   switch (sew) {
     case 4:
@@ -123,8 +123,8 @@ void Vfmvsf(const Instruction *inst) {
 }
 
 // Move scalar floating point value to element 0 of vector register.
-void Vfmvfs(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfmvfs(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   auto dest_op = inst->Destination(0);
   auto dest_db = dest_op->AllocateDataBuffer();
@@ -157,9 +157,9 @@ void Vfmvfs(const Instruction *inst) {
 }
 
 // Convert floating point to unsigned integer.
-void Vfcvtxufv(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfcvtxufv(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -185,9 +185,9 @@ void Vfcvtxufv(const Instruction *inst) {
 }
 
 // Convert floating point to signed integer.
-void Vfcvtxfv(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfcvtxfv(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -213,9 +213,9 @@ void Vfcvtxfv(const Instruction *inst) {
 }
 
 // Convert unsigned integer to floating point.
-void Vfcvtfxuv(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfcvtfxuv(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -240,9 +240,9 @@ void Vfcvtfxuv(const Instruction *inst) {
 }
 
 // Convert signed integer to floating point.
-void Vfcvtfxv(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfcvtfxv(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -267,9 +267,9 @@ void Vfcvtfxv(const Instruction *inst) {
 }
 
 // Convert floating point to unsigned integer with truncation.
-void Vfcvtrtzxufv(const Instruction *inst) {
-  auto *rv_state = static_cast<RiscVState *>(inst->state());
-  auto *rv_vector = rv_state->rv_vector();
+void Vfcvtrtzxufv(const Instruction* inst) {
+  auto* rv_state = static_cast<RiscVState*>(inst->state());
+  auto* rv_vector = rv_state->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 4:
@@ -290,9 +290,9 @@ void Vfcvtrtzxufv(const Instruction *inst) {
 }
 
 // Convert floating point to signed integer with truncation.
-void Vfcvtrtzxfv(const Instruction *inst) {
-  auto *rv_state = static_cast<RiscVState *>(inst->state());
-  auto *rv_vector = rv_state->rv_vector();
+void Vfcvtrtzxfv(const Instruction* inst) {
+  auto* rv_state = static_cast<RiscVState*>(inst->state());
+  auto* rv_vector = rv_state->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 4:
@@ -313,9 +313,9 @@ void Vfcvtrtzxfv(const Instruction *inst) {
 }
 
 // Widening conversion of floating point to unsigned integer.
-void Vfwcvtxufv(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfwcvtxufv(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -336,9 +336,9 @@ void Vfwcvtxufv(const Instruction *inst) {
 }
 
 // Widening conversion of floating point to signed integer.
-void Vfwcvtxfv(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfwcvtxfv(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -359,8 +359,8 @@ void Vfwcvtxfv(const Instruction *inst) {
 }
 
 // Wideing conversion of floating point to floating point.
-void Vfwcvtffv(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfwcvtffv(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 4:
@@ -375,9 +375,9 @@ void Vfwcvtffv(const Instruction *inst) {
 }
 
 // Widening conversion of unsigned integer to floating point.
-void Vfwcvtfxuv(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfwcvtfxuv(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -402,9 +402,9 @@ void Vfwcvtfxuv(const Instruction *inst) {
 }
 
 // Widening conversion of signed integer to floating point.
-void Vfwcvtfxv(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfwcvtfxv(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -429,9 +429,9 @@ void Vfwcvtfxv(const Instruction *inst) {
 }
 
 // Widening conversion of floating point to unsigned integer with truncation.
-void Vfwcvtrtzxufv(const Instruction *inst) {
-  auto *rv_state = static_cast<RiscVState *>(inst->state());
-  auto *rv_vector = rv_state->rv_vector();
+void Vfwcvtrtzxufv(const Instruction* inst) {
+  auto* rv_state = static_cast<RiscVState*>(inst->state());
+  auto* rv_vector = rv_state->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 4:
@@ -447,9 +447,9 @@ void Vfwcvtrtzxufv(const Instruction *inst) {
 }
 
 // Widening conversion of floating point to signed integer with truncation.
-void Vfwcvtrtzxfv(const Instruction *inst) {
-  auto *rv_state = static_cast<RiscVState *>(inst->state());
-  auto *rv_vector = rv_state->rv_vector();
+void Vfwcvtrtzxfv(const Instruction* inst) {
+  auto* rv_state = static_cast<RiscVState*>(inst->state());
+  auto* rv_vector = rv_state->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 4:
@@ -465,9 +465,9 @@ void Vfwcvtrtzxfv(const Instruction *inst) {
 }
 
 // Narrowing conversion of floating point to unsigned integer.
-void Vfncvtxufw(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfncvtxufw(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -493,9 +493,9 @@ void Vfncvtxufw(const Instruction *inst) {
 }
 
 // Narrowing conversion of floating point to signed integer.
-void Vfncvtxfw(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfncvtxfw(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -521,9 +521,9 @@ void Vfncvtxfw(const Instruction *inst) {
 }
 
 // Narrowing conversion of floating point to floating point.
-void Vfncvtffw(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfncvtffw(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -544,9 +544,9 @@ void Vfncvtffw(const Instruction *inst) {
 }
 
 // Narrowing conversion of floating point to floating point rounding to odd.
-void Vfncvtrodffw(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfncvtrodffw(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -566,16 +566,16 @@ void Vfncvtrodffw(const Instruction *inst) {
             }
             using UIntD = typename FPTypeInfo<double>::UIntType;
             using UIntF = typename FPTypeInfo<float>::UIntType;
-            UIntD uval = *reinterpret_cast<UIntD *>(&vs2);
+            UIntD uval = *reinterpret_cast<UIntD*>(&vs2);
             int sig_diff =
                 FPTypeInfo<double>::kSigSize - FPTypeInfo<float>::kSigSize;
             UIntD mask = (1ULL << sig_diff) - 1;
             UIntF bit = (mask & uval) != 0;
             auto res = static_cast<float>(vs2);
             if (FPTypeInfo<float>::IsInf(res)) return res;
-            UIntF ures = *reinterpret_cast<UIntF *>(&res);
+            UIntF ures = *reinterpret_cast<UIntF*>(&res);
             ures |= bit;
-            return *reinterpret_cast<float *>(&ures);
+            return *reinterpret_cast<float*>(&ures);
           });
     default:
       LOG(ERROR) << "Vfwcvt.rod.f.fw: Illegal sew (" << sew << ")";
@@ -585,9 +585,9 @@ void Vfncvtrodffw(const Instruction *inst) {
 }
 
 // Narrowing conversion of unsigned integer to floating point.
-void Vfncvtfxuw(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfncvtfxuw(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -608,9 +608,9 @@ void Vfncvtfxuw(const Instruction *inst) {
 }
 
 // Narrowing conversion of signed integeer to floating point.
-void Vfncvtfxw(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfncvtfxw(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -631,9 +631,9 @@ void Vfncvtfxw(const Instruction *inst) {
 }
 
 // Narrowing conversion of floating point to unsigned integer with truncation.
-void Vfncvtrtzxufw(const Instruction *inst) {
-  auto *rv_state = static_cast<RiscVState *>(inst->state());
-  auto *rv_vector = rv_state->rv_vector();
+void Vfncvtrtzxufw(const Instruction* inst) {
+  auto* rv_state = static_cast<RiscVState*>(inst->state());
+  auto* rv_vector = rv_state->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 4:
@@ -654,9 +654,9 @@ void Vfncvtrtzxufw(const Instruction *inst) {
 }
 
 // Narrowing conversion of floating point to signed integer with truncation.
-void Vfncvtrtzxfw(const Instruction *inst) {
-  auto *rv_state = static_cast<RiscVState *>(inst->state());
-  auto *rv_vector = rv_state->rv_vector();
+void Vfncvtrtzxfw(const Instruction* inst) {
+  auto* rv_state = static_cast<RiscVState*>(inst->state());
+  auto* rv_vector = rv_state->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 4:
@@ -683,7 +683,7 @@ inline std::tuple<T, uint32_t> SqrtHelper(T vs2) {
   T res;
   if (FPTypeInfo<T>::IsNaN(vs2) || vs2 < 0.0) {
     auto value = FPTypeInfo<T>::kCanonicalNaN;
-    res = *reinterpret_cast<T *>(&value);
+    res = *reinterpret_cast<T*>(&value);
     flags = *FPExceptions::kInvalidOp;
     return std::tie(res, flags);
   }
@@ -693,9 +693,9 @@ inline std::tuple<T, uint32_t> SqrtHelper(T vs2) {
 }
 
 // Square root.
-void Vfsqrtv(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfsqrtv(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (!rv_fp->rounding_mode_valid()) {
     LOG(ERROR) << "Invalid rounding mode";
     rv_vector->set_vector_exception();
@@ -728,7 +728,7 @@ void Vfsqrtv(const Instruction *inst) {
         return;
     }
   }
-  auto *fflags = rv_fp->fflags();
+  auto* fflags = rv_fp->fflags();
   fflags->Write(flags | fflags->AsUint32());
 }
 
@@ -737,7 +737,7 @@ void Vfsqrtv(const Instruction *inst) {
 template <typename T>
 inline T RecipSqrt7(T value) {
   using Uint = typename FPTypeInfo<T>::UIntType;
-  Uint uint_value = *reinterpret_cast<Uint *>(&value);
+  Uint uint_value = *reinterpret_cast<Uint*>(&value);
   // The input value is positive. Negative values are already handled.
   int norm_exponent =
       (uint_value & FPTypeInfo<T>::kExpMask) >> FPTypeInfo<T>::kSigSize;
@@ -760,7 +760,7 @@ inline T RecipSqrt7(T value) {
                       << (FPTypeInfo<T>::kSigSize - 7);
   Uint new_exponent = (3 * FPTypeInfo<T>::kExpBias - 1 - norm_exponent) / 2;
   Uint new_value = (new_exponent << FPTypeInfo<T>::kSigSize) | new_mantissa;
-  T new_fp_value = *reinterpret_cast<T *>(&new_value);
+  T new_fp_value = *reinterpret_cast<T*>(&new_value);
   return new_fp_value;
 }
 
@@ -804,9 +804,9 @@ inline std::tuple<T, uint32_t> RecipSqrt7Helper(T value) {
 }
 
 // Approximation of reciprocal square root to 7 bits mantissa.
-void Vfrsqrt7v(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfrsqrt7v(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 4:
@@ -834,7 +834,7 @@ template <typename T>
 inline T Recip7(T value, FPRoundingMode rm) {
   using Uint = typename FPTypeInfo<T>::UIntType;
   using Int = typename FPTypeInfo<T>::IntType;
-  Uint uint_value = *reinterpret_cast<Uint *>(&value);
+  Uint uint_value = *reinterpret_cast<Uint*>(&value);
   Int norm_exponent =
       (uint_value & FPTypeInfo<T>::kExpMask) >> FPTypeInfo<T>::kSigSize;
   Uint norm_mantissa = uint_value & FPTypeInfo<T>::kSigMask;
@@ -888,7 +888,7 @@ inline T Recip7(T value, FPRoundingMode rm) {
     new_mantissa &= 0b111'1111;
   }
   Uint new_value = (new_exponent << FPTypeInfo<T>::kSigSize) | new_mantissa;
-  T new_fp_value = *reinterpret_cast<T *>(&new_value);
+  T new_fp_value = *reinterpret_cast<T*>(&new_value);
   return value < 0.0 ? -new_fp_value : new_fp_value;
 }
 
@@ -916,9 +916,9 @@ inline T Recip7Helper(T value, FPRoundingMode rm) {
 }
 
 // Approximate reciprocal to 7 bits of mantissa.
-void Vfrec7v(const Instruction *inst) {
-  auto *rv_fp = static_cast<RiscVState *>(inst->state())->rv_fp();
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfrec7v(const Instruction* inst) {
+  auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface());
   auto rm = rv_fp->GetRoundingMode();
@@ -939,8 +939,8 @@ void Vfrec7v(const Instruction *inst) {
 }
 
 // Classify floating point value.
-void Vfclassv(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vfclassv(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 4:

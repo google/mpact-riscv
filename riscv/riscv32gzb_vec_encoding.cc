@@ -37,7 +37,7 @@ namespace mpact::sim::riscv::isa32gvzb {
 
 using ::mpact::sim::generic::operator*;  // NOLINT: clang-tidy false positive.
 
-RiscV32GZBVecEncoding::RiscV32GZBVecEncoding(RiscVState *state)
+RiscV32GZBVecEncoding::RiscV32GZBVecEncoding(RiscVState* state)
     : state_(state),
       inst_word_(0),
       opcode_(OpcodeEnum::kNone),
@@ -114,7 +114,7 @@ void RiscV32GZBVecEncoding::ParseInstruction(uint32_t inst_word) {
   format_ = format;
 }
 
-ResourceOperandInterface *RiscV32GZBVecEncoding::GetComplexResourceOperand(
+ResourceOperandInterface* RiscV32GZBVecEncoding::GetComplexResourceOperand(
     SlotEnum, int, OpcodeEnum, ComplexResourceEnum resource, int begin,
     int end) {
   int index = static_cast<int>(resource);
@@ -126,10 +126,10 @@ ResourceOperandInterface *RiscV32GZBVecEncoding::GetComplexResourceOperand(
   return (iter->second)(begin, end);
 }
 
-ResourceOperandInterface *RiscV32GZBVecEncoding::GetSimpleResourceOperand(
-    SlotEnum, int, OpcodeEnum, SimpleResourceVector &resource_vec, int end) {
+ResourceOperandInterface* RiscV32GZBVecEncoding::GetSimpleResourceOperand(
+    SlotEnum, int, OpcodeEnum, SimpleResourceVector& resource_vec, int end) {
   if (resource_vec.empty()) return nullptr;
-  auto *resource_set = resource_pool_->CreateResourceSet();
+  auto* resource_set = resource_pool_->CreateResourceSet();
   for (auto resource_enum : resource_vec) {
     int index = static_cast<int>(resource_enum);
     auto iter = simple_resource_getters_.find(index);
@@ -137,19 +137,19 @@ ResourceOperandInterface *RiscV32GZBVecEncoding::GetSimpleResourceOperand(
       LOG(WARNING) << "No getter for simple resource " << index;
       continue;
     }
-    auto *resource = (iter->second)();
+    auto* resource = (iter->second)();
     auto status = resource_set->AddResource(resource);
     if (!status.ok()) {
       LOG(ERROR) << "Unable to add resource to resource set ("
                  << static_cast<int>(resource_enum) << ")";
     }
   }
-  auto *op = new generic::SimpleResourceOperand(resource_set, end,
+  auto* op = new generic::SimpleResourceOperand(resource_set, end,
                                                 resource_delay_line_);
   return op;
 }
 
-DestinationOperandInterface *RiscV32GZBVecEncoding::GetDestination(
+DestinationOperandInterface* RiscV32GZBVecEncoding::GetDestination(
     SlotEnum, int, OpcodeEnum opcode, DestOpEnum dest_op, int dest_no,
     int latency) {
   int index = static_cast<int>(dest_op);
@@ -163,7 +163,7 @@ DestinationOperandInterface *RiscV32GZBVecEncoding::GetDestination(
   return (iter->second)(latency);
 }
 
-SourceOperandInterface *RiscV32GZBVecEncoding::GetSource(SlotEnum, int,
+SourceOperandInterface* RiscV32GZBVecEncoding::GetSource(SlotEnum, int,
                                                          OpcodeEnum opcode,
                                                          SourceOpEnum source_op,
                                                          int source_no) {

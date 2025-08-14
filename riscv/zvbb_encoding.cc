@@ -32,7 +32,7 @@ namespace mpact::sim::riscv::zvbb {
 
 using ::mpact::sim::generic::operator*;  // NOLINT: clang-tidy false positive.
 
-ZVBBEncoding::ZVBBEncoding(RiscVState *state)
+ZVBBEncoding::ZVBBEncoding(RiscVState* state)
     : state_(state),
       inst_word_(0),
       opcode_(OpcodeEnum::kNone),
@@ -85,18 +85,18 @@ void ZVBBEncoding::ParseInstruction(uint32_t inst_word) {
   format_ = format;
 }
 
-ResourceOperandInterface *ZVBBEncoding::GetComplexResourceOperand(
+ResourceOperandInterface* ZVBBEncoding::GetComplexResourceOperand(
     SlotEnum, int, OpcodeEnum, ComplexResourceEnum resource, int begin,
     int end) {
   return nullptr;
 }
 
-ResourceOperandInterface *ZVBBEncoding::GetSimpleResourceOperand(
-    SlotEnum, int, OpcodeEnum, SimpleResourceVector &resource_vec, int end) {
+ResourceOperandInterface* ZVBBEncoding::GetSimpleResourceOperand(
+    SlotEnum, int, OpcodeEnum, SimpleResourceVector& resource_vec, int end) {
   return nullptr;
 }
 
-DestinationOperandInterface *ZVBBEncoding::GetDestination(SlotEnum, int,
+DestinationOperandInterface* ZVBBEncoding::GetDestination(SlotEnum, int,
                                                           OpcodeEnum opcode,
                                                           DestOpEnum dest_op,
                                                           int dest_no,
@@ -112,7 +112,7 @@ DestinationOperandInterface *ZVBBEncoding::GetDestination(SlotEnum, int,
   return (iter->second)(latency);
 }
 
-SourceOperandInterface *ZVBBEncoding::GetSource(SlotEnum, int,
+SourceOperandInterface* ZVBBEncoding::GetSource(SlotEnum, int,
                                                 OpcodeEnum opcode,
                                                 SourceOpEnum source_op,
                                                 int source_no) {

@@ -35,10 +35,10 @@ namespace riscv {
 using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 
 template <typename Enum, typename Extractors, typename IntegerRegister>
-void AddRiscVZfhSourceScalarGetters(SourceOpGetterMap &getter_map,
-                                    RiscVEncodingCommon *common) {
+void AddRiscVZfhSourceScalarGetters(SourceOpGetterMap& getter_map,
+                                    RiscVEncodingCommon* common) {
   // Source operand getters.
-  Insert(getter_map, *Enum::kRs1, [common]() -> SourceOperandInterface * {
+  Insert(getter_map, *Enum::kRs1, [common]() -> SourceOperandInterface* {
     int num = Extractors::Inst32Format::ExtractRs1(common->inst_word());
     if (num == 0) return new generic::IntLiteralOperand<0>({1});
     return GetRegisterSourceOp<IntegerRegister>(
@@ -46,16 +46,16 @@ void AddRiscVZfhSourceScalarGetters(SourceOpGetterMap &getter_map,
         kXRegisterAliases[num]);
   });
   // I in IImm12 stands for IType instructions.
-  Insert(getter_map, *Enum::kIImm12, [common]() -> SourceOperandInterface * {
+  Insert(getter_map, *Enum::kIImm12, [common]() -> SourceOperandInterface* {
     const auto num = Extractors::IType::ExtractImm12(common->inst_word());
     return new generic::ImmediateOperand<int32_t>(num);
   });
   // S in SImm12 stands for SType instructions.
-  Insert(getter_map, *Enum::kSImm12, [common]() -> SourceOperandInterface * {
+  Insert(getter_map, *Enum::kSImm12, [common]() -> SourceOperandInterface* {
     const auto num = Extractors::SType::ExtractSImm(common->inst_word());
     return new generic::ImmediateOperand<int32_t>(num);
   });
-  Insert(getter_map, *Enum::kRm, [common]() -> SourceOperandInterface * {
+  Insert(getter_map, *Enum::kRm, [common]() -> SourceOperandInterface* {
     const auto num =
         Extractors::Inst32Format::ExtractFunc3(common->inst_word());
     return new generic::ImmediateOperand<uint8_t>(num);
@@ -63,22 +63,22 @@ void AddRiscVZfhSourceScalarGetters(SourceOpGetterMap &getter_map,
 }
 
 template <typename Enum, typename Extractors, typename FloatRegister>
-void AddRiscVZfhSourceFloatGetters(SourceOpGetterMap &getter_map,
-                                   RiscVEncodingCommon *common) {
+void AddRiscVZfhSourceFloatGetters(SourceOpGetterMap& getter_map,
+                                   RiscVEncodingCommon* common) {
   // Source operand getters.
-  Insert(getter_map, *Enum::kFrs1, [common]() -> SourceOperandInterface * {
+  Insert(getter_map, *Enum::kFrs1, [common]() -> SourceOperandInterface* {
     int num = Extractors::Inst32Format::ExtractRs1(common->inst_word());
     return GetRegisterSourceOp<FloatRegister>(
         common->state(), absl::StrCat(RiscVState::kFregPrefix, num),
         kFRegisterAliases[num]);
   });
-  Insert(getter_map, *Enum::kFrs2, [common]() -> SourceOperandInterface * {
+  Insert(getter_map, *Enum::kFrs2, [common]() -> SourceOperandInterface* {
     int num = Extractors::Inst32Format::ExtractRs2(common->inst_word());
     return GetRegisterSourceOp<FloatRegister>(
         common->state(), absl::StrCat(RiscVState::kFregPrefix, num),
         kFRegisterAliases[num]);
   });
-  Insert(getter_map, *Enum::kFrs3, [common]() -> SourceOperandInterface * {
+  Insert(getter_map, *Enum::kFrs3, [common]() -> SourceOperandInterface* {
     int num = Extractors::Inst32Format::ExtractRs3(common->inst_word());
     return GetRegisterSourceOp<FloatRegister>(
         common->state(), absl::StrCat(RiscVState::kFregPrefix, num),
@@ -87,29 +87,29 @@ void AddRiscVZfhSourceFloatGetters(SourceOpGetterMap &getter_map,
 }
 
 template <typename Enum, typename Extractors, typename IntegerRegister>
-void AddRiscVZfhDestScalarGetters(DestOpGetterMap &getter_map,
-                                  RiscVEncodingCommon *common) {
+void AddRiscVZfhDestScalarGetters(DestOpGetterMap& getter_map,
+                                  RiscVEncodingCommon* common) {
   // Destination operand getters.
   Insert(getter_map, *Enum::kRd,
-         [common](int latency) -> DestinationOperandInterface * {
+         [common](int latency) -> DestinationOperandInterface* {
            auto num = Extractors::Inst32Format::ExtractRd(common->inst_word());
            std::string name = absl::StrCat(RiscVState::kXregPrefix, num);
            return mpact::sim::riscv::GetRegisterDestinationOp<IntegerRegister>(
                common->state(), name, latency);
          });
   Insert(getter_map, *Enum::kFflags,
-         [common](int latency) -> DestinationOperandInterface * {
+         [common](int latency) -> DestinationOperandInterface* {
            return GetCSRSetBitsDestinationOp<uint32_t>(common->state(),
                                                        "fflags", latency, "");
          });
 }
 
 template <typename Enum, typename Extractors, typename FloatRegister>
-void AddRiscVZfhDestFloatGetters(DestOpGetterMap &getter_map,
-                                 RiscVEncodingCommon *common) {
+void AddRiscVZfhDestFloatGetters(DestOpGetterMap& getter_map,
+                                 RiscVEncodingCommon* common) {
   // Destination operand getters.
   Insert(getter_map, *Enum::kFrd,
-         [common](int latency) -> DestinationOperandInterface * {
+         [common](int latency) -> DestinationOperandInterface* {
            auto num = Extractors::Inst32Format::ExtractRd(common->inst_word());
            std::string name = absl::StrCat(RiscVState::kFregPrefix, num);
            return mpact::sim::riscv::GetRegisterDestinationOp<FloatRegister>(
@@ -123,8 +123,8 @@ void AddRiscVZfhDestFloatGetters(DestOpGetterMap &getter_map,
 // extraction functions, and the IntRegister and FpRegister types that are used
 // to construct the register operand.
 template <typename Enum, typename Extractors>
-void AddRiscVZfhSimpleResourceGetters(SimpleResourceGetterMap &getter_map,
-                                      RiscVEncodingCommon *common) {
+void AddRiscVZfhSimpleResourceGetters(SimpleResourceGetterMap& getter_map,
+                                      RiscVEncodingCommon* common) {
   // TODO(julianmb): Add resource getters when appropriate.
 }
 

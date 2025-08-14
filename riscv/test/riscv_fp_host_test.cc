@@ -26,13 +26,13 @@ class RiscVFPHostTest : public testing::Test {
     delete instruction_;
   }
 
-  HostFloatingPointInterface *host_fp_interface_;
-  Instruction *instruction_;
+  HostFloatingPointInterface* host_fp_interface_;
+  Instruction* instruction_;
 };
 
 static float sum = 0.0;
 
-static void simple_add(const Instruction *inst) { sum += 1.0; }
+static void simple_add(const Instruction* inst) { sum += 1.0; }
 
 TEST_F(RiscVFPHostTest, SetGetCsr) {
   // Run through all the different values of the csr status bits.

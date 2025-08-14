@@ -34,8 +34,8 @@ namespace mpact::sim::riscv {
 using ::mpact::sim::util::MemoryUseProfiler;
 
 RiscVInstrumentationControl::RiscVInstrumentationControl(
-    DebugCommandShell *shell, RiscVTop *riscv_top,
-    MemoryUseProfiler *mem_profiler)
+    DebugCommandShell* shell, RiscVTop* riscv_top,
+    MemoryUseProfiler* mem_profiler)
     : shell_(shell),
       top_(riscv_top),
       mem_profiler_(mem_profiler),
@@ -44,8 +44,8 @@ RiscVInstrumentationControl::RiscVInstrumentationControl(
 }
 
 bool RiscVInstrumentationControl::PerformShellCommand(
-    absl::string_view input, const DebugCommandShell::CoreAccess &core_access,
-    std::string &output) {
+    absl::string_view input, const DebugCommandShell::CoreAccess& core_access,
+    std::string& output) {
   std::string cmd;
   std::string what;
   std::string where;
@@ -116,7 +116,7 @@ bool RiscVInstrumentationControl::PerformShellCommand(
       return true;
     }
     // Let's see if it is a symbol.
-    auto *loader = core_access.loader_getter();
+    auto* loader = core_access.loader_getter();
     if (loader == nullptr) {
       output = "Error: cannot perform symbol lookup";
       return true;

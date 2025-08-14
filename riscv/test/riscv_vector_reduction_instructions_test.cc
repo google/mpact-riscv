@@ -16,17 +16,17 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <limits>
-#include <string>
+#include <functional>
 #include <vector>
 
 #include "absl/random/random.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "riscv/riscv_register.h"
-#include "riscv/riscv_vector_state.h"
 #include "riscv/test/riscv_vector_instructions_test_base.h"
 
 namespace {
@@ -64,7 +64,7 @@ class RiscVVectorReductionInstructionsTest
     : public RiscVVectorInstructionsTestBase {
  public:
   template <typename Vd, typename Vs2>
-  void ReductionOpTestHelper(absl::string_view name, int sew, Instruction *inst,
+  void ReductionOpTestHelper(absl::string_view name, int sew, Instruction* inst,
                              std::function<Vd(Vd, Vs2)> operation) {
     int byte_sew = sew / 8;
     if (byte_sew != sizeof(Vd) && byte_sew != sizeof(Vs2)) {

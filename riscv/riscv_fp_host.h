@@ -32,7 +32,7 @@ class HostFloatingPointInterface {
   virtual void SetRiscVFcsr(uint32_t riscv_fcsr) = 0;
 };
 
-HostFloatingPointInterface *GetHostFloatingPointInterface();
+HostFloatingPointInterface* GetHostFloatingPointInterface();
 
 // This class is used to set the native fp status and rounding mode to the
 // current simulated status and rounding mode, and then copying the native
@@ -40,13 +40,13 @@ HostFloatingPointInterface *GetHostFloatingPointInterface();
 class ScopedFPStatus {
  public:
   ScopedFPStatus() = delete;
-  explicit ScopedFPStatus(HostFloatingPointInterface *fp_interface);
-  ScopedFPStatus(HostFloatingPointInterface *fp_interface, uint32_t rm);
-  ScopedFPStatus(HostFloatingPointInterface *fp_interface, FPRoundingMode rm);
+  explicit ScopedFPStatus(HostFloatingPointInterface* fp_interface);
+  ScopedFPStatus(HostFloatingPointInterface* fp_interface, uint32_t rm);
+  ScopedFPStatus(HostFloatingPointInterface* fp_interface, FPRoundingMode rm);
   ~ScopedFPStatus();
 
  private:
-  HostFloatingPointInterface *fp_interface_ = nullptr;
+  HostFloatingPointInterface* fp_interface_ = nullptr;
   uint32_t host_rm_ = 0;
   uint64_t cpu_fp_status_ = 0;
 };
@@ -56,9 +56,9 @@ class ScopedFPStatus {
 class ScopedFPRoundingMode {
  public:
   ScopedFPRoundingMode();
-  explicit ScopedFPRoundingMode(HostFloatingPointInterface *fp_interface);
-  ScopedFPRoundingMode(HostFloatingPointInterface *fp_interface, uint32_t rm);
-  ScopedFPRoundingMode(HostFloatingPointInterface *fp_interface,
+  explicit ScopedFPRoundingMode(HostFloatingPointInterface* fp_interface);
+  ScopedFPRoundingMode(HostFloatingPointInterface* fp_interface, uint32_t rm);
+  ScopedFPRoundingMode(HostFloatingPointInterface* fp_interface,
                        FPRoundingMode rm);
   ~ScopedFPRoundingMode();
 

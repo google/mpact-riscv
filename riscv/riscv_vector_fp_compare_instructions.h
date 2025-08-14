@@ -31,12 +31,12 @@ using Instruction = ::mpact::sim::generic::Instruction;
 // Vmfge only take the scalar register), source operand 2 is the vector mask
 // register. Destination operand 0 is a vector register treated as the
 // destination mask register.
-void Vmfeq(const Instruction *inst);
-void Vmfle(const Instruction *inst);
-void Vmflt(const Instruction *inst);
-void Vmfne(const Instruction *inst);
-void Vmfgt(const Instruction *inst);
-void Vmfge(const Instruction *inst);
+void Vmfeq(const Instruction* inst);
+void Vmfle(const Instruction* inst);
+void Vmflt(const Instruction* inst);
+void Vmfne(const Instruction* inst);
+void Vmfgt(const Instruction* inst);
+void Vmfge(const Instruction* inst);
 
 }  // namespace riscv
 }  // namespace sim

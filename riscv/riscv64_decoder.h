@@ -41,7 +41,7 @@ using ::mpact::sim::generic::operator*;  // NOLINT: clang-tidy false positive.
 class RV64IsaFactory : public isa64::RiscV64GInstructionSetFactory {
  public:
   std::unique_ptr<isa64::Riscv64gSlot> CreateRiscv64gSlot(
-      ArchState *state) override {
+      ArchState* state) override {
     return std::make_unique<isa64::Riscv64gSlot>(state);
   }
 };
@@ -53,8 +53,8 @@ class RiscV64Decoder : public generic::DecoderInterface {
   using SlotEnum = isa64::SlotEnum;
   using OpcodeEnum = isa64::OpcodeEnum;
 
-  RiscV64Decoder(RiscVState *state, util::MemoryInterface *memory);
-  RiscV64Decoder(RiscVState *state, util::MemoryInterface *memory,
+  RiscV64Decoder(RiscVState* state, util::MemoryInterface* memory);
+  RiscV64Decoder(RiscVState* state, util::MemoryInterface* memory,
                  bool use_abi_names);
   RiscV64Decoder() = delete;
   ~RiscV64Decoder() override;
@@ -62,25 +62,25 @@ class RiscV64Decoder : public generic::DecoderInterface {
   // This will always return a valid instruction that can be executed. In the
   // case of a decode error, the semantic function in the instruction object
   // instance will raise an internal simulator error when executed.
-  generic::Instruction *DecodeInstruction(uint64_t address) override;
+  generic::Instruction* DecodeInstruction(uint64_t address) override;
   // Return the number of opcodes supported by this decoder.
   int GetNumOpcodes() const override { return *OpcodeEnum::kPastMaxValue; }
   // Return the name of the opcode at the given index.
-  const char *GetOpcodeName(int index) const override {
+  const char* GetOpcodeName(int index) const override {
     return isa64::kOpcodeNames[index];
   }
 
   // Getter.
-  isa64::RiscV64GEncoding *riscv_encoding() const { return riscv_encoding_; }
+  isa64::RiscV64GEncoding* riscv_encoding() const { return riscv_encoding_; }
 
  private:
-  RiscVState *state_;
-  util::MemoryInterface *memory_;
+  RiscVState* state_;
+  util::MemoryInterface* memory_;
   std::unique_ptr<generic::ProgramError> decode_error_;
-  generic::DataBuffer *inst_db_;
-  isa64::RiscV64GEncoding *riscv_encoding_;
-  RV64IsaFactory *riscv_isa_factory_;
-  isa64::RiscV64GInstructionSet *riscv_isa_;
+  generic::DataBuffer* inst_db_;
+  isa64::RiscV64GEncoding* riscv_encoding_;
+  RV64IsaFactory* riscv_isa_factory_;
+  isa64::RiscV64GInstructionSet* riscv_isa_;
 };
 
 }  // namespace riscv

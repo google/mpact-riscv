@@ -16,7 +16,6 @@
 
 #include <cstdint>
 
-#include "absl/log/log.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "riscv/riscv_csr.h"
 #include "riscv/riscv_misa.h"
@@ -42,17 +41,17 @@ static inline uint32_t CompressMStatus64(uint64_t value) {
 
 // Constructors.
 
-RiscVMStatus::RiscVMStatus(uint32_t initial_value, ArchState *state,
-                           RiscVMIsa *misa)
+RiscVMStatus::RiscVMStatus(uint32_t initial_value, ArchState* state,
+                           RiscVMIsa* misa)
     : RiscVMStatus(StretchMStatus32(initial_value), state, RiscVXlen::RV32,
                    misa) {}
 
-RiscVMStatus::RiscVMStatus(uint64_t initial_value, ArchState *state,
-                           RiscVMIsa *misa)
+RiscVMStatus::RiscVMStatus(uint64_t initial_value, ArchState* state,
+                           RiscVMIsa* misa)
     : RiscVMStatus(initial_value, state, RiscVXlen::RV64, misa) {}
 
-RiscVMStatus::RiscVMStatus(uint64_t initial_value, ArchState *state,
-                           RiscVXlen xlen, RiscVMIsa *misa)
+RiscVMStatus::RiscVMStatus(uint64_t initial_value, ArchState* state,
+                           RiscVXlen xlen, RiscVMIsa* misa)
     : RiscVSimpleCsr<uint64_t>("mstatus", RiscVCsrEnum::kMStatus, initial_value,
                                kReadMask, kWriteMask, state),
       misa_(misa) {
@@ -123,7 +122,7 @@ void RiscVMStatus::set_mpp(uint32_t value) {
 
 // RiscVSStatus methods.
 
-RiscVSStatus::RiscVSStatus(RiscVMStatus *mstatus, RiscVState *state)
+RiscVSStatus::RiscVSStatus(RiscVMStatus* mstatus, RiscVState* state)
     : RiscVSimpleCsr<uint64_t>("sstatus", RiscVCsrEnum::kSStatus, kReadMask,
                                kWriteMask, state),
       mstatus_(mstatus) {
@@ -165,7 +164,7 @@ uint64_t RiscVSStatus::GetUint64() { return mstatus_->GetUint64(); }
 
 // RiscVUStatus methods.
 
-RiscVUStatus::RiscVUStatus(RiscVMStatus *mstatus, RiscVState *state)
+RiscVUStatus::RiscVUStatus(RiscVMStatus* mstatus, RiscVState* state)
     : RiscVSimpleCsr<uint64_t>("ustatus", RiscVCsrEnum::kUStatus, kReadMask,
                                kWriteMask, state),
       mstatus_(mstatus) {

@@ -24,19 +24,19 @@ namespace riscv {
 using ::mpact::sim::generic::Instruction;
 
 namespace RV32 {
-void RiscVZiCsrrw(Instruction *instruction);
-void RiscVZiCsrrs(Instruction *instruction);
-void RiscVZiCsrrc(Instruction *instruction);
-void RiscVZiCsrrwNr(Instruction *instruction);
-void RiscVZiCsrrNw(Instruction *instruction);
+void RiscVZiCsrrw(Instruction* instruction);
+void RiscVZiCsrrs(Instruction* instruction);
+void RiscVZiCsrrc(Instruction* instruction);
+void RiscVZiCsrrwNr(Instruction* instruction);
+void RiscVZiCsrrNw(Instruction* instruction);
 }  // namespace RV32
 
 namespace RV64 {
-void RiscVZiCsrrw(Instruction *instruction);
-void RiscVZiCsrrs(Instruction *instruction);
-void RiscVZiCsrrc(Instruction *instruction);
-void RiscVZiCsrrwNr(Instruction *instruction);
-void RiscVZiCsrrNw(Instruction *instruction);
+void RiscVZiCsrrw(Instruction* instruction);
+void RiscVZiCsrrs(Instruction* instruction);
+void RiscVZiCsrrc(Instruction* instruction);
+void RiscVZiCsrrwNr(Instruction* instruction);
+void RiscVZiCsrrNw(Instruction* instruction);
 }  // namespace RV64
 
 }  // namespace riscv

@@ -160,7 +160,7 @@ constexpr char kStackEndSymbolName[] = "__stack_end";
 constexpr char kStackSizeSymbolName[] = "__stack_size";
 
 // Static pointer to the top instance. Used by the control-C handler.
-static mpact::sim::riscv::RiscVTop *top = nullptr;
+static mpact::sim::riscv::RiscVTop* top = nullptr;
 
 // Control-c handler to interrupt any running simulation.
 static void sim_sigint_handler(int arg) {
@@ -175,8 +175,8 @@ static void sim_sigint_handler(int arg) {
 using ::mpact::sim::riscv::RiscVTop;
 
 // Helper function to get the magic semihosting addresses from the loader.
-static bool GetMagicAddresses(mpact::sim::util::ElfProgramLoader *loader,
-                              RiscV32HtifSemiHost::SemiHostAddresses *magic) {
+static bool GetMagicAddresses(mpact::sim::util::ElfProgramLoader* loader,
+                              RiscV32HtifSemiHost::SemiHostAddresses* magic) {
   auto result = loader->GetSymbol("tohost_ready");
   if (!result.ok()) return false;
   magic->tohost_ready = result.value().first;
@@ -200,8 +200,8 @@ static bool GetMagicAddresses(mpact::sim::util::ElfProgramLoader *loader,
 // debug command shell.
 static bool PrintRegisters(
     absl::string_view input,
-    const mpact::sim::riscv::DebugCommandShell::CoreAccess &core_access,
-    std::string &output) {
+    const mpact::sim::riscv::DebugCommandShell::CoreAccess& core_access,
+    std::string& output) {
   static const LazyRE2 reg_info_re{R"(\s*xyzreg\s+info\s*)"};
   if (!RE2::FullMatch(input, *reg_info_re)) {
     return false;
@@ -222,7 +222,7 @@ static bool PrintRegisters(
   return true;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   int return_code = 0;
   auto arg_vec = absl::ParseCommandLine(argc, argv);
 
@@ -244,9 +244,9 @@ int main(int argc, char **argv) {
       full_file_name.substr(full_file_name.find_last_of('/') + 1);
   std::string file_basename = file_name.substr(0, file_name.find_first_of('.'));
 
-  auto *memory = new mpact::sim::util::FlatDemandMemory();
-  mpact::sim::util::MemoryWatcher *memory_watcher = nullptr;
-  mpact::sim::util::AtomicMemory *atomic_memory = nullptr;
+  auto* memory = new mpact::sim::util::FlatDemandMemory();
+  mpact::sim::util::MemoryWatcher* memory_watcher = nullptr;
+  mpact::sim::util::AtomicMemory* atomic_memory = nullptr;
   if (absl::GetFlag(FLAGS_exit_on_tohost)) {
     memory_watcher = new mpact::sim::util::MemoryWatcher(memory);
     atomic_memory = new mpact::sim::util::AtomicMemory(memory_watcher);
@@ -262,7 +262,7 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  mpact::sim::util::MemoryInterface *memory_interface = memory;
+  mpact::sim::util::MemoryInterface* memory_interface = memory;
   if (memory_watcher != nullptr) {
     memory_interface = memory_watcher;
   }
@@ -273,7 +273,7 @@ int main(int argc, char **argv) {
   RiscVFPState rv_fp_state(rv_state.csr_set(), &rv_state);
   rv_state.set_rv_fp(&rv_fp_state);
   // Create the instruction decoder.
-  mpact::sim::generic::DecoderInterface *rv_decoder = nullptr;
+  mpact::sim::generic::DecoderInterface* rv_decoder = nullptr;
   if (absl::GetFlag(FLAGS_bitmanip)) {
     rv_decoder = new RiscV32GBitmanipDecoder(&rv_state, memory);
   } else {
@@ -301,7 +301,7 @@ int main(int argc, char **argv) {
     ComponentValueEntry icache_value;
     icache_value.set_name("icache");
     icache_value.set_string_value(absl::GetFlag(FLAGS_icache));
-    auto *cfg = riscv_top.GetConfig("icache");
+    auto* cfg = riscv_top.GetConfig("icache");
     auto status = cfg->Import(&icache_value);
     if (!status.ok()) return -1;
   }
@@ -310,17 +310,17 @@ int main(int argc, char **argv) {
     ComponentValueEntry dcache_value;
     dcache_value.set_name("dcache");
     dcache_value.set_string_value(absl::GetFlag(FLAGS_dcache));
-    auto *cfg = riscv_top.GetConfig("dcache");
+    auto* cfg = riscv_top.GetConfig("dcache");
     auto status = cfg->Import(&dcache_value);
     if (!status.ok()) return -1;
     // Hook the cache into the memory port.
-    auto *dcache = riscv_top.dcache();
+    auto* dcache = riscv_top.dcache();
     dcache->set_memory(riscv_top.state()->memory());
     riscv_top.state()->set_memory(dcache);
   }
 
   if (absl::GetFlag(FLAGS_exit_on_ecall)) {
-    rv_state.set_on_ecall([&riscv_top](const Instruction *inst) -> bool {
+    rv_state.set_on_ecall([&riscv_top](const Instruction* inst) -> bool {
       riscv_top.RequestHalt(RiscVTop::HaltReason::kProgramDone, inst);
       return true;
     });
@@ -334,7 +334,7 @@ int main(int argc, char **argv) {
           [&riscv_top, tohost_addr, memory, &rv_state, &return_code, quiet](
               uint64_t, int) -> void {
             riscv_top.RequestHalt(RiscVTop::HaltReason::kProgramDone, nullptr);
-            auto *db = rv_state.db_factory()->Allocate<uint32_t>(1);
+            auto* db = rv_state.db_factory()->Allocate<uint32_t>(1);
             memory->Load(tohost_addr, db, nullptr, nullptr);
             auto word = db->Get<uint32_t>(0);
             db->DecRef();
@@ -413,7 +413,7 @@ int main(int argc, char **argv) {
     }
   }
 
-  RiscV32HtifSemiHost *htif_semihost = nullptr;
+  RiscV32HtifSemiHost* htif_semihost = nullptr;
   if (absl::GetFlag(FLAGS_semihost_htif)) {
     // Add htif semihosting.
     RiscV32HtifSemiHost::SemiHostAddresses magic_addresses;
@@ -435,14 +435,14 @@ int main(int argc, char **argv) {
     }
   }
 
-  RiscVArmSemihost *arm_semihost = nullptr;
+  RiscVArmSemihost* arm_semihost = nullptr;
   if (absl::GetFlag(FLAGS_semihost_arm)) {
     // Add ARM semihosting.
     arm_semihost = new RiscVArmSemihost(RiscVArmSemihost::BitWidth::kWord32,
                                         memory, memory);
     arm_semihost->SetCmdLine(arg_vec);
     riscv_top.state()->AddEbreakHandler(
-        [arm_semihost](const Instruction *inst) -> bool {
+        [arm_semihost](const Instruction* inst) -> bool {
           if (arm_semihost->IsSemihostingCall(inst)) {
             arm_semihost->OnEBreak(inst);
             return true;

@@ -25,10 +25,10 @@ namespace mpact::sim::riscv {
 using ::mpact::sim::generic::Instruction;
 
 // These instructions take no source or destination operands.
-void RiscVNtlP1(const Instruction *);
-void RiscVNtlPall(const Instruction *);
-void RiscVNtlS1(const Instruction *);
-void RiscVNtlAll(const Instruction *);
+void RiscVNtlP1(const Instruction*);
+void RiscVNtlPall(const Instruction*);
+void RiscVNtlS1(const Instruction*);
+void RiscVNtlAll(const Instruction*);
 
 }  // namespace mpact::sim::riscv
 

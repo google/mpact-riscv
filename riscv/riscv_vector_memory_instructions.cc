@@ -36,9 +36,9 @@ using generic::GetInstructionSource;
 // writes the loaded data into the registers.
 template <typename T>
 absl::Status WriteBackLoadData(int vector_register_byte_length,
-                               const Instruction *inst) {
+                               const Instruction* inst) {
   // Get values from context.
-  auto *context = static_cast<VectorLoadContext *>(inst->context());
+  auto* context = static_cast<VectorLoadContext*>(inst->context());
   auto masks = context->mask_db->Get<bool>();
   auto values = context->value_db->Get<T>();
   int vector_start = context->vstart;
@@ -49,8 +49,8 @@ absl::Status WriteBackLoadData(int vector_register_byte_length,
   int max_regs =
       (vector_length + elements_per_vector - 1) / elements_per_vector;
   // Verify that the dest_op has enough registers. Else signal error.
-  auto *dest_op =
-      static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+  auto* dest_op =
+      static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
   if (dest_op->size() < max_regs) {
     // TODO: signal error.
     return absl::InternalError("Not enough registers in destination operand");
@@ -70,7 +70,7 @@ absl::Status WriteBackLoadData(int vector_register_byte_length,
   // Iterate over the number of registers to write.
   for (int reg = start_reg; (reg < max_regs) && (value_count > 0); reg++) {
     // Allocate data buffer for the new register data.
-    auto *dest_db = dest_op->CopyDataBuffer(reg);
+    auto* dest_db = dest_op->CopyDataBuffer(reg);
     auto dest_span = dest_db->Get<T>();
     // Write data into register subject to masking.
     int count = std::min(elements_per_vector - item_index, value_count);
@@ -91,11 +91,11 @@ absl::Status WriteBackLoadData(int vector_register_byte_length,
 // writes the loaded data into the registers.
 template <typename T>
 absl::Status WriteBackSegmentLoadData(int vector_register_byte_length,
-                                      const Instruction *inst) {
+                                      const Instruction* inst) {
   // The number of fields in each segment.
   int num_fields = GetInstructionSource<uint32_t>(inst, 0) + 1;
   // Get values from context.
-  auto *context = static_cast<VectorLoadContext *>(inst->context());
+  auto* context = static_cast<VectorLoadContext*>(inst->context());
   auto masks = context->mask_db->Get<bool>();
   auto values = context->value_db->Get<T>();
   int start_segment = context->vstart;
@@ -111,8 +111,8 @@ absl::Status WriteBackSegmentLoadData(int vector_register_byte_length,
   // Total number of registers written.
   int total_regs = num_fields * num_regs;
   // Verify that the dest_op has enough registers. Else signal error.
-  auto *dest_op =
-      static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+  auto* dest_op =
+      static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
   if (dest_op->size() < total_regs) {
     return absl::InternalError("Not enough registers in destination operand");
   }
@@ -131,7 +131,7 @@ absl::Status WriteBackSegmentLoadData(int vector_register_byte_length,
     int offset = start_segment % max_elements_per_vector;
     int remaining_data = num_segments;
     for (int reg = start_reg; reg < start_reg + num_regs; reg++) {
-      auto *dest_db = dest_op->CopyDataBuffer(reg);
+      auto* dest_db = dest_op->CopyDataBuffer(reg);
       auto span = dest_db->Get<T>();
       int max_entry =
           std::min(remaining_data + offset, max_elements_per_vector);
@@ -152,9 +152,9 @@ absl::Status WriteBackSegmentLoadData(int vector_register_byte_length,
 // This models the vsetvl set of instructions. The immediate versus register
 // versions are all modeled by the same function. Flags are bound during decode
 // to the two first parameters to specify if rd or rs1 are x0.
-void Vsetvl(bool rd_zero, bool rs1_zero, const Instruction *inst) {
-  auto *rv_state = static_cast<RiscVState *>(inst->state());
-  auto *rv_vector = rv_state->rv_vector();
+void Vsetvl(bool rd_zero, bool rs1_zero, const Instruction* inst) {
+  auto* rv_state = static_cast<RiscVState*>(inst->state());
+  auto* rv_vector = rv_state->rv_vector();
   uint32_t vtype = GetInstructionSource<uint32_t>(inst, 1) & 0b1'1'111'111;
   // Get previous vtype.
   uint32_t prev_vtype = rv_vector->vtype();
@@ -195,7 +195,7 @@ void Vsetvl(bool rd_zero, bool rs1_zero, const Instruction *inst) {
   }
   rv_vector->set_vector_length(vl);
   if (!rd_zero) {  // Update register if there is a writable destination.
-    auto *reg = static_cast<generic::RegisterDestinationOperand<uint32_t> *>(
+    auto* reg = static_cast<generic::RegisterDestinationOperand<uint32_t>*>(
                     inst->Destination(0))
                     ->GetRegister();
     if (rv_state->xlen() == RiscVXlen::RV32) {
@@ -213,8 +213,8 @@ void Vsetvl(bool rd_zero, bool rs1_zero, const Instruction *inst) {
 // Source(1): stride size bytes.
 // Source(2): vector mask register, vector constant {1..} if not masked.
 // Destination(0): vector destination register.
-void VlStrided(int element_width, const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void VlStrided(int element_width, const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int start = rv_vector->vstart();
   uint64_t base = GetInstructionSource<uint64_t>(inst, 0);
   int64_t stride = GetInstructionSource<int64_t>(inst, 1);
@@ -231,18 +231,18 @@ void VlStrided(int element_width, const Instruction *inst) {
   int num_elements_loaded = num_elements - start;
 
   // Allocate address data buffer.
-  auto *db_factory = inst->state()->db_factory();
-  auto *address_db = db_factory->Allocate<uint64_t>(num_elements_loaded);
+  auto* db_factory = inst->state()->db_factory();
+  auto* address_db = db_factory->Allocate<uint64_t>(num_elements_loaded);
 
   // Allocate the value data buffer that the loaded data is returned in.
-  auto *value_db = db_factory->Allocate(num_elements_loaded * element_width);
+  auto* value_db = db_factory->Allocate(num_elements_loaded * element_width);
 
   // Get the source mask (stored in a single vector register).
-  auto *src_mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(2));
+  auto* src_mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(2));
   auto src_masks = src_mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
 
   // Allocate a byte mask data buffer for the load.
-  auto *mask_db = db_factory->Allocate<bool>(num_elements_loaded);
+  auto* mask_db = db_factory->Allocate<bool>(num_elements_loaded);
 
   // Get the spans for addresses and masks.
   auto addresses = address_db->Get<uint64_t>();
@@ -259,9 +259,9 @@ void VlStrided(int element_width, const Instruction *inst) {
   }
 
   // Set up the context, and submit the load.
-  auto *context = new VectorLoadContext(value_db, mask_db, element_width, start,
+  auto* context = new VectorLoadContext(value_db, mask_db, element_width, start,
                                         rv_vector->vector_length());
-  auto *rv32_state = static_cast<RiscVState *>(inst->state());
+  auto* rv32_state = static_cast<RiscVState*>(inst->state());
   value_db->set_latency(0);
   rv32_state->LoadMemory(inst, address_db, mask_db, element_width, value_db,
                          inst->child(), context);
@@ -275,20 +275,20 @@ void VlStrided(int element_width, const Instruction *inst) {
 
 // Source(0): base address.
 // Destination(0): vector destination register (for the child instruction).
-void Vlm(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vlm(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   // Compute base address.
   int start = rv_vector->vstart();
   uint64_t base = GetInstructionSource<uint64_t>(inst, 0) + start;
   // Compute the number of bytes to be loaded.
   int num_bytes = rv_vector->vector_register_byte_length() - start;
   // Allocate address data buffer.
-  auto *db_factory = inst->state()->db_factory();
-  auto *address_db = db_factory->Allocate<uint64_t>(num_bytes);
+  auto* db_factory = inst->state()->db_factory();
+  auto* address_db = db_factory->Allocate<uint64_t>(num_bytes);
   // Allocate the value data buffer that the loaded data is returned in.
-  auto *value_db = db_factory->Allocate<uint8_t>(num_bytes);
+  auto* value_db = db_factory->Allocate<uint8_t>(num_bytes);
   // Allocate a byte mask data buffer.
-  auto *mask_db = db_factory->Allocate<bool>(num_bytes);
+  auto* mask_db = db_factory->Allocate<bool>(num_bytes);
   // Get the spans for addresses and masks.
   auto masks = mask_db->Get<bool>();
   auto addresses = address_db->Get<uint64_t>();
@@ -298,10 +298,10 @@ void Vlm(const Instruction *inst) {
     masks[i - start] = true;
   }
   // Set up the context, and submit the load.
-  auto *context =
+  auto* context =
       new VectorLoadContext(value_db, mask_db, sizeof(uint8_t), start,
                             rv_vector->vector_register_byte_length());
-  auto *rv32_state = static_cast<RiscVState *>(inst->state());
+  auto* rv32_state = static_cast<RiscVState*>(inst->state());
   value_db->set_latency(0);
   rv32_state->LoadMemory(inst, address_db, mask_db, sizeof(uint8_t), value_db,
                          inst->child(), context);
@@ -322,13 +322,13 @@ void Vlm(const Instruction *inst) {
 // Source(1) index vector.
 // Source(2) masks.
 // Destination(0): vector destination register (for the child instruction).
-void VlIndexed(int index_width, const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void VlIndexed(int index_width, const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int start = rv_vector->vstart();
   int element_width = rv_vector->selected_element_width();
   int lmul = rv_vector->vector_length_multiplier();
   uint64_t base = GetInstructionSource<uint64_t>(inst, 0);
-  auto *index_op = static_cast<RV32VectorSourceOperand *>(inst->Source(1));
+  auto* index_op = static_cast<RV32VectorSourceOperand*>(inst->Source(1));
   int index_emul = index_width * lmul / element_width;
   // Validate that emul has a legal value.
   if ((index_emul > 64) || (index_emul == 0)) {
@@ -345,19 +345,19 @@ void VlIndexed(int index_width, const Instruction *inst) {
   int num_bytes_loaded = num_elements_loaded * element_width;
 
   // Allocate address data buffer.
-  auto *db_factory = inst->state()->db_factory();
-  auto *address_db = db_factory->Allocate<uint64_t>(num_elements_loaded);
+  auto* db_factory = inst->state()->db_factory();
+  auto* address_db = db_factory->Allocate<uint64_t>(num_elements_loaded);
   auto addresses = address_db->Get<uint64_t>();
 
   // Allocate the value data buffer that the loaded data is returned in.
-  auto *value_db = db_factory->Allocate(num_bytes_loaded);
+  auto* value_db = db_factory->Allocate(num_bytes_loaded);
 
   // Get the source mask (stored in a single vector register).
-  auto *src_mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(2));
+  auto* src_mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(2));
   auto src_masks = src_mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
 
   // Allocate a byte mask data buffer for the load.
-  auto *mask_db = db_factory->Allocate<bool>(num_elements);
+  auto* mask_db = db_factory->Allocate<bool>(num_elements);
   auto masks = mask_db->Get<bool>();
 
   // Convert the bit masks to byte masks and compute the element addresses.
@@ -390,9 +390,9 @@ void VlIndexed(int index_width, const Instruction *inst) {
   }
 
   // Set up context and submit load.
-  auto *context = new VectorLoadContext(value_db, mask_db, element_width, start,
+  auto* context = new VectorLoadContext(value_db, mask_db, element_width, start,
                                         rv_vector->vector_length());
-  auto *rv32_state = static_cast<RiscVState *>(inst->state());
+  auto* rv32_state = static_cast<RiscVState*>(inst->state());
   value_db->set_latency(0);
   rv32_state->LoadMemory(inst, address_db, mask_db, element_width, value_db,
                          inst->child(), context);
@@ -409,17 +409,17 @@ void VlIndexed(int index_width, const Instruction *inst) {
 // Source(0): base address.
 // Destination(0): vector destination register (for the child instruction).
 void VlRegister(int num_regs, int element_width_bytes,
-                const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+                const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   // Get base address.
   uint64_t base = GetInstructionSource<uint64_t>(inst, 0);
   int num_elements =
       rv_vector->vector_register_byte_length() * num_regs / element_width_bytes;
   // Allocate data buffers.
-  auto *db_factory = inst->state()->db_factory();
-  auto *data_db = db_factory->Allocate(num_elements * element_width_bytes);
-  auto *address_db = db_factory->Allocate<uint64_t>(num_elements);
-  auto *mask_db = db_factory->Allocate<bool>(num_elements);
+  auto* db_factory = inst->state()->db_factory();
+  auto* data_db = db_factory->Allocate(num_elements * element_width_bytes);
+  auto* address_db = db_factory->Allocate<uint64_t>(num_elements);
+  auto* mask_db = db_factory->Allocate<bool>(num_elements);
   // Get spans for addresses and masks.
   auto addresses = address_db->Get<uint64_t>();
   auto masks = mask_db->Get<bool>();
@@ -436,9 +436,9 @@ void VlRegister(int num_regs, int element_width_bytes,
   }
 
   // Set up context and submit load.
-  auto *context = new VectorLoadContext(data_db, mask_db, element_width_bytes,
+  auto* context = new VectorLoadContext(data_db, mask_db, element_width_bytes,
                                         0, num_elements);
-  auto *rv32_state = static_cast<RiscVState *>(inst->state());
+  auto* rv32_state = static_cast<RiscVState*>(inst->state());
   data_db->set_latency(0);
   rv32_state->LoadMemory(inst, address_db, mask_db, element_width_bytes,
                          data_db, inst->child(), context);
@@ -458,11 +458,11 @@ void VlRegister(int num_regs, int element_width_bytes,
 // Source(1): mask
 // Source(2): number of fields - 1
 // Destination(0): vector destination register (for the child instruction).
-void VlSegment(int element_width, const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void VlSegment(int element_width, const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int start = rv_vector->vstart();
   uint64_t base = GetInstructionSource<uint64_t>(inst, 0);
-  auto src_mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(1));
+  auto src_mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(1));
   auto src_masks = src_mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
   int num_fields = GetInstructionSource<int32_t>(inst, 2) + 1;
   // Effective vector length multiplier.
@@ -479,10 +479,10 @@ void VlSegment(int element_width, const Instruction *inst) {
   int segment_stride = num_fields * element_width;
   int num_elements = num_fields * num_segments;
   // Set up data buffers.
-  auto *db_factory = inst->state()->db_factory();
-  auto *data_db = db_factory->Allocate(num_elements * element_width);
-  auto *address_db = db_factory->Allocate<uint64_t>(num_elements);
-  auto *mask_db = db_factory->Allocate<bool>(num_elements);
+  auto* db_factory = inst->state()->db_factory();
+  auto* data_db = db_factory->Allocate(num_elements * element_width);
+  auto* address_db = db_factory->Allocate<uint64_t>(num_elements);
+  auto* mask_db = db_factory->Allocate<bool>(num_elements);
   // Get spans for addresses and masks.
   auto addresses = address_db->Get<uint64_t>();
   auto masks = mask_db->Get<bool>();
@@ -497,9 +497,9 @@ void VlSegment(int element_width, const Instruction *inst) {
           base + i * segment_stride + field * element_width;
     }
   }
-  auto *context = new VectorLoadContext(data_db, mask_db, element_width, start,
+  auto* context = new VectorLoadContext(data_db, mask_db, element_width, start,
                                         num_segments);
-  auto *rv32_state = static_cast<RiscVState *>(inst->state());
+  auto* rv32_state = static_cast<RiscVState*>(inst->state());
   data_db->set_latency(0);
   rv32_state->LoadMemory(inst, address_db, mask_db, element_width, data_db,
                          inst->child(), context);
@@ -516,12 +516,12 @@ void VlSegment(int element_width, const Instruction *inst) {
 // Source(2): mask
 // Source(3): number of fields - 1
 // Destination(0): vector destination register (for the child instruction).
-void VlSegmentStrided(int element_width, const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void VlSegmentStrided(int element_width, const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int start = rv_vector->vstart();
   uint64_t base = GetInstructionSource<uint64_t>(inst, 0);
   int64_t segment_stride = GetInstructionSource<int64_t>(inst, 1);
-  auto src_mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(2));
+  auto src_mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(2));
   auto src_masks = src_mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
   int num_fields = GetInstructionSource<int32_t>(inst, 3) + 1;
   // Effective vector length multiplier.
@@ -537,10 +537,10 @@ void VlSegmentStrided(int element_width, const Instruction *inst) {
   int num_segments = rv_vector->vector_length();
   int num_elements = num_fields * num_segments;
   // Set up data buffers.
-  auto *db_factory = inst->state()->db_factory();
-  auto *data_db = db_factory->Allocate(num_elements * element_width);
-  auto *address_db = db_factory->Allocate<uint64_t>(num_elements);
-  auto *mask_db = db_factory->Allocate<bool>(num_elements);
+  auto* db_factory = inst->state()->db_factory();
+  auto* data_db = db_factory->Allocate(num_elements * element_width);
+  auto* address_db = db_factory->Allocate<uint64_t>(num_elements);
+  auto* mask_db = db_factory->Allocate<bool>(num_elements);
   // Get the spans for addresses and masks.
   auto addresses = address_db->Get<uint64_t>();
   auto masks = mask_db->Get<bool>();
@@ -555,9 +555,9 @@ void VlSegmentStrided(int element_width, const Instruction *inst) {
     }
   }
   // Allocate the context and submit the load.
-  auto *context = new VectorLoadContext(data_db, mask_db, element_width, start,
+  auto* context = new VectorLoadContext(data_db, mask_db, element_width, start,
                                         num_segments);
-  auto *rv32_state = static_cast<RiscVState *>(inst->state());
+  auto* rv32_state = static_cast<RiscVState*>(inst->state());
   data_db->set_latency(0);
   rv32_state->LoadMemory(inst, address_db, mask_db, element_width, data_db,
                          inst->child(), context);
@@ -575,12 +575,12 @@ void VlSegmentStrided(int element_width, const Instruction *inst) {
 // Source(2): mask
 // Source(3): number of fields - 1
 // Destination(0): vector destination register (for the child instruction).
-void VlSegmentIndexed(int index_width, const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void VlSegmentIndexed(int index_width, const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int start = rv_vector->vstart();
   uint64_t base = GetInstructionSource<uint64_t>(inst, 0);
-  auto *index_op = static_cast<RV32VectorSourceOperand *>(inst->Source(1));
-  auto src_mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(2));
+  auto* index_op = static_cast<RV32VectorSourceOperand*>(inst->Source(1));
+  auto src_mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(2));
   auto src_masks = src_mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
   int num_fields = GetInstructionSource<int32_t>(inst, 3) + 1;
   int element_width = rv_vector->selected_element_width();
@@ -607,10 +607,10 @@ void VlSegmentIndexed(int index_width, const Instruction *inst) {
   int num_elements = num_fields * num_segments;
 
   // Set up data buffers.
-  auto *db_factory = inst->state()->db_factory();
-  auto *data_db = db_factory->Allocate(num_elements * element_width);
-  auto *address_db = db_factory->Allocate<uint64_t>(num_elements);
-  auto *mask_db = db_factory->Allocate<bool>(num_elements);
+  auto* db_factory = inst->state()->db_factory();
+  auto* data_db = db_factory->Allocate(num_elements * element_width);
+  auto* address_db = db_factory->Allocate<uint64_t>(num_elements);
+  auto* mask_db = db_factory->Allocate<bool>(num_elements);
   // Get the spans for the addresses and masks.
   auto addresses = address_db->Get<uint64_t>();
   auto masks = mask_db->Get<bool>();
@@ -647,9 +647,9 @@ void VlSegmentIndexed(int index_width, const Instruction *inst) {
       addresses[field * num_segments + i] = base + offset + field;
     }
   }
-  auto *context = new VectorLoadContext(data_db, mask_db, element_width, start,
+  auto* context = new VectorLoadContext(data_db, mask_db, element_width, start,
                                         num_segments);
-  auto *rv32_state = static_cast<RiscVState *>(inst->state());
+  auto* rv32_state = static_cast<RiscVState*>(inst->state());
   data_db->set_latency(0);
   rv32_state->LoadMemory(inst, address_db, mask_db, element_width, data_db,
                          inst->child(), context);
@@ -662,11 +662,11 @@ void VlSegmentIndexed(int index_width, const Instruction *inst) {
 // Child instruction used for non-segment vector loads. This function really
 // only is used to select a type specific version of the helper function to
 // write back the load data.
-void VlChild(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void VlChild(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   absl::Status status;
   int byte_length = rv_vector->vector_register_byte_length();
-  switch (static_cast<VectorLoadContext *>(inst->context())->element_width) {
+  switch (static_cast<VectorLoadContext*>(inst->context())->element_width) {
     case 1:
       status = WriteBackLoadData<uint8_t>(byte_length, inst);
       break;
@@ -692,11 +692,11 @@ void VlChild(const Instruction *inst) {
 // Child instruction used for segmen vector loads. This function really only is
 // used to select a type specific version of the helper function to write back
 // the load data.
-void VlSegmentChild(int element_width, const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void VlSegmentChild(int element_width, const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   absl::Status status;
   int byte_length = rv_vector->vector_register_byte_length();
-  switch (static_cast<VectorLoadContext *>(inst->context())->element_width) {
+  switch (static_cast<VectorLoadContext*>(inst->context())->element_width) {
     case 1:
       status = WriteBackSegmentLoadData<uint8_t>(byte_length, inst);
       break;
@@ -722,20 +722,20 @@ void VlSegmentChild(int element_width, const Instruction *inst) {
 // Templated helper function for vector stores.
 template <typename T>
 void StoreVectorStrided(int vector_length, int vstart, int emul,
-                        const Instruction *inst) {
+                        const Instruction* inst) {
   uint64_t base = GetInstructionSource<uint64_t>(inst, 1);
   int64_t stride = GetInstructionSource<int64_t>(inst, 2);
-  auto *src_mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(3));
+  auto* src_mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(3));
   auto src_masks = src_mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
 
   // Compute total number of elements to be stored.
   int num_elements = vector_length;
   // Allocate data buffers.
-  auto *db_factory = inst->state()->db_factory();
-  auto *address_db = db_factory->Allocate<uint64_t>(num_elements);
+  auto* db_factory = inst->state()->db_factory();
+  auto* address_db = db_factory->Allocate<uint64_t>(num_elements);
   auto addresses = address_db->Get<uint64_t>();
-  auto *store_data_db = db_factory->Allocate(num_elements * sizeof(T));
-  auto *mask_db = db_factory->Allocate<bool>(num_elements);
+  auto* store_data_db = db_factory->Allocate(num_elements * sizeof(T));
+  auto* mask_db = db_factory->Allocate<bool>(num_elements);
 
   // Get the spans for addresses and masks.
   auto store_data = store_data_db->Get<T>();
@@ -750,7 +750,7 @@ void StoreVectorStrided(int vector_length, int vstart, int emul,
     store_data[i - vstart] = GetInstructionSource<T>(inst, 0, i);
   }
   // Perform the store.
-  auto *rv32_state = static_cast<RiscVState *>(inst->state());
+  auto* rv32_state = static_cast<RiscVState*>(inst->state());
   rv32_state->StoreMemory(inst, address_db, mask_db, sizeof(T), store_data_db);
   address_db->DecRef();
   mask_db->DecRef();
@@ -762,8 +762,8 @@ void StoreVectorStrided(int vector_length, int vstart, int emul,
 // Source(1): base address.
 // Source(2): stride.
 // Source(3): vector mask register, vector constant {1..} if not masked.
-void VsStrided(int element_width, const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void VsStrided(int element_width, const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int emul = element_width * rv_vector->vector_length_multiplier() /
              rv_vector->selected_element_width();
   // Validate that emul has a legal value.
@@ -797,8 +797,8 @@ void VsStrided(int element_width, const Instruction *inst) {
 // Store vector mask. Single vector register store.
 // Source(0): store data
 // Source(1): base address
-void Vsm(const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vsm(const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   // Compute base address.
   int start = rv_vector->vstart();
   uint64_t base = GetInstructionSource<uint64_t>(inst, 1);
@@ -806,10 +806,10 @@ void Vsm(const Instruction *inst) {
   int num_bytes = rv_vector->vector_register_byte_length();
   int num_bytes_stored = num_bytes - start;
   // Allocate address data buffer.
-  auto *db_factory = inst->state()->db_factory();
-  auto *address_db = db_factory->Allocate<uint64_t>(num_bytes_stored);
-  auto *store_data_db = db_factory->Allocate(num_bytes_stored);
-  auto *mask_db = db_factory->Allocate<uint8_t>(num_bytes_stored);
+  auto* db_factory = inst->state()->db_factory();
+  auto* address_db = db_factory->Allocate<uint64_t>(num_bytes_stored);
+  auto* store_data_db = db_factory->Allocate(num_bytes_stored);
+  auto* mask_db = db_factory->Allocate<uint8_t>(num_bytes_stored);
   // Get the spans for addresses, masks, and store data.
   auto addresses = address_db->Get<uint64_t>();
   auto masks = mask_db->Get<bool>();
@@ -820,7 +820,7 @@ void Vsm(const Instruction *inst) {
     masks[i - start] = true;
     store_data[i - start] = GetInstructionSource<uint8_t>(inst, 0, i);
   }
-  auto *rv32_state = static_cast<RiscVState *>(inst->state());
+  auto* rv32_state = static_cast<RiscVState*>(inst->state());
   rv32_state->StoreMemory(inst, address_db, mask_db, sizeof(uint8_t),
                           store_data_db);
   address_db->DecRef();
@@ -839,8 +839,8 @@ void Vsm(const Instruction *inst) {
 // Source(1): base address.
 // Source(2): offset vector.
 // Source(3): mask.
-void VsIndexed(int index_width, const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void VsIndexed(int index_width, const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   // Compute base address.
   int start = rv_vector->vstart();
   int num_elements = rv_vector->vector_length() - start;
@@ -855,16 +855,16 @@ void VsIndexed(int index_width, const Instruction *inst) {
   }
 
   uint64_t base = GetInstructionSource<uint64_t>(inst, 1);
-  auto *index_op = static_cast<RV32VectorSourceOperand *>(inst->Source(2));
+  auto* index_op = static_cast<RV32VectorSourceOperand*>(inst->Source(2));
 
   // Allocate data buffers.
-  auto *db_factory = inst->state()->db_factory();
-  auto *address_db = db_factory->Allocate<uint64_t>(num_elements);
-  auto *value_db = db_factory->Allocate(num_elements * element_width);
-  auto *mask_db = db_factory->Allocate<bool>(num_elements);
+  auto* db_factory = inst->state()->db_factory();
+  auto* address_db = db_factory->Allocate<uint64_t>(num_elements);
+  auto* value_db = db_factory->Allocate(num_elements * element_width);
+  auto* mask_db = db_factory->Allocate<bool>(num_elements);
 
   // Get the source mask (stored in a single vector register).
-  auto *src_mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(3));
+  auto* src_mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(3));
   auto src_masks = src_mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
 
   // Get the spans for addresses, masks, and data.
@@ -919,7 +919,7 @@ void VsIndexed(int index_width, const Instruction *inst) {
   }
 
   // Set up context and submit store
-  auto *rv32_state = static_cast<RiscVState *>(inst->state());
+  auto* rv32_state = static_cast<RiscVState*>(inst->state());
   rv32_state->StoreMemory(inst, address_db, mask_db, element_width, value_db);
   address_db->DecRef();
   mask_db->DecRef();
@@ -927,16 +927,16 @@ void VsIndexed(int index_width, const Instruction *inst) {
   rv_vector->clear_vstart();
 }
 
-void VsRegister(int num_regs, const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void VsRegister(int num_regs, const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   uint64_t base = GetInstructionSource<uint64_t>(inst, 1);
   int num_elements =
       rv_vector->vector_register_byte_length() * num_regs / sizeof(uint64_t);
   // Allocate data buffers.
-  auto *db_factory = inst->state()->db_factory();
-  auto *data_db = db_factory->Allocate<uint64_t>(num_elements);
-  auto *address_db = db_factory->Allocate<uint64_t>(num_elements);
-  auto *mask_db = db_factory->Allocate<bool>(num_elements);
+  auto* db_factory = inst->state()->db_factory();
+  auto* data_db = db_factory->Allocate<uint64_t>(num_elements);
+  auto* address_db = db_factory->Allocate<uint64_t>(num_elements);
+  auto* mask_db = db_factory->Allocate<bool>(num_elements);
   // Get the address, mask, and data spans.
   auto addresses = address_db->Get<uint64_t>();
   auto masks = mask_db->Get<bool>();
@@ -946,7 +946,7 @@ void VsRegister(int num_regs, const Instruction *inst) {
     masks[i] = true;
     data[i] = GetInstructionSource<uint64_t>(inst, 0, i);
   }  // Submit store.
-  auto *rv32_state = static_cast<RiscVState *>(inst->state());
+  auto* rv32_state = static_cast<RiscVState*>(inst->state());
   rv32_state->StoreMemory(inst, address_db, mask_db, sizeof(uint64_t), data_db);
   address_db->DecRef();
   mask_db->DecRef();
@@ -956,11 +956,11 @@ void VsRegister(int num_regs, const Instruction *inst) {
 
 // Vector store segment (unit stride). This stores the segments contiguously
 // in memory in a sequential manner.
-void VsSegment(int element_width, const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void VsSegment(int element_width, const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int start = rv_vector->vstart();
   uint64_t base_address = GetInstructionSource<uint64_t>(inst, 1);
-  auto src_mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(2));
+  auto src_mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(2));
   auto src_masks = src_mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
   int num_fields = GetInstructionSource<int32_t>(inst, 3) + 1;
   // Effective vector length multiplier.
@@ -980,10 +980,10 @@ void VsSegment(int element_width, const Instruction *inst) {
       rv_vector->vector_register_byte_length() / element_width;
   int reg_mul = std::max(1, emul / 8);
   // Set up data buffers.
-  auto *db_factory = inst->state()->db_factory();
-  auto *data_db = db_factory->Allocate(num_elements * element_width);
-  auto *address_db = db_factory->Allocate<uint64_t>(num_elements);
-  auto *mask_db = db_factory->Allocate<bool>(num_elements);
+  auto* db_factory = inst->state()->db_factory();
+  auto* data_db = db_factory->Allocate(num_elements * element_width);
+  auto* address_db = db_factory->Allocate<uint64_t>(num_elements);
+  auto* mask_db = db_factory->Allocate<bool>(num_elements);
   // Get spans for addresses and masks.
   auto addresses = address_db->Get<uint64_t>();
   auto masks = mask_db->Get<bool>();
@@ -992,7 +992,7 @@ void VsSegment(int element_width, const Instruction *inst) {
   auto data4 = data_db->Get<uint32_t>();
   auto data8 = data_db->Get<uint64_t>();
 
-  auto *data_op = static_cast<RV32VectorSourceOperand *>(inst->Source(0));
+  auto* data_op = static_cast<RV32VectorSourceOperand*>(inst->Source(0));
   uint64_t address = base_address;
   int count = 0;
   for (int segment = start; segment < num_segments; segment++) {
@@ -1016,7 +1016,7 @@ void VsSegment(int element_width, const Instruction *inst) {
         continue;
       }
       // Write store data from register db to data db.
-      auto *reg_db = data_op->GetRegister(reg_no)->data_buffer();
+      auto* reg_db = data_op->GetRegister(reg_no)->data_buffer();
       switch (element_width) {
         case 1:
           data1[count] = reg_db->Get<uint8_t>(segment % num_elements_per_reg);
@@ -1036,7 +1036,7 @@ void VsSegment(int element_width, const Instruction *inst) {
       count++;
     }
   }
-  auto *rv32_state = static_cast<RiscVState *>(inst->state());
+  auto* rv32_state = static_cast<RiscVState*>(inst->state());
   rv32_state->StoreMemory(inst, address_db, mask_db, element_width, data_db);
   // Release the dbs.
   address_db->DecRef();
@@ -1047,12 +1047,12 @@ void VsSegment(int element_width, const Instruction *inst) {
 
 // Vector strided segment store. This stores each segment contiguously at
 // locations separated by the segment stride.
-void VsSegmentStrided(int element_width, const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void VsSegmentStrided(int element_width, const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int start = rv_vector->vstart();
   uint64_t base_address = GetInstructionSource<uint64_t>(inst, 1);
   int64_t segment_stride = GetInstructionSource<int64_t>(inst, 2);
-  auto src_mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(3));
+  auto src_mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(3));
   auto src_masks = src_mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
   int num_fields = GetInstructionSource<int32_t>(inst, 4) + 1;
   // Effective vector length multiplier.
@@ -1072,10 +1072,10 @@ void VsSegmentStrided(int element_width, const Instruction *inst) {
       rv_vector->vector_register_byte_length() / element_width;
   int reg_mul = std::max(1, emul / 8);
   // Set up data buffers.
-  auto *db_factory = inst->state()->db_factory();
-  auto *data_db = db_factory->Allocate(num_elements * element_width);
-  auto *address_db = db_factory->Allocate<uint64_t>(num_elements);
-  auto *mask_db = db_factory->Allocate<bool>(num_elements);
+  auto* db_factory = inst->state()->db_factory();
+  auto* data_db = db_factory->Allocate(num_elements * element_width);
+  auto* address_db = db_factory->Allocate<uint64_t>(num_elements);
+  auto* mask_db = db_factory->Allocate<bool>(num_elements);
   // Get spans for addresses and masks.
   auto addresses = address_db->Get<uint64_t>();
   auto masks = mask_db->Get<bool>();
@@ -1084,7 +1084,7 @@ void VsSegmentStrided(int element_width, const Instruction *inst) {
   auto data4 = data_db->Get<uint32_t>();
   auto data8 = data_db->Get<uint64_t>();
 
-  auto *data_op = static_cast<RV32VectorSourceOperand *>(inst->Source(0));
+  auto* data_op = static_cast<RV32VectorSourceOperand*>(inst->Source(0));
   uint64_t segment_address = base_address;
   int count = 0;
   for (int segment = start; segment < num_segments; segment++) {
@@ -1109,7 +1109,7 @@ void VsSegmentStrided(int element_width, const Instruction *inst) {
         continue;
       }
       // Write store data from register db to data db.
-      auto *reg_db = data_op->GetRegister(reg_no)->data_buffer();
+      auto* reg_db = data_op->GetRegister(reg_no)->data_buffer();
       switch (element_width) {
         case 1:
           data1[count] = reg_db->Get<uint8_t>(segment % num_elements_per_reg);
@@ -1130,7 +1130,7 @@ void VsSegmentStrided(int element_width, const Instruction *inst) {
     }
     segment_address += segment_stride;
   }
-  auto *rv32_state = static_cast<RiscVState *>(inst->state());
+  auto* rv32_state = static_cast<RiscVState*>(inst->state());
   rv32_state->StoreMemory(inst, address_db, mask_db, element_width, data_db);
   // Release the dbs.
   address_db->DecRef();
@@ -1142,11 +1142,11 @@ void VsSegmentStrided(int element_width, const Instruction *inst) {
 // Vector indexted segment store. This instruction stores each segment
 // contiguously at an address formed by adding the index value for that
 // segment (from the index vector source operand) to the base address.
-void VsSegmentIndexed(int index_width, const Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void VsSegmentIndexed(int index_width, const Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int start = rv_vector->vstart();
   uint64_t base_address = GetInstructionSource<uint64_t>(inst, 1);
-  auto src_mask_op = static_cast<RV32VectorSourceOperand *>(inst->Source(3));
+  auto src_mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(3));
   auto src_masks = src_mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
   int num_fields = GetInstructionSource<int32_t>(inst, 4) + 1;
   int element_width = rv_vector->selected_element_width();
@@ -1175,10 +1175,10 @@ void VsSegmentIndexed(int index_width, const Instruction *inst) {
       rv_vector->vector_register_byte_length() / element_width;
   int reg_mul = std::max(1, lmul / 8);
   // Set up data buffers.
-  auto *db_factory = inst->state()->db_factory();
-  auto *data_db = db_factory->Allocate(num_elements * element_width);
-  auto *address_db = db_factory->Allocate<uint64_t>(num_elements);
-  auto *mask_db = db_factory->Allocate<bool>(num_elements);
+  auto* db_factory = inst->state()->db_factory();
+  auto* data_db = db_factory->Allocate(num_elements * element_width);
+  auto* address_db = db_factory->Allocate<uint64_t>(num_elements);
+  auto* mask_db = db_factory->Allocate<bool>(num_elements);
   // Get spans for addresses and masks.
   auto addresses = address_db->Get<uint64_t>();
   auto masks = mask_db->Get<bool>();
@@ -1187,7 +1187,7 @@ void VsSegmentIndexed(int index_width, const Instruction *inst) {
   auto data4 = data_db->Get<uint32_t>();
   auto data8 = data_db->Get<uint64_t>();
 
-  auto *data_op = static_cast<RV32VectorSourceOperand *>(inst->Source(0));
+  auto* data_op = static_cast<RV32VectorSourceOperand*>(inst->Source(0));
   int count = 0;
   for (int segment = start; segment < num_segments; segment++) {
     // Masks are applied on a segment basis.
@@ -1230,7 +1230,7 @@ void VsSegmentIndexed(int index_width, const Instruction *inst) {
         continue;
       }
       // Write store data from register db to data db.
-      auto *reg_db = data_op->GetRegister(reg_no)->data_buffer();
+      auto* reg_db = data_op->GetRegister(reg_no)->data_buffer();
       switch (element_width) {
         case 1:
           data1[count] = reg_db->Get<uint8_t>(segment % num_elements_per_reg);
@@ -1251,7 +1251,7 @@ void VsSegmentIndexed(int index_width, const Instruction *inst) {
       count++;
     }
   }
-  auto *rv32_state = static_cast<RiscVState *>(inst->state());
+  auto* rv32_state = static_cast<RiscVState*>(inst->state());
   rv32_state->StoreMemory(inst, address_db, mask_db, element_width, data_db);
   // Release the dbs.
   address_db->DecRef();

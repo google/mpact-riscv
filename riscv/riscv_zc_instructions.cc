@@ -43,10 +43,10 @@ using UIntReg = typename std::make_unsigned<typename RegType::ValueType>::type;
 using IntReg = typename std::make_signed<UIntReg>::type;
 
 // Zcmp instructions.
-void RiscVZCmpPush(const Instruction *inst) {
-  RiscVState *state = static_cast<RiscVState *>(inst->state());
+void RiscVZCmpPush(const Instruction* inst) {
+  RiscVState* state = static_cast<RiscVState*>(inst->state());
   int num_regs = inst->SourcesSize() - 3;
-  auto *db = state->db_factory()->Allocate<UIntReg>(num_regs);
+  auto* db = state->db_factory()->Allocate<UIntReg>(num_regs);
   auto db_span = db->Get<UIntReg>();
   // Get the register values and put them in the data buffer.
   for (int i = 0; i < num_regs; ++i) {
@@ -70,13 +70,13 @@ namespace {
 
 // This helper pops the number of registers specified into the appropriate
 // destination operands, and then adjusts the stack pointer.
-void RiscVZCmpPopHelper(const Instruction *inst, int size) {
-  RiscVState *state = static_cast<RiscVState *>(inst->state());
+void RiscVZCmpPopHelper(const Instruction* inst, int size) {
+  RiscVState* state = static_cast<RiscVState*>(inst->state());
   // Compute the stack adjustment.
   auto spimm6 = generic::GetInstructionSource<UIntReg>(inst, 1);
   auto rlist = generic::GetInstructionSource<UIntReg>(inst, 2);
   auto sp_adjustment = spimm6 + kStackAdjBase[rlist];
-  auto *db = state->db_factory()->Allocate<UIntReg>(size);
+  auto* db = state->db_factory()->Allocate<UIntReg>(size);
   // Load registers from the stack.
   auto sp = generic::GetInstructionSource<UIntReg>(inst, 0);
   // Start address = sp + sp_adjustment - sizeof(UIntReg) * size;
@@ -93,25 +93,25 @@ void RiscVZCmpPopHelper(const Instruction *inst, int size) {
 
 }  // namespace
 
-void RiscVZCmpPop(const Instruction *inst) {
+void RiscVZCmpPop(const Instruction* inst) {
   // Size is the number of registers to pop.
   int size = inst->DestinationsSize() - 1;
   RiscVZCmpPopHelper(inst, size);
 }
 
-void RiscVZCmpPopRet(const Instruction *inst) {
+void RiscVZCmpPopRet(const Instruction* inst) {
   // Size is the number of registers to pop.
   int size = inst->DestinationsSize() - 2;  // x2 and next_pc.
   RiscVZCmpPopHelper(inst, size);
   // Now perform the return.
   UIntReg target = generic::GetInstructionSource<UIntReg>(inst, 3);
-  auto *db = inst->Destination(size + 1)->AllocateDataBuffer();
+  auto* db = inst->Destination(size + 1)->AllocateDataBuffer();
   db->SetSubmit<UIntReg>(0, target);
-  auto *state = static_cast<RiscVState *>(inst->state());
+  auto* state = static_cast<RiscVState*>(inst->state());
   state->set_branch(true);
 }
 
-void RiscVZCmpPopRetz(const Instruction *inst) {
+void RiscVZCmpPopRetz(const Instruction* inst) {
   // Size is the number of registers to pop.
   int size = inst->DestinationsSize() - 3;  // x2, x10, and next_pc.
   RiscVZCmpPopHelper(inst, size);
@@ -119,13 +119,13 @@ void RiscVZCmpPopRetz(const Instruction *inst) {
   RiscVWriteReg<RegType, UIntReg>(inst, size + 1, 0);
   // Now perform the return.
   UIntReg target = generic::GetInstructionSource<UIntReg>(inst, 3);
-  auto *db = inst->Destination(size + 2)->AllocateDataBuffer();
+  auto* db = inst->Destination(size + 2)->AllocateDataBuffer();
   db->SetSubmit<UIntReg>(0, target);
-  auto *state = static_cast<RiscVState *>(inst->state());
+  auto* state = static_cast<RiscVState*>(inst->state());
   state->set_branch(true);
 }
 
-void RiscVZCmpMvTwoRegs(const Instruction *inst) {
+void RiscVZCmpMvTwoRegs(const Instruction* inst) {
   RiscVWriteReg<RegType, UIntReg>(
       inst, 0, generic::GetInstructionSource<UIntReg>(inst, 0));
   RiscVWriteReg<RegType, UIntReg>(
@@ -135,9 +135,9 @@ void RiscVZCmpMvTwoRegs(const Instruction *inst) {
 // Zcmt instructions.
 namespace {
 
-void RiscVZCmtJtHelper(const Instruction *inst, int dest_index) {
+void RiscVZCmtJtHelper(const Instruction* inst, int dest_index) {
   int index = generic::GetInstructionSource<UIntReg>(inst, 0);
-  auto *state = static_cast<RiscVState *>(inst->state());
+  auto* state = static_cast<RiscVState*>(inst->state());
   auto jvt_value = state->jvt()->AsUint64();
   auto mode = jvt_value & 0x3f;
   if (mode != 0) {
@@ -147,21 +147,21 @@ void RiscVZCmtJtHelper(const Instruction *inst, int dest_index) {
   }
   // Load target address from the jump table.
   UIntReg entry_address = (jvt_value & ~0x3f) + (index * sizeof(UIntReg));
-  auto *db = state->db_factory()->Allocate<UIntReg>(1);
+  auto* db = state->db_factory()->Allocate<UIntReg>(1);
   state->LoadMemory(inst, entry_address, db, nullptr, nullptr);
   UIntReg target_address = db->Get<UIntReg>(0);
   db->DecRef();
   // Write the target address to the next pc operand.
-  auto *target_db = inst->Destination(0)->AllocateDataBuffer();
+  auto* target_db = inst->Destination(0)->AllocateDataBuffer();
   target_db->SetSubmit<UIntReg>(0, target_address);
   state->set_branch(true);
 }
 
 }  // namespace
 
-void RiscVZCmtJt(const Instruction *inst) { RiscVZCmtJtHelper(inst, 0); }
+void RiscVZCmtJt(const Instruction* inst) { RiscVZCmtJtHelper(inst, 0); }
 
-void RiscVZCmtJalt(const Instruction *inst) {
+void RiscVZCmtJalt(const Instruction* inst) {
   RiscVZCmtJtHelper(inst, 1);
   // Write the return address to the x1 (ra) operand.
   RiscVWriteReg<RegType, UIntReg>(inst, 1, inst->address() + inst->size());
@@ -184,10 +184,10 @@ using UIntReg = typename std::make_unsigned<typename RegType::ValueType>::type;
 using IntReg = typename std::make_signed<UIntReg>::type;
 
 // Zcmp instructions.
-void RiscVZCmpPush(const Instruction *inst) {
-  RiscVState *state = static_cast<RiscVState *>(inst->state());
+void RiscVZCmpPush(const Instruction* inst) {
+  RiscVState* state = static_cast<RiscVState*>(inst->state());
   int num_regs = inst->SourcesSize() - 3;
-  auto *db = state->db_factory()->Allocate<UIntReg>(num_regs);
+  auto* db = state->db_factory()->Allocate<UIntReg>(num_regs);
   auto db_span = db->Get<UIntReg>();
   // Get the register values and put them in the data buffer.
   for (int i = 0; i < num_regs; ++i) {
@@ -211,13 +211,13 @@ namespace {
 
 // This helper pops the number of registers specified into the appropriate
 // destination operands, and then adjusts the stack pointer.
-void RiscVZCmpPopHelper(const Instruction *inst, int size) {
-  RiscVState *state = static_cast<RiscVState *>(inst->state());
+void RiscVZCmpPopHelper(const Instruction* inst, int size) {
+  RiscVState* state = static_cast<RiscVState*>(inst->state());
   // Compute the stack adjustment.
   auto spimm6 = generic::GetInstructionSource<UIntReg>(inst, 1);
   auto rlist = generic::GetInstructionSource<UIntReg>(inst, 2);
   auto sp_adjustment = spimm6 + kStackAdjBase[rlist];
-  auto *db = state->db_factory()->Allocate<UIntReg>(size);
+  auto* db = state->db_factory()->Allocate<UIntReg>(size);
   // Load registers from the stack.
   auto sp = generic::GetInstructionSource<UIntReg>(inst, 0);
   // Start address = sp + sp_adjustment - sizeof(UIntReg) * size;
@@ -234,25 +234,25 @@ void RiscVZCmpPopHelper(const Instruction *inst, int size) {
 
 }  // namespace
 
-void RiscVZCmpPop(const Instruction *inst) {
+void RiscVZCmpPop(const Instruction* inst) {
   // Size is the number of registers to pop.
   int size = inst->DestinationsSize() - 1;
   RiscVZCmpPopHelper(inst, size);
 }
 
-void RiscVZCmpPopRet(const Instruction *inst) {
+void RiscVZCmpPopRet(const Instruction* inst) {
   // Size is the number of registers to pop.
   int size = inst->DestinationsSize() - 2;  // x2 and next_pc.
   RiscVZCmpPopHelper(inst, size);
   // Now perform the return.
   UIntReg target = generic::GetInstructionSource<UIntReg>(inst, 3);
-  auto *db = inst->Destination(size + 1)->AllocateDataBuffer();
+  auto* db = inst->Destination(size + 1)->AllocateDataBuffer();
   db->SetSubmit<UIntReg>(0, target);
-  auto *state = static_cast<RiscVState *>(inst->state());
+  auto* state = static_cast<RiscVState*>(inst->state());
   state->set_branch(true);
 }
 
-void RiscVZCmpPopRetz(const Instruction *inst) {
+void RiscVZCmpPopRetz(const Instruction* inst) {
   // Size is the number of registers to pop.
   int size = inst->DestinationsSize() - 3;  // x2, x10, and next_pc.
   RiscVZCmpPopHelper(inst, size);
@@ -260,13 +260,13 @@ void RiscVZCmpPopRetz(const Instruction *inst) {
   RiscVWriteReg<RegType, UIntReg>(inst, size + 1, 0);
   // Now perform the return.
   UIntReg target = generic::GetInstructionSource<UIntReg>(inst, 3);
-  auto *db = inst->Destination(size + 2)->AllocateDataBuffer();
+  auto* db = inst->Destination(size + 2)->AllocateDataBuffer();
   db->SetSubmit<UIntReg>(0, target);
-  auto *state = static_cast<RiscVState *>(inst->state());
+  auto* state = static_cast<RiscVState*>(inst->state());
   state->set_branch(true);
 }
 
-void RiscVZCmpMvTwoRegs(const Instruction *inst) {
+void RiscVZCmpMvTwoRegs(const Instruction* inst) {
   RiscVWriteReg<RegType, UIntReg>(
       inst, 0, generic::GetInstructionSource<UIntReg>(inst, 0));
   RiscVWriteReg<RegType, UIntReg>(
@@ -276,9 +276,9 @@ void RiscVZCmpMvTwoRegs(const Instruction *inst) {
 // Zcmt instructions.
 namespace {
 
-void RiscVZCmtJtHelper(const Instruction *inst, int dest_index) {
+void RiscVZCmtJtHelper(const Instruction* inst, int dest_index) {
   int index = generic::GetInstructionSource<UIntReg>(inst, 0);
-  auto *state = static_cast<RiscVState *>(inst->state());
+  auto* state = static_cast<RiscVState*>(inst->state());
   auto jvt_value = state->jvt()->AsUint64();
   auto mode = jvt_value & 0x3f;
   if (mode != 0) {
@@ -288,21 +288,21 @@ void RiscVZCmtJtHelper(const Instruction *inst, int dest_index) {
   }
   // Load target address from the jump table.
   UIntReg entry_address = (jvt_value & ~0x3f) + (index * sizeof(UIntReg));
-  auto *db = state->db_factory()->Allocate<UIntReg>(1);
+  auto* db = state->db_factory()->Allocate<UIntReg>(1);
   state->LoadMemory(inst, entry_address, db, nullptr, nullptr);
   UIntReg target_address = db->Get<UIntReg>(0);
   db->DecRef();
   // Write the target address to the next pc operand.
-  auto *target_db = inst->Destination(0)->AllocateDataBuffer();
+  auto* target_db = inst->Destination(0)->AllocateDataBuffer();
   target_db->SetSubmit<UIntReg>(0, target_address);
   state->set_branch(true);
 }
 
 }  // namespace
 
-void RiscVZCmtJt(const Instruction *inst) { RiscVZCmtJtHelper(inst, 0); }
+void RiscVZCmtJt(const Instruction* inst) { RiscVZCmtJtHelper(inst, 0); }
 
-void RiscVZCmtJalt(const Instruction *inst) {
+void RiscVZCmtJalt(const Instruction* inst) {
   RiscVZCmtJtHelper(inst, 1);
   // Write the return address to the x1 (ra) operand.
   RiscVWriteReg<RegType, UIntReg>(inst, 1, inst->address() + inst->size());

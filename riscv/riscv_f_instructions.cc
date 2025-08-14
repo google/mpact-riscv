@@ -58,37 +58,37 @@ namespace internal {
 
 // Convert float to signed 32 bit integer.
 template <typename XInt>
-static inline void RVFCvtWs(const Instruction *instruction) {
+static inline void RVFCvtWs(const Instruction* instruction) {
   RiscVConvertFloatWithFflagsOp<XInt, float, int32_t>(instruction);
 }
 
 // Convert float to unsigned 32 bit integer.
 template <typename XUint>
-static inline void RVFCvtWus(const Instruction *instruction) {
+static inline void RVFCvtWus(const Instruction* instruction) {
   RiscVConvertFloatWithFflagsOp<XUint, float, uint32_t>(instruction);
 }
 
 // Convert float to signed 64 bit integer.
 template <typename XInt>
-static inline void RVFCvtLs(const Instruction *instruction) {
+static inline void RVFCvtLs(const Instruction* instruction) {
   RiscVConvertFloatWithFflagsOp<XInt, float, int64_t>(instruction);
 }
 
 // Convert float to unsigned 64 bit integer.
 template <typename XUint>
-static inline void RVFCvtLus(const Instruction *instruction) {
+static inline void RVFCvtLus(const Instruction* instruction) {
   RiscVConvertFloatWithFflagsOp<XUint, float, uint64_t>(instruction);
 }
 
 // Single precision compare equal.
 template <typename XRegister>
-static inline void RVFCmpeq(const Instruction *instruction) {
+static inline void RVFCmpeq(const Instruction* instruction) {
   RiscVBinaryNaNBoxOp<typename XRegister::ValueType,
                       typename XRegister::ValueType, float>(
       instruction,
       [instruction](float a, float b) -> typename XRegister::ValueType {
         if (FPTypeInfo<float>::IsSNaN(a) || FPTypeInfo<float>::IsSNaN(b)) {
-          auto *db = instruction->Destination(1)->AllocateDataBuffer();
+          auto* db = instruction->Destination(1)->AllocateDataBuffer();
           db->Set<uint32_t>(0, *FPExceptions::kInvalidOp);
           db->Submit();
         }
@@ -98,13 +98,13 @@ static inline void RVFCmpeq(const Instruction *instruction) {
 
 // Single precicion compare less than.
 template <typename XRegister>
-static inline void RVFCmplt(const Instruction *instruction) {
+static inline void RVFCmplt(const Instruction* instruction) {
   RiscVBinaryNaNBoxOp<typename XRegister::ValueType,
                       typename XRegister::ValueType, float>(
       instruction,
       [instruction](float a, float b) -> typename XRegister::ValueType {
         if (FPTypeInfo<float>::IsNaN(a) || FPTypeInfo<float>::IsNaN(b)) {
-          auto *db = instruction->Destination(1)->AllocateDataBuffer();
+          auto* db = instruction->Destination(1)->AllocateDataBuffer();
           db->Set<uint32_t>(0, *FPExceptions::kInvalidOp);
           db->Submit();
         }
@@ -114,13 +114,13 @@ static inline void RVFCmplt(const Instruction *instruction) {
 
 // Single precision compare less than or equal.
 template <typename XRegister>
-static inline void RVFCmple(const Instruction *instruction) {
+static inline void RVFCmple(const Instruction* instruction) {
   RiscVBinaryNaNBoxOp<typename XRegister::ValueType,
                       typename XRegister::ValueType, float>(
       instruction,
       [instruction](float a, float b) -> typename XRegister::ValueType {
         if (FPTypeInfo<float>::IsNaN(a) || FPTypeInfo<float>::IsNaN(b)) {
-          auto *db = instruction->Destination(1)->AllocateDataBuffer();
+          auto* db = instruction->Destination(1)->AllocateDataBuffer();
           db->Set<uint32_t>(0, *FPExceptions::kInvalidOp);
           db->Submit();
         }
@@ -132,17 +132,17 @@ template <typename T>
 static inline T CanonicalizeNaN(T value) {
   if (!std::isnan(value)) return value;
   auto nan_value = FPTypeInfo<T>::kCanonicalNaN;
-  return *reinterpret_cast<T *>(&nan_value);
+  return *reinterpret_cast<T*>(&nan_value);
 }
 
 }  // namespace internal
 
 // Load child instruction.
-void RiscVIFlwChild(const Instruction *instruction) {
-  LoadContext *context = static_cast<LoadContext *>(instruction->context());
+void RiscVIFlwChild(const Instruction* instruction) {
+  LoadContext* context = static_cast<LoadContext*>(instruction->context());
   auto value = context->value_db->Get<FPUInt>(0);
-  auto *reg =
-      static_cast<generic::RegisterDestinationOperand<FPRegister::ValueType> *>(
+  auto* reg =
+      static_cast<generic::RegisterDestinationOperand<FPRegister::ValueType>*>(
           instruction->Destination(0))
           ->GetRegister();
   if (sizeof(FPRegister::ValueType) > sizeof(FPUInt)) {
@@ -157,40 +157,39 @@ void RiscVIFlwChild(const Instruction *instruction) {
 }
 
 // Basic arithmetic instructions.
-void RiscVFAdd(const Instruction *instruction) {
+void RiscVFAdd(const Instruction* instruction) {
   RiscVBinaryFloatNaNBoxOp<FPRegister::ValueType, float, float>(
       instruction, [](float a, float b) { return a + b; });
 }
 
-void RiscVFSub(const Instruction *instruction) {
+void RiscVFSub(const Instruction* instruction) {
   RiscVBinaryFloatNaNBoxOp<FPRegister::ValueType, float, float>(
       instruction, [](float a, float b) { return a - b; });
 }
 
-void RiscVFMul(const Instruction *instruction) {
+void RiscVFMul(const Instruction* instruction) {
   RiscVBinaryFloatNaNBoxOp<FPRegister::ValueType, float, float>(
       instruction, [](float a, float b) { return a * b; });
 }
 
-void RiscVFDiv(const Instruction *instruction) {
+void RiscVFDiv(const Instruction* instruction) {
   RiscVBinaryFloatNaNBoxOp<FPRegister::ValueType, float, float>(
       instruction, [](float a, float b) { return a / b; });
 }
 
 // Square root uses the library square root, but check for special conditions
 // to set flags that may not be set correctly with the library version.
-void RiscVFSqrt(const Instruction *instruction) {
+void RiscVFSqrt(const Instruction* instruction) {
   RiscVUnaryNaNBoxOp<FPRegister::ValueType, FPRegister::ValueType, float,
                      float>(instruction, [instruction](float a) -> float {
     // If the input value is NaN or less than zero, set the invalid op flag.
     if (FPTypeInfo<float>::IsNaN(a) || (a < 0.0)) {
       if (!FPTypeInfo<float>::IsQNaN(a)) {
-        auto *flag_db = instruction->Destination(1)->AllocateDataBuffer();
+        auto* flag_db = instruction->Destination(1)->AllocateDataBuffer();
         flag_db->Set<uint32_t>(0, *FPExceptions::kInvalidOp);
         flag_db->Submit();
       }
-      return *reinterpret_cast<const float *>(
-          &FPTypeInfo<float>::kCanonicalNaN);
+      return *reinterpret_cast<const float*>(&FPTypeInfo<float>::kCanonicalNaN);
     }
 
     // Square root of 0 returns 0, and of -0.0 returns -0.0.
@@ -200,12 +199,12 @@ void RiscVFSqrt(const Instruction *instruction) {
     // Get the rounding mode.
     int rm_value = generic::GetInstructionSource<int>(instruction, 1);
 
-    auto *rv_fp = static_cast<RiscVState *>(instruction->state())->rv_fp();
+    auto* rv_fp = static_cast<RiscVState*>(instruction->state())->rv_fp();
     // If the rounding mode is dynamic, read it from the current state.
     if (rm_value == *FPRoundingMode::kDynamic) {
       if (!rv_fp->rounding_mode_valid()) {
         LOG(ERROR) << "Invalid rounding mode";
-        return *reinterpret_cast<const float *>(
+        return *reinterpret_cast<const float*>(
             &FPTypeInfo<float>::kCanonicalNaN);
       }
       rm_value = *rv_fp->GetRoundingMode();
@@ -220,11 +219,11 @@ void RiscVFSqrt(const Instruction *instruction) {
 }
 
 // If either operand is NaN return the other.
-void RiscVFMin(const Instruction *instruction) {
+void RiscVFMin(const Instruction* instruction) {
   RiscVBinaryNaNBoxOp<FPRegister::ValueType, float, float>(
       instruction, [instruction](float a, float b) -> float {
         if (FPTypeInfo<float>::IsSNaN(a) || FPTypeInfo<float>::IsSNaN(b)) {
-          auto *db = instruction->Destination(1)->AllocateDataBuffer();
+          auto* db = instruction->Destination(1)->AllocateDataBuffer();
           db->Set<uint32_t>(0, *FPExceptions::kInvalidOp);
           db->Submit();
         }
@@ -232,7 +231,7 @@ void RiscVFMin(const Instruction *instruction) {
           if (FPTypeInfo<float>::IsNaN(b)) {
             FPTypeInfo<float>::UIntType not_a_number =
                 FPTypeInfo<float>::kCanonicalNaN;
-            return *reinterpret_cast<float *>(&not_a_number);
+            return *reinterpret_cast<float*>(&not_a_number);
           }
           return b;
         }
@@ -246,11 +245,11 @@ void RiscVFMin(const Instruction *instruction) {
 }
 
 // If either operand is NaN return the other.
-void RiscVFMax(const Instruction *instruction) {
+void RiscVFMax(const Instruction* instruction) {
   RiscVBinaryNaNBoxOp<FPRegister::ValueType, float, float>(
       instruction, [instruction](float a, float b) -> float {
         if (FPTypeInfo<float>::IsSNaN(a) || FPTypeInfo<float>::IsSNaN(b)) {
-          auto *db = instruction->Destination(1)->AllocateDataBuffer();
+          auto* db = instruction->Destination(1)->AllocateDataBuffer();
           db->Set<uint32_t>(0, *FPExceptions::kInvalidOp);
           db->Submit();
         }
@@ -258,7 +257,7 @@ void RiscVFMax(const Instruction *instruction) {
           if (FPTypeInfo<float>::IsNaN(b)) {
             FPTypeInfo<float>::UIntType not_a_number =
                 FPTypeInfo<float>::kCanonicalNaN;
-            return *reinterpret_cast<float *>(&not_a_number);
+            return *reinterpret_cast<float*>(&not_a_number);
           }
           return b;
         }
@@ -275,13 +274,13 @@ void RiscVFMax(const Instruction *instruction) {
 // Negated multiply-add -((a * b) + c)
 // Negated multiply-subtract -((a * b) - c)
 
-void RiscVFMadd(const Instruction *instruction) {
+void RiscVFMadd(const Instruction* instruction) {
   using T = float;
   RiscVTernaryFloatNaNBoxOp<FPRegister::ValueType, T, T>(
       instruction, [instruction](T a, T b, T c) -> T {
         // Propagate any NaNs.
         if ((std::isinf(a) && (b == 0.0)) || ((std::isinf(b) && (a == 0.0)))) {
-          auto *flag_db = instruction->Destination(1)->AllocateDataBuffer();
+          auto* flag_db = instruction->Destination(1)->AllocateDataBuffer();
           flag_db->Set<uint32_t>(0, *FPExceptions::kInvalidOp);
           flag_db->Submit();
         }
@@ -289,12 +288,12 @@ void RiscVFMadd(const Instruction *instruction) {
       });
 }
 
-void RiscVFMsub(const Instruction *instruction) {
+void RiscVFMsub(const Instruction* instruction) {
   using T = float;
   RiscVTernaryFloatNaNBoxOp<FPRegister::ValueType, T, T>(
       instruction, [instruction](T a, T b, T c) -> T {
         if ((std::isinf(a) && (b == 0.0)) || ((std::isinf(b) && (a == 0.0)))) {
-          auto *flag_db = instruction->Destination(1)->AllocateDataBuffer();
+          auto* flag_db = instruction->Destination(1)->AllocateDataBuffer();
           flag_db->Set<uint32_t>(0, *FPExceptions::kInvalidOp);
           flag_db->Submit();
         }
@@ -302,12 +301,12 @@ void RiscVFMsub(const Instruction *instruction) {
       });
 }
 
-void RiscVFNmadd(const Instruction *instruction) {
+void RiscVFNmadd(const Instruction* instruction) {
   using T = float;
   RiscVTernaryFloatNaNBoxOp<FPRegister::ValueType, T, T>(
       instruction, [instruction](T a, T b, T c) -> T {
         if ((std::isinf(a) && (b == 0.0)) || ((std::isinf(b) && (a == 0.0)))) {
-          auto *flag_db = instruction->Destination(1)->AllocateDataBuffer();
+          auto* flag_db = instruction->Destination(1)->AllocateDataBuffer();
           flag_db->Set<uint32_t>(0, *FPExceptions::kInvalidOp);
           flag_db->Submit();
         }
@@ -315,12 +314,12 @@ void RiscVFNmadd(const Instruction *instruction) {
       });
 }
 
-void RiscVFNmsub(const Instruction *instruction) {
+void RiscVFNmsub(const Instruction* instruction) {
   using T = float;
   RiscVTernaryFloatNaNBoxOp<FPRegister::ValueType, T, T>(
       instruction, [instruction](T a, T b, T c) -> T {
         if ((std::isinf(a) && (b == 0.0)) || ((std::isinf(b) && (a == 0.0)))) {
-          auto *flag_db = instruction->Destination(1)->AllocateDataBuffer();
+          auto* flag_db = instruction->Destination(1)->AllocateDataBuffer();
           flag_db->Set<uint32_t>(0, *FPExceptions::kInvalidOp);
           flag_db->Submit();
         }
@@ -329,14 +328,14 @@ void RiscVFNmsub(const Instruction *instruction) {
 }
 
 // Set sign of the first operand to that of the second.
-void RiscVFSgnj(const Instruction *instruction) {
+void RiscVFSgnj(const Instruction* instruction) {
   RiscVBinaryNaNBoxOp<FPRegister::ValueType, FPUInt, FPUInt>(
       instruction,
       [](FPUInt a, FPUInt b) { return (a & 0x7fff'ffff) | (b & 0x8000'0000); });
 }
 
 // Set the sign of the first operand to the opposite of the second.
-void RiscVFSgnjn(const Instruction *instruction) {
+void RiscVFSgnjn(const Instruction* instruction) {
   RiscVBinaryNaNBoxOp<FPRegister::ValueType, FPUInt, FPUInt>(
       instruction, [](FPUInt a, FPUInt b) {
         return (a & 0x7fff'ffff) | (~b & 0x8000'0000);
@@ -345,7 +344,7 @@ void RiscVFSgnjn(const Instruction *instruction) {
 
 // Set the sign of the first operand to the xor of the signs of the two
 // operands.
-void RiscVFSgnjx(const Instruction *instruction) {
+void RiscVFSgnjx(const Instruction* instruction) {
   RiscVBinaryNaNBoxOp<FPRegister::ValueType, FPUInt, FPUInt>(
       instruction, [](FPUInt a, FPUInt b) {
         return (a & 0x7fff'ffff) | ((a ^ b) & 0x8000'0000);
@@ -353,31 +352,31 @@ void RiscVFSgnjx(const Instruction *instruction) {
 }
 
 // Convert signed 32 bit integer to float.
-void RiscVFCvtSw(const Instruction *instruction) {
+void RiscVFCvtSw(const Instruction* instruction) {
   RiscVUnaryFloatNaNBoxOp<FPRegister::ValueType, uint32_t, float, int32_t>(
       instruction, [](int32_t a) -> float { return static_cast<float>(a); });
 }
 
 // Convert unsigned 32 bit integer to float.
-void RiscVFCvtSwu(const Instruction *instruction) {
+void RiscVFCvtSwu(const Instruction* instruction) {
   RiscVUnaryFloatNaNBoxOp<FPRegister::ValueType, uint32_t, float, uint32_t>(
       instruction, [](uint32_t a) -> float { return static_cast<float>(a); });
 }
 
 // Convert signed 64 bit integer to float.
-void RiscVFCvtSl(const Instruction *instruction) {
+void RiscVFCvtSl(const Instruction* instruction) {
   RiscVUnaryFloatNaNBoxOp<FPRegister::ValueType, uint64_t, float, int64_t>(
       instruction, [](int64_t a) -> float { return static_cast<float>(a); });
 }
 
 // Convert unsigned 64 bit integer to float.
-void RiscVFCvtSlu(const Instruction *instruction) {
+void RiscVFCvtSlu(const Instruction* instruction) {
   RiscVUnaryFloatNaNBoxOp<FPRegister::ValueType, uint64_t, float, uint64_t>(
       instruction, [](uint64_t a) -> float { return static_cast<float>(a); });
 }
 
 // Single precision move instruction from integer to fp register file.
-void RiscVFMvwx(const Instruction *instruction) {
+void RiscVFMvwx(const Instruction* instruction) {
   RiscVUnaryNaNBoxOp<FPRegister::ValueType, uint32_t, uint32_t, uint32_t>(
       instruction, [](uint32_t a) -> uint32_t { return a; });
 }
@@ -388,15 +387,15 @@ using XRegister = RV32Register;
 using XUint = typename std::make_unsigned<XRegister::ValueType>::type;
 using XInt = typename std::make_signed<XRegister::ValueType>::type;
 
-void RiscVFSw(const Instruction *instruction) {
+void RiscVFSw(const Instruction* instruction) {
   using T = uint32_t;
-  auto *state = static_cast<RiscVState *>(instruction->state());
+  auto* state = static_cast<RiscVState*>(instruction->state());
   if (state->mstatus()->fs() == 0) return;
   XUint base = generic::GetInstructionSource<XUint>(instruction, 0);
   XInt offset = generic::GetInstructionSource<XInt>(instruction, 1);
   XUint address = base + offset;
   T value = generic::GetInstructionSource<T>(instruction, 2);
-  auto *db = state->db_factory()->Allocate(sizeof(T));
+  auto* db = state->db_factory()->Allocate(sizeof(T));
   db->Set<T>(0, value);
   state->StoreMemory(instruction, address, db);
   db->DecRef();
@@ -405,39 +404,39 @@ void RiscVFSw(const Instruction *instruction) {
 // Single precision conversion instructions.
 
 // Convert float to signed 32 bit integer.
-void RiscVFCvtWs(const Instruction *instruction) {
+void RiscVFCvtWs(const Instruction* instruction) {
   internal::RVFCvtWs<XInt>(instruction);
 }
 
 // Convert float to unsigned 32 bit integer.
-void RiscVFCvtWus(const Instruction *instruction) {
+void RiscVFCvtWus(const Instruction* instruction) {
   internal::RVFCvtWus<XUint>(instruction);
 }
 
 // Single precision move instruction to integer register file, with
 // sign-extension.
-void RiscVFMvxw(const Instruction *instruction) {
+void RiscVFMvxw(const Instruction* instruction) {
   RiscVUnaryOp<XRegister, int32_t, int32_t>(instruction,
                                             [](int32_t a) { return a; });
 }
 
 // Single precision compare equal.
-void RiscVFCmpeq(const Instruction *instruction) {
+void RiscVFCmpeq(const Instruction* instruction) {
   internal::RVFCmpeq<XRegister>(instruction);
 }
 
 // Single precicion compare less than.
-void RiscVFCmplt(const Instruction *instruction) {
+void RiscVFCmplt(const Instruction* instruction) {
   internal::RVFCmplt<XRegister>(instruction);
 }
 
 // Single precision compare less than or equal.
-void RiscVFCmple(const Instruction *instruction) {
+void RiscVFCmple(const Instruction* instruction) {
   internal::RVFCmple<XRegister>(instruction);
 }
 
 // Single precision fp class instruction.
-void RiscVFClass(const Instruction *instruction) {
+void RiscVFClass(const Instruction* instruction) {
   RiscVUnaryOp<XRegister, uint32_t, float>(
       instruction,
       [](float a) -> uint32_t { return static_cast<uint32_t>(ClassifyFP(a)); });
@@ -451,70 +450,70 @@ using XRegister = RV64Register;
 using XUint = typename std::make_unsigned<XRegister::ValueType>::type;
 using XInt = typename std::make_signed<XRegister::ValueType>::type;
 
-void RiscVFSw(const Instruction *instruction) {
+void RiscVFSw(const Instruction* instruction) {
   using T = uint32_t;
-  auto *state = static_cast<RiscVState *>(instruction->state());
+  auto* state = static_cast<RiscVState*>(instruction->state());
   if (state->mstatus()->fs() == 0) return;
   XUint base = generic::GetInstructionSource<XUint>(instruction, 0);
   XInt offset = generic::GetInstructionSource<XInt>(instruction, 1);
   XUint address = base + offset;
   T value = generic::GetInstructionSource<T>(instruction, 2);
-  auto *db = state->db_factory()->Allocate(sizeof(T));
+  auto* db = state->db_factory()->Allocate(sizeof(T));
   db->Set<T>(0, value);
   state->StoreMemory(instruction, address, db);
   db->DecRef();
 }
 
 // Convert float to signed 32 bit integer in a 64 bit register.
-void RiscVFCvtWs(const Instruction *instruction) {
+void RiscVFCvtWs(const Instruction* instruction) {
   internal::RVFCvtWs<XInt>(instruction);
 }
 
 // Convert float to unsigned 32 bit integer in a 64 bit register.
-void RiscVFCvtWus(const Instruction *instruction) {
+void RiscVFCvtWus(const Instruction* instruction) {
   internal::RVFCvtWus<XUint>(instruction);
 }
 
 // Convert float to signed 64 bit integer.
-void RiscVFCvtLs(const Instruction *instruction) {
+void RiscVFCvtLs(const Instruction* instruction) {
   internal::RVFCvtLs<XInt>(instruction);
 }
 
 // Convert float to unsigned 64 bit integer.
-void RiscVFCvtLus(const Instruction *instruction) {
+void RiscVFCvtLus(const Instruction* instruction) {
   internal::RVFCvtLus<XUint>(instruction);
 }
 
 // Single precision move instruction to integer register file, with
 // sign-extension.
-void RiscVFMvxw(const Instruction *instruction) {
+void RiscVFMvxw(const Instruction* instruction) {
   RiscVUnaryOp<XRegister, XInt, int32_t>(
       instruction, [](int32_t a) { return static_cast<XInt>(a); });
 }
 
 // Single precision move instruction from integer to fp register file.
-void RiscVFMvwx(const Instruction *instruction) {
+void RiscVFMvwx(const Instruction* instruction) {
   RiscVUnaryNaNBoxOp<FPRegister::ValueType, uint32_t, uint32_t, uint32_t>(
       instruction, [](uint32_t a) -> uint32_t { return a; });
 }
 
 // Single precision compare equal.
-void RiscVFCmpeq(const Instruction *instruction) {
+void RiscVFCmpeq(const Instruction* instruction) {
   internal::RVFCmpeq<XRegister>(instruction);
 }
 
 // Single precicion compare less than.
-void RiscVFCmplt(const Instruction *instruction) {
+void RiscVFCmplt(const Instruction* instruction) {
   internal::RVFCmplt<XRegister>(instruction);
 }
 
 // Single precision compare less than or equal.
-void RiscVFCmple(const Instruction *instruction) {
+void RiscVFCmple(const Instruction* instruction) {
   internal::RVFCmple<XRegister>(instruction);
 }
 
 // Single precision fp class instruction.
-void RiscVFClass(const Instruction *instruction) {
+void RiscVFClass(const Instruction* instruction) {
   RiscVUnaryOp<XRegister, uint32_t, float>(
       instruction,
       [](float a) -> uint32_t { return static_cast<uint32_t>(ClassifyFP(a)); });

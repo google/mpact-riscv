@@ -37,30 +37,30 @@ namespace mpact::sim::riscv::isa32gvzb {
 class RiscV32GZBVecEncoding : public RiscV32GVZBEncodingBase,
                               public RiscVEncodingCommon {
  public:
-  explicit RiscV32GZBVecEncoding(RiscVState *state);
+  explicit RiscV32GZBVecEncoding(RiscVState* state);
   ~RiscV32GZBVecEncoding() override;
 
   void ParseInstruction(uint32_t inst_word);
   OpcodeEnum GetOpcode(SlotEnum, int) override { return opcode_; }
   FormatEnum GetFormat(SlotEnum, int) { return format_; }
 
-  PredicateOperandInterface *GetPredicate(SlotEnum, int, OpcodeEnum,
+  PredicateOperandInterface* GetPredicate(SlotEnum, int, OpcodeEnum,
                                           PredOpEnum) override {
     return nullptr;
   }
 
-  ResourceOperandInterface *GetSimpleResourceOperand(
-      SlotEnum, int, OpcodeEnum, SimpleResourceVector &resource_vec,
+  ResourceOperandInterface* GetSimpleResourceOperand(
+      SlotEnum, int, OpcodeEnum, SimpleResourceVector& resource_vec,
       int end) override;
 
-  ResourceOperandInterface *GetComplexResourceOperand(
+  ResourceOperandInterface* GetComplexResourceOperand(
       SlotEnum, int, OpcodeEnum, ComplexResourceEnum resource, int begin,
       int end) override;
 
-  SourceOperandInterface *GetSource(SlotEnum, int, OpcodeEnum, SourceOpEnum op,
+  SourceOperandInterface* GetSource(SlotEnum, int, OpcodeEnum, SourceOpEnum op,
                                     int source_no) override;
 
-  DestinationOperandInterface *GetDestination(SlotEnum, int, OpcodeEnum,
+  DestinationOperandInterface* GetDestination(SlotEnum, int, OpcodeEnum,
                                               DestOpEnum op, int dest_no,
                                               int latency) override;
 
@@ -69,25 +69,25 @@ class RiscV32GZBVecEncoding : public RiscV32GVZBEncodingBase,
   }
 
   // Methods inherited from RiscVEncodingCommon.
-  RiscVState *state() const override { return state_; }
-  generic::SimpleResourcePool *resource_pool() override {
+  RiscVState* state() const override { return state_; }
+  generic::SimpleResourcePool* resource_pool() override {
     return resource_pool_;
   }
   uint32_t inst_word() const override { return inst_word_; }
 
-  const SourceOpGetterMap &source_op_getters() { return source_op_getters_; }
-  const DestOpGetterMap &dest_op_getters() { return dest_op_getters_; }
-  const SimpleResourceGetterMap &simple_resource_getters() {
+  const SourceOpGetterMap& source_op_getters() { return source_op_getters_; }
+  const DestOpGetterMap& dest_op_getters() { return dest_op_getters_; }
+  const SimpleResourceGetterMap& simple_resource_getters() {
     return simple_resource_getters_;
   }
-  const ComplexResourceGetterMap &complex_resource_getters() {
+  const ComplexResourceGetterMap& complex_resource_getters() {
     return complex_resource_getters_;
   }
 
  private:
   std::string GetSimpleResourceName(SimpleResourceEnum resource_enum);
 
-  RiscVState *state_;
+  RiscVState* state_;
   uint32_t inst_word_;
   OpcodeEnum opcode_;
   FormatEnum format_;
@@ -95,8 +95,8 @@ class RiscV32GZBVecEncoding : public RiscV32GVZBEncodingBase,
   DestOpGetterMap dest_op_getters_;
   SimpleResourceGetterMap simple_resource_getters_;
   ComplexResourceGetterMap complex_resource_getters_;
-  generic::SimpleResourceDelayLine *resource_delay_line_ = nullptr;
-  generic::SimpleResourcePool *resource_pool_ = nullptr;
+  generic::SimpleResourceDelayLine* resource_delay_line_ = nullptr;
+  generic::SimpleResourcePool* resource_pool_ = nullptr;
 };
 
 }  // namespace mpact::sim::riscv::isa32gvzb

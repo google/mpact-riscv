@@ -32,7 +32,7 @@ namespace riscv {
 
 using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 
-RiscV32Decoder::RiscV32Decoder(RiscVState *state, util::MemoryInterface *memory)
+RiscV32Decoder::RiscV32Decoder(RiscVState* state, util::MemoryInterface* memory)
     : state_(state), memory_(memory) {
   // Get a handle to the internal error in the program error controller.
   decode_error_ = state->program_error_controller()->GetProgramError(
@@ -57,16 +57,16 @@ RiscV32Decoder::~RiscV32Decoder() {
   inst_db_->DecRef();
 }
 
-generic::Instruction *RiscV32Decoder::DecodeInstruction(uint64_t address) {
+generic::Instruction* RiscV32Decoder::DecodeInstruction(uint64_t address) {
   // First check that the address is aligned properly. If not, create and return
   // an instruction object that will raise an exception.
   if (address & 0x1) {
-    auto *inst = new generic::Instruction(0, state_);
+    auto* inst = new generic::Instruction(0, state_);
     inst->set_size(1);
     inst->SetDisassemblyString("Misaligned instruction address");
     inst->set_opcode(*isa32::OpcodeEnum::kNone);
     inst->set_address(address);
-    inst->set_semantic_function([this](generic::Instruction *inst) {
+    inst->set_semantic_function([this](generic::Instruction* inst) {
       state_->Trap(/*is_interrupt*/ false, inst->address(),
                    *ExceptionCode::kInstructionAddressMisaligned,
                    inst->address() ^ 0x1, inst);
@@ -77,12 +77,12 @@ generic::Instruction *RiscV32Decoder::DecodeInstruction(uint64_t address) {
   // If the address is greater than the max address, return an instruction
   // that will raise an exception.
   if (address > state_->max_physical_address()) {
-    auto *inst = new generic::Instruction(0, state_);
+    auto* inst = new generic::Instruction(0, state_);
     inst->set_size(0);
     inst->SetDisassemblyString("Instruction access fault");
     inst->set_opcode(*isa32::OpcodeEnum::kNone);
     inst->set_address(address);
-    inst->set_semantic_function([this](generic::Instruction *inst) {
+    inst->set_semantic_function([this](generic::Instruction* inst) {
       state_->Trap(/*is_interrupt*/ false, inst->address(),
                    *ExceptionCode::kInstructionAccessFault, inst->address(),
                    nullptr);
@@ -97,7 +97,7 @@ generic::Instruction *RiscV32Decoder::DecodeInstruction(uint64_t address) {
 
   // Call the isa decoder to obtain a new instruction object for the instruction
   // word that was parsed above.
-  auto *instruction = riscv_isa_->Decode(address, riscv_encoding_);
+  auto* instruction = riscv_isa_->Decode(address, riscv_encoding_);
   return instruction;
 }
 

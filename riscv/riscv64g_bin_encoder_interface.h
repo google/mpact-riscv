@@ -44,55 +44,55 @@ using ::mpact::sim::util::assembler::ResolverInterface;
 class RiscV64GBinEncoderInterface : public RiscV64GEncoderInterfaceBase {
  public:
   RiscV64GBinEncoderInterface();
-  RiscV64GBinEncoderInterface(const RiscV64GBinEncoderInterface &) = delete;
-  RiscV64GBinEncoderInterface &operator=(const RiscV64GBinEncoderInterface &) =
+  RiscV64GBinEncoderInterface(const RiscV64GBinEncoderInterface&) = delete;
+  RiscV64GBinEncoderInterface& operator=(const RiscV64GBinEncoderInterface&) =
       delete;
   ~RiscV64GBinEncoderInterface() override = default;
 
   absl::StatusOr<std::tuple<uint64_t, int>> GetOpcodeEncoding(
       SlotEnum slot, int entry, OpcodeEnum opcode,
-      ResolverInterface *resolver) override;
+      ResolverInterface* resolver) override;
   absl::StatusOr<uint64_t> GetSrcOpEncoding(
       uint64_t address, absl::string_view text, SlotEnum slot, int entry,
       OpcodeEnum opcode, SourceOpEnum source_op, int source_num,
-      ResolverInterface *resolver) override;
+      ResolverInterface* resolver) override;
   absl::Status AppendSrcOpRelocation(
       uint64_t address, absl::string_view text, SlotEnum slot, int entry,
       OpcodeEnum opcode, SourceOpEnum source_op, int source_num,
-      ResolverInterface *resolver,
-      std::vector<RelocationInfo> &relocations) override;
+      ResolverInterface* resolver,
+      std::vector<RelocationInfo>& relocations) override;
   absl::StatusOr<uint64_t> GetDestOpEncoding(
       uint64_t address, absl::string_view text, SlotEnum slot, int entry,
       OpcodeEnum opcode, DestOpEnum dest_op, int dest_num,
-      ResolverInterface *resolver) override;
+      ResolverInterface* resolver) override;
   absl::Status AppendDestOpRelocation(
       uint64_t address, absl::string_view text, SlotEnum slot, int entry,
       OpcodeEnum opcode, DestOpEnum dest_op, int dest_num,
-      ResolverInterface *resolver,
-      std::vector<RelocationInfo> &relocations) override;
+      ResolverInterface* resolver,
+      std::vector<RelocationInfo>& relocations) override;
   absl::StatusOr<uint64_t> GetListSrcOpEncoding(
       uint64_t address, absl::string_view text, SlotEnum slot, int entry,
       OpcodeEnum opcode, ListSourceOpEnum source_op, int source_num,
-      ResolverInterface *resolver) override;
+      ResolverInterface* resolver) override;
   absl::StatusOr<uint64_t> GetListDestOpEncoding(
       uint64_t address, absl::string_view text, SlotEnum slot, int entry,
       OpcodeEnum opcode, ListDestOpEnum dest_op, int dest_num,
-      ResolverInterface *resolver) override;
+      ResolverInterface* resolver) override;
   absl::StatusOr<uint64_t> GetPredOpEncoding(
       uint64_t address, absl::string_view text, SlotEnum slot, int entry,
       OpcodeEnum opcode, PredOpEnum pred_op,
-      ResolverInterface *resolver) override;
+      ResolverInterface* resolver) override;
 
  private:
   using OpMap = absl::flat_hash_map<
       int, std::function<absl::StatusOr<uint64_t>(uint64_t, absl::string_view,
-                                                  ResolverInterface *)>>;
+                                                  ResolverInterface*)>>;
 
   using RelocationMap =
       absl::flat_hash_map<std::tuple<OpcodeEnum, SourceOpEnum>,
                           std::function<absl::Status(
-                              uint64_t, absl::string_view, ResolverInterface *,
-                              std::vector<RelocationInfo> &)>>;
+                              uint64_t, absl::string_view, ResolverInterface*,
+                              std::vector<RelocationInfo>&)>>;
 
   OpMap source_op_map_;
   RelocationMap relocation_source_op_map_;

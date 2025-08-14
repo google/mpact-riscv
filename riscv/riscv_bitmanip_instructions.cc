@@ -39,105 +39,105 @@ using IntReg = int32_t;
 constexpr int kXlen = sizeof(UIntReg) * 8;
 
 // Add with shift.
-void RiscVShAdd(const Instruction *instruction) {
+void RiscVShAdd(const Instruction* instruction) {
   auto shift = generic::GetInstructionSource<UIntReg>(instruction, 2);
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [shift](UIntReg a, UIntReg b) { return b + (a << shift); });
 }
 
 // And not.
-void RiscVAndn(const Instruction *instruction) {
+void RiscVAndn(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a, UIntReg b) { return a & ~b; });
 }
 
 // Or not.
-void RiscVOrn(const Instruction *instruction) {
+void RiscVOrn(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a, UIntReg b) { return a | ~b; });
 }
 
 // Xnor.
-void RiscVXnor(const Instruction *instruction) {
+void RiscVXnor(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a, UIntReg b) { return ~(a ^ b); });
 }
 
-void RiscVNot(const generic::Instruction *instruction) {
+void RiscVNot(const generic::Instruction* instruction) {
   RiscVUnaryOp<RegisterType, UIntReg, UIntReg>(instruction,
                                                [](UIntReg a) { return ~a; });
 }
 
 // Count leading zeros.
-void RiscVClz(const Instruction *instruction) {
+void RiscVClz(const Instruction* instruction) {
   RiscVUnaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a) -> UIntReg { return absl::countl_zero(a); });
 }
 
 // Count trailing zeros.
-void RiscVCtz(const Instruction *instruction) {
+void RiscVCtz(const Instruction* instruction) {
   RiscVUnaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a) -> UIntReg { return absl::countr_zero(a); });
 }
 
 // Bit population count.
-void RiscVCpop(const Instruction *instruction) {
+void RiscVCpop(const Instruction* instruction) {
   RiscVUnaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a) -> UIntReg { return absl::popcount(a); });
 }
 
 // Signed max.
-void RiscVMax(const Instruction *instruction) {
+void RiscVMax(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, IntReg, IntReg>(
       instruction, [](IntReg a, IntReg b) { return std::max(a, b); });
 }
 
 // Unsigned max.
-void RiscVMaxu(const Instruction *instruction) {
+void RiscVMaxu(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a, UIntReg b) { return std::max(a, b); });
 }
 
 // Signed min.
-void RiscVMin(const Instruction *instruction) {
+void RiscVMin(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, IntReg, IntReg>(
       instruction, [](IntReg a, IntReg b) { return std::min(a, b); });
 }
 
 // Unsigned min.
-void RiscVMinu(const Instruction *instruction) {
+void RiscVMinu(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a, UIntReg b) { return std::min(a, b); });
 }
 
 // Sign extend byte.
-void RiscVSextB(const Instruction *instruction) {
+void RiscVSextB(const Instruction* instruction) {
   RiscVUnaryOp<RegisterType, IntReg, int8_t>(
       instruction, [](int8_t a) -> IntReg { return static_cast<IntReg>(a); });
 }
 
 // Sign extend half word.
-void RiscVSextH(const Instruction *instruction) {
+void RiscVSextH(const Instruction* instruction) {
   RiscVUnaryOp<RegisterType, IntReg, int16_t>(
       instruction, [](int16_t a) -> IntReg { return static_cast<IntReg>(a); });
 }
 
 // Zero extend half word.
-void RiscVZextH(const Instruction *instruction) {
+void RiscVZextH(const Instruction* instruction) {
   RiscVUnaryOp<RegisterType, UIntReg, uint16_t>(
       instruction,
       [](uint16_t a) -> UIntReg { return static_cast<UIntReg>(a); });
 }
 
 // Zero extend byte.
-void RiscVZextB(const Instruction *instruction) {
+void RiscVZextB(const Instruction* instruction) {
   RiscVUnaryOp<RegisterType, UIntReg, uint8_t>(
       instruction,
       [](uint8_t a) -> UIntReg { return static_cast<UIntReg>(a); });
 }
 
 // Rotate left.
-void RiscVRol(const Instruction *instruction) {
+void RiscVRol(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a, UIntReg b) {
         int shamt = b & 0x1f;
@@ -147,7 +147,7 @@ void RiscVRol(const Instruction *instruction) {
 }
 
 // Rotate right.
-void RiscVRor(const Instruction *instruction) {
+void RiscVRor(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a, UIntReg b) {
         int shamt = b & 0x1f;
@@ -157,7 +157,7 @@ void RiscVRor(const Instruction *instruction) {
 }
 
 // Or combine (byte wise).
-void RiscVOrcb(const Instruction *instruction) {
+void RiscVOrcb(const Instruction* instruction) {
   RiscVUnaryOp<RegisterType, UIntReg, UIntReg>(instruction, [](UIntReg a) {
     UIntReg mask = 0xff;
     UIntReg result = 0;
@@ -172,7 +172,7 @@ void RiscVOrcb(const Instruction *instruction) {
 }
 
 // Byte reverse.
-void RiscVRev8(const Instruction *instruction) {
+void RiscVRev8(const Instruction* instruction) {
   RiscVUnaryOp<RegisterType, UIntReg, UIntReg>(instruction, [](UIntReg a) {
     UIntReg result = 0;
     for (int i = 0; i < sizeof(UIntReg); i++) {
@@ -185,7 +185,7 @@ void RiscVRev8(const Instruction *instruction) {
 }
 
 // Carry-less multiplication (using xor) - low 32 bits.
-void RiscVClmul(const Instruction *instruction) {
+void RiscVClmul(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a, UIntReg b) {
         UIntReg result = 0;
@@ -197,7 +197,7 @@ void RiscVClmul(const Instruction *instruction) {
 }
 
 // Carry-less multiplication (using xor) - high 32 bits.
-void RiscVClmulh(const Instruction *instruction) {
+void RiscVClmulh(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a, UIntReg b) {
         UIntReg result = 0;
@@ -209,7 +209,7 @@ void RiscVClmulh(const Instruction *instruction) {
 }
 
 // Reverse carry-less multiplication (using xor).
-void RiscVClmulr(const Instruction *instruction) {
+void RiscVClmulr(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a, UIntReg b) {
         UIntReg result = 0;
@@ -221,27 +221,27 @@ void RiscVClmulr(const Instruction *instruction) {
 }
 
 // Clear bit.
-void RiscVBclr(const Instruction *instruction) {
+void RiscVBclr(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction,
       [](UIntReg a, UIntReg b) { return a & ~(1U << (b & 0x1f)); });
 }
 
 // Extract bit.
-void RiscVBext(const Instruction *instruction) {
+void RiscVBext(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction,
       [](UIntReg a, UIntReg b) { return (a >> (b & 0x1f)) & 0x1; });
 }
 
 // Invert bit.
-void RiscVBinv(const Instruction *instruction) {
+void RiscVBinv(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a, UIntReg b) { return a ^ (1U << (b & 0x1f)); });
 }
 
 // Set bit.
-void RiscVBset(const Instruction *instruction) {
+void RiscVBset(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a, UIntReg b) { return a | (1U << (b & 0x1f)); });
 }
@@ -256,20 +256,20 @@ using IntReg = int64_t;
 constexpr int kXlen = sizeof(UIntReg) * 8;
 
 // 64 + 32 bit unsigned addition.
-void RiscVAddUw(const Instruction *instruction) {
+void RiscVAddUw(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction,
       [](UIntReg a, UIntReg b) { return b + (a & 0xffff'ffffULL); });
 }
 
 // Add with shift.
-void RiscVShAdd(const Instruction *instruction) {
+void RiscVShAdd(const Instruction* instruction) {
   auto shift = generic::GetInstructionSource<UIntReg>(instruction, 2);
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [shift](UIntReg a, UIntReg b) { return b + (a << shift); });
 }
 
-void RiscVShAddUw(const Instruction *instruction) {
+void RiscVShAddUw(const Instruction* instruction) {
   auto shift = generic::GetInstructionSource<UIntReg>(instruction, 2);
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [shift](UIntReg a, UIntReg b) {
@@ -277,7 +277,7 @@ void RiscVShAddUw(const Instruction *instruction) {
       });
 }
 
-void RiscVSlliUw(const Instruction *instruction) {
+void RiscVSlliUw(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, uint32_t>(
       instruction, [](UIntReg a, uint32_t shift) -> UIntReg {
         return (a & 0xffff'ffffULL) << shift;
@@ -285,113 +285,113 @@ void RiscVSlliUw(const Instruction *instruction) {
 }
 
 // And not.
-void RiscVAndn(const Instruction *instruction) {
+void RiscVAndn(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a, UIntReg b) { return a & ~b; });
 }
 
 // Or not.
-void RiscVOrn(const Instruction *instruction) {
+void RiscVOrn(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a, UIntReg b) { return a | ~b; });
 }
 
 // Xnor.
-void RiscVXnor(const Instruction *instruction) {  // hmm
+void RiscVXnor(const Instruction* instruction) {  // hmm
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a, UIntReg b) { return ~(a ^ b); });
 }
 
-void RiscVNot(const generic::Instruction *instruction) {
+void RiscVNot(const generic::Instruction* instruction) {
   RiscVUnaryOp<RegisterType, UIntReg, UIntReg>(instruction,
                                                [](UIntReg a) { return ~a; });
 }
 
 // Count leading zeros.
-void RiscVClz(const Instruction *instruction) {
+void RiscVClz(const Instruction* instruction) {
   RiscVUnaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a) -> UIntReg { return absl::countl_zero(a); });
 }
 
-void RiscVClzw(const Instruction *instruction) {
+void RiscVClzw(const Instruction* instruction) {
   RiscVUnaryOp<RegisterType, UIntReg, uint32_t>(
       instruction, [](uint32_t a) -> UIntReg { return absl::countl_zero(a); });
 }
 
 // Count trailing zeros.
-void RiscVCtz(const Instruction *instruction) {
+void RiscVCtz(const Instruction* instruction) {
   RiscVUnaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a) -> UIntReg { return absl::countr_zero(a); });
 }
 
-void RiscVCtzw(const Instruction *instruction) {
+void RiscVCtzw(const Instruction* instruction) {
   RiscVUnaryOp<RegisterType, UIntReg, uint32_t>(
       instruction, [](uint32_t a) -> UIntReg { return absl::countr_zero(a); });
 }
 
 // Bit population count.
-void RiscVCpop(const Instruction *instruction) {
+void RiscVCpop(const Instruction* instruction) {
   RiscVUnaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a) -> UIntReg { return absl::popcount(a); });
 }
 
-void RiscVCpopw(const Instruction *instruction) {
+void RiscVCpopw(const Instruction* instruction) {
   RiscVUnaryOp<RegisterType, uint32_t, uint32_t>(
       instruction, [](uint32_t a) -> UIntReg { return absl::popcount(a); });
 }
 
 // Signed max.
-void RiscVMax(const Instruction *instruction) {
+void RiscVMax(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, IntReg, IntReg>(
       instruction, [](IntReg a, IntReg b) { return std::max(a, b); });
 }
 
 // Unsigned max.
-void RiscVMaxu(const Instruction *instruction) {
+void RiscVMaxu(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a, UIntReg b) { return std::max(a, b); });
 }
 
 // Signed min.
-void RiscVMin(const Instruction *instruction) {
+void RiscVMin(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, IntReg, IntReg>(
       instruction, [](IntReg a, IntReg b) { return std::min(a, b); });
 }
 
 // Unsigned min.
-void RiscVMinu(const Instruction *instruction) {
+void RiscVMinu(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a, UIntReg b) { return std::min(a, b); });
 }
 
 // Sign extend byte.
-void RiscVSextB(const Instruction *instruction) {
+void RiscVSextB(const Instruction* instruction) {
   RiscVUnaryOp<RegisterType, IntReg, int8_t>(
       instruction, [](int8_t a) -> IntReg { return static_cast<IntReg>(a); });
 }
 
 // Sign extend half word.
-void RiscVSextH(const Instruction *instruction) {
+void RiscVSextH(const Instruction* instruction) {
   RiscVUnaryOp<RegisterType, IntReg, int16_t>(
       instruction, [](int16_t a) -> IntReg { return static_cast<IntReg>(a); });
 }
 
 // Zero extend half word.
-void RiscVZextH(const Instruction *instruction) {
+void RiscVZextH(const Instruction* instruction) {
   RiscVUnaryOp<RegisterType, UIntReg, uint16_t>(
       instruction,
       [](uint16_t a) -> UIntReg { return static_cast<UIntReg>(a); });
 }
 
 // Zero extend byte.
-void RiscVZextB(const Instruction *instruction) {
+void RiscVZextB(const Instruction* instruction) {
   RiscVUnaryOp<RegisterType, UIntReg, uint8_t>(
       instruction,
       [](uint8_t a) -> UIntReg { return static_cast<UIntReg>(a); });
 }
 
 // Rotate left.
-void RiscVRol(const Instruction *instruction) {
+void RiscVRol(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a, UIntReg b) {
         int shamt = b & 0x3f;
@@ -400,7 +400,7 @@ void RiscVRol(const Instruction *instruction) {
       });
 }
 
-void RiscVRolw(const Instruction *instruction) {  // hmm
+void RiscVRolw(const Instruction* instruction) {  // hmm
   RiscVBinaryOp<RegisterType, IntReg, uint32_t>(
       instruction, [](uint32_t a, uint32_t b) {
         int shamt = b & 0x1f;
@@ -413,7 +413,7 @@ void RiscVRolw(const Instruction *instruction) {  // hmm
 }
 
 // Rotate right.
-void RiscVRor(const Instruction *instruction) {
+void RiscVRor(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a, UIntReg b) {
         int shamt = b & 0x3f;
@@ -422,7 +422,7 @@ void RiscVRor(const Instruction *instruction) {
       });
 }
 
-void RiscVRorw(const Instruction *instruction) {
+void RiscVRorw(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, IntReg, uint32_t>(
       instruction, [](uint32_t a, uint32_t b) {
         int shamt = b & 0x1f;
@@ -435,7 +435,7 @@ void RiscVRorw(const Instruction *instruction) {
 }
 
 // Or combine (byte wise).
-void RiscVOrcb(const Instruction *instruction) {
+void RiscVOrcb(const Instruction* instruction) {
   RiscVUnaryOp<RegisterType, UIntReg, UIntReg>(instruction, [](UIntReg a) {
     UIntReg mask = 0xffULL;
     UIntReg result = 0;
@@ -450,7 +450,7 @@ void RiscVOrcb(const Instruction *instruction) {
 }
 
 // Byte reverse.
-void RiscVRev8(const Instruction *instruction) {
+void RiscVRev8(const Instruction* instruction) {
   RiscVUnaryOp<RegisterType, UIntReg, UIntReg>(instruction, [](UIntReg a) {
     UIntReg result = 0;
     for (int i = 0; i < sizeof(UIntReg); i++) {
@@ -463,7 +463,7 @@ void RiscVRev8(const Instruction *instruction) {
 }
 
 // Carry-less multiplication (using xor) - low 32 bits.
-void RiscVClmul(const Instruction *instruction) {
+void RiscVClmul(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a, UIntReg b) {
         UIntReg result = 0;
@@ -475,7 +475,7 @@ void RiscVClmul(const Instruction *instruction) {
 }
 
 // Carry-less multiplication (using xor) - high 32 bits.
-void RiscVClmulh(const Instruction *instruction) {
+void RiscVClmulh(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a, UIntReg b) {
         UIntReg result = 0;
@@ -487,7 +487,7 @@ void RiscVClmulh(const Instruction *instruction) {
 }
 
 // Reverse carry-less multiplication (using xor).
-void RiscVClmulr(const Instruction *instruction) {
+void RiscVClmulr(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction, [](UIntReg a, UIntReg b) {
         UIntReg result = 0;
@@ -499,28 +499,28 @@ void RiscVClmulr(const Instruction *instruction) {
 }
 
 // Clear bit.
-void RiscVBclr(const Instruction *instruction) {
+void RiscVBclr(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction,
       [](UIntReg a, UIntReg b) { return a & ~(1ULL << (b & 0x3f)); });
 }
 
 // Extract bit.
-void RiscVBext(const Instruction *instruction) {
+void RiscVBext(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction,
       [](UIntReg a, UIntReg b) { return (a >> (b & 0x3f)) & 0x1; });
 }
 
 // Invert bit.
-void RiscVBinv(const Instruction *instruction) {
+void RiscVBinv(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction,
       [](UIntReg a, UIntReg b) { return a ^ (1ULL << (b & 0x3f)); });
 }
 
 // Set bit.
-void RiscVBset(const Instruction *instruction) {
+void RiscVBset(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, UIntReg, UIntReg>(
       instruction,
       [](UIntReg a, UIntReg b) { return a | (1ULL << (b & 0x3f)); });

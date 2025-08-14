@@ -38,7 +38,7 @@ using WideUintReg = typename WideType<UintReg>::type;
 using IntReg = typename std::make_signed<RV32Register::ValueType>::type;
 using WideIntReg = typename WideType<IntReg>::type;
 
-void MMul(Instruction *instruction) {
+void MMul(Instruction* instruction) {
   BinaryOp<UintReg, WideIntReg>(instruction, [](WideIntReg a_wide,
                                                 WideIntReg b_wide) {
     WideIntReg c_wide = a_wide * b_wide;
@@ -46,21 +46,21 @@ void MMul(Instruction *instruction) {
   });
 }
 
-void MMulh(Instruction *instruction) {
+void MMulh(Instruction* instruction) {
   BinaryOp<IntReg>(instruction, [](WideIntReg a_wide, WideIntReg b_wide) {
     WideIntReg c_wide = a_wide * b_wide;
     return static_cast<IntReg>(c_wide >> 32);
   });
 }
 
-void MMulhu(Instruction *instruction) {
+void MMulhu(Instruction* instruction) {
   BinaryOp<UintReg>(instruction, [](WideUintReg a_wide, WideUintReg b_wide) {
     WideUintReg c_wide = a_wide * b_wide;
     return static_cast<UintReg>(c_wide >> 32);
   });
 }
 
-void MMulhsu(Instruction *instruction) {
+void MMulhsu(Instruction* instruction) {
   BinaryOp<UintReg, WideIntReg, WideUintReg>(
       instruction, [](WideIntReg a_wide, WideUintReg b_wide) {
         WideIntReg c_wide = a_wide * b_wide;
@@ -68,7 +68,7 @@ void MMulhsu(Instruction *instruction) {
       });
 }
 
-void MDiv(Instruction *instruction) {
+void MDiv(Instruction* instruction) {
   BinaryOp<IntReg>(instruction, [](IntReg a, IntReg b) -> IntReg {
     if (b == 0) return -1;
     if ((b == -1) && (a == std::numeric_limits<IntReg>::min())) {
@@ -78,14 +78,14 @@ void MDiv(Instruction *instruction) {
   });
 }
 
-void MDivu(Instruction *instruction) {
+void MDivu(Instruction* instruction) {
   BinaryOp<UintReg>(instruction, [](UintReg a, UintReg b) -> UintReg {
     if (b == 0) return std::numeric_limits<UintReg>::max();
     return a / b;
   });
 }
 
-void MRem(Instruction *instruction) {
+void MRem(Instruction* instruction) {
   BinaryOp<IntReg>(instruction, [](IntReg a, IntReg b) -> IntReg {
     if (b == 0) return a;
     if ((b == -1) && (a == std::numeric_limits<IntReg>::min())) {
@@ -95,7 +95,7 @@ void MRem(Instruction *instruction) {
   });
 }
 
-void MRemu(Instruction *instruction) {
+void MRemu(Instruction* instruction) {
   BinaryOp<UintReg>(instruction, [](UintReg a, UintReg b) {
     if (b == 0) return a;
     return a % b;
@@ -114,7 +114,7 @@ using IntReg = typename std::make_signed<RV64Register::ValueType>::type;
 using WideIntReg = typename WideType<IntReg>::type;
 using NarrowIntReg = typename NarrowType<IntReg>::type;
 
-void MMul(Instruction *instruction) {
+void MMul(Instruction* instruction) {
   BinaryOp<UintReg, WideIntReg>(instruction, [](WideIntReg a_wide,
                                                 WideIntReg b_wide) {
     WideIntReg c_wide = a_wide * b_wide;
@@ -122,21 +122,21 @@ void MMul(Instruction *instruction) {
   });
 }
 
-void MMulh(Instruction *instruction) {
+void MMulh(Instruction* instruction) {
   BinaryOp<IntReg>(instruction, [](WideIntReg a_wide, WideIntReg b_wide) {
     WideIntReg c_wide = a_wide * b_wide;
     return static_cast<IntReg>(c_wide >> 64);
   });
 }
 
-void MMulhu(Instruction *instruction) {
+void MMulhu(Instruction* instruction) {
   BinaryOp<UintReg>(instruction, [](WideUintReg a_wide, WideUintReg b_wide) {
     WideUintReg c_wide = a_wide * b_wide;
     return static_cast<UintReg>(c_wide >> 64);
   });
 }
 
-void MMulhsu(Instruction *instruction) {
+void MMulhsu(Instruction* instruction) {
   BinaryOp<UintReg, WideIntReg, WideUintReg>(
       instruction, [](WideIntReg a_wide, WideUintReg b_wide) {
         bool negate = false;
@@ -156,7 +156,7 @@ void MMulhsu(Instruction *instruction) {
       });
 }
 
-void MDiv(Instruction *instruction) {
+void MDiv(Instruction* instruction) {
   BinaryOp<IntReg>(instruction, [](IntReg a, IntReg b) -> IntReg {
     if (b == 0) return -1;
     if ((b == -1) && (a == std::numeric_limits<IntReg>::min())) {
@@ -166,14 +166,14 @@ void MDiv(Instruction *instruction) {
   });
 }
 
-void MDivu(Instruction *instruction) {
+void MDivu(Instruction* instruction) {
   BinaryOp<UintReg>(instruction, [](UintReg a, UintReg b) -> UintReg {
     if (b == 0) return std::numeric_limits<UintReg>::max();
     return a / b;
   });
 }
 
-void MRem(Instruction *instruction) {
+void MRem(Instruction* instruction) {
   BinaryOp<IntReg>(instruction, [](IntReg a, IntReg b) -> IntReg {
     if (b == 0) return a;
     if ((b == -1) && (a == std::numeric_limits<IntReg>::min())) {
@@ -183,14 +183,14 @@ void MRem(Instruction *instruction) {
   });
 }
 
-void MRemu(Instruction *instruction) {
+void MRemu(Instruction* instruction) {
   BinaryOp<UintReg>(instruction, [](UintReg a, UintReg b) {
     if (b == 0) return a;
     return a % b;
   });
 }
 
-void MMulw(Instruction *instruction) {
+void MMulw(Instruction* instruction) {
   BinaryOp<IntReg, NarrowIntReg>(instruction,
                                  [](NarrowIntReg a, NarrowIntReg b) -> IntReg {
                                    NarrowIntReg c = a * b;
@@ -199,7 +199,7 @@ void MMulw(Instruction *instruction) {
                                  });
 }
 
-void MDivw(Instruction *instruction) {
+void MDivw(Instruction* instruction) {
   BinaryOp<IntReg, NarrowIntReg>(
       instruction, [](NarrowIntReg a, NarrowIntReg b) -> IntReg {
         if (b == 0) return static_cast<IntReg>(-1);
@@ -211,7 +211,7 @@ void MDivw(Instruction *instruction) {
       });
 }
 
-void MDivuw(Instruction *instruction) {
+void MDivuw(Instruction* instruction) {
   BinaryOp<IntReg, NarrowUintReg>(
       instruction, [](NarrowUintReg a, NarrowUintReg b) -> IntReg {
         if (b == 0) return std::numeric_limits<UintReg>::max();
@@ -219,7 +219,7 @@ void MDivuw(Instruction *instruction) {
       });
 }
 
-void MRemw(Instruction *instruction) {
+void MRemw(Instruction* instruction) {
   BinaryOp<IntReg, NarrowIntReg>(
       instruction, [](NarrowIntReg a, NarrowIntReg b) -> IntReg {
         if (b == 0) return static_cast<IntReg>(a);
@@ -230,7 +230,7 @@ void MRemw(Instruction *instruction) {
       });
 }
 
-void MRemuw(Instruction *instruction) {
+void MRemuw(Instruction* instruction) {
   BinaryOp<IntReg, NarrowUintReg>(
       instruction, [](NarrowUintReg a, NarrowUintReg b) -> IntReg {
         if (b == 0) return static_cast<IntReg>(static_cast<NarrowIntReg>(a));

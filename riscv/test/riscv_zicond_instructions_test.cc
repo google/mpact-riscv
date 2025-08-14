@@ -60,7 +60,7 @@ class RiscVZicondInstructionTest : public testing::Test {
   template <typename RegisterType>
   typename RegisterType::ValueType GetRegisterValue(
       absl::string_view reg_name) {
-    RegisterType *reg;
+    RegisterType* reg;
     if constexpr (std::is_same_v<RegisterType, RV32Register>) {
       reg = rv32_regs_[reg_name];
     } else {
@@ -72,21 +72,21 @@ class RiscVZicondInstructionTest : public testing::Test {
   }
 
   template <typename RegisterType>
-  void AppendRegisterOperands(const std::vector<std::string> &sources,
-                              const std::vector<std::string> &destinations) {
-    absl::flat_hash_map<std::string, RegisterType *> *regs;
+  void AppendRegisterOperands(const std::vector<std::string>& sources,
+                              const std::vector<std::string>& destinations) {
+    absl::flat_hash_map<std::string, RegisterType*>* regs;
     if constexpr (std::is_same_v<RegisterType, RV32Register>) {
       regs = &rv32_regs_;
     } else {
       regs = &rv64_regs_;
     }
     for (auto src : sources) {
-      auto *reg = (*regs)[src];
+      auto* reg = (*regs)[src];
       CHECK_NE(reg, nullptr);
       instruction_->AppendSource(reg->CreateSourceOperand());
     }
     for (auto dest : destinations) {
-      auto *reg = (*regs)[dest];
+      auto* reg = (*regs)[dest];
       CHECK_NE(reg, nullptr);
       instruction_->AppendDestination(reg->CreateDestinationOperand(0));
     }
@@ -97,16 +97,16 @@ class RiscVZicondInstructionTest : public testing::Test {
       const std::vector<
           std::tuple<std::string, typename RegisterType::ValueType>>
           values) {
-    absl::flat_hash_map<std::string, RegisterType *> *regs;
+    absl::flat_hash_map<std::string, RegisterType*>* regs;
     if constexpr (std::is_same_v<RegisterType, RV32Register>) {
       regs = &rv32_regs_;
     } else {
       regs = &rv64_regs_;
     }
-    for (auto &[reg_name, value] : values) {
-      auto *reg = (*regs)[reg_name];
+    for (auto& [reg_name, value] : values) {
+      auto* reg = (*regs)[reg_name];
       CHECK_NE(reg, nullptr);
-      auto *db =
+      auto* db =
           state_.db_factory()->Allocate<typename RegisterType::ValueType>(1);
       db->template Set<typename RegisterType::ValueType>(0, value);
       reg->SetDataBuffer(db);
@@ -114,13 +114,13 @@ class RiscVZicondInstructionTest : public testing::Test {
     }
   }
 
-  Instruction *instruction() { return instruction_; }
+  Instruction* instruction() { return instruction_; }
 
  private:
   TestState state_;
-  Instruction *instruction_;
-  absl::flat_hash_map<std::string, RV32Register *> rv32_regs_;
-  absl::flat_hash_map<std::string, RV64Register *> rv64_regs_;
+  Instruction* instruction_;
+  absl::flat_hash_map<std::string, RV32Register*> rv32_regs_;
+  absl::flat_hash_map<std::string, RV64Register*> rv64_regs_;
 };
 
 TEST_F(RiscVZicondInstructionTest, RV32CzeroEqz) {

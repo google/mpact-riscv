@@ -15,8 +15,6 @@
 #ifndef THIRD_PARTY_MPACT_RISCV_RISCV_GETTERS_ZBA_H_
 #define THIRD_PARTY_MPACT_RISCV_RISCV_GETTERS_ZBA_H_
 
-#include <new>
-
 #include "mpact/sim/generic/literal_operand.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "riscv/riscv_encoding_common.h"
@@ -36,8 +34,8 @@ using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 // types for the instruction set.
 template <typename Enum, typename Extractors, typename IntRegister,
           typename FpRegister>
-void AddRiscVZbaSourceGetters(SourceOpGetterMap &getter_map,
-                              RiscVEncodingCommon *common) {
+void AddRiscVZbaSourceGetters(SourceOpGetterMap& getter_map,
+                              RiscVEncodingCommon* common) {
   // Source operand getters.
   Insert(getter_map, *Enum::kConst1,
          []() { return new generic::IntLiteralOperand<1>(); });
@@ -49,8 +47,8 @@ void AddRiscVZbaSourceGetters(SourceOpGetterMap &getter_map,
 
 template <typename Enum, typename Extractors, typename IntRegister,
           typename FpRegister>
-void AddRiscVZbaDestGetters(DestOpGetterMap &getter_map,
-                            RiscVEncodingCommon *common) {
+void AddRiscVZbaDestGetters(DestOpGetterMap& getter_map,
+                            RiscVEncodingCommon* common) {
   // Destination operand getters.
   // Empty.
 }

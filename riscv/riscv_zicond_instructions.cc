@@ -27,14 +27,14 @@ using RegValue = typename RegType::ValueType;
 
 // If rs2 is zero, set the destination register to 0, otherwise copy rs1 to
 // the destination register.
-void RiscVCzeroEqz(const generic::Instruction *inst) {
+void RiscVCzeroEqz(const generic::Instruction* inst) {
   RiscVBinaryOp<RegType, RegValue, RegValue>(
       inst, [](RegValue rs1, RegValue rs2) { return rs2 == 0 ? 0 : rs1; });
 }
 
 // If rs2 is non-zero, set the destination register to 0, otherwise copy rs1 to
 // the destination register.
-void RiscVCzeroNez(const generic::Instruction *inst) {
+void RiscVCzeroNez(const generic::Instruction* inst) {
   RiscVBinaryOp<RegType, RegValue, RegValue>(
       inst, [](RegValue rs1, RegValue rs2) { return rs2 != 0 ? 0 : rs1; });
 }
@@ -48,14 +48,14 @@ using RegValue = typename RegType::ValueType;
 
 // If rs2 is zero, set the destination register to 0, otherwise copy rs1 to
 // the destination register.
-void RiscVCzeroEqz(const generic::Instruction *inst) {
+void RiscVCzeroEqz(const generic::Instruction* inst) {
   RiscVBinaryOp<RegType, RegValue, RegValue>(
       inst, [](RegValue rs1, RegValue rs2) { return rs2 == 0 ? 0 : rs1; });
 }
 
 // If rs2 is non-zero, set the destination register to 0, otherwise copy rs1 to
 // the destination register.
-void RiscVCzeroNez(const generic::Instruction *inst) {
+void RiscVCzeroNez(const generic::Instruction* inst) {
   RiscVBinaryOp<RegType, RegValue, RegValue>(
       inst, [](RegValue rs1, RegValue rs2) { return rs2 != 0 ? 0 : rs1; });
 }

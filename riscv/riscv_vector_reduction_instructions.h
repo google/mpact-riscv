@@ -31,25 +31,25 @@ using Instruction = ::mpact::sim::generic::Instruction;
 // result is written to the 0 element of destination operand vd.
 
 // Vector sum reduction.
-void Vredsum(Instruction *inst);
+void Vredsum(Instruction* inst);
 // Vector and reduction.
-void Vredand(Instruction *inst);
+void Vredand(Instruction* inst);
 // Vector or reduction.
-void Vredor(Instruction *inst);
+void Vredor(Instruction* inst);
 // Vector xor reduction.
-void Vredxor(Instruction *inst);
+void Vredxor(Instruction* inst);
 // Vector unsigned min reduction.
-void Vredminu(Instruction *inst);
+void Vredminu(Instruction* inst);
 // Vector signed min reduction.
-void Vredmin(Instruction *inst);
+void Vredmin(Instruction* inst);
 // Vector unsigned max reduction.
-void Vredmaxu(Instruction *inst);
+void Vredmaxu(Instruction* inst);
 // Vector signed max reduction.
-void Vredmax(Instruction *inst);
+void Vredmax(Instruction* inst);
 // Vector unsigned widening sum reduction. The result is 2 * SEW.
-void Vwredsumu(Instruction *inst);
+void Vwredsumu(Instruction* inst);
 // vector signed widening sum reduction. The result is 2 * SEW.
-void Vwredsum(Instruction *inst);
+void Vwredsum(Instruction* inst);
 
 }  // namespace riscv
 }  // namespace sim

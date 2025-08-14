@@ -15,6 +15,8 @@
 #ifndef MPACT_RISCV_RISCV_STOULL_WRAPPER_H_
 #define MPACT_RISCV_RISCV_STOULL_WRAPPER_H_
 
+#include <cstddef>
+#include <cstdint>
 #include <string>
 
 #include "absl/status/statusor.h"
@@ -27,7 +29,7 @@ namespace sim {
 namespace riscv {
 namespace internal {
 
-absl::StatusOr<uint64_t> stoull(const std::string str, size_t *indx = nullptr,
+absl::StatusOr<uint64_t> stoull(const std::string& str, size_t* indx = nullptr,
                                 int base = 10);
 
 }  // namespace internal

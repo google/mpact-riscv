@@ -49,12 +49,12 @@ class DebugCommandShell : public sim::generic::DebugCommandShellInterface {
   DebugCommandShell();
 
   // Add core access to the system. All cores must be added before calling Run.
-  void AddCore(const CoreAccess &core_access) override;
-  void AddCores(const std::vector<CoreAccess> &core_access) override;
+  void AddCore(const CoreAccess& core_access) override;
+  void AddCores(const std::vector<CoreAccess>& core_access) override;
 
   // The run method is the command interpreter. It parses the command strings,
   // executes the corresponding commands, displays results and error messages.
-  void Run(std::istream &is, std::ostream &os) override;
+  void Run(std::istream& is, std::ostream& os) override;
 
   // This adds a custom command to the command interpreter. Usage will be added
   // to the standard command usage. The callable will be called before the
@@ -78,39 +78,39 @@ class DebugCommandShell : public sim::generic::DebugCommandShellInterface {
   };
 
   // Helper method for formatting single data buffer value.
-  std::string FormatSingleDbValue(generic::DataBuffer *db,
-                                  const std::string &format, int width,
+  std::string FormatSingleDbValue(generic::DataBuffer* db,
+                                  const std::string& format, int width,
                                   int index) const;
   // Helper method for formatting multiple data buffer values.
-  std::string FormatAllDbValues(generic::DataBuffer *db,
-                                const std::string &format, int width) const;
+  std::string FormatAllDbValues(generic::DataBuffer* db,
+                                const std::string& format, int width) const;
   // Helper method for writing single data buffer value.
-  absl::Status WriteSingleValueToDb(const std::string &str_value,
-                                    generic::DataBuffer *db, std::string format,
+  absl::Status WriteSingleValueToDb(const std::string& str_value,
+                                    generic::DataBuffer* db, std::string format,
                                     int width, int index) const;
 
   // Helper method for processing read memory command.
-  std::string ReadMemory(int core, const std::string &str_value,
-                         const std::string &format);
+  std::string ReadMemory(int core, const std::string& str_value,
+                         const std::string& format);
   // Helper method for processing write memory command.
-  std::string WriteMemory(int core, const std::string &str_value1,
-                          const std::string &format,
-                          const std::string &str_value2);
+  std::string WriteMemory(int core, const std::string& str_value1,
+                          const std::string& format,
+                          const std::string& str_value2);
   // Helper method used to parse a numeric string or use the string as a
   // symbol name for lookup in the loader.
   absl::StatusOr<uint64_t> GetValueFromString(int core,
-                                              const std::string &str_value,
+                                              const std::string& str_value,
                                               int radix);
   // Reads and formats a register.
-  std::string FormatRegister(int core, const std::string &reg_name) const;
+  std::string FormatRegister(int core, const std::string& reg_name) const;
   // Reads and formats $all registers - stored in reg_vec_.
   std::string FormatAllRegisters(int core) const;
 
   // Action point handling.
   std::string ListActionPoints();
-  std::string EnableActionPointN(const std::string &index_str);
-  std::string DisableActionPointN(const std::string &index_str);
-  std::string ClearActionPointN(const std::string &index_str);
+  std::string EnableActionPointN(const std::string& index_str);
+  std::string DisableActionPointN(const std::string& index_str);
+  std::string ClearActionPointN(const std::string& index_str);
   std::string ClearAllActionPoints();
 
   std::vector<CoreAccess> core_access_;
@@ -173,7 +173,7 @@ class DebugCommandShell : public sim::generic::DebugCommandShellInterface {
   std::vector<std::string> command_usage_;
   std::vector<std::string> reg_vector_;
   absl::flat_hash_set<std::string> exec_file_names_;
-  std::deque<std::istream *> command_streams_;
+  std::deque<std::istream*> command_streams_;
   std::deque<std::string> previous_commands_;
   std::vector<absl::btree_map<int, ActionPointInfo>> core_action_point_info_;
   std::vector<int> core_action_point_id_;

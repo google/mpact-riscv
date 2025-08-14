@@ -21,7 +21,6 @@
 #include <type_traits>
 
 #include "absl/log/log.h"
-#include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
@@ -44,8 +43,8 @@ using std::numeric_limits;
 // Vector arithmetic operations.
 
 // Vector add.
-void Vadd(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vadd(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -72,8 +71,8 @@ void Vadd(Instruction *inst) {
 }
 
 // Vector subtract.
-void Vsub(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vsub(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -100,8 +99,8 @@ void Vsub(Instruction *inst) {
 }
 
 // Vector reverse subtract.
-void Vrsub(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vrsub(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -130,8 +129,8 @@ void Vrsub(Instruction *inst) {
 // Vector logical operations.
 
 // Vector and.
-void Vand(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vand(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -158,8 +157,8 @@ void Vand(Instruction *inst) {
 }
 
 // Vector or.
-void Vor(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vor(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -186,8 +185,8 @@ void Vor(Instruction *inst) {
 }
 
 // Vector xor.
-void Vxor(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vxor(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -216,8 +215,8 @@ void Vxor(Instruction *inst) {
 // Vector shift operations.
 
 // Vector shift left logical.
-void Vsll(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vsll(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -248,8 +247,8 @@ void Vsll(Instruction *inst) {
 }
 
 // Vector shift right logical.
-void Vsrl(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vsrl(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -280,8 +279,8 @@ void Vsrl(Instruction *inst) {
 }
 
 // Vector shift right arithmetic.
-void Vsra(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vsra(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -315,8 +314,8 @@ void Vsra(Instruction *inst) {
 
 // Vector narrowing shift right logical. Source op 0 is shifted right
 // by source op 1 and the result is 1/2 the size of source op 0.
-void Vnsrl(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vnsrl(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   // LMUL8 cannot be 64.
   if (rv_vector->vector_length_multiplier() > 32) {
@@ -349,8 +348,8 @@ void Vnsrl(Instruction *inst) {
 
 // Vector narrowing shift right arithmetic. Source op 0 is shifted right
 // by source op 1 and the result is 1/2 the size of source op 0.
-void Vnsra(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vnsra(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   // If the vector length multiplier (x8) is greater than 32, that means that
   // the source values (sew * 2) would exceed the available register group.
@@ -385,8 +384,8 @@ void Vnsra(Instruction *inst) {
 }
 
 // Vector unsigned min.
-void Vminu(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vminu(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -417,8 +416,8 @@ void Vminu(Instruction *inst) {
 }
 
 // Vector signed min.
-void Vmin(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmin(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -448,8 +447,8 @@ void Vmin(Instruction *inst) {
 }
 
 // Vector unsigned max.
-void Vmaxu(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmaxu(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -480,8 +479,8 @@ void Vmaxu(Instruction *inst) {
 }
 
 // Vector signed max.
-void Vmax(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmax(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -511,8 +510,8 @@ void Vmax(Instruction *inst) {
 }
 
 // Set equal.
-void Vmseq(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmseq(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -541,8 +540,8 @@ void Vmseq(Instruction *inst) {
 // Vector compare instructions.
 
 // Set not equal.
-void Vmsne(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmsne(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -569,8 +568,8 @@ void Vmsne(Instruction *inst) {
 }
 
 // Set less than unsigned.
-void Vmsltu(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmsltu(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -597,8 +596,8 @@ void Vmsltu(Instruction *inst) {
 }
 
 // Set less than.
-void Vmslt(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmslt(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -625,8 +624,8 @@ void Vmslt(Instruction *inst) {
 }
 
 // Set less than or equal unsigned.
-void Vmsleu(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmsleu(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -653,8 +652,8 @@ void Vmsleu(Instruction *inst) {
 }
 
 // Set less than or equal.
-void Vmsle(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmsle(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -681,8 +680,8 @@ void Vmsle(Instruction *inst) {
 }
 
 // Set greater than unsigned.
-void Vmsgtu(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmsgtu(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -709,8 +708,8 @@ void Vmsgtu(Instruction *inst) {
 }
 
 // Set greater than.
-void Vmsgt(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmsgt(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -737,8 +736,8 @@ void Vmsgt(Instruction *inst) {
 }
 
 // Saturated unsigned addition.
-void Vsaddu(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vsaddu(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -792,7 +791,7 @@ void Vsaddu(Instruction *inst) {
 // Uses unsigned arithmetic for the addition to avoid signed overflow, which,
 // when compiled with --config=asan, will trigger an exception.
 template <typename T>
-inline T VsaddHelper(T vs2, T vs1, RiscVVectorState *rv_vector) {
+inline T VsaddHelper(T vs2, T vs1, RiscVVectorState* rv_vector) {
   using UT = typename std::make_unsigned<T>::type;
   UT uvs2 = static_cast<UT>(vs2);
   UT uvs1 = static_cast<UT>(vs1);
@@ -806,8 +805,8 @@ inline T VsaddHelper(T vs2, T vs1, RiscVVectorState *rv_vector) {
 }
 
 // Saturated signed addition.
-void Vsadd(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vsadd(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -838,8 +837,8 @@ void Vsadd(Instruction *inst) {
 }
 
 // Saturated unsigned subtract.
-void Vssubu(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vssubu(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -890,7 +889,7 @@ void Vssubu(Instruction *inst) {
 }
 
 template <typename T>
-T VssubHelper(T vs2, T vs1, RiscVVectorState *rv_vector) {
+T VssubHelper(T vs2, T vs1, RiscVVectorState* rv_vector) {
   using UT = typename std::make_unsigned<T>::type;
   UT uvs2 = static_cast<UT>(vs2);
   UT uvs1 = static_cast<UT>(vs1);
@@ -904,8 +903,8 @@ T VssubHelper(T vs2, T vs1, RiscVVectorState *rv_vector) {
 }
 
 // Saturated signed subtract.
-void Vssub(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vssub(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -936,8 +935,8 @@ void Vssub(Instruction *inst) {
 }
 
 // Add/Subtract with carry, carry generation.
-void Vadc(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vadc(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -971,8 +970,8 @@ void Vadc(Instruction *inst) {
 }
 
 // Add with carry - carry generation.
-void Vmadc(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmadc(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -1024,8 +1023,8 @@ void Vmadc(Instruction *inst) {
 }
 
 // Subtract with borrow.
-void Vsbc(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vsbc(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -1059,8 +1058,8 @@ void Vsbc(Instruction *inst) {
 }
 
 // Subtract with borrow - borrow generation.
-void Vmsbc(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmsbc(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -1096,8 +1095,8 @@ void Vmsbc(Instruction *inst) {
 }
 
 // Vector merge.
-void Vmerge(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmerge(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -1131,13 +1130,13 @@ void Vmerge(Instruction *inst) {
 }
 
 // Vector move register(s).
-void Vmvr(int num_regs, Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vmvr(int num_regs, Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   if (rv_vector->vector_exception()) return;
 
-  auto *src_op = static_cast<RV32VectorSourceOperand *>(inst->Source(0));
-  auto *dest_op =
-      static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+  auto* src_op = static_cast<RV32VectorSourceOperand*>(inst->Source(0));
+  auto* dest_op =
+      static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
   if (src_op->size() < num_regs) {
     LOG(ERROR) << "Vmvr: source operand has fewer registers than requested";
     rv_vector->set_vector_exception();
@@ -1154,8 +1153,8 @@ void Vmvr(int num_regs, Instruction *inst) {
   int vstart = rv_vector->vstart();
   int start_reg = vstart / num_elements_per_vector;
   for (int i = start_reg; i < num_regs; i++) {
-    auto *src_db = src_op->GetRegister(i)->data_buffer();
-    auto *dest_db = dest_op->AllocateDataBuffer(i);
+    auto* src_db = src_op->GetRegister(i)->data_buffer();
+    auto* dest_db = dest_op->AllocateDataBuffer(i);
     std::memcpy(dest_db->raw_ptr(), src_db->raw_ptr(),
                 dest_db->size<uint8_t>());
     dest_db->Submit();
@@ -1165,7 +1164,7 @@ void Vmvr(int num_regs, Instruction *inst) {
 
 // Templated helper function for shift right with rounding.
 template <typename T>
-T VssrHelper(RiscVVectorState *rv_vector, T vs2, T vs1) {
+T VssrHelper(RiscVVectorState* rv_vector, T vs2, T vs1) {
   using UT = typename MakeUnsigned<T>::type;
   int rm = rv_vector->vxrm();
   int max_shift = (sizeof(T) << 3) - 1;
@@ -1183,8 +1182,8 @@ T VssrHelper(RiscVVectorState *rv_vector, T vs2, T vs1) {
 }
 
 // Logical shift right with rounding.
-void Vssrl(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vssrl(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -1215,8 +1214,8 @@ void Vssrl(Instruction *inst) {
 }
 
 // Arithmetic shift right with rounding.
-void Vssra(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vssra(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
@@ -1248,7 +1247,7 @@ void Vssra(Instruction *inst) {
 
 // Templated helper function for shift right with rounding and saturation.
 template <typename DT, typename WT, typename T>
-T VnclipHelper(RiscVVectorState *rv_vector, WT vs2, T vs1) {
+T VnclipHelper(RiscVVectorState* rv_vector, WT vs2, T vs1) {
   using WUT = typename std::make_unsigned<WT>::type;
   int rm = rv_vector->vxrm();
   int max_shift = (sizeof(WT) << 3) - 1;
@@ -1276,8 +1275,8 @@ T VnclipHelper(RiscVVectorState *rv_vector, WT vs2, T vs1) {
 
 // Arithmetic shift right and narrowing from 2*sew to sew with rounding and
 // signed saturation.
-void Vnclip(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vnclip(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int lmul8 = rv_vector->vector_length_multiplier();
   // This is a narrowing operation and sew is that of the narrow data type.
   // Thus if lmul > 32, then emul for the wider data type is illegal.
@@ -1314,8 +1313,8 @@ void Vnclip(Instruction *inst) {
 
 // Logical shift right and narrowing from 2*sew to sew with rounding and
 // unsigned saturation.
-void Vnclipu(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vnclipu(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int lmul8 = rv_vector->vector_length_multiplier();
   // This is a narrowing operation and sew is that of the narrow data type.
   // Thus if lmul > 32, then emul for the wider data type is illegal.
@@ -1356,7 +1355,7 @@ void Vnclipu(Instruction *inst) {
 // Perform a signed multiply from T to wider int type. Shift that result
 // right by sizeof(T) * 8 - 1 and round. Saturate if needed to fit into T.
 template <typename T>
-T VsmulHelper(RiscVVectorState *rv_vector, T vs2, T vs1) {
+T VsmulHelper(RiscVVectorState* rv_vector, T vs2, T vs1) {
   using WT = typename WideType<T>::type;
   WT vd_w;
   WT vs2_w = static_cast<WT>(vs2);
@@ -1375,8 +1374,8 @@ T VsmulHelper(RiscVVectorState *rv_vector, T vs2, T vs1) {
 }
 
 // Vector fractional multiply with rounding and saturation.
-void Vsmul(Instruction *inst) {
-  auto *rv_vector = static_cast<RiscVState *>(inst->state())->rv_vector();
+void Vsmul(Instruction* inst) {
+  auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:

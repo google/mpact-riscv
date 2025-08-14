@@ -24,7 +24,7 @@ namespace sim {
 namespace riscv {
 
 // Machine Interrupt Pending methods.
-RiscVMIp::RiscVMIp(uint32_t initial_value, ArchState *state)
+RiscVMIp::RiscVMIp(uint32_t initial_value, ArchState* state)
     : RiscVSimpleCsr<uint32_t>("mip", RiscVCsrEnum::kMIp, initial_value,
                                kReadMask, kWriteMask, state) {}
 void RiscVMIp::Set(uint32_t value) {
@@ -43,7 +43,7 @@ uint32_t RiscVMIp::GetUint32() {
 uint64_t RiscVMIp::GetUint64() { return GetUint32(); }
 
 // Supervisor Interrupt Pending methods.
-RiscVSIp::RiscVSIp(RiscVMIp *mip, RiscVCsrInterface *mideleg, ArchState *state)
+RiscVSIp::RiscVSIp(RiscVMIp* mip, RiscVCsrInterface* mideleg, ArchState* state)
     : RiscVSimpleCsr<uint32_t>("sip", RiscVCsrEnum::kSIp, kReadMask, kWriteMask,
                                state),
       mip_(mip),
@@ -57,7 +57,7 @@ void RiscVSIp::Set(uint32_t value) {
 void RiscVSIp::Set(uint64_t value) { Set(static_cast<uint32_t>(value)); }
 
 // Machine Interrupt Enable methods.
-RiscVMIe::RiscVMIe(uint32_t initial_value, ArchState *state)
+RiscVMIe::RiscVMIe(uint32_t initial_value, ArchState* state)
     : RiscVSimpleCsr<uint32_t>("mie", RiscVCsrEnum::kMIe, initial_value,
                                kReadMask, kWriteMask, state) {}
 void RiscVMIe::Set(uint32_t value) {
@@ -78,7 +78,7 @@ void RiscVMIe::Set(uint64_t value) {
 }
 
 // Supervisor Interrupt Enable methods.
-RiscVSIe::RiscVSIe(RiscVMIe *mie, RiscVCsrInterface *mideleg, ArchState *state)
+RiscVSIe::RiscVSIe(RiscVMIe* mie, RiscVCsrInterface* mideleg, ArchState* state)
     : RiscVSimpleCsr<uint32_t>("sie", RiscVCsrEnum::kSIe, kReadMask, kWriteMask,
                                state),
       mie_(mie),

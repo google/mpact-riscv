@@ -38,12 +38,12 @@ using RegisterType = RV32Register;
 using UIntReg =
     typename std::make_unsigned<typename RegisterType::ValueType>::type;
 
-void RiscVPrivURet(const Instruction *inst) {
+void RiscVPrivURet(const Instruction* inst) {
   // TODO Fill in semantics.
 }
 
-void RiscVPrivSRet(const Instruction *inst) {
-  RiscVState *state = static_cast<RiscVState *>(inst->state());
+void RiscVPrivSRet(const Instruction* inst) {
+  RiscVState* state = static_cast<RiscVState*>(inst->state());
   if (state->privilege_mode() != PrivilegeMode::kSupervisor) {
     state->Trap(/*is_interrupt*/ false, /*trap_value*/ 0,
                 *ExceptionCode::kIllegalInstruction, inst->address(), inst);
@@ -60,9 +60,9 @@ void RiscVPrivSRet(const Instruction *inst) {
                                " sret: cannot access sepc");
     return;
   }
-  auto *sepc = *res;
+  auto* sepc = *res;
   // Get db for PC.
-  auto *db = inst->Destination(0)->AllocateDataBuffer();
+  auto* db = inst->Destination(0)->AllocateDataBuffer();
   // Write the contents of mepc to the pc.
   db->SetSubmit<UIntReg>(0, sepc->AsUint32());
   state->set_branch(true);
@@ -73,7 +73,7 @@ void RiscVPrivSRet(const Instruction *inst) {
                                " sret: cannot access mstatus");
     return;
   }
-  auto *mstatus = static_cast<RiscVMStatus *>(*res);
+  auto* mstatus = static_cast<RiscVMStatus*>(*res);
   // Get misa too.
   res = state->csr_set()->GetCsr(*RiscVCsrEnum::kMIsa);
   if (!res.ok()) {
@@ -97,8 +97,8 @@ void RiscVPrivSRet(const Instruction *inst) {
   mstatus->Submit();
 }
 
-void RiscVPrivMRet(const Instruction *inst) {
-  RiscVState *state = static_cast<RiscVState *>(inst->state());
+void RiscVPrivMRet(const Instruction* inst) {
+  RiscVState* state = static_cast<RiscVState*>(inst->state());
   if (state->privilege_mode() != PrivilegeMode::kMachine) {
     state->Trap(/*is_interrupt*/ false, /*trap_value*/ 0,
                 *ExceptionCode::kIllegalInstruction, inst->address(), inst);
@@ -110,9 +110,9 @@ void RiscVPrivMRet(const Instruction *inst) {
                                " mret: cannot access mepc");
     return;
   }
-  auto *mepc = *res;
+  auto* mepc = *res;
   // Get db for PC.
-  auto *db = inst->Destination(0)->AllocateDataBuffer();
+  auto* db = inst->Destination(0)->AllocateDataBuffer();
   // Write the contents of mepc to the pc.
   db->SetSubmit<UIntReg>(0, mepc->AsUint32());
   state->set_branch(true);
@@ -123,7 +123,7 @@ void RiscVPrivMRet(const Instruction *inst) {
                                " mret: cannot access mstatus");
     return;
   }
-  auto *mstatus = static_cast<RiscVMStatus *>(*res);
+  auto* mstatus = static_cast<RiscVMStatus*>(*res);
   // Get misa too.
   res = state->csr_set()->GetCsr(*RiscVCsrEnum::kMIsa);
   if (!res.ok()) {
@@ -131,7 +131,7 @@ void RiscVPrivMRet(const Instruction *inst) {
                                " mret: cannot access isa");
     return;
   }
-  auto *misa = static_cast<RiscVMIsa *>(*res);
+  auto* misa = static_cast<RiscVMIsa*>(*res);
   // Set mstatus:mpp to new privilege mode as per RiscV Privileged Architectures
   // Arch V20190608-Priv-MSU-Ratified page 21:
   // When executing an xRet instruction, supposing xPP holds the value y, xIE
@@ -160,12 +160,12 @@ using RegisterType = RV64Register;
 using UIntReg =
     typename std::make_unsigned<typename RegisterType::ValueType>::type;
 
-void RiscVPrivURet(const Instruction *inst) {
+void RiscVPrivURet(const Instruction* inst) {
   // TODO Fill in semantics.
 }
 
-void RiscVPrivSRet(const Instruction *inst) {
-  RiscVState *state = static_cast<RiscVState *>(inst->state());
+void RiscVPrivSRet(const Instruction* inst) {
+  RiscVState* state = static_cast<RiscVState*>(inst->state());
   if (*state->privilege_mode() < *PrivilegeMode::kSupervisor) {
     LOG(ERROR) << absl::StrCat(
         "sret executed when not in Supervisor mode at pc = 0x",
@@ -185,9 +185,9 @@ void RiscVPrivSRet(const Instruction *inst) {
                                " sret: cannot access sepc");
     return;
   }
-  auto *sepc = *res;
+  auto* sepc = *res;
   // Get db for PC.
-  auto *db = inst->Destination(0)->AllocateDataBuffer();
+  auto* db = inst->Destination(0)->AllocateDataBuffer();
   // Write the contents of mepc to the pc.
   db->SetSubmit<UIntReg>(0, sepc->AsUint64());
   state->set_branch(true);
@@ -198,7 +198,7 @@ void RiscVPrivSRet(const Instruction *inst) {
                                " sret: cannot access mstatus");
     return;
   }
-  auto *mstatus = static_cast<RiscVMStatus *>(*res);
+  auto* mstatus = static_cast<RiscVMStatus*>(*res);
   // Get misa too.
   res = state->csr_set()->GetCsr(*RiscVCsrEnum::kMIsa);
   if (!res.ok()) {
@@ -223,7 +223,7 @@ void RiscVPrivSRet(const Instruction *inst) {
                                " mret: cannot access isa");
     return;
   }
-  auto *misa = static_cast<RiscVMIsa *>(*res);
+  auto* misa = static_cast<RiscVMIsa*>(*res);
   if (misa->HasUserMode()) {
     mstatus->set_spp(*PrivilegeMode::kUser);
   } else {
@@ -234,8 +234,8 @@ void RiscVPrivSRet(const Instruction *inst) {
   mstatus->Submit();
 }
 
-void RiscVPrivMRet(const Instruction *inst) {
-  RiscVState *state = static_cast<RiscVState *>(inst->state());
+void RiscVPrivMRet(const Instruction* inst) {
+  RiscVState* state = static_cast<RiscVState*>(inst->state());
   if (state->privilege_mode() != PrivilegeMode::kMachine) {
     state->Trap(/*is_interrupt*/ false, /*trap_value*/ 0,
                 *ExceptionCode::kIllegalInstruction, inst->address(), inst);
@@ -247,9 +247,9 @@ void RiscVPrivMRet(const Instruction *inst) {
                                " mret: cannot access mepc");
     return;
   }
-  auto *mepc = *res;
+  auto* mepc = *res;
   // Get db for PC.
-  auto *db = inst->Destination(0)->AllocateDataBuffer();
+  auto* db = inst->Destination(0)->AllocateDataBuffer();
   // Write the contents of mepc to the pc.
   db->SetSubmit<UIntReg>(0, mepc->AsUint64());
   state->set_branch(true);
@@ -260,7 +260,7 @@ void RiscVPrivMRet(const Instruction *inst) {
                                " mret: cannot access mstatus");
     return;
   }
-  auto *mstatus = static_cast<RiscVMStatus *>(*res);
+  auto* mstatus = static_cast<RiscVMStatus*>(*res);
   // Get misa too.
   res = state->csr_set()->GetCsr(*RiscVCsrEnum::kMIsa);
   if (!res.ok()) {
@@ -268,7 +268,7 @@ void RiscVPrivMRet(const Instruction *inst) {
                                " mret: cannot access isa");
     return;
   }
-  auto *misa = static_cast<RiscVMIsa *>(*res);
+  auto* misa = static_cast<RiscVMIsa*>(*res);
   // Set mstatus:mpp to new privilege mode as per RiscV Privileged Architectures
   // Arch V20190608-Priv-MSU-Ratified page 21:
   // When executing an xRet instruction, supposing xPP holds the value y, xIE
@@ -291,16 +291,16 @@ void RiscVPrivMRet(const Instruction *inst) {
 
 }  // namespace RV64
 
-void RiscVPrivWfi(const Instruction *inst) {
+void RiscVPrivWfi(const Instruction* inst) {
   // WFI is treated as a no-op, unless the user sets a callback.
-  RiscVState *state = static_cast<RiscVState *>(inst->state());
+  RiscVState* state = static_cast<RiscVState*>(inst->state());
   state->WFI(inst);
 }
 
-void RiscVPrivSFenceVmaZZ(const Instruction *inst) {
-  auto *state = static_cast<RiscVState *>(inst->state());
+void RiscVPrivSFenceVmaZZ(const Instruction* inst) {
+  auto* state = static_cast<RiscVState*>(inst->state());
   PrivilegeMode mode = state->privilege_mode();
-  auto *mstatus = state->mstatus();
+  auto* mstatus = state->mstatus();
   if ((mode == PrivilegeMode::kUser) ||
       ((mode == PrivilegeMode::kSupervisor) && mstatus->tvm())) {
     state->Trap(/*is_interrupt*/ false, /*trap_value*/ 0,
@@ -310,10 +310,10 @@ void RiscVPrivSFenceVmaZZ(const Instruction *inst) {
   // TODO Fill in semantics.
 }
 
-void RiscVPrivSFenceVmaZN(const Instruction *inst) {
-  auto *state = static_cast<RiscVState *>(inst->state());
+void RiscVPrivSFenceVmaZN(const Instruction* inst) {
+  auto* state = static_cast<RiscVState*>(inst->state());
   PrivilegeMode mode = state->privilege_mode();
-  auto *mstatus = state->mstatus();
+  auto* mstatus = state->mstatus();
   if ((mode == PrivilegeMode::kUser) ||
       ((mode == PrivilegeMode::kSupervisor) && mstatus->tvm())) {
     state->Trap(/*is_interrupt*/ false, /*trap_value*/ 0,
@@ -323,10 +323,10 @@ void RiscVPrivSFenceVmaZN(const Instruction *inst) {
   // TODO Fill in semantics.
 }
 
-void RiscVPrivSFenceVmaNZ(const Instruction *inst) {
-  auto *state = static_cast<RiscVState *>(inst->state());
+void RiscVPrivSFenceVmaNZ(const Instruction* inst) {
+  auto* state = static_cast<RiscVState*>(inst->state());
   PrivilegeMode mode = state->privilege_mode();
-  auto *mstatus = state->mstatus();
+  auto* mstatus = state->mstatus();
   if ((mode == PrivilegeMode::kUser) ||
       ((mode == PrivilegeMode::kSupervisor) && mstatus->tvm())) {
     state->Trap(/*is_interrupt*/ false, /*trap_value*/ 0,
@@ -336,10 +336,10 @@ void RiscVPrivSFenceVmaNZ(const Instruction *inst) {
   // TODO Fill in semantics.
 }
 
-void RiscVPrivSFenceVmaNN(const Instruction *inst) {
-  auto *state = static_cast<RiscVState *>(inst->state());
+void RiscVPrivSFenceVmaNN(const Instruction* inst) {
+  auto* state = static_cast<RiscVState*>(inst->state());
   PrivilegeMode mode = state->privilege_mode();
-  auto *mstatus = state->mstatus();
+  auto* mstatus = state->mstatus();
   if ((mode == PrivilegeMode::kUser) ||
       ((mode == PrivilegeMode::kSupervisor) && mstatus->tvm())) {
     state->Trap(/*is_interrupt*/ false, /*trap_value*/ 0,

@@ -27,33 +27,33 @@ using ::mpact::sim::generic::Instruction;
 // and rd as destination operand 0.
 namespace RV32 {
 
-void MMul(Instruction *instruction);
-void MMulh(Instruction *instruction);
-void MMulhu(Instruction *instruction);
-void MMulhsu(Instruction *instruction);
-void MDiv(Instruction *instruction);
-void MDivu(Instruction *instruction);
-void MRem(Instruction *instruction);
-void MRemu(Instruction *instruction);
+void MMul(Instruction* instruction);
+void MMulh(Instruction* instruction);
+void MMulhu(Instruction* instruction);
+void MMulhsu(Instruction* instruction);
+void MDiv(Instruction* instruction);
+void MDivu(Instruction* instruction);
+void MRem(Instruction* instruction);
+void MRemu(Instruction* instruction);
 
 }  // namespace RV32
 
 namespace RV64 {
 
-void MMul(Instruction *instruction);
-void MMulh(Instruction *instruction);
-void MMulhu(Instruction *instruction);
-void MMulhsu(Instruction *instruction);
-void MDiv(Instruction *instruction);
-void MDivu(Instruction *instruction);
-void MRem(Instruction *instruction);
-void MRemu(Instruction *instruction);
+void MMul(Instruction* instruction);
+void MMulh(Instruction* instruction);
+void MMulhu(Instruction* instruction);
+void MMulhsu(Instruction* instruction);
+void MDiv(Instruction* instruction);
+void MDivu(Instruction* instruction);
+void MRem(Instruction* instruction);
+void MRemu(Instruction* instruction);
 
-void MMulw(Instruction *instruction);
-void MDivw(Instruction *instruction);
-void MDivuw(Instruction *instruction);
-void MRemw(Instruction *instruction);
-void MRemuw(Instruction *instruction);
+void MMulw(Instruction* instruction);
+void MDivw(Instruction* instruction);
+void MDivuw(Instruction* instruction);
+void MRemw(Instruction* instruction);
+void MRemuw(Instruction* instruction);
 }  // namespace RV64
 
 }  // namespace riscv

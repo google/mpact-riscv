@@ -35,7 +35,7 @@ class HostFloatingPointInterface;
 class RiscVFcsr : public RiscVSimpleCsr<uint32_t> {
  public:
   RiscVFcsr() = delete;
-  explicit RiscVFcsr(RiscVFPState *fp_state);
+  explicit RiscVFcsr(RiscVFPState* fp_state);
   ~RiscVFcsr() override = default;
 
   // Overrides.
@@ -45,14 +45,14 @@ class RiscVFcsr : public RiscVSimpleCsr<uint32_t> {
   void Write(uint64_t value) override;
 
  private:
-  RiscVFPState *fp_state_;
+  RiscVFPState* fp_state_;
 };
 
 // Floating point rounding mode csr.
 class RiscVFrm : public RiscVSimpleCsr<uint32_t> {
  public:
   RiscVFrm() = delete;
-  explicit RiscVFrm(RiscVFPState *fp_state);
+  explicit RiscVFrm(RiscVFPState* fp_state);
   ~RiscVFrm() override = default;
 
   // Overrides.
@@ -66,14 +66,14 @@ class RiscVFrm : public RiscVSimpleCsr<uint32_t> {
   void Set(uint64_t value) override { Set(static_cast<uint32_t>(value)); }
 
  private:
-  RiscVFPState *fp_state_;
+  RiscVFPState* fp_state_;
 };
 
 // Floating point status flags csr.
 class RiscVFflags : public RiscVSimpleCsr<uint32_t> {
  public:
   RiscVFflags() = delete;
-  explicit RiscVFflags(RiscVFPState *fp_state);
+  explicit RiscVFflags(RiscVFPState* fp_state);
   ~RiscVFflags() override = default;
 
   // Overrides.
@@ -87,14 +87,14 @@ class RiscVFflags : public RiscVSimpleCsr<uint32_t> {
   void Set(uint64_t value) override { Set(static_cast<uint32_t>(value)); }
 
  private:
-  RiscVFPState *fp_state_;
+  RiscVFPState* fp_state_;
 };
 
 class RiscVFPState {
  public:
   RiscVFPState() = delete;
-  RiscVFPState(const RiscVFPState &) = delete;
-  explicit RiscVFPState(RiscVCsrSet *csr_set, ArchState *rv_state);
+  RiscVFPState(const RiscVFPState&) = delete;
+  explicit RiscVFPState(RiscVCsrSet* csr_set, ArchState* rv_state);
   ~RiscVFPState();
 
   FPRoundingMode GetRoundingMode() const;
@@ -104,22 +104,22 @@ class RiscVFPState {
   bool rounding_mode_valid() const { return rounding_mode_valid_; }
 
   // FP CSRs.
-  RiscVFcsr *fcsr() const { return fcsr_; }
-  RiscVFrm *frm() const { return frm_; }
-  RiscVFflags *fflags() const { return fflags_; }
+  RiscVFcsr* fcsr() const { return fcsr_; }
+  RiscVFrm* frm() const { return frm_; }
+  RiscVFflags* fflags() const { return fflags_; }
   // Parent state.
-  ArchState *rv_state() const { return rv_state_; }
+  ArchState* rv_state() const { return rv_state_; }
   // Host interface.
-  HostFloatingPointInterface *host_fp_interface() const {
+  HostFloatingPointInterface* host_fp_interface() const {
     return host_fp_interface_;
   }
 
  private:
-  ArchState *rv_state_;
-  RiscVFcsr *fcsr_ = nullptr;
-  RiscVFrm *frm_ = nullptr;
-  RiscVFflags *fflags_ = nullptr;
-  HostFloatingPointInterface *host_fp_interface_;
+  ArchState* rv_state_;
+  RiscVFcsr* fcsr_ = nullptr;
+  RiscVFrm* frm_ = nullptr;
+  RiscVFflags* fflags_ = nullptr;
+  HostFloatingPointInterface* host_fp_interface_;
 
   bool rounding_mode_valid_ = true;
   FPRoundingMode rounding_mode_ = FPRoundingMode::kRoundToNearest;

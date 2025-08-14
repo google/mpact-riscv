@@ -59,7 +59,7 @@ class RV32FInstructionTest
 
 static bool is_snan(float a) {
   if (!std::isnan(a)) return false;
-  uint32_t ua = *reinterpret_cast<uint32_t *>(&a);
+  uint32_t ua = *reinterpret_cast<uint32_t*>(&a);
   if ((ua & (1 << (FPTypeInfo<float>::kSigSize - 1))) == 0) return true;
   return false;
 }
@@ -114,7 +114,7 @@ TEST_F(RV32FInstructionTest, RiscVFsqrt) {
           flags = *FPExceptions::kInvalidOp;
         }
         uint32_t val = FPTypeInfo<float>::kCanonicalNaN;
-        res = *reinterpret_cast<const float *>(&val);
+        res = *reinterpret_cast<const float*>(&val);
         return std::tie(res, flags);
       });
 }
@@ -131,7 +131,7 @@ TEST_F(RV32FInstructionTest, RiscVFmin) {
         }
         if (std::isnan(lhs) && std::isnan(rhs)) {
           uint32_t val = FPTypeInfo<float>::kCanonicalNaN;
-          return std::tie(*reinterpret_cast<const float *>(&val), flag);
+          return std::tie(*reinterpret_cast<const float*>(&val), flag);
         }
         if (std::isnan(lhs)) return std::tie(rhs, flag);
         if (std::isnan(rhs)) return std::tie(lhs, flag);
@@ -153,7 +153,7 @@ TEST_F(RV32FInstructionTest, RiscVFmax) {
         }
         if (std::isnan(lhs) && std::isnan(rhs)) {
           uint32_t val = FPTypeInfo<float>::kCanonicalNaN;
-          return std::tie(*reinterpret_cast<const float *>(&val), flag);
+          return std::tie(*reinterpret_cast<const float*>(&val), flag);
         }
         if (std::isnan(lhs)) return std::tie(rhs, flag);
         if (std::isnan(rhs)) return std::tie(lhs, flag);
@@ -259,10 +259,10 @@ TEST_F(RV32FInstructionTest, RiscVFSgnjx) {
   BinaryOpFPTestHelper<float, float, float>(
       "fsgnjn", instruction_, {"f", "f", "f"}, 32,
       [](float lhs, float rhs) -> float {
-        auto lhs_u = *reinterpret_cast<uint32_t *>(&lhs);
-        auto rhs_u = *reinterpret_cast<uint32_t *>(&rhs);
+        auto lhs_u = *reinterpret_cast<uint32_t*>(&lhs);
+        auto rhs_u = *reinterpret_cast<uint32_t*>(&rhs);
         auto res_u = (lhs_u ^ rhs_u) & 0x8000'0000;
-        auto res = *reinterpret_cast<float *>(&res_u);
+        auto res = *reinterpret_cast<float*>(&res_u);
         return copysign(abs(lhs), res);
       });
 }
@@ -318,7 +318,7 @@ TEST_F(RV32FInstructionTest, RiscVFClass) {
             return std::signbit(lhs) ? 1 : 1 << 7;
           case FP_NAN: {
             auto uint_val =
-                *reinterpret_cast<typename FPTypeInfo<float>::IntType *>(&lhs);
+                *reinterpret_cast<typename FPTypeInfo<float>::IntType*>(&lhs);
             bool quiet_nan =
                 (uint_val >> (FPTypeInfo<float>::kSigSize - 1)) & 1;
             return quiet_nan ? 1 << 9 : 1 << 8;

@@ -29,7 +29,7 @@ class LibRenodeMpactRiscV64SoTest : public ::testing::Test {
 
   ~LibRenodeMpactRiscV64SoTest() { dlclose(lib_); }
 
-  void *lib_ = nullptr;
+  void* lib_ = nullptr;
 };
 
 TEST_F(LibRenodeMpactRiscV64SoTest, Construct) {
@@ -96,14 +96,14 @@ TEST_F(LibRenodeMpactRiscV64SoTest, SetIrqValue) {
   EXPECT_NE(dlsym(lib_, "set_irq_value"), nullptr);
 }
 
-using ConstructType = int32_t (*)(char *, int32_t);
+using ConstructType = int32_t (*)(char*, int32_t);
 using DestructType = void (*)(int32_t);
-using StepType = uint64_t (*)(int32_t, uint64_t, int32_t *);
-using SetConfigType = int32_t (*)(int32_t, const char *[], const char *[],
+using StepType = uint64_t (*)(int32_t, uint64_t, int32_t*);
+using SetConfigType = int32_t (*)(int32_t, const char*[], const char*[],
                                   int32_t);
-using LoadElfType = uint64_t (*)(int32_t, const char *, bool, int32_t *);
+using LoadElfType = uint64_t (*)(int32_t, const char*, bool, int32_t*);
 using GetRegInfoSize = int32_t (*)(int32_t);
-using GetRegInfo = int32_t (*)(int32_t, int32_t, char *name, void *info);
+using GetRegInfo = int32_t (*)(int32_t, int32_t, char* name, void* info);
 using WriteRegisterType = void (*)(int32_t, int32_t, uint64_t);
 
 TEST_F(LibRenodeMpactRiscV64SoTest, RunProgram) {
@@ -144,15 +144,15 @@ TEST_F(LibRenodeMpactRiscV64SoTest, RunProgram) {
   int num_regs = get_reg_info_size(id);
   CHECK_GT(num_regs, 0);
   // Set configuration items.
-  const char *kInstProfile = "instProfile";
-  const char *kMemProfile = "memProfile";
-  const char *kStackEnd = "stackEnd";
-  const char *kMemoryBase = "memoryBase";
-  const char *kMemorySize = "memorySize";
+  const char* kInstProfile = "instProfile";
+  const char* kMemProfile = "memProfile";
+  const char* kStackEnd = "stackEnd";
+  const char* kMemoryBase = "memoryBase";
+  const char* kMemorySize = "memorySize";
 
-  const char *kConfigItems[] = {kInstProfile, kMemProfile, kStackEnd,
+  const char* kConfigItems[] = {kInstProfile, kMemProfile, kStackEnd,
                                 kMemoryBase, kMemorySize};
-  const char *kConfigValues[] = {"1", "1", "0x00030000", "0x00000000",
+  const char* kConfigValues[] = {"1", "1", "0x00030000", "0x00000000",
                                  "0x10000000"};
   status = set_config(id, kConfigItems, kConfigValues, 5);
   CHECK_EQ(status, 0);

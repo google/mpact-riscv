@@ -34,8 +34,8 @@ namespace riscv {
 
 using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 
-RiscV64GZBVecDecoder::RiscV64GZBVecDecoder(RiscVState *state,
-                                           util::MemoryInterface *memory)
+RiscV64GZBVecDecoder::RiscV64GZBVecDecoder(RiscVState* state,
+                                           util::MemoryInterface* memory)
     : state_(state),
       memory_(memory),
       inst_db_(state_->db_factory()->Allocate<uint32_t>(1)) {
@@ -55,17 +55,17 @@ RiscV64GZBVecDecoder::RiscV64GZBVecDecoder(RiscVState *state,
 
 RiscV64GZBVecDecoder::~RiscV64GZBVecDecoder() { inst_db_->DecRef(); }
 
-generic::Instruction *RiscV64GZBVecDecoder::DecodeInstruction(
+generic::Instruction* RiscV64GZBVecDecoder::DecodeInstruction(
     uint64_t address) {
   // First check that the address is aligned properly. If not, create and return
   // an instruction object that will raise an exception.
   if (address & 0x1) {
-    auto *inst = new generic::Instruction(address, state_);
+    auto* inst = new generic::Instruction(address, state_);
     inst->set_size(1);
     inst->SetDisassemblyString("Misaligned instruction address");
     inst->set_opcode(*isa64gvzb::OpcodeEnum::kNone);
     inst->set_address(address);
-    inst->set_semantic_function([this, address](generic::Instruction *inst) {
+    inst->set_semantic_function([this, address](generic::Instruction* inst) {
       state_->Trap(/*is_interrupt*/ false, address,
                    *ExceptionCode::kInstructionAddressMisaligned, address ^ 0x1,
                    inst);
@@ -76,12 +76,12 @@ generic::Instruction *RiscV64GZBVecDecoder::DecodeInstruction(
   // If the address is greater than the max address, return an instruction
   // object that will raise an exception.
   if (address > state_->max_physical_address()) {
-    auto *inst = new generic::Instruction(address, state_);
+    auto* inst = new generic::Instruction(address, state_);
     inst->set_size(0);
     inst->SetDisassemblyString("Instruction access fault");
     inst->set_opcode(*isa64gvzb::OpcodeEnum::kNone);
     inst->set_address(address);
-    inst->set_semantic_function([this, address](generic::Instruction *inst) {
+    inst->set_semantic_function([this, address](generic::Instruction* inst) {
       state_->Trap(/*is_interrupt*/ false, address,
                    *ExceptionCode::kInstructionAccessFault, address, nullptr);
     });
@@ -95,7 +95,7 @@ generic::Instruction *RiscV64GZBVecDecoder::DecodeInstruction(
 
   // Call the isa decoder to obtain a new instruction object for the instruction
   // word that was parsed above.
-  auto *instruction = riscv_isa_->Decode(address, riscv_encoding_.get());
+  auto* instruction = riscv_isa_->Decode(address, riscv_encoding_.get());
   return instruction;
 }
 

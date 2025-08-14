@@ -51,7 +51,7 @@ class RiscVVectorBasicBitManipulationTest
 // Helper function for testing the vandn_vv instruction. Generate the expected
 // result using the bitwise operator.
 template <typename T>
-inline void VandnVVHelper(RiscVVectorBasicBitManipulationTest *tester) {
+inline void VandnVVHelper(RiscVVectorBasicBitManipulationTest* tester) {
   tester->SetSemanticFunction(&Vandn);
   tester->BinaryOpTestHelperVV<T, T, T>(
       absl::StrCat("Vandn", sizeof(T) * 8, "vv"), /*sew*/ sizeof(T) * 8,
@@ -61,7 +61,7 @@ inline void VandnVVHelper(RiscVVectorBasicBitManipulationTest *tester) {
 // Helper function for testing the vandn_vx instruction. Generate the expected
 // result using the bitwise operator.
 template <typename T>
-inline void VandnVXHelper(RiscVVectorBasicBitManipulationTest *tester) {
+inline void VandnVXHelper(RiscVVectorBasicBitManipulationTest* tester) {
   tester->SetSemanticFunction(&Vandn);
   tester->BinaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vandn", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
@@ -71,7 +71,7 @@ inline void VandnVXHelper(RiscVVectorBasicBitManipulationTest *tester) {
 // Helper function for testing the vbrev_v instruction. Generate the expected
 // result by reversing the input bits.
 template <typename T>
-inline void VbrevVHelper(RiscVVectorBasicBitManipulationTest *tester) {
+inline void VbrevVHelper(RiscVVectorBasicBitManipulationTest* tester) {
   tester->SetSemanticFunction(&Vbrev);
   tester->UnaryOpTestHelperV<T, T>(absl::StrCat("Vbrev", sizeof(T) * 8, "v"),
                                    /*sew*/ sizeof(T) * 8, tester->instruction(),
@@ -88,7 +88,7 @@ inline void VbrevVHelper(RiscVVectorBasicBitManipulationTest *tester) {
 // Helper function for testing the vbrev8_v instruction. Generate the expected
 // result by reversing the bits in each of the input bytes.
 template <typename T>
-inline void Vbrev8VHelper(RiscVVectorBasicBitManipulationTest *tester) {
+inline void Vbrev8VHelper(RiscVVectorBasicBitManipulationTest* tester) {
   tester->SetSemanticFunction(&Vbrev8);
   tester->UnaryOpTestHelperV<T, T>(
       absl::StrCat("Vbrev8", sizeof(T) * 8, "v"), /*sew*/ sizeof(T) * 8,
@@ -110,7 +110,7 @@ inline void Vbrev8VHelper(RiscVVectorBasicBitManipulationTest *tester) {
 // Helper function for testing the vbrev_v instruction. Generate the expected
 // result by reversing the bytes of the input.
 template <typename T>
-inline void Vrev8VHelper(RiscVVectorBasicBitManipulationTest *tester) {
+inline void Vrev8VHelper(RiscVVectorBasicBitManipulationTest* tester) {
   tester->SetSemanticFunction(&Vrev8);
   tester->UnaryOpTestHelperV<T, T>(
       absl::StrCat("Vrev8", sizeof(T) * 8, "v"), /*sew*/ sizeof(T) * 8,
@@ -127,7 +127,7 @@ inline void Vrev8VHelper(RiscVVectorBasicBitManipulationTest *tester) {
 // Helper function for testing the vrol_vv instruction. Generate the expected
 // result by rotating the input bits left.
 template <typename T>
-inline void VrolVVHelper(RiscVVectorBasicBitManipulationTest *tester) {
+inline void VrolVVHelper(RiscVVectorBasicBitManipulationTest* tester) {
   tester->SetSemanticFunction(&Vrol);
   tester->BinaryOpTestHelperVV<T, T, T>(
       absl::StrCat("Vrol", sizeof(T) * 8, "vv"), /*sew*/ sizeof(T) * 8,
@@ -143,7 +143,7 @@ inline void VrolVVHelper(RiscVVectorBasicBitManipulationTest *tester) {
 // Helper function for testing the vrol_vx instruction. Generate the expected
 // result by rotating the input bits left.
 template <typename T>
-inline void VrolVXHelper(RiscVVectorBasicBitManipulationTest *tester) {
+inline void VrolVXHelper(RiscVVectorBasicBitManipulationTest* tester) {
   tester->SetSemanticFunction(&Vrol);
   tester->BinaryOpTestHelperVX<T, T, T, RVScalarRegister>(
       absl::StrCat("Vrol", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
@@ -159,7 +159,7 @@ inline void VrolVXHelper(RiscVVectorBasicBitManipulationTest *tester) {
 // Helper function for testing the vror_vv instruction. Generate the expected
 // result by rotating the input bits right.
 template <typename T>
-inline void VrorVVHelper(RiscVVectorBasicBitManipulationTest *tester) {
+inline void VrorVVHelper(RiscVVectorBasicBitManipulationTest* tester) {
   tester->SetSemanticFunction(&Vror);
   tester->BinaryOpTestHelperVV<T, T, T>(
       absl::StrCat("Vror", sizeof(T) * 8, "vv"), /*sew*/ sizeof(T) * 8,
@@ -175,7 +175,7 @@ inline void VrorVVHelper(RiscVVectorBasicBitManipulationTest *tester) {
 // Helper function for testing the vror_vx instruction. Generate the expected
 // result by rotating the input bits right.
 template <typename T>
-inline void VrorVXHelper(RiscVVectorBasicBitManipulationTest *tester) {
+inline void VrorVXHelper(RiscVVectorBasicBitManipulationTest* tester) {
   tester->SetSemanticFunction(&Vror);
   tester->BinaryOpTestHelperVV<T, T, T>(
       absl::StrCat("Vror", sizeof(T) * 8, "vx"), /*sew*/ sizeof(T) * 8,
@@ -191,7 +191,7 @@ inline void VrorVXHelper(RiscVVectorBasicBitManipulationTest *tester) {
 // Helper function for testing the vror_vi instruction. Generate the expected
 // result by rotating the input bits right.
 template <typename T>
-inline void VrorVIHelper(RiscVVectorBasicBitManipulationTest *tester) {
+inline void VrorVIHelper(RiscVVectorBasicBitManipulationTest* tester) {
   tester->SetSemanticFunction(&Vror);
   tester->BinaryOpTestHelperVV<T, T, T>(
       absl::StrCat("Vror", sizeof(T) * 8, "vi"), /*sew*/ sizeof(T) * 8,
@@ -207,7 +207,7 @@ inline void VrorVIHelper(RiscVVectorBasicBitManipulationTest *tester) {
 // Helper function for testing the vclz_v instruction. Generate the expected
 // result by counting the number of leading zeros in the input.
 template <typename T>
-inline void VclzVHelper(RiscVVectorBasicBitManipulationTest *tester) {
+inline void VclzVHelper(RiscVVectorBasicBitManipulationTest* tester) {
   tester->SetSemanticFunction(&Vclz);
   tester->UnaryOpTestHelperV<T, T>(
       absl::StrCat("vclz", sizeof(T) * 8, "v"), /*sew*/ sizeof(T) * 8,
@@ -226,7 +226,7 @@ inline void VclzVHelper(RiscVVectorBasicBitManipulationTest *tester) {
 // Helper function for testing the vctz_v instruction. Generate the expected
 // result by counting the number of trailing zeros in the input.
 template <typename T>
-inline void VctzVHelper(RiscVVectorBasicBitManipulationTest *tester) {
+inline void VctzVHelper(RiscVVectorBasicBitManipulationTest* tester) {
   tester->SetSemanticFunction(&Vctz);
   tester->UnaryOpTestHelperV<T, T>(absl::StrCat("vctz", sizeof(T) * 8, "v"),
                                    /*sew*/ sizeof(T) * 8, tester->instruction(),
@@ -245,7 +245,7 @@ inline void VctzVHelper(RiscVVectorBasicBitManipulationTest *tester) {
 // Helper function for testing the vcpop_v instruction. Generate the expected
 // result by counting the number of bits set in the input.
 template <typename T>
-inline void VcpopVHelper(RiscVVectorBasicBitManipulationTest *tester) {
+inline void VcpopVHelper(RiscVVectorBasicBitManipulationTest* tester) {
   tester->SetSemanticFunction(&VectorVcpop);
   tester->UnaryOpTestHelperV<T, T>(absl::StrCat("vcpop", sizeof(T) * 8, "v"),
                                    /*sew*/ sizeof(T) * 8, tester->instruction(),
@@ -262,7 +262,7 @@ inline void VcpopVHelper(RiscVVectorBasicBitManipulationTest *tester) {
 // Helper function for testing the vwsll_vv instruction. Generate the expected
 // result by shifting the widened input left.
 template <typename T>
-inline void VwsllVVHelper(RiscVVectorBasicBitManipulationTest *tester) {
+inline void VwsllVVHelper(RiscVVectorBasicBitManipulationTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwsll);
   tester->BinaryOpTestHelperVV<WT, T, T>(
@@ -277,7 +277,7 @@ inline void VwsllVVHelper(RiscVVectorBasicBitManipulationTest *tester) {
 // Helper function for testing the vwsll_vx instruction. Generate the expected
 // result by shifting the widened input left.
 template <typename T>
-inline void VwsllVXHelper(RiscVVectorBasicBitManipulationTest *tester) {
+inline void VwsllVXHelper(RiscVVectorBasicBitManipulationTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwsll);
   tester->BinaryOpTestHelperVX<WT, T, T, RVScalarRegister>(
@@ -292,7 +292,7 @@ inline void VwsllVXHelper(RiscVVectorBasicBitManipulationTest *tester) {
 // Helper function for testing the vwsll_vi instruction. Generate the expected
 // result by shifting the widened input left.
 template <typename T>
-inline void VwsllVIHelper(RiscVVectorBasicBitManipulationTest *tester) {
+inline void VwsllVIHelper(RiscVVectorBasicBitManipulationTest* tester) {
   using WT = typename WideType<T>::type;
   tester->SetSemanticFunction(&Vwsll);
   tester->BinaryOpTestHelperVV<WT, T, T>(

@@ -297,7 +297,7 @@ struct EqualSize {
 template <typename S, typename D>
 struct GreaterSize {
   static const bool value =
-      sizeof(S) > sizeof(D) && IsMpactFp<S>::value &&std::is_integral<D>::value;
+      sizeof(S) > sizeof(D) && IsMpactFp<S>::value&& std::is_integral<D>::value;
 };
 
 template <typename S, typename D>
@@ -353,7 +353,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
     child_instruction_ = new Instruction(kInstAddress, state_);
     child_instruction_->set_size(4);
     // Initialize a portion of memory with a known pattern.
-    auto *db = state_->db_factory()->Allocate(8192);
+    auto* db = state_->db_factory()->Allocate(8192);
     auto span = db->Get<uint8_t>();
     for (int i = 0; i < 8192; i++) {
       span[i] = i & 0xff;
@@ -389,15 +389,15 @@ class RiscVFPInstructionTestBase : public testing::Test {
   // Creates source and destination scalar register operands for the registers
   // named in the two vectors and append them to the given instruction.
   template <typename T>
-  void AppendRegisterOperands(Instruction *inst,
-                              const std::vector<std::string> &sources,
-                              const std::vector<std::string> &destinations) {
-    for (auto &reg_name : sources) {
-      auto *reg = state_->GetRegister<T>(reg_name).first;
+  void AppendRegisterOperands(Instruction* inst,
+                              const std::vector<std::string>& sources,
+                              const std::vector<std::string>& destinations) {
+    for (auto& reg_name : sources) {
+      auto* reg = state_->GetRegister<T>(reg_name).first;
       inst->AppendSource(reg->CreateSourceOperand());
     }
-    for (auto &reg_name : destinations) {
-      auto *reg = state_->GetRegister<T>(reg_name).first;
+    for (auto& reg_name : destinations) {
+      auto* reg = state_->GetRegister<T>(reg_name).first;
       inst->AppendDestination(reg->CreateDestinationOperand(0));
     }
   }
@@ -405,18 +405,18 @@ class RiscVFPInstructionTestBase : public testing::Test {
   // Creates source and destination scalar register operands for the registers
   // named in the two vectors and append them to the default instruction.
   template <typename T>
-  void AppendRegisterOperands(const std::vector<std::string> &sources,
-                              const std::vector<std::string> &destinations) {
+  void AppendRegisterOperands(const std::vector<std::string>& sources,
+                              const std::vector<std::string>& destinations) {
     AppendRegisterOperands<T>(instruction_, sources, destinations);
   }
 
   // named register and sets it to the corresponding value.
   template <typename T, typename RegisterType = XRegister>
   void SetRegisterValues(
-      const std::vector<std::tuple<std::string, const T>> &values) {
-    for (auto &[reg_name, value] : values) {
-      auto *reg = state_->GetRegister<RegisterType>(reg_name).first;
-      auto *db =
+      const std::vector<std::tuple<std::string, const T>>& values) {
+    for (auto& [reg_name, value] : values) {
+      auto* reg = state_->GetRegister<RegisterType>(reg_name).first;
+      auto* db =
           state_->db_factory()->Allocate<typename RegisterType::ValueType>(1);
       db->template Set<T>(0, value);
       reg->SetDataBuffer(db);
@@ -426,12 +426,12 @@ class RiscVFPInstructionTestBase : public testing::Test {
 
   template <typename T, typename RegisterType = XRegister>
   void SetNaNBoxedRegisterValues(
-      const std::vector<std::tuple<std::string, const T>> &values) {
-    for (auto &[reg_name, value] : values) {
+      const std::vector<std::tuple<std::string, const T>>& values) {
+    for (auto& [reg_name, value] : values) {
       typename RegisterType::ValueType reg_value =
           NaNBox<T, typename RegisterType::ValueType>(value);
-      auto *reg = state_->GetRegister<RegisterType>(reg_name).first;
-      auto *db =
+      auto* reg = state_->GetRegister<RegisterType>(reg_name).first;
+      auto* db =
           state_->db_factory()->Allocate<typename RegisterType::ValueType>(1);
       db->template Set<typename RegisterType::ValueType>(0, reg_value);
       reg->SetDataBuffer(db);
@@ -440,7 +440,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
   }
 
   // Initializes the semantic function of the instruction object.
-  void SetSemanticFunction(Instruction *inst,
+  void SetSemanticFunction(Instruction* inst,
                            Instruction::SemanticFunction fcn) {
     inst->set_semantic_function(fcn);
   }
@@ -477,13 +477,13 @@ class RiscVFPInstructionTestBase : public testing::Test {
   // This method uses random values for each field in the fp number.
   template <typename T>
   void FillArrayWithRandomFPValues(absl::Span<T> span) {
-    for (auto &val : span) {
+    for (auto& val : span) {
       val = RandomFPValue<T>();
     }
   }
 
   template <typename R, typename LHS>
-  void UnaryOpFPTestHelper(absl::string_view name, Instruction *inst,
+  void UnaryOpFPTestHelper(absl::string_view name, Instruction* inst,
                            absl::Span<const absl::string_view> reg_prefixes,
                            int delta_position,
                            std::function<R(LHS)> operation) {
@@ -508,14 +508,14 @@ class RiscVFPInstructionTestBase : public testing::Test {
     AppendRegisterOperands<XRegister>({kRmName}, {});
     FillArrayWithRandomFPValues<LHS>(lhs_span);
     using LhsInt = typename FPTypeInfo<LHS>::IntType;
-    *reinterpret_cast<LhsInt *>(&lhs_span[0]) = FPTypeInfo<LHS>::kQNaN;
-    *reinterpret_cast<LhsInt *>(&lhs_span[1]) = FPTypeInfo<LHS>::kSNaN;
-    *reinterpret_cast<LhsInt *>(&lhs_span[2]) = FPTypeInfo<LHS>::kPosInf;
-    *reinterpret_cast<LhsInt *>(&lhs_span[3]) = FPTypeInfo<LHS>::kNegInf;
-    *reinterpret_cast<LhsInt *>(&lhs_span[4]) = FPTypeInfo<LHS>::kPosZero;
-    *reinterpret_cast<LhsInt *>(&lhs_span[5]) = FPTypeInfo<LHS>::kNegZero;
-    *reinterpret_cast<LhsInt *>(&lhs_span[6]) = FPTypeInfo<LHS>::kPosDenorm;
-    *reinterpret_cast<LhsInt *>(&lhs_span[7]) = FPTypeInfo<LHS>::kNegDenorm;
+    *reinterpret_cast<LhsInt*>(&lhs_span[0]) = FPTypeInfo<LHS>::kQNaN;
+    *reinterpret_cast<LhsInt*>(&lhs_span[1]) = FPTypeInfo<LHS>::kSNaN;
+    *reinterpret_cast<LhsInt*>(&lhs_span[2]) = FPTypeInfo<LHS>::kPosInf;
+    *reinterpret_cast<LhsInt*>(&lhs_span[3]) = FPTypeInfo<LHS>::kNegInf;
+    *reinterpret_cast<LhsInt*>(&lhs_span[4]) = FPTypeInfo<LHS>::kPosZero;
+    *reinterpret_cast<LhsInt*>(&lhs_span[5]) = FPTypeInfo<LHS>::kNegZero;
+    *reinterpret_cast<LhsInt*>(&lhs_span[6]) = FPTypeInfo<LHS>::kPosDenorm;
+    *reinterpret_cast<LhsInt*>(&lhs_span[7]) = FPTypeInfo<LHS>::kNegDenorm;
     for (int i = 0; i < kTestValueLength; i++) {
       if constexpr (std::is_integral<LHS>::value) {
         SetRegisterValues<LHS, LhsRegisterType>({{kR1Name, lhs_span[i]}});
@@ -550,7 +550,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
   // Tester for unary instructions that produce an exception flag value.
   template <typename R, typename LHS>
   void UnaryOpWithFflagsFPTestHelper(
-      absl::string_view name, Instruction *inst,
+      absl::string_view name, Instruction* inst,
       absl::Span<const absl::string_view> reg_prefixes, int delta_position,
       std::function<std::tuple<R, uint32_t>(LHS, uint32_t)> operation) {
     using LhsRegisterType = RVFpRegister;
@@ -574,17 +574,17 @@ class RiscVFPInstructionTestBase : public testing::Test {
       AppendRegisterOperands<RVFpRegister>({}, {kRdName});
     }
     AppendRegisterOperands<XRegister>({kRmName}, {});
-    auto *flag_op = rv_fp_->fflags()->CreateSetDestinationOperand(0, "fflags");
+    auto* flag_op = rv_fp_->fflags()->CreateSetDestinationOperand(0, "fflags");
     instruction_->AppendDestination(flag_op);
     FillArrayWithRandomFPValues<LHS>(lhs_span);
-    *reinterpret_cast<LhsInt *>(&lhs_span[0]) = FPTypeInfo<LHS>::kQNaN;
-    *reinterpret_cast<LhsInt *>(&lhs_span[1]) = FPTypeInfo<LHS>::kSNaN;
-    *reinterpret_cast<LhsInt *>(&lhs_span[2]) = FPTypeInfo<LHS>::kPosInf;
-    *reinterpret_cast<LhsInt *>(&lhs_span[3]) = FPTypeInfo<LHS>::kNegInf;
-    *reinterpret_cast<LhsInt *>(&lhs_span[4]) = FPTypeInfo<LHS>::kPosZero;
-    *reinterpret_cast<LhsInt *>(&lhs_span[5]) = FPTypeInfo<LHS>::kNegZero;
-    *reinterpret_cast<LhsInt *>(&lhs_span[6]) = FPTypeInfo<LHS>::kPosDenorm;
-    *reinterpret_cast<LhsInt *>(&lhs_span[7]) = FPTypeInfo<LHS>::kNegDenorm;
+    *reinterpret_cast<LhsInt*>(&lhs_span[0]) = FPTypeInfo<LHS>::kQNaN;
+    *reinterpret_cast<LhsInt*>(&lhs_span[1]) = FPTypeInfo<LHS>::kSNaN;
+    *reinterpret_cast<LhsInt*>(&lhs_span[2]) = FPTypeInfo<LHS>::kPosInf;
+    *reinterpret_cast<LhsInt*>(&lhs_span[3]) = FPTypeInfo<LHS>::kNegInf;
+    *reinterpret_cast<LhsInt*>(&lhs_span[4]) = FPTypeInfo<LHS>::kPosZero;
+    *reinterpret_cast<LhsInt*>(&lhs_span[5]) = FPTypeInfo<LHS>::kNegZero;
+    *reinterpret_cast<LhsInt*>(&lhs_span[6]) = FPTypeInfo<LHS>::kPosDenorm;
+    *reinterpret_cast<LhsInt*>(&lhs_span[7]) = FPTypeInfo<LHS>::kNegDenorm;
     for (int i = 0; i < kTestValueLength; i++) {
       if constexpr (std::is_integral<LHS>::value) {
         SetRegisterValues<LHS, LhsRegisterType>({{kR1Name, lhs_span[i]}});
@@ -630,7 +630,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
 
   // Test helper for binary fp instructions.
   template <typename R, typename LHS, typename RHS>
-  void BinaryOpFPTestHelper(absl::string_view name, Instruction *inst,
+  void BinaryOpFPTestHelper(absl::string_view name, Instruction* inst,
                             absl::Span<const absl::string_view> reg_prefixes,
                             int delta_position,
                             std::function<R(LHS, RHS)> operation) {
@@ -662,19 +662,19 @@ class RiscVFPInstructionTestBase : public testing::Test {
       AppendRegisterOperands<RVFpRegister>({}, {kRdName});
     }
     AppendRegisterOperands<XRegister>({kRmName}, {});
-    auto *flag_op = rv_fp_->fflags()->CreateSetDestinationOperand(0, "fflags");
+    auto* flag_op = rv_fp_->fflags()->CreateSetDestinationOperand(0, "fflags");
     instruction_->AppendDestination(flag_op);
     FillArrayWithRandomFPValues<LHS>(lhs_span);
     FillArrayWithRandomFPValues<RHS>(rhs_span);
     using LhsInt = typename FPTypeInfo<LHS>::IntType;
-    *reinterpret_cast<LhsInt *>(&lhs_span[0]) = FPTypeInfo<LHS>::kQNaN;
-    *reinterpret_cast<LhsInt *>(&lhs_span[1]) = FPTypeInfo<LHS>::kSNaN;
-    *reinterpret_cast<LhsInt *>(&lhs_span[2]) = FPTypeInfo<LHS>::kPosInf;
-    *reinterpret_cast<LhsInt *>(&lhs_span[3]) = FPTypeInfo<LHS>::kNegInf;
-    *reinterpret_cast<LhsInt *>(&lhs_span[4]) = FPTypeInfo<LHS>::kPosZero;
-    *reinterpret_cast<LhsInt *>(&lhs_span[5]) = FPTypeInfo<LHS>::kNegZero;
-    *reinterpret_cast<LhsInt *>(&lhs_span[6]) = FPTypeInfo<LHS>::kPosDenorm;
-    *reinterpret_cast<LhsInt *>(&lhs_span[7]) = FPTypeInfo<LHS>::kNegDenorm;
+    *reinterpret_cast<LhsInt*>(&lhs_span[0]) = FPTypeInfo<LHS>::kQNaN;
+    *reinterpret_cast<LhsInt*>(&lhs_span[1]) = FPTypeInfo<LHS>::kSNaN;
+    *reinterpret_cast<LhsInt*>(&lhs_span[2]) = FPTypeInfo<LHS>::kPosInf;
+    *reinterpret_cast<LhsInt*>(&lhs_span[3]) = FPTypeInfo<LHS>::kNegInf;
+    *reinterpret_cast<LhsInt*>(&lhs_span[4]) = FPTypeInfo<LHS>::kPosZero;
+    *reinterpret_cast<LhsInt*>(&lhs_span[5]) = FPTypeInfo<LHS>::kNegZero;
+    *reinterpret_cast<LhsInt*>(&lhs_span[6]) = FPTypeInfo<LHS>::kPosDenorm;
+    *reinterpret_cast<LhsInt*>(&lhs_span[7]) = FPTypeInfo<LHS>::kNegDenorm;
     for (int i = 0; i < kTestValueLength; i++) {
       SetNaNBoxedRegisterValues<LHS, LhsRegisterType>({{kR1Name, lhs_span[i]}});
       SetNaNBoxedRegisterValues<RHS, RhsRegisterType>({{kR2Name, rhs_span[i]}});
@@ -709,7 +709,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
   // value.
   template <typename R, typename LHS, typename RHS>
   void BinaryOpWithFflagsFPTestHelper(
-      absl::string_view name, Instruction *inst,
+      absl::string_view name, Instruction* inst,
       absl::Span<const absl::string_view> reg_prefixes, int delta_position,
       std::function<std::tuple<R, uint32_t>(LHS, RHS)> operation) {
     using LhsRegisterType = RVFpRegister;
@@ -742,19 +742,19 @@ class RiscVFPInstructionTestBase : public testing::Test {
       AppendRegisterOperands<RVFpRegister>({}, {kRdName});
     }
     AppendRegisterOperands<XRegister>({kRmName}, {});
-    auto *flag_op = rv_fp_->fflags()->CreateSetDestinationOperand(0, "fflags");
+    auto* flag_op = rv_fp_->fflags()->CreateSetDestinationOperand(0, "fflags");
     instruction_->AppendDestination(flag_op);
     FillArrayWithRandomFPValues<LHS>(lhs_span);
     FillArrayWithRandomFPValues<RHS>(rhs_span);
     using LhsInt = typename FPTypeInfo<LHS>::IntType;
-    *reinterpret_cast<LhsInt *>(&lhs_span[0]) = FPTypeInfo<LHS>::kQNaN;
-    *reinterpret_cast<LhsInt *>(&lhs_span[1]) = FPTypeInfo<LHS>::kSNaN;
-    *reinterpret_cast<LhsInt *>(&lhs_span[2]) = FPTypeInfo<LHS>::kPosInf;
-    *reinterpret_cast<LhsInt *>(&lhs_span[3]) = FPTypeInfo<LHS>::kNegInf;
-    *reinterpret_cast<LhsInt *>(&lhs_span[4]) = FPTypeInfo<LHS>::kPosZero;
-    *reinterpret_cast<LhsInt *>(&lhs_span[5]) = FPTypeInfo<LHS>::kNegZero;
-    *reinterpret_cast<LhsInt *>(&lhs_span[6]) = FPTypeInfo<LHS>::kPosDenorm;
-    *reinterpret_cast<LhsInt *>(&lhs_span[7]) = FPTypeInfo<LHS>::kNegDenorm;
+    *reinterpret_cast<LhsInt*>(&lhs_span[0]) = FPTypeInfo<LHS>::kQNaN;
+    *reinterpret_cast<LhsInt*>(&lhs_span[1]) = FPTypeInfo<LHS>::kSNaN;
+    *reinterpret_cast<LhsInt*>(&lhs_span[2]) = FPTypeInfo<LHS>::kPosInf;
+    *reinterpret_cast<LhsInt*>(&lhs_span[3]) = FPTypeInfo<LHS>::kNegInf;
+    *reinterpret_cast<LhsInt*>(&lhs_span[4]) = FPTypeInfo<LHS>::kPosZero;
+    *reinterpret_cast<LhsInt*>(&lhs_span[5]) = FPTypeInfo<LHS>::kNegZero;
+    *reinterpret_cast<LhsInt*>(&lhs_span[6]) = FPTypeInfo<LHS>::kPosDenorm;
+    *reinterpret_cast<LhsInt*>(&lhs_span[7]) = FPTypeInfo<LHS>::kNegDenorm;
     for (int i = 0; i < kTestValueLength; i++) {
       SetNaNBoxedRegisterValues<LHS, LhsRegisterType>({{kR1Name, lhs_span[i]}});
       SetNaNBoxedRegisterValues<RHS, RhsRegisterType>({{kR2Name, rhs_span[i]}});
@@ -795,7 +795,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
   }
 
   template <typename R, typename LHS, typename MHS, typename RHS>
-  void TernaryOpFPTestHelper(absl::string_view name, Instruction *inst,
+  void TernaryOpFPTestHelper(absl::string_view name, Instruction* inst,
                              absl::Span<const absl::string_view> reg_prefixes,
                              int delta_position,
                              std::function<R(LHS, MHS, RHS)> operation) {
@@ -840,14 +840,14 @@ class RiscVFPInstructionTestBase : public testing::Test {
     FillArrayWithRandomFPValues<MHS>(mhs_span);
     FillArrayWithRandomFPValues<RHS>(rhs_span);
     using LhsInt = typename FPTypeInfo<LHS>::IntType;
-    *reinterpret_cast<LhsInt *>(&lhs_span[0]) = FPTypeInfo<LHS>::kQNaN;
-    *reinterpret_cast<LhsInt *>(&lhs_span[1]) = FPTypeInfo<LHS>::kSNaN;
-    *reinterpret_cast<LhsInt *>(&lhs_span[2]) = FPTypeInfo<LHS>::kPosInf;
-    *reinterpret_cast<LhsInt *>(&lhs_span[3]) = FPTypeInfo<LHS>::kNegInf;
-    *reinterpret_cast<LhsInt *>(&lhs_span[4]) = FPTypeInfo<LHS>::kPosZero;
-    *reinterpret_cast<LhsInt *>(&lhs_span[5]) = FPTypeInfo<LHS>::kNegZero;
-    *reinterpret_cast<LhsInt *>(&lhs_span[6]) = FPTypeInfo<LHS>::kPosDenorm;
-    *reinterpret_cast<LhsInt *>(&lhs_span[7]) = FPTypeInfo<LHS>::kNegDenorm;
+    *reinterpret_cast<LhsInt*>(&lhs_span[0]) = FPTypeInfo<LHS>::kQNaN;
+    *reinterpret_cast<LhsInt*>(&lhs_span[1]) = FPTypeInfo<LHS>::kSNaN;
+    *reinterpret_cast<LhsInt*>(&lhs_span[2]) = FPTypeInfo<LHS>::kPosInf;
+    *reinterpret_cast<LhsInt*>(&lhs_span[3]) = FPTypeInfo<LHS>::kNegInf;
+    *reinterpret_cast<LhsInt*>(&lhs_span[4]) = FPTypeInfo<LHS>::kPosZero;
+    *reinterpret_cast<LhsInt*>(&lhs_span[5]) = FPTypeInfo<LHS>::kNegZero;
+    *reinterpret_cast<LhsInt*>(&lhs_span[6]) = FPTypeInfo<LHS>::kPosDenorm;
+    *reinterpret_cast<LhsInt*>(&lhs_span[7]) = FPTypeInfo<LHS>::kNegDenorm;
     for (int i = 0; i < kTestValueLength; i++) {
       SetNaNBoxedRegisterValues<LHS, LhsRegisterType>({{kR1Name, lhs_span[i]}});
       SetNaNBoxedRegisterValues<MHS, MhsRegisterType>({{kR2Name, mhs_span[i]}});
@@ -879,7 +879,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
 
   template <typename R, typename LHS, typename MHS, typename RHS>
   void TernaryOpWithFflagsFPTestHelper(
-      absl::string_view name, Instruction *inst,
+      absl::string_view name, Instruction* inst,
       absl::Span<const absl::string_view> reg_prefixes, int delta_position,
       std::function<R(LHS, MHS, RHS)> operation) {
     using LhsRegisterType = RVFpRegister;
@@ -919,20 +919,20 @@ class RiscVFPInstructionTestBase : public testing::Test {
       AppendRegisterOperands<RVFpRegister>({}, {kRdName});
     }
     AppendRegisterOperands<XRegister>({kRmName}, {});
-    auto *flag_op = rv_fp_->fflags()->CreateSetDestinationOperand(0, "fflags");
+    auto* flag_op = rv_fp_->fflags()->CreateSetDestinationOperand(0, "fflags");
     instruction_->AppendDestination(flag_op);
     FillArrayWithRandomFPValues<LHS>(lhs_span);
     FillArrayWithRandomFPValues<MHS>(mhs_span);
     FillArrayWithRandomFPValues<RHS>(rhs_span);
     using LhsInt = typename FPTypeInfo<LHS>::IntType;
-    *reinterpret_cast<LhsInt *>(&lhs_span[0]) = FPTypeInfo<LHS>::kQNaN;
-    *reinterpret_cast<LhsInt *>(&lhs_span[1]) = FPTypeInfo<LHS>::kSNaN;
-    *reinterpret_cast<LhsInt *>(&lhs_span[2]) = FPTypeInfo<LHS>::kPosInf;
-    *reinterpret_cast<LhsInt *>(&lhs_span[3]) = FPTypeInfo<LHS>::kNegInf;
-    *reinterpret_cast<LhsInt *>(&lhs_span[4]) = FPTypeInfo<LHS>::kPosZero;
-    *reinterpret_cast<LhsInt *>(&lhs_span[5]) = FPTypeInfo<LHS>::kNegZero;
-    *reinterpret_cast<LhsInt *>(&lhs_span[6]) = FPTypeInfo<LHS>::kPosDenorm;
-    *reinterpret_cast<LhsInt *>(&lhs_span[7]) = FPTypeInfo<LHS>::kNegDenorm;
+    *reinterpret_cast<LhsInt*>(&lhs_span[0]) = FPTypeInfo<LHS>::kQNaN;
+    *reinterpret_cast<LhsInt*>(&lhs_span[1]) = FPTypeInfo<LHS>::kSNaN;
+    *reinterpret_cast<LhsInt*>(&lhs_span[2]) = FPTypeInfo<LHS>::kPosInf;
+    *reinterpret_cast<LhsInt*>(&lhs_span[3]) = FPTypeInfo<LHS>::kNegInf;
+    *reinterpret_cast<LhsInt*>(&lhs_span[4]) = FPTypeInfo<LHS>::kPosZero;
+    *reinterpret_cast<LhsInt*>(&lhs_span[5]) = FPTypeInfo<LHS>::kNegZero;
+    *reinterpret_cast<LhsInt*>(&lhs_span[6]) = FPTypeInfo<LHS>::kPosDenorm;
+    *reinterpret_cast<LhsInt*>(&lhs_span[7]) = FPTypeInfo<LHS>::kNegDenorm;
     for (int i = 0; i < kTestValueLength; i++) {
       SetNaNBoxedRegisterValues<LHS, LhsRegisterType>({{kR1Name, lhs_span[i]}});
       SetNaNBoxedRegisterValues<MHS, MhsRegisterType>({{kR2Name, mhs_span[i]}});
@@ -972,20 +972,16 @@ class RiscVFPInstructionTestBase : public testing::Test {
     }
   }
 
-  absl::Span<XRegister *> xreg() { return absl::Span<XRegister *>(xreg_); }
+  absl::Span<XRegister*> xreg() { return absl::Span<XRegister*>(xreg_); }
 
-  absl::Span<RVFpRegister *> freg() {
-    return absl::Span<RVFpRegister *>(freg_);
-  }
+  absl::Span<RVFpRegister*> freg() { return absl::Span<RVFpRegister*>(freg_); }
 
-  absl::Span<RV64Register *> dreg() {
-    return absl::Span<RV64Register *>(dreg_);
-  }
-  absl::BitGen &bitgen() { return bitgen_; }
-  Instruction *instruction() { return instruction_; }
+  absl::Span<RV64Register*> dreg() { return absl::Span<RV64Register*>(dreg_); }
+  absl::BitGen& bitgen() { return bitgen_; }
+  Instruction* instruction() { return instruction_; }
 
   template <typename From, typename To>
-  To RoundToInteger(From val, uint32_t rm, uint32_t &flags) {
+  To RoundToInteger(From val, uint32_t rm, uint32_t& flags) {
     constexpr To kMax = std::numeric_limits<To>::max();
     constexpr To kMin = std::numeric_limits<To>::min();
     To value = 0;
@@ -1150,14 +1146,14 @@ class RiscVFPInstructionTestBase : public testing::Test {
   }
 
  protected:
-  XRegister *xreg_[32];
-  RV64Register *dreg_[32];
-  RVFpRegister *freg_[32];
-  RiscVState *state_;
-  Instruction *instruction_;
-  Instruction *child_instruction_;
-  FlatDemandMemory *memory_;
-  RiscVFPState *rv_fp_;
+  XRegister* xreg_[32];
+  RV64Register* dreg_[32];
+  RVFpRegister* freg_[32];
+  RiscVState* state_;
+  Instruction* instruction_;
+  Instruction* child_instruction_;
+  FlatDemandMemory* memory_;
+  RiscVFPState* rv_fp_;
   absl::BitGen bitgen_;
 };
 
@@ -1376,7 +1372,7 @@ class FpConversionsTestHelper {
   U Convert(FPRoundingMode rm = FPRoundingMode::kRoundToNearest);
 
   template <typename U>
-  U ConvertWithFlags(uint32_t &fflags,
+  U ConvertWithFlags(uint32_t& fflags,
                      FPRoundingMode rm = FPRoundingMode::kRoundToNearest) {
     fflags_ = 0;
     U ret = Convert<U>(rm);
@@ -1396,8 +1392,8 @@ class FpConversionsTestHelper {
 
   template <typename IntReturnType, typename FpReturnType>
   void NarrowingConversionMakeExponentAndSignificand(FPRoundingMode,
-                                                     IntReturnType &,
-                                                     IntReturnType &);
+                                                     IntReturnType&,
+                                                     IntReturnType&);
 
   template <typename IntReturnType, typename FpReturnType>
   IntReturnType NarrowingConversionHandleInfinity(FPRoundingMode);
@@ -1423,18 +1419,18 @@ class FpConversionsTestHelper {
     return value;
   }
 
-  const int *GetRoundingTable(FPRoundingMode rm) {
+  const int* GetRoundingTable(FPRoundingMode rm) {
     switch (rm) {
       case FPRoundingMode::kRoundToNearest:
-        return static_cast<const int *>(internal::kRoundToNearestTable);
+        return static_cast<const int*>(internal::kRoundToNearestTable);
       case FPRoundingMode::kRoundTowardsZero:
-        return static_cast<const int *>(internal::kRoundTowardsZeroTable);
+        return static_cast<const int*>(internal::kRoundTowardsZeroTable);
       case FPRoundingMode::kRoundDown:
-        return static_cast<const int *>(internal::kRoundDownTable);
+        return static_cast<const int*>(internal::kRoundDownTable);
       case FPRoundingMode::kRoundUp:
-        return static_cast<const int *>(internal::kRoundUpTable);
+        return static_cast<const int*>(internal::kRoundUpTable);
       default:
-        return static_cast<const int *>(internal::kRoundToNearestTable);
+        return static_cast<const int*>(internal::kRoundToNearestTable);
     }
   }
 };  // class FpConversionsTestHelper
@@ -1510,8 +1506,8 @@ U FpConversionsTestHelper<T>::Convert(FPRoundingMode rm) {
 template <typename T>
 template <typename IntReturnType, typename FpReturnType>
 void FpConversionsTestHelper<T>::NarrowingConversionMakeExponentAndSignificand(
-    FPRoundingMode rm, IntReturnType &out_exponent,
-    IntReturnType &out_significand) {
+    FPRoundingMode rm, IntReturnType& out_exponent,
+    IntReturnType& out_significand) {
   int32_t e_max = FPTypeInfo<FpReturnType>::kExpBias;
   int32_t e_min = 1 - e_max;
   IntType in_exponent = (unsigned_value_ & FPTypeInfo<FpType>::kExpMask) >>

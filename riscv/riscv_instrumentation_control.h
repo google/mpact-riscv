@@ -29,19 +29,19 @@ namespace mpact::sim::riscv {
 
 class RiscVInstrumentationControl {
  public:
-  RiscVInstrumentationControl(DebugCommandShell *shell, RiscVTop *riscv_top,
-                              util::MemoryUseProfiler *mem_profiler);
+  RiscVInstrumentationControl(DebugCommandShell* shell, RiscVTop* riscv_top,
+                              util::MemoryUseProfiler* mem_profiler);
 
   bool PerformShellCommand(absl::string_view input,
-                           const DebugCommandShell::CoreAccess &core_access,
-                           std::string &output);
+                           const DebugCommandShell::CoreAccess& core_access,
+                           std::string& output);
 
   std::string Usage() const;
 
  private:
-  DebugCommandShell *shell_;
-  RiscVTop *top_ = nullptr;
-  util::MemoryUseProfiler *mem_profiler_;
+  DebugCommandShell* shell_;
+  RiscVTop* top_ = nullptr;
+  util::MemoryUseProfiler* mem_profiler_;
   LazyRE2 pattern_re_;
 };
 

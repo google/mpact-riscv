@@ -198,20 +198,20 @@ class X86FloatingPointInterface : public HostFloatingPointInterface {
 };
 
 // Factory function.
-HostFloatingPointInterface *GetHostFloatingPointInterface() {
+HostFloatingPointInterface* GetHostFloatingPointInterface() {
   return new X86FloatingPointInterface();
 }
 
 #pragma STDC FENV_ACCESS ON
 
-ScopedFPStatus::ScopedFPStatus(HostFloatingPointInterface *fp_interface)
+ScopedFPStatus::ScopedFPStatus(HostFloatingPointInterface* fp_interface)
     : fp_interface_(fp_interface) {
   // The host processor status is saved in cpu_fp_status_.
   uint32_t sim_status = 0;
   asm volatile("stmxcsr %0\n"  // NOLINT(google3-runtime-inline-assembly)
                : "=m"(cpu_fp_status_), "+X"(sim_status));
-  auto *host_fp_interface =
-      static_cast<X86FloatingPointInterface *>(fp_interface_);
+  auto* host_fp_interface =
+      static_cast<X86FloatingPointInterface*>(fp_interface_);
   // Get the translated version of the simulated RiscV status.
   sim_status = host_fp_interface->x86_status();
   // Save current "dynamic" rounding mode.
@@ -222,15 +222,15 @@ ScopedFPStatus::ScopedFPStatus(HostFloatingPointInterface *fp_interface)
                : "m"(sim_status));
 }
 
-ScopedFPStatus::ScopedFPStatus(HostFloatingPointInterface *fp_interface,
+ScopedFPStatus::ScopedFPStatus(HostFloatingPointInterface* fp_interface,
                                uint32_t rm)
     : fp_interface_(fp_interface) {
   // The host processor status is saved in cpu_fp_status_.
   uint32_t sim_status = 0;
   asm volatile("stmxcsr %0\n"  // NOLINT(google3-runtime-inline-assembly)
                : "=m"(cpu_fp_status_), "=X"(sim_status));
-  auto *host_fp_interface =
-      static_cast<X86FloatingPointInterface *>(fp_interface_);
+  auto* host_fp_interface =
+      static_cast<X86FloatingPointInterface*>(fp_interface_);
   sim_status = host_fp_interface->x86_status();
   // Save current "dynamic" rounding mode.
   host_rm_ = sim_status & 0x6000;
@@ -245,15 +245,15 @@ ScopedFPStatus::ScopedFPStatus(HostFloatingPointInterface *fp_interface,
                : "m"(sim_status));
 }
 
-ScopedFPStatus::ScopedFPStatus(HostFloatingPointInterface *fp_interface,
+ScopedFPStatus::ScopedFPStatus(HostFloatingPointInterface* fp_interface,
                                FPRoundingMode rm)
     : fp_interface_(fp_interface) {
   // The host processor status is saved in cpu_fp_status_.
   uint32_t sim_status = 0;
   asm volatile("stmxcsr %0\n"  // NOLINT(google3-runtime-inline-assembly)
                : "=m"(cpu_fp_status_), "=X"(sim_status));
-  auto *host_fp_interface =
-      static_cast<X86FloatingPointInterface *>(fp_interface);
+  auto* host_fp_interface =
+      static_cast<X86FloatingPointInterface*>(fp_interface);
   sim_status = host_fp_interface->x86_status();
   // Save current "dynamic" rounding mode.
   host_rm_ = sim_status & 0x6000;
@@ -275,8 +275,8 @@ ScopedFPStatus::~ScopedFPStatus() {
   asm volatile(  // NOLINT(google3-runtime-inline-assembly)
       "stmxcsr %0\n"
       : "=m"(x86_sim_status));
-  auto *host_fp_interface =
-      static_cast<X86FloatingPointInterface *>(fp_interface_);
+  auto* host_fp_interface =
+      static_cast<X86FloatingPointInterface*>(fp_interface_);
   // Save the fp status of the simulated instructions.
   uint32_t sim_status = ((x86_sim_status) & 0x1fff) | host_rm_;
   // Save the new status as the x86 version of the RiscV status.
@@ -288,13 +288,13 @@ ScopedFPStatus::~ScopedFPStatus() {
 }
 
 ScopedFPRoundingMode::ScopedFPRoundingMode(
-    HostFloatingPointInterface *fp_interface) {
+    HostFloatingPointInterface* fp_interface) {
   uint32_t sim_status = 0;
   // Get current x86 status and save it in cpu_fp_status_.
   asm volatile("stmxcsr %0\n"  // NOLINT(google3-runtime-inline-assembly)
                : "=m"(cpu_fp_status_), "=X"(sim_status));
-  auto *host_fp_interface =
-      static_cast<X86FloatingPointInterface *>(fp_interface);
+  auto* host_fp_interface =
+      static_cast<X86FloatingPointInterface*>(fp_interface);
   sim_status = host_fp_interface->x86_status();
   asm volatile("ldmxcsr %0\n"  // NOLINT(google3-runtime-inline-assembly)
                :
@@ -302,13 +302,13 @@ ScopedFPRoundingMode::ScopedFPRoundingMode(
 }
 
 ScopedFPRoundingMode::ScopedFPRoundingMode(
-    HostFloatingPointInterface *fp_interface, uint32_t rm) {
+    HostFloatingPointInterface* fp_interface, uint32_t rm) {
   uint32_t sim_status = 0;
   // Get current x86 status and save it in cpu_fp_status_.
   asm volatile("stmxcsr %0\n"  // NOLINT(google3-runtime-inline-assembly)
                : "=m"(cpu_fp_status_), "=X"(sim_status));
-  auto *host_fp_interface =
-      static_cast<X86FloatingPointInterface *>(fp_interface);
+  auto* host_fp_interface =
+      static_cast<X86FloatingPointInterface*>(fp_interface);
   sim_status = host_fp_interface->x86_status();
   if (rm != 0b111) {
     // Override rounding mode with that specified in the instruction.
@@ -321,13 +321,13 @@ ScopedFPRoundingMode::ScopedFPRoundingMode(
 }
 
 ScopedFPRoundingMode::ScopedFPRoundingMode(
-    HostFloatingPointInterface *fp_interface, FPRoundingMode rm) {
+    HostFloatingPointInterface* fp_interface, FPRoundingMode rm) {
   uint32_t sim_status = 0;
   // Get current x86 status and save it in cpu_fp_status_.
   asm volatile("stmxcsr %0\n"  // NOLINT(google3-runtime-inline-assembly)
                : "=m"(cpu_fp_status_), "=X"(sim_status));
-  auto *host_fp_interface =
-      static_cast<X86FloatingPointInterface *>(fp_interface);
+  auto* host_fp_interface =
+      static_cast<X86FloatingPointInterface*>(fp_interface);
   sim_status = host_fp_interface->x86_status();
   auto rm_value = static_cast<uint32_t>(rm);
   if (rm_value != 0b111) {

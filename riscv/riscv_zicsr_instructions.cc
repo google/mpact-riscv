@@ -32,22 +32,22 @@ namespace riscv {
 using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 
 template <typename T>
-inline T ReadCsr(RiscVCsrInterface *) {}
+inline T ReadCsr(RiscVCsrInterface*) {}
 
 template <>
-inline uint32_t ReadCsr<uint32_t>(RiscVCsrInterface *csr) {
+inline uint32_t ReadCsr<uint32_t>(RiscVCsrInterface* csr) {
   return csr->AsUint32();
 }
 template <>
-inline uint64_t ReadCsr<uint64_t>(RiscVCsrInterface *csr) {
+inline uint64_t ReadCsr<uint64_t>(RiscVCsrInterface* csr) {
   return csr->AsUint64();
 }
 
 // Helper function to check that the CSR permission is valid. If not, throw
 // an illegal instruction exception.
-bool CheckCsrPermission(int csr_index, Instruction *instruction) {
+bool CheckCsrPermission(int csr_index, Instruction* instruction) {
   auto required_mode = (csr_index >> 8) & 0x3;
-  auto *state = static_cast<RiscVState *>(instruction->state());
+  auto* state = static_cast<RiscVState*>(instruction->state());
   auto current_mode = state->privilege_mode();
   // If the privilege mode is too low, throw an exception.
   if (*current_mode < required_mode) {
@@ -70,9 +70,9 @@ bool CheckCsrPermission(int csr_index, Instruction *instruction) {
 
 // Read the CSR, write a new value back.
 template <typename T>
-static inline void RVZiCsrrw(Instruction *instruction) {
+static inline void RVZiCsrrw(Instruction* instruction) {
   // Get a handle to the state instance.
-  auto state = static_cast<RiscVState *>(instruction->state());
+  auto state = static_cast<RiscVState*>(instruction->state());
   // Get the csr index.
   int csr_index = instruction->Source(1)->AsInt32(0);
   if (!CheckCsrPermission(csr_index, instruction)) return;
@@ -88,9 +88,9 @@ static inline void RVZiCsrrw(Instruction *instruction) {
   }
   // Get the new value.
   T new_value = generic::GetInstructionSource<T>(instruction, 0);
-  auto *csr = result.value();
+  auto* csr = result.value();
   // Update the register.
-  auto *reg = static_cast<generic::RegisterDestinationOperand<T> *>(
+  auto* reg = static_cast<generic::RegisterDestinationOperand<T>*>(
                   instruction->Destination(0))
                   ->GetRegister();
   reg->data_buffer()->template Set<T>(0, ReadCsr<T>(csr));
@@ -100,9 +100,9 @@ static inline void RVZiCsrrw(Instruction *instruction) {
 
 // Read the CSR, set the bits specified by the new value and write back.
 template <typename T>
-static inline void RVZiCsrrs(Instruction *instruction) {
+static inline void RVZiCsrrs(Instruction* instruction) {
   // Get a handle to the state instance.
-  auto state = static_cast<RiscVState *>(instruction->state());
+  auto state = static_cast<RiscVState*>(instruction->state());
   // Get the csr index.
   int csr_index = instruction->Source(1)->AsInt32(0);
   if (!CheckCsrPermission(csr_index, instruction)) return;
@@ -118,9 +118,9 @@ static inline void RVZiCsrrs(Instruction *instruction) {
   }
   // Get the new value.
   T new_value = generic::GetInstructionSource<T>(instruction, 0);
-  auto *csr = result.value();
+  auto* csr = result.value();
   // Update the register.
-  auto *reg = static_cast<generic::RegisterDestinationOperand<T> *>(
+  auto* reg = static_cast<generic::RegisterDestinationOperand<T>*>(
                   instruction->Destination(0))
                   ->GetRegister();
   reg->data_buffer()->template Set<T>(0, ReadCsr<T>(csr));
@@ -130,9 +130,9 @@ static inline void RVZiCsrrs(Instruction *instruction) {
 
 // Read the CSR, clear the bits specified by the new value and write back.
 template <typename T>
-static inline void RVZiCsrrc(Instruction *instruction) {
+static inline void RVZiCsrrc(Instruction* instruction) {
   // Get a handle to the state instance.
-  auto state = static_cast<RiscVState *>(instruction->state());
+  auto state = static_cast<RiscVState*>(instruction->state());
   // Get the csr index.
   int csr_index = instruction->Source(1)->AsInt32(0);
   if (!CheckCsrPermission(csr_index, instruction)) return;
@@ -148,9 +148,9 @@ static inline void RVZiCsrrc(Instruction *instruction) {
   }
   // Get the new value.
   T new_value = generic::GetInstructionSource<T>(instruction, 0);
-  auto *csr = result.value();
+  auto* csr = result.value();
   // Write the current value of the CSR to the destination register.
-  auto *reg = static_cast<generic::RegisterDestinationOperand<T> *>(
+  auto* reg = static_cast<generic::RegisterDestinationOperand<T>*>(
                   instruction->Destination(0))
                   ->GetRegister();
   auto csr_val = ReadCsr<T>(csr);
@@ -161,9 +161,9 @@ static inline void RVZiCsrrc(Instruction *instruction) {
 
 // Do not read the CSR, just write the new value back.
 template <typename T>
-static inline void RVZiCsrrwNr(Instruction *instruction) {
+static inline void RVZiCsrrwNr(Instruction* instruction) {
   // Get a handle to the state instance.
-  auto state = static_cast<RiscVState *>(instruction->state());
+  auto state = static_cast<RiscVState*>(instruction->state());
   // Get the csr index.
   int csr_index = instruction->Source(1)->AsInt32(0);
   if (!CheckCsrPermission(csr_index, instruction)) return;
@@ -176,7 +176,7 @@ static inline void RVZiCsrrwNr(Instruction *instruction) {
                                ": ", result.status().message());
     return;
   }
-  auto *csr = result.value();
+  auto* csr = result.value();
   // Write the new value to the csr.
   T new_value = generic::GetInstructionSource<T>(instruction, 0);
   csr->Write(new_value);
@@ -184,9 +184,9 @@ static inline void RVZiCsrrwNr(Instruction *instruction) {
 
 // Do not write a value back to the CSR, just read it.
 template <typename T>
-static inline void RVZiCsrrNw(Instruction *instruction) {
+static inline void RVZiCsrrNw(Instruction* instruction) {
   // Get a handle to the state instance.
-  auto state = static_cast<RiscVState *>(instruction->state());
+  auto state = static_cast<RiscVState*>(instruction->state());
   // Get the csr index.
   int csr_index = instruction->Source(0)->AsInt32(0);
   if (!CheckCsrPermission(csr_index, instruction)) return;
@@ -200,8 +200,8 @@ static inline void RVZiCsrrNw(Instruction *instruction) {
     return;
   }
   // Get the CSR object.
-  auto *csr = result.value();
-  auto *reg = static_cast<generic::RegisterDestinationOperand<T> *>(
+  auto* csr = result.value();
+  auto* reg = static_cast<generic::RegisterDestinationOperand<T>*>(
                   instruction->Destination(0))
                   ->GetRegister();
   reg->data_buffer()->template Set<T>(0, ReadCsr<T>(csr));
@@ -213,21 +213,21 @@ using RegisterType = RV32Register;
 using UintReg = RegisterType::ValueType;
 
 // Read the CSR, write a new value back.
-void RiscVZiCsrrw(Instruction *instruction) { RVZiCsrrw<UintReg>(instruction); }
+void RiscVZiCsrrw(Instruction* instruction) { RVZiCsrrw<UintReg>(instruction); }
 
 // Read the CSR, set the bits specified by the new value and write back.
-void RiscVZiCsrrs(Instruction *instruction) { RVZiCsrrs<UintReg>(instruction); }
+void RiscVZiCsrrs(Instruction* instruction) { RVZiCsrrs<UintReg>(instruction); }
 
 // Read the CSR, clear the bits specified by the new value and write back.
-void RiscVZiCsrrc(Instruction *instruction) { RVZiCsrrc<UintReg>(instruction); }
+void RiscVZiCsrrc(Instruction* instruction) { RVZiCsrrc<UintReg>(instruction); }
 
 // Do not read the CSR, just write the new value back.
-void RiscVZiCsrrwNr(Instruction *instruction) {
+void RiscVZiCsrrwNr(Instruction* instruction) {
   RVZiCsrrwNr<UintReg>(instruction);
 }
 
 // Do not write a value back to the CSR, just read it.
-void RiscVZiCsrrNw(Instruction *instruction) {
+void RiscVZiCsrrNw(Instruction* instruction) {
   RVZiCsrrNw<UintReg>(instruction);
 }
 
@@ -239,21 +239,21 @@ using RegisterType = RV64Register;
 using UintReg = RegisterType::ValueType;
 
 // Read the CSR, write a new value back.
-void RiscVZiCsrrw(Instruction *instruction) { RVZiCsrrw<UintReg>(instruction); }
+void RiscVZiCsrrw(Instruction* instruction) { RVZiCsrrw<UintReg>(instruction); }
 
 // Read the CSR, set the bits specified by the new value and write back.
-void RiscVZiCsrrs(Instruction *instruction) { RVZiCsrrs<UintReg>(instruction); }
+void RiscVZiCsrrs(Instruction* instruction) { RVZiCsrrs<UintReg>(instruction); }
 
 // Read the CSR, clear the bits specified by the new value and write back.
-void RiscVZiCsrrc(Instruction *instruction) { RVZiCsrrc<UintReg>(instruction); }
+void RiscVZiCsrrc(Instruction* instruction) { RVZiCsrrc<UintReg>(instruction); }
 
 // Do not read the CSR, just write the new value back.
-void RiscVZiCsrrwNr(Instruction *instruction) {
+void RiscVZiCsrrwNr(Instruction* instruction) {
   RVZiCsrrwNr<UintReg>(instruction);
 }
 
 // Do not write a value back to the CSR, just read it.
-void RiscVZiCsrrNw(Instruction *instruction) {
+void RiscVZiCsrrNw(Instruction* instruction) {
   RVZiCsrrNw<UintReg>(instruction);
 }
 

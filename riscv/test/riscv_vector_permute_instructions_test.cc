@@ -56,9 +56,9 @@ class RiscVVectorPermuteInstructionsTest
 
 // Helper function for vector-vector vrgather instructions.
 template <typename T, typename I>
-void VrgatherVVHelper(RiscVVectorPermuteInstructionsTest *tester,
-                      Instruction *inst) {
-  auto *rv_vector = tester->rv_vector();
+void VrgatherVVHelper(RiscVVectorPermuteInstructionsTest* tester,
+                      Instruction* inst) {
+  auto* rv_vector = tester->rv_vector();
   // Configure vector unit for sew and maximum lmul.
   uint32_t vtype = 0;
   int max_regs = 8;
@@ -126,9 +126,9 @@ void VrgatherVVHelper(RiscVVectorPermuteInstructionsTest *tester,
 
 // Helper function for vector-scalar vrgather instructions.
 template <typename T>
-void VrgatherVSHelper(RiscVVectorPermuteInstructionsTest *tester,
-                      Instruction *inst) {
-  auto *rv_vector = tester->rv_vector();
+void VrgatherVSHelper(RiscVVectorPermuteInstructionsTest* tester,
+                      Instruction* inst) {
+  auto* rv_vector = tester->rv_vector();
   // Configure vector unit.
   uint32_t vtype =
       (kSewSettingsByByteSize[sizeof(T)] << 3) | kLmulSettingByLogSize[7];
@@ -266,9 +266,9 @@ TEST_F(RiscVVectorPermuteInstructionsTest, Vrgatherei16VV64) {
 
 // Helper function for slideup/down instructions.
 template <typename T>
-void SlideHelper(RiscVVectorPermuteInstructionsTest *tester, Instruction *inst,
+void SlideHelper(RiscVVectorPermuteInstructionsTest* tester, Instruction* inst,
                  bool is_slide_up) {
-  auto *rv_vector = tester->rv_vector();
+  auto* rv_vector = tester->rv_vector();
   uint32_t vtype =
       (kSewSettingsByByteSize[sizeof(T)] << 3) | kLmulSettingByLogSize[7];
   tester->ConfigureVectorUnit(vtype, 2048);
@@ -412,9 +412,9 @@ TEST_F(RiscVVectorPermuteInstructionsTest, Vslidedown64) {
 }
 
 template <typename T>
-void Slide1Helper(RiscVVectorPermuteInstructionsTest *tester, Instruction *inst,
+void Slide1Helper(RiscVVectorPermuteInstructionsTest* tester, Instruction* inst,
                   bool is_slide_up) {
-  auto *rv_vector = tester->rv_vector();
+  auto* rv_vector = tester->rv_vector();
   uint32_t vtype =
       (kSewSettingsByByteSize[sizeof(T)] << 3) | kLmulSettingByLogSize[7];
   tester->ConfigureVectorUnit(vtype, 2048);
@@ -550,9 +550,9 @@ TEST_F(RiscVVectorPermuteInstructionsTest, Vslide1down64) {
 }
 
 template <typename T>
-void CompressHelper(RiscVVectorPermuteInstructionsTest *tester,
-                    Instruction *inst) {
-  auto *rv_vector = tester->rv_vector();
+void CompressHelper(RiscVVectorPermuteInstructionsTest* tester,
+                    Instruction* inst) {
+  auto* rv_vector = tester->rv_vector();
   uint32_t vtype =
       (kSewSettingsByByteSize[sizeof(T)] << 3) | kLmulSettingByLogSize[7];
   tester->ConfigureVectorUnit(vtype, 2048);

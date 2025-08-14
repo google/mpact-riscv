@@ -41,7 +41,7 @@ using ::mpact::sim::generic::operator*;  // NOLINT: clang-tidy false positive.
 class RV32GVIsaFactory : public isa32v::RiscV32GVInstructionSetFactory {
  public:
   std::unique_ptr<isa32v::Riscv32gvSlot> CreateRiscv32gvSlot(
-      ArchState *state) override {
+      ArchState* state) override {
     return std::make_unique<isa32v::Riscv32gvSlot>(state);
   }
 };
@@ -53,35 +53,35 @@ class RiscV32GVecDecoder : public generic::DecoderInterface {
   using SlotEnum = isa32v::SlotEnum;
   using OpcodeEnum = isa32v::OpcodeEnum;
 
-  RiscV32GVecDecoder(RiscVState *state, util::MemoryInterface *memory);
+  RiscV32GVecDecoder(RiscVState* state, util::MemoryInterface* memory);
   RiscV32GVecDecoder() = delete;
   ~RiscV32GVecDecoder() override;
 
   // This will always return a valid instruction that can be executed. In the
   // case of a decode error, the semantic function in the instruction object
   // instance will raise an internal simulator error when executed.
-  generic::Instruction *DecodeInstruction(uint64_t address) override;
+  generic::Instruction* DecodeInstruction(uint64_t address) override;
 
   // Return the number of opcodes supported by this decoder.
   int GetNumOpcodes() const override { return *OpcodeEnum::kPastMaxValue; }
   // Return the name of the opcode at the given index.
-  const char *GetOpcodeName(int index) const override {
+  const char* GetOpcodeName(int index) const override {
     return isa32v::kOpcodeNames[index];
   }
 
   // Getter.
-  isa32v::RiscV32GVecEncoding *riscv_encoding() const {
+  isa32v::RiscV32GVecEncoding* riscv_encoding() const {
     return riscv_encoding_;
   }
 
  private:
-  RiscVState *state_;
-  util::MemoryInterface *memory_;
+  RiscVState* state_;
+  util::MemoryInterface* memory_;
   std::unique_ptr<generic::ProgramError> decode_error_;
-  generic::DataBuffer *inst_db_;
-  isa32v::RiscV32GVecEncoding *riscv_encoding_;
-  RV32GVIsaFactory *riscv_isa_factory_;
-  isa32v::RiscV32GVInstructionSet *riscv_isa_;
+  generic::DataBuffer* inst_db_;
+  isa32v::RiscV32GVecEncoding* riscv_encoding_;
+  RV32GVIsaFactory* riscv_isa_factory_;
+  isa32v::RiscV32GVInstructionSet* riscv_isa_;
 };
 
 }  // namespace riscv

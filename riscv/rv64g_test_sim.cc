@@ -65,7 +65,7 @@ ABSL_FLAG(std::optional<std::string>, dump_signature, std::nullopt,
 ABSL_FLAG(bool, log_commits, false, "Log commits similar to spike");
 ABSL_FLAG(int64_t, max_cycles, -1, "Max cycles to simulate");
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   auto arg_vec = absl::ParseCommandLine(argc, argv);
 
   if (arg_vec.size() > 2) {
@@ -78,9 +78,9 @@ int main(int argc, char **argv) {
   std::string file_basename = file_name.substr(0, file_name.find_first_of('.'));
 
   mpact::sim::util::FlatDemandMemory memory;
-  auto *watcher = new mpact::sim::util::MemoryWatcher(&memory);
-  auto *test_watcher = new mpact::sim::riscv::RiscVTestMemWatcher(watcher);
-  auto *atomic_memory = new mpact::sim::util::AtomicMemory(test_watcher);
+  auto* watcher = new mpact::sim::util::MemoryWatcher(&memory);
+  auto* test_watcher = new mpact::sim::riscv::RiscVTestMemWatcher(watcher);
+  auto* atomic_memory = new mpact::sim::util::AtomicMemory(test_watcher);
   // Load the elf segments into memory.
   mpact::sim::util::ElfProgramLoader elf_loader(&memory);
   auto load_result = elf_loader.LoadProgram(full_file_name);
@@ -129,8 +129,8 @@ int main(int argc, char **argv) {
   bool ok = true;
   uint64_t pc = entry_point;
   bool commit_trace = absl::GetFlag(FLAGS_log_commits);
-  auto *register_map = riscv_top.state()->registers();
-  mpact::sim::generic::DataBuffer *inst_db =
+  auto* register_map = riscv_top.state()->registers();
+  mpact::sim::generic::DataBuffer* inst_db =
       riscv_top.state()->db_factory()->Allocate<uint32_t>(1);
   int64_t count = 0;
   int64_t max_count = absl::GetFlag(FLAGS_max_cycles);
@@ -148,7 +148,7 @@ int main(int argc, char **argv) {
     ok = true;
     if (commit_trace) {
       // This IncRef's the inst instance. Need to DecRef it when we are done.
-      auto *inst = riscv_top.GetInstruction(pc).value();
+      auto* inst = riscv_top.GetInstruction(pc).value();
       std::string trace_str;
       absl::StrAppend(
           &trace_str, "core   0: ", *(riscv_top.state()->privilege_mode()),
@@ -158,7 +158,7 @@ int main(int argc, char **argv) {
           &trace_str, " (0x",
           absl::Hex(inst_db->Get<uint32_t>(0), absl::PadSpec::kZeroPad8), ")");
       for (int i = 0; i < inst->DestinationsSize(); ++i) {
-        auto *dest = inst->Destination(i);
+        auto* dest = inst->Destination(i);
         if (dest == nullptr) continue;
         auto name = dest->AsString();
         if (name == "pc") continue;
@@ -167,7 +167,7 @@ int main(int argc, char **argv) {
         if (iter == register_map->end()) {
           continue;
         } else {
-          auto *db = iter->second->data_buffer();
+          auto* db = iter->second->data_buffer();
           auto size = db->size<uint8_t>();
           if (size != sizeof(uint64_t)) {
             continue;
@@ -177,10 +177,10 @@ int main(int argc, char **argv) {
               absl::Hex(db->Get<uint64_t>(0), absl::PadSpec::kZeroPad16));
         }
       }
-      auto *child = inst->child();
+      auto* child = inst->child();
       while (child != nullptr) {
         for (int i = 0; i < child->DestinationsSize(); ++i) {
-          auto *dest = child->Destination(i);
+          auto* dest = child->Destination(i);
           if (dest == nullptr) continue;
           auto name = dest->AsString();
           if (name == "pc") continue;
@@ -189,7 +189,7 @@ int main(int argc, char **argv) {
           if (iter == register_map->end()) {
             continue;
           } else {
-            auto *db = iter->second->data_buffer();
+            auto* db = iter->second->data_buffer();
             auto size = db->size<uint8_t>();
             if (size != sizeof(uint64_t)) {
               absl::StrAppend(&trace_str, " size issue:  ", name);
@@ -249,7 +249,7 @@ int main(int argc, char **argv) {
       uint64_t begin_sig = begin_res.value().first;
       uint64_t end_sig = end_res.value().first;
       uint64_t length = end_sig - begin_sig;
-      uint8_t *buffer = new uint8_t[length];
+      uint8_t* buffer = new uint8_t[length];
       auto status = riscv_top.ReadMemory(begin_sig, buffer, length);
       sig_file << std::setfill('0') << std::hex;
       for (int i = 0; i < length; i += 16) {
