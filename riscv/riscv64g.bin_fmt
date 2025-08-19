@@ -26,7 +26,9 @@ decoder RiscV64G {
 #include "riscv_format32.bin_fmt"
 #include "riscv_format16.bin_fmt"
 
-instruction group RiscVGInst32[32] : Inst32Format {
+instruction group RiscVGInst32 = {RiscVGInstBase32, RiscVGHints32};
+
+instruction group RiscVGInstBase32[32] : Inst32Format {
   lui    : UType  : opcode == 0b011'0111;
   auipc  : UType  : opcode == 0b001'0111;
   jal    : JType  : rd != 0, opcode == 0b110'1111;
@@ -51,6 +53,7 @@ instruction group RiscVGInst32[32] : Inst32Format {
   sw     : SType  : func3 == 0b010, opcode == 0b010'0011;
   sd     : SType  : func3 == 0b011, opcode == 0b010'0011;
   addi   : IType  : func3 == 0b000, opcode == 0b001'0011;
+  nop    : IType  : func3 == 0b000, opcode == 0b001'0011, rd == 0, imm12 == 0, rs1 == 0;
   addiw  : IType  : func3 == 0b000, opcode == 0b001'1011;
   slti   : IType  : func3 == 0b010, opcode == 0b001'0011;
   sltiu  : IType  : func3 == 0b011, opcode == 0b001'0011;
@@ -218,8 +221,50 @@ instruction group RiscVGInst32[32] : Inst32Format {
   sfence_vma_nn : RType : func7 == 0b000'1001, rs2 != 0, rs1 != 0, func3 == 0, rd == 0, opcode == 0b111'0011;
 };
 
+
+// Encoding for RiscV hint instructions.
+instruction group RiscVGHints32[32] : Inst32Format {
+  lui_hint: UType      : opcode == 0b011'0111, rd == 0;
+  auipc_hint: UType    : opcode == 0b001'0111, rd == 0;
+  addi_hint1: IType    : func3 == 0b000, opcode == 0b001'0011, rd == 0, rs1 != 0;
+  addi_hint2: IType    : func3 == 0b000, opcode == 0b001'0011, rd == 0, imm12 != 0;
+  slti_hint : IType    : func3 == 0b010, opcode == 0b001'0011, rd == 0;
+  sltiu_hint: IType    : func3 == 0b011, opcode == 0b001'0011, rd == 0;
+  xori_hint: IType     : func3 == 0b100, rd == 0, opcode == 0b001'0011;
+  ori_hint: IType      : func3 == 0b110, rd == 0b00000, opcode == 0b001'0011;
+  andi_hint: IType     : func3 == 0b111, opcode == 0b001'0011, rd == 0;
+  srli_hint: RType     : func7 == 0b000'0000, func3==0b101, rd == 0, opcode == 0b001'0011;
+  slt_hint: RType      : func7 == 0b000'0000, func3==0b010, rd == 0, opcode == 0b011'0011;
+  slli_semihost: RType : func7 == 0b000'0000, func3==0b001, rd == 0, rs1 == 0, r_uimm5 == 31, opcode == 0b001'0011;
+  slli_hint1: RType    : func7 == 0b000'0000, func3==0b001, rd == 0, rs1 != 0, opcode == 0b001'0011;
+  slli_hint2: RType    : func7 == 0b000'0000, func3==0b001, rd == 0, r_uimm5 != 31, opcode == 0b001'0011;
+  srai_semihost: RType : func7 == 0b010'0000, func3==0b101, rd == 0, rs1 == 0, r_uimm5 == 7, opcode == 0b001'0011;
+  srai_hint1:    RType : func7 == 0b010'0000, func3==0b101, rd == 0, rs1 != 0, opcode == 0b001'0011;
+  srai_hint2:    RType : func7 == 0b010'0000, func3==0b101, rd == 0, r_uimm5 != 7, opcode == 0b001'0011;
+  add_hint1: RType     : func7 == 0b000'0000, func3==0b000, rd == 0, rs1 != 0, opcode == 0b011'0011;
+  add_hint2: RType     : func7 == 0b000'0000, func3==0b000, rd == 0, rs1 == 0, rs2 > 5, opcode == 0b011'0011;
+  add_hint3: RType     : func7 == 0b000'0000, func3==0b000, rd == 0, rs1 == 0, rs2 < 2, opcode == 0b011'0011;
+  sub_hint: RType      : func7 == 0b010'0000, func3==0b000, rd == 0, opcode == 0b011'0011;
+  sll_hint: RType      : func7 == 0b000'0000, func3==0b001, rd == 0, opcode == 0b011'0011;
+  sltu_hint: RType     : func7 == 0b000'0000, func3==0b011, rd == 0, opcode == 0b011'0011;
+  xor_hint: RType      : func7 == 0b000'0000, func3==0b100, rd == 0, opcode == 0b011'0011;
+  srl_hint: RType      : func7 == 0b000'0000, func3==0b101, rd == 0, opcode == 0b011'0011;
+  sra_hint: RType      : func7 == 0b010'0000, func3==0b101, rd == 0, opcode == 0b011'0011;
+  or_hint : RType      : func7 == 0b000'0000, func3==0b110, rd == 0, opcode == 0b011'0011;
+  and_hint: RType      : func7 == 0b000'0000, func3==0b111, rd == 0, opcode == 0b011'0011;
+  fence_hint1: Fence   : func3==0b000, rd == 0, rs1 != 0, fm == 0, pred == 0, opcode == 0b000'1111;
+  fence_hint2: Fence   : func3==0b000, rd == 0, rs1 != 0, fm == 0, succ == 0, opcode == 0b000'1111;
+  fence_hint3: Fence   : func3==0b000, rd != 0, rs1 == 0, fm == 0, pred == 0, opcode == 0b000'1111;
+  fence_hint4: Fence   : func3==0b000, rd != 0, rs1 == 0, fm == 0, succ == 0, opcode == 0b000'1111;
+  fence_hint5: Fence   : func3==0b000, rd == 0, rs1 == 0, fm == 0, pred == 0, succ != 0, opcode == 0b000'1111;
+  fence_hint6: Fence   : func3==0b000, rd == 0, rs1 == 0, fm == 0, succ == 0, opcode == 0b000'1111;
+  fence_hint7: Fence   : func3==0b000, rd != 0, rs1 == 0, fm == 0, pred != 1, succ == 0, opcode == 0b000'1111;
+};
+
+instruction group RiscVCInst16 = {RiscVCInstBase16, RiscVCHints16};
+
 // Compact instruction encodings.
-instruction group RiscVCInst16[16] : Inst16Format {
+instruction group RiscVCInstBase16[16] : Inst16Format {
   caddi4spn : CIW : func3 == 0b000, op == 0b00, imm8 != 0;
   cfld      : CL : func3 == 0b001, op == 0b00;
   clw       : CL : func3 == 0b010, op == 0b00;
@@ -229,7 +274,6 @@ instruction group RiscVCInst16[16] : Inst16Format {
   csd       : CS : func3 == 0b111, op == 0b00;
   cnop      : CI : func3 == 0b000, imm1 == 0, rs1 == 0, imm5 == 0, op == 0b01;
   caddi     : CI : func3 == 0b000, imm6 != 0, rd != 0, op == 0b01;
-  caddi_hint: CI : func3 == 0b000, imm6 == 0, rd != 0, op == 0b01;
   caddiw    : CI : func3 == 0b001, rs1 != 0, op == 0b01;
   cli       : CI : func3 == 0b010, rd != 0, op == 0b01;
   caddi16sp : CI : func3 == 0b011, rd == 2, ci_imm10 != 0, op == 0b01;
@@ -255,9 +299,18 @@ instruction group RiscVCInst16[16] : Inst16Format {
   cebreak   : CR : func4 == 0b1001, rs1 == 0, rs2 == 0, op == 0b10;
   cjalr     : CR : func4 == 0b1001, rs1 != 0, rs2 == 0, op == 0b10;
   cadd      : CR : func4 == 0b1001, rs1 != 0, rs2 != 0, op == 0b10;
-  cadd_hint : CR : func4 == 0b1001, rs1 == 0, rs2 != 0, op == 0b10;
   cfsdsp    : CSS: func3 == 0b101, op == 0b10;
   cswsp     : CSS: func3 == 0b110, op == 0b10;
   csdsp     : CSS: func3 == 0b111, op == 0b10;
   cunimp    : Inst16Format : func3 == 0b000, bits == 0b000'0000'0000, op == 0b00;
+};
+
+instruction group RiscVCHints16[16] : Inst16Format {
+  cnop_hint : CI : func3 == 0b000, imm6 != 0, rs1 == 0, op == 0b01;
+  caddi_hint: CI : func3 == 0b000, imm6 == 0, rd != 0, op == 0b01;
+  cli_hint  : CI : func3 == 0b010, rd == 0, op == 0b01;
+  clui_hint : CI : func3 == 0b011, rd == 0, imm6 != 0, op == 0b01;
+  cmv_hint  : CR : func4 == 0b1000, rs1 == 0, rs2 != 0, op == 0b10;
+  cslli_hint: CI : func3 == 0b000, imm6 != 0, rd == 0, op == 0b10;
+  cadd_hint : CR : func4 == 0b1001, rs1 == 0, rs2 != 0, rs2 != 2, rs2 != 3, rs2 != 4, rs2 != 5, op == 0b10;
 };

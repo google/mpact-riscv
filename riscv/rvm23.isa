@@ -35,6 +35,7 @@ slot rvm23 :
   riscv32_amo_arithmetic,
   riscv32f,
   riscv32d,
+  riscv32_hints,
   zicsr,
   zfencei,
   privileged,

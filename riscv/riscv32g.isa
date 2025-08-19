@@ -42,6 +42,10 @@ slot riscv32i {
       resources: TwoOp,
       disasm: "addi", "%rd, %rs1, %I_imm12",
       semfunc: "&RV32::RiscVIAdd";
+    nop{},
+      resources: { next_pc },
+      disasm: "nop",
+      semfunc: "&RiscVINop";
     slti{: rs1, I_imm12 : rd},
       resources: TwoOp,
       disasm: "slti", "%rd, %rs1, %I_imm12",
@@ -122,9 +126,6 @@ slot riscv32i {
       resources: ThreeOp,
       disasm: "sra", "%rd, %rs1, %rs2",
       semfunc: "&RV32::RiscVISra";
-    nop{},
-      disasm: "nop",
-      semfunc: "&RiscVINop";
     hint{},
       disasm: "hint",
       semfunc: "&RiscVINop";
@@ -215,6 +216,153 @@ slot riscv32i {
     unimp{},
       disasm: "unimp",
       semfunc: "&RiscVIUnimplemented";
+  }
+}
+
+// This slot contains the hint instructions. These execute as nops, but can be
+// changed to provide performance hints to a simulated microarchitecture.
+slot riscv32_hints {
+  includes {
+    #include "riscv/riscv_i_instructions.h"
+  }
+  default size = 4;
+  default latency = global_latency;
+  resources TwoOp = { next_pc, rs1 : rd[..rd]};
+  resources ThreeOp = { next_pc, rs1, rs2 : rd[..rd]};
+  opcodes {
+    addi_hint1{: rs1, I_imm12 : rd},
+      resources: TwoOp,
+      disasm: "addi.hint", "%rd, %rs1, %I_imm12",
+      semfunc: "&RiscVINop";
+    addi_hint2{: rs1, I_imm12 : rd},
+      resources: TwoOp,
+      disasm: "addi.hint", "%rd, %rs1, %I_imm12",
+      semfunc: "&RiscVINop";
+    slti_hint{: rs1, I_imm12 : rd},
+      resources: TwoOp,
+      disasm: "slti.hint", "%rd, %rs1, %I_imm12",
+      semfunc: "&RiscVINop";
+    sltiu_hint{: rs1, I_imm12 : rd},
+      resources: TwoOp,
+      disasm: "sltiu.hint", "%rd, %rs1, %I_imm12",
+      semfunc: "&RiscVINop";
+    andi_hint{: rs1, I_imm12 : rd},
+      resources: TwoOp,
+      disasm: "andi.hint", "%rd, %rs1, %I_imm12",
+      semfunc: "&RiscVINop";
+    ori_hint{: rs1, I_imm12 : rd},
+      resources: TwoOp,
+      disasm: "ori.hint", "%rd, %rs1, %I_imm12",
+      semfunc: "&RiscVINop";
+    xori_hint{: rs1, I_imm12 : rd},
+      resources: TwoOp,
+      disasm: "xori.hint", "%rd, %rs1, %I_imm12",
+      semfunc: "&RiscVINop";
+    slli_semihost{: rs1, I_uimm5 : rd},
+      resources: TwoOp,
+      disasm: "slli.semihost", "%rd, %rs1, 0x%(I_uimm5:x)",
+      semfunc: "&RiscVINop";
+    slli_hint1{: rs1, I_uimm5 : rd},
+      resources: TwoOp,
+      disasm: "slli.hint", "%rd, %rs1, 0x%(I_uimm5:x)",
+      semfunc: "&RiscVINop";
+    slli_hint2{: rs1, I_uimm5 : rd},
+      resources: TwoOp,
+      disasm: "slli.hint", "%rd, %rs1, 0x%(I_uimm5:x)",
+      semfunc: "&RiscVINop";
+    srli_hint{: rs1, I_uimm5 : rd},
+      resources: TwoOp,
+      disasm: "srli.hint", "%rd  %rs1, 0x%(I_uimm5:x)",
+      semfunc: "&RiscVINop";
+    srai_semihost{: rs1, I_uimm5 : rd},
+      resources: TwoOp,
+      disasm: "srai.semihost", "%rd, %rs1, 0x%(I_uimm5:x)",
+      semfunc: "&RiscVINop";
+    srai_hint1{: rs1, I_uimm5 : rd},
+      resources: TwoOp,
+      disasm: "srai.hint", "%rd, %rs1, 0x%(I_uimm5:x)",
+      semfunc: "&RiscVINop";
+    srai_hint2{: rs1, I_uimm5 : rd},
+      resources: TwoOp,
+      disasm: "srai.hint", "%rd, %rs1, 0x%(I_uimm5:x)",
+      semfunc: "&RiscVINop";
+    lui_hint{: U_imm20 : rd},
+      resources: { next_pc : rd[0..]},
+      disasm: "lui.hint", "%rd, 0x%(U_imm20:08x)",
+      semfunc: "&RiscVINop";
+    auipc_hint{: U_imm20 : rd},
+      resources: { next_pc : rd[0..]},
+      disasm: "auipc.hint", "%rd, 0x%(U_imm20:08x)",
+      semfunc: "&RiscVINop";
+    add_hint1{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "add.hint", "%rd, %rs1, %rs2",
+      semfunc: "&RiscVINop";
+    add_hint2{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "add.hint", "%rd, %rs1, %rs2",
+      semfunc: "&RiscVINop";
+    add_hint3{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "add.hint", "%rd, %rs1, %rs2",
+      semfunc: "&RiscVINop";
+    and_hint{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "and.hint", "%rd, %rs1, %rs2",
+      semfunc: "&RiscVINop";
+    or_hint{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "or.hint", "%rd, %rs1, %rs2",
+      semfunc: "&RiscVINop";
+    xor_hint{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "xor.hint", "%rd, %rs1, %rs2",
+      semfunc: "&RiscVINop";
+    sll_hint{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "sll.hint", "%rd, %rs1, %rs2",
+      semfunc: "&RiscVINop";
+    srl_hint{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "srl.hint", "%rd, %rs1, %rs2",
+      semfunc: "&RiscVINop";
+    sub_hint{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "sub.hint", "%rd, %rs1, %rs2",
+      semfunc: "&RiscVINop";
+    sra_hint{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "sra.hint", "%rd, %rs1, %rs2",
+      semfunc: "&RiscVINop";
+    slt_hint{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "slt", "%rd, %rs1, %rs2",
+      semfunc: "&RiscVINop";
+    sltu_hint{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "sltu", "%rd, %rs1, %rs2",
+      semfunc: "&RiscVINop";
+    fence_hint1{: pred, succ :},
+      disasm: "fence.hint",
+      semfunc: "&RiscVINop";
+    fence_hint2{: pred, succ :},
+      disasm: "fence.hint",
+      semfunc: "&RiscVINop";
+    fence_hint3{: pred, succ :},
+      disasm: "fence.hint",
+      semfunc: "&RiscVINop";
+    fence_hint4{: pred, succ :},
+      disasm: "fence.hint",
+      semfunc: "&RiscVINop";
+    fence_hint5{: pred, succ :},
+      disasm: "fence.hint",
+      semfunc: "&RiscVINop";
+    fence_hint6{: pred, succ :},
+      disasm: "fence.hint",
+      semfunc: "&RiscVINop";
+    fence_hint7{: pred, succ :},
+      disasm: "fence.hint",
+      semfunc: "&RiscVINop";
   }
 }
 
@@ -794,9 +942,6 @@ slot riscv32c {
       resources: {next_pc, rd : rd[0..]},
       disasm: "addi", "%rd, %rd, %I_ci_imm6",
       semfunc: "&RV32::RiscVIAdd";
-    caddi_hint{},
-      disasm: "caddi_hint",
-      semfunc: "&RiscVINop";
     caddi16sp{: x2, I_ci_imm6x16 : x2},
       resources: {next_pc, x2 : x2[0..]},
       disasm: "addi", "%x2, %x2, %(I_ci_imm6x16:d)",
@@ -829,9 +974,6 @@ slot riscv32c {
       resources: {next_pc, crs2, rd : rd[0..]},
       disasm: "add", "%rd, %rd, %crs2",
       semfunc: "&RV32::RiscVIAdd";
-    cadd_hint{},
-      disasm: "cadd_hint",
-      semfunc: "&RiscVINop";
     cand{: c3rs1, c3rs2 : c3rs1},
       resources: {next_pc, c3rs1, c3rs2 : c3rs1[0..]},
       disasm: "and", "%c3rs1, %c3rs1, %c3rs2",
@@ -863,8 +1005,36 @@ slot riscv32c {
   }
 }
 
+slot riscv32chints {
+  default size = 2;
+  default latency = global_latency;
+  opcodes {
+    cnop_hint{},
+      disasm: "cnop.hint",
+      semfunc: "&RiscVINop";
+    cli_hint{},
+      disasm: "cli.hint",
+      semfunc: "&RiscVINop";
+    clui_hint{},
+      disasm: "clui.hint",
+      semfunc: "&RiscVINop";
+    cmv_hint{},
+      disasm: "cmv.hint",
+      semfunc: "&RiscVINop";
+    caddi_hint{},
+      disasm: "caddi.hint",
+      semfunc: "&RiscVINop";
+    cslli_hint{},
+      disasm: "cslli.hint",
+      semfunc: "&RiscVINop";
+    cadd_hint{},
+      disasm: "cadd.hint",
+      semfunc: "&RiscVINop";
+  }
+}
+
 // This should be the RiscV32G set, where G stands for IMAFDZicsr_Zifencei.
-slot riscv32g : riscv32i, riscv32c, riscv32m, riscv32_amo_arithmetic, riscv32f, riscv32d, zicsr, zfencei, privileged {
+slot riscv32g : riscv32i, riscv32c, riscv32chints, riscv32m, riscv32_amo_arithmetic, riscv32f, riscv32d, riscv32_hints, zicsr, zfencei, privileged {
   default size = 4;
   default opcode =
     disasm: "Illegal instruction at 0x%(@:08x)",
