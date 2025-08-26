@@ -29,6 +29,7 @@
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/string_view.h"
 #include "absl/synchronization/notification.h"
 #include "mpact/sim/generic/action_point_manager_base.h"
 #include "mpact/sim/generic/breakpoint_manager.h"
@@ -145,39 +146,13 @@ void RiscVTop::Initialize() {
   }
 
   // Connect counters to instret(h) and mcycle(h) CSRs.
-  auto csr_res = state_->csr_set()->GetCsr("minstret");
-  CHECK_OK(csr_res.status()) << "Failed to get minstret CSR";
-  if (state_->xlen() == RiscVXlen::RV32) {
-    // Minstret/minstreth.
-    auto* minstret = reinterpret_cast<RiscVCounterCsr<uint32_t, RiscVState>*>(
-        csr_res.value());
-    minstret->set_counter(&counter_num_instructions_);
-    csr_res = state_->csr_set()->GetCsr("minstreth");
-    CHECK_OK(csr_res.status()) << "Failed to get minstret CSR";
-    auto* minstreth =
-        reinterpret_cast<RiscVCounterCsrHigh<RiscVState>*>(csr_res.value());
-    minstreth->set_counter(&counter_num_instructions_);
-    // Mcycle/mcycleh.
-    csr_res = state_->csr_set()->GetCsr("mcycle");
-    CHECK_OK(csr_res.status()) << "Failed to get mcycle CSR";
-    auto* mcycle = reinterpret_cast<RiscVCounterCsr<uint32_t, RiscVState>*>(
-        csr_res.value());
-    mcycle->set_counter(&counter_num_cycles_);
-    csr_res = state_->csr_set()->GetCsr("mcycleh");
-    CHECK_OK(csr_res.status()) << "Failed to get mcycleh CSR";
-    auto* mcycleh =
-        reinterpret_cast<RiscVCounterCsrHigh<RiscVState>*>(csr_res.value());
-    mcycleh->set_counter(&counter_num_cycles_);
-  } else {
-    // Minstret/minstreth.
-    auto* minstret = reinterpret_cast<RiscVCounterCsr<uint64_t, RiscVState>*>(
-        csr_res.value());
-    minstret->set_counter(&counter_num_instructions_);
-    // Mcycle/mcycleh.
-    auto* mcycle = reinterpret_cast<RiscVCounterCsr<uint64_t, RiscVState>*>(
-        csr_res.value());
-    mcycle->set_counter(&counter_num_cycles_);
-  }
+  CHECK_OK(SetCsrCounter("minstret", counter_num_instructions_));
+  CHECK_OK(SetCsrCounter("mcycle", counter_num_cycles_));
+
+  // Connect Zicntr counters to cycle(h), time(h), and instret(h) CSRs.
+  CHECK_OK(SetCsrCounter("instret", counter_num_instructions_));
+  CHECK_OK(SetCsrCounter("cycle", counter_num_cycles_));
+  CHECK_OK(SetCsrCounter("time", counter_num_cycles_));
 
   // Set up break and action points.
   rv_action_point_memory_interface_ = new RiscVActionPointMemoryInterface(
@@ -891,6 +866,34 @@ void RiscVTop::AddToBranchTrace(uint64_t from, uint64_t to) {
   branch_trace_head_ = (branch_trace_head_ + 1) & branch_trace_mask_;
   branch_trace_[branch_trace_head_] = {static_cast<uint32_t>(from),
                                        static_cast<uint32_t>(to), 1};
+}
+
+absl::Status RiscVTop::SetCsrCounter(
+    absl::string_view name, generic::SimpleCounter<uint64_t>& counter) {
+  absl::StatusOr<RiscVCsrInterface*> csr_result =
+      state_->csr_set()->GetCsr(name);
+  if (!csr_result.ok()) {
+    return csr_result.status();
+  }
+  switch (state_->xlen()) {
+    case RiscVXlen::RV32:
+      dynamic_cast<RiscVCounterCsr<uint32_t, RiscVState>*>(*csr_result)
+          ->set_counter(&counter);
+      csr_result = state_->csr_set()->GetCsr(absl::StrCat(name, "h"));
+      if (!csr_result.ok()) {
+        return csr_result.status();
+      }
+      dynamic_cast<RiscVCounterCsrHigh<RiscVState>*>(*csr_result)
+          ->set_counter(&counter);
+      break;
+    case RiscVXlen::RV64:
+      dynamic_cast<RiscVCounterCsr<uint64_t, RiscVState>*>(*csr_result)
+          ->set_counter(&counter);
+      break;
+    default:
+      return absl::InternalError("Unknown Xlen value");
+  }
+  return absl::OkStatus();
 }
 
 void RiscVTop::EnableStatistics() {

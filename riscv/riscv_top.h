@@ -15,7 +15,6 @@
 #ifndef MPACT_RISCV_RISCV_RISCV_TOP_H_
 #define MPACT_RISCV_RISCV_RISCV_TOP_H_
 
-// #include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -25,6 +24,7 @@
 #include "absl/functional/any_invocable.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/string_view.h"
 #include "absl/synchronization/notification.h"
 #include "mpact/sim/generic/action_point_manager_base.h"
 #include "mpact/sim/generic/breakpoint_manager.h"
@@ -166,6 +166,11 @@ class RiscVTop : public generic::Component, public RiscVDebugInterface {
   void ICacheFetch(uint64_t address);
   // Branch tracing.
   void AddToBranchTrace(uint64_t from, uint64_t to);
+  // Add a counter to a CSR. This is used to connect the counters to the
+  // various CSRs that track the same quantity (e.g., cycle, time, retired
+  // instructions).
+  absl::Status SetCsrCounter(absl::string_view name,
+                             generic::SimpleCounter<uint64_t>& counter);
 
   // The DB factory is used to manage data buffers for memory read/writes.
   generic::DataBufferFactory db_factory_;

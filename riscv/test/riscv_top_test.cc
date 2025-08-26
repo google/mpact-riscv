@@ -584,6 +584,12 @@ TEST_F(RiscVTopTest, RiscV64) {
   EXPECT_EQ(static_cast<int>(halt_result.value()),
             static_cast<int>(HaltReason::kSemihostHaltRequest));
   EXPECT_EQ("Hello world! 5\n", testing::internal::GetCapturedStdout());
+
+  // Verify that the counter CSRs are non-zero. Mutation testing found the
+  // coverage gap.
+  EXPECT_NE(riscv_top_->ReadRegister("cycle").value(), 0);
+  EXPECT_NE(riscv_top_->ReadRegister("time").value(), 0);
+  EXPECT_NE(riscv_top_->ReadRegister("instret").value(), 0);
 }
 
 }  // namespace

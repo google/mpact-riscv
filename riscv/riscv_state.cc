@@ -234,7 +234,7 @@ void CreateCsrs(RiscVState* state, std::vector<RiscVCsrInterface*>& csr_vec) {
   auto* minstret = CreateCsr<RiscVCounterCsr<T, RiscVState>>(
       state, csr_vec, "minstret", RiscVCsrEnum ::kMInstret, state);
   CHECK_NE(minstret, nullptr);
-  if (sizeof(T) == sizeof(uint32_t)) {
+  if (std::is_same_v<T, uint32_t>) {
     CHECK_NE(
         CreateCsr<RiscVCounterCsrHigh<RiscVState>>(
             state, csr_vec, "minstreth", RiscVCsrEnum::kMInstretH, state,
@@ -245,11 +245,47 @@ void CreateCsrs(RiscVState* state, std::vector<RiscVCsrInterface*>& csr_vec) {
   auto* mcycle = CreateCsr<RiscVCounterCsr<T, RiscVState>>(
       state, csr_vec, "mcycle", RiscVCsrEnum::kMCycle, state);
   CHECK_NE(mcycle, nullptr);
-  if (sizeof(T) == sizeof(uint32_t)) {
+  if (std::is_same_v<T, uint32_t>) {
     CHECK_NE(
         CreateCsr<RiscVCounterCsrHigh<RiscVState>>(
             state, csr_vec, "mcycleh", RiscVCsrEnum::kMCycleH, state,
             reinterpret_cast<RiscVCounterCsr<uint32_t, RiscVState>*>(mcycle)),
+        nullptr);
+  }
+
+  // cycle / cycleh
+  auto* cycle = CreateCsr<RiscVCounterCsr<T, RiscVState>>(
+      state, csr_vec, "cycle", RiscVCsrEnum::kCycle, state);
+  CHECK_NE(cycle, nullptr);
+  if (std::is_same_v<T, uint32_t>) {
+    CHECK_NE(
+        CreateCsr<RiscVCounterCsrHigh<RiscVState>>(
+            state, csr_vec, "cycleh", RiscVCsrEnum::kCycleH, state,
+            reinterpret_cast<RiscVCounterCsr<uint32_t, RiscVState>*>(cycle)),
+        nullptr);
+  }
+
+  // time / timeh
+  auto* time = CreateCsr<RiscVCounterCsr<T, RiscVState>>(
+      state, csr_vec, "time", RiscVCsrEnum::kTime, state);
+  CHECK_NE(time, nullptr);
+  if (std::is_same_v<T, uint32_t>) {
+    CHECK_NE(
+        CreateCsr<RiscVCounterCsrHigh<RiscVState>>(
+            state, csr_vec, "timeh", RiscVCsrEnum::kTimeH, state,
+            reinterpret_cast<RiscVCounterCsr<uint32_t, RiscVState>*>(time)),
+        nullptr);
+  }
+
+  // instret / instreth
+  auto* instret = CreateCsr<RiscVCounterCsr<T, RiscVState>>(
+      state, csr_vec, "instret", RiscVCsrEnum::kInstret, state);
+  CHECK_NE(instret, nullptr);
+  if (std::is_same_v<T, uint32_t>) {
+    CHECK_NE(
+        CreateCsr<RiscVCounterCsrHigh<RiscVState>>(
+            state, csr_vec, "instreth", RiscVCsrEnum::kInstretH, state,
+            reinterpret_cast<RiscVCounterCsr<uint32_t, RiscVState>*>(instret)),
         nullptr);
   }
 
