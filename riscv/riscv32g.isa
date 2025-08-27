@@ -213,9 +213,6 @@ slot riscv32i {
     ebreak{},
       disasm: "ebreak",
       semfunc: "&RiscVIEbreak";
-    unimp{},
-      disasm: "unimp",
-      semfunc: "&RiscVIUnimplemented";
   }
 }
 
@@ -617,6 +614,9 @@ slot zicsr {
       resources: { next_pc, csr : rd[0..]},
       semfunc: "&RV32::RiscVZiCsrrNw", // uimm5 == 0.
       disasm: "csrwi", "%rd, %csr, 0";
+    unimp{},
+      disasm: "unimp",
+      semfunc: "&RiscVIUnimplemented";
   }
 }
 
@@ -1040,5 +1040,3 @@ slot riscv32g : riscv32i, riscv32c, riscv32chints, riscv32m, riscv32_amo_arithme
     disasm: "Illegal instruction at 0x%(@:08x)",
     semfunc: "&RiscVIllegalInstruction";
 }
-
-

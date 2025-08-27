@@ -1402,3 +1402,991 @@ slot riscv_vector {
   }
 }
 
+slot riscv_zve32x {
+  includes {
+    #include "riscv/riscv_vector_memory_instructions.h"
+    #include "riscv/riscv_vector_opi_instructions.h"
+    #include "riscv/riscv_vector_opm_instructions.h"
+    #include "riscv/riscv_vector_permute_instructions.h"
+    #include "riscv/riscv_vector_reduction_instructions.h"
+    #include "riscv/riscv_vector_unary_instructions.h"
+    #include "absl/functional/bind_front.h"
+  }
+  default size = 4;
+  default latency = 0;
+  default opcode =
+    disasm: "Unimplemented instruction at 0x%(@:08x)",
+    semfunc: "&RV32VUnimplementedInstruction";
+  opcodes {
+    // Configuration.
+    vsetvli_xn{: rs1, zimm11: rd},
+      disasm: "vsetvli","%rd,", "%rs1, %zimm11",
+      semfunc: "absl::bind_front(&Vsetvl, /*rd_zero*/ false, /*rs1_zero*/ false)";
+    vsetvli_nz{: rs1, zimm11: rd},
+      disasm: "vsetvli", "%rd, %rs1, %zimm11",
+      semfunc: "absl::bind_front(&Vsetvl, /*rd_zero*/false, /*rs1_zero*/ true)";
+    vsetvli_zz{: rs1, zimm11: rd},
+      disasm: "vsetvli", "%rd, %rs1, %zimm11",
+      semfunc: "absl::bind_front(&Vsetvl, /*rd_zero*/true, /*rs1_zero*/ true)";
+    vsetivli{: uimm5, zimm10: rd},
+      disasm: "vsetivli %uimm5, %zimm10",
+      semfunc: "absl::bind_front(&Vsetvl, /*rd_zero*/false, /*rs1_zero*/ false)";
+    vsetvl_xn{: rs1, rs2: rd},
+      disasm: "vsetvl", "%rd, %rs1, %rs2",
+      semfunc: "absl::bind_front(&Vsetvl, /*rd_zero*/false, /*rs1_zero*/ false)";
+    vsetvl_nz{: rs1, rs2: rd},
+      disasm: "vsetvl", "%rd, %rs1, %rs2",
+      semfunc: "absl::bind_front(&Vsetvl, /*rd_zero*/false, /*rs1_zero*/ true)";
+    vsetvl_zz{: rs1, rs2: rd},
+      disasm: "vsetvl", "%rd, %rs1, %rs2",
+      semfunc: "absl::bind_front(&Vsetvl, /*rd_zero*/true, /*rs1_zero*/ true)";
+
+    // VECTOR LOADS
+
+    // Unit stride loads, masked (vm=0)
+    vle8{(: rs1, const1, vmask :), (: : vd )},
+      disasm: "vle8.v", "%vd, (%rs1), %vmask",
+      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 1)", "&VlChild";
+    vle16{(: rs1, const2, vmask :), (: : vd )},
+      disasm: "vle16.v", "%vd, (%rs1), %vmask",
+      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 2)", "&VlChild";
+    vle32{(: rs1, const4, vmask :), ( : : vd) },
+      disasm: "vle32.v", "%vd, (%rs1), %vmask",
+      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 4)", "&VlChild";
+
+    // Unit stride loads, unmasked (vm=1)
+    vle8_vm1{(: rs1, const1, vmask_true :), (: : vd )},
+      disasm: "vle8.v", "%vd, (%rs1)",
+      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 1)", "&VlChild";
+    vle16_vm1{(: rs1, const2, vmask_true :), (: : vd )},
+      disasm: "vle16.v", "%vd, (%rs1)",
+      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 2)", "&VlChild";
+    vle32_vm1{(: rs1, const4, vmask_true :), ( : : vd) },
+      disasm: "vle32.v", "%vd, (%rs1)",
+      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 4)", "&VlChild";
+
+    // Vector strided loads
+    vlse8{(: rs1, rs2, vmask :), (: : vd)},
+      disasm: "vlse8.v", "%vd, (%rs1), %rs2, %vmask",
+      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 1)", "&VlChild";
+    vlse16{(: rs1, rs2, vmask :), (: : vd)},
+      disasm: "vlse16.v", "%vd, (%rs1), %rs2, %vmask",
+      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 2)", "&VlChild";
+    vlse32{(: rs1, rs2, vmask :), (: : vd)},
+      disasm: "vlse32.v", "%vd, (%rs1), %rs2, %vmask",
+      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 4)", "&VlChild";
+
+    // Vector mask load
+    vlm{(: rs1, const1, vmask_true :), (: : vd)},
+      disasm: "vlm.v", "%vd, (%rs1)",
+      semfunc: "&Vlm", "&VlChild";
+
+    // Unit stride vector load, fault first
+    vle8ff{(: rs1, const1, vmask:), (: : vd)},
+      disasm: "vle8ff.v", "%vd, (%rs1), %vmask",
+      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 1)", "&VlChild";
+    vle16ff{(: rs1, const2, vmask:), (: : vd)},
+      disasm: "vle16ff.v", "%vd, (%rs1), %vmask",
+      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 2)", "&VlChild";
+    vle32ff{(: rs1, const4, vmask:), (: : vd)},
+      disasm: "vle32ff.v", "%vd, (%rs1), %vmask",
+      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 4)", "&VlChild";
+
+    // Vector register load
+    vl1re8{(: rs1 :), (: : vd)},
+      disasm: "vl1re8.v", "%vd, (%rs1)",
+      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 1, /*element_width*/ 1)", "&VlChild";
+    vl1re16{(: rs1 :), (: : vd)},
+      disasm: "vl1re16.v", "%vd, (%rs1)",
+      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 1, /*element_width*/ 2)", "&VlChild";
+    vl1re32{(: rs1 :), (: : vd)},
+      disasm: "vl1re32.v", "%vd, (%rs1)",
+      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 1, /*element_width*/ 4)", "&VlChild";
+    vl2re8{(: rs1 :), (: : vd)},
+      disasm: "vl2re8.v", "%vd, (%rs1)",
+      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 2, /*element_width*/ 1)", "&VlChild";
+    vl2re16{(: rs1 :), (: : vd)},
+      disasm: "vl2re16.v", "%vd, (%rs1)",
+      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 2, /*element_width*/ 2)", "&VlChild";
+    vl2re32{(: rs1 :), (: : vd)},
+      disasm: "vl2re32.v", "%vd, (%rs1)",
+      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 2, /*element_width*/ 4)", "&VlChild";
+    vl4re8{(: rs1 :), (: : vd)},
+      disasm: "vl4re8.v", "%vd, (%rs1)",
+      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 4, /*element_width*/ 1)", "&VlChild";
+    vl4re16{(: rs1 :), (: : vd)},
+      disasm: "vl4re16.v", "%vd, (%rs1)",
+      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 4, /*element_width*/ 2)", "&VlChild";
+    vl4re32{(: rs1 :), (: : vd)},
+      disasm: "vl4re32.v", "%vd, (%rs1)",
+      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 4, /*element_width*/ 4)", "&VlChild";
+    vl8re8{(: rs1 :), (: : vd)},
+      disasm: "vl8re8.v", "%vd, (%rs1)",
+      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 8, /*element_width*/ 1)", "&VlChild";
+    vl8re16{(: rs1 :), (: : vd)},
+      disasm: "vl8re16.v", "%vd, (%rs1)",
+      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 8, /*element_width*/ 2)", "&VlChild";
+    vl8re32{(: rs1 :), (: : vd)},
+      disasm: "vl8re32.v", "%vd, (%rs1)",
+      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 8, /*element_width*/ 4)", "&VlChild";
+
+    // Vector load, indexed, unordered.
+    vluxei8{(: rs1, vs2, vmask:), (: : vd)},
+      disasm: "vluxei8.v", "%vd, (%rs1), %vs2, %vmask",
+      semfunc: "absl::bind_front(&VlIndexed, /*index_width*/ 1)", "&VlChild";
+    vluxei16{(: rs1, vs2, vmask:), (: : vd)},
+      disasm: "vluxei16.v", "%vd, (%rs1), %vs2, %vmask",
+      semfunc: "absl::bind_front(&VlIndexed, /*index_width*/ 2)", "&VlChild";
+    vluxei32{(: rs1, vs2, vmask:), (: : vd)},
+      disasm: "vluxei32.v", "%vd, (%rs1), %vs2, %vmask",
+      semfunc: "absl::bind_front(&VlIndexed, /*index_width*/ 4)", "&VlChild";
+
+    // Vector load, indexed, ordered.
+    vloxei8{(: rs1, vs2, vmask:), (: : vd)},
+      disasm: "vloxei8.v", "%vd, (%rs1), %vs2, %vmask",
+      semfunc: "absl::bind_front(&VlIndexed, /*index_width*/ 1)", "&VlChild";
+    vloxei16{(: rs1, vs2, vmask:), (: : vd)},
+      disasm: "vloxei16.v", "%vd, (%rs1), %vs2, %vmask",
+      semfunc: "absl::bind_front(&VlIndexed, /*index_width*/ 2)", "&VlChild";
+    vloxei32{(: rs1, vs2, vmask:), (: : vd)},
+      disasm: "vloxei32.v", "%vd, (%rs1), %vs2, %vmask",
+      semfunc: "absl::bind_front(&VlIndexed, /*index_width*/ 4)", "&VlChild";
+
+    // Vector unit-stride segment load
+    vlsege8{(: rs1, vmask, nf:), (: nf : vd)},
+      disasm: "vlseg%nf\\e.v", "%vd, (%rs1), %vmask",
+      semfunc: "absl::bind_front(&VlSegment, /*element_width*/ 1)",
+               "absl::bind_front(&VlSegmentChild, /*element_width*/ 1)";
+    vlsege16{(: rs1, vmask, nf:), (: nf : vd)},
+      disasm: "vlseg%nf\\e.v", "%vd, (%rs1), %vmask",
+      semfunc: "absl::bind_front(&VlSegment, /*element_width*/ 2)",
+               "absl::bind_front(&VlSegmentChild, /*element_width*/ 2)";
+    vlsege32{(: rs1, vmask, nf:), (: nf : vd)},
+      disasm: "vlseg%nf\\e.v", "%vd, (%rs1), %vmask",
+      semfunc: "absl::bind_front(&VlSegment, /*element_width*/ 4)",
+               "absl::bind_front(&VlSegmentChild, /*element_width*/ 4)";
+
+    // Vector strided segment load.
+    vlssege8{(: rs1, rs2, vmask, nf: ), (: nf : vd)},
+      disasm: "vlsseg%nf\\e8.v", "%vd, (%rs1), %rs2, %vmask",
+      semfunc: "absl::bind_front(&VlSegmentStrided, /*element_width*/ 1)",
+               "absl::bind_front(&VlSegmentChild, /*element_width*/ 1)";
+    vlssege16{(: rs1, rs2, vmask, nf: ), (: nf : vd)},/*element_width*/ 
+      disasm: "vlsseg%nf\\e16.v", "%vd, (%rs1), %rs2, %vmask",
+      semfunc: "absl::bind_front(&VlSegmentStrided, /*element_width*/ 2)",
+               "absl::bind_front(&VlSegmentChild, /*element_width*/ 2)";
+    vlssege32{(: rs1, rs2, vmask, nf: ), (: nf : vd)},
+      disasm: "vlsseg%nf\\e32.v", "%vd, (%rs1), %rs2, %vmask",
+      semfunc: "absl::bind_front(&VlSegmentStrided, /*element_width*/ 4)",
+               "absl::bind_front(&VlSegmentChild, /*element_width*/ 4)";
+
+    // Vector indexed segment load unordered.
+    vluxsegei8{(: rs1, vs2, vmask, nf :), (: nf : vd)},
+      disasm: "vluxseg%nf\\ei1.v", "%vd, (%rs1), %vs2, %vmask",
+      semfunc: "absl::bind_front(&VlSegmentIndexed, /*index_width*/ 1)",
+               "absl::bind_front(&VlSegmentChild, /*element_width*/ 1)";
+    vluxsegei16{(: rs1, vs2, vmask, nf :), (: nf : vd)},
+      disasm: "vluxseg%nf\\ei2.v", "%vd, (%rs1), %vs2, %vmask",
+      semfunc: "absl::bind_front(&VlSegmentIndexed, /*index_width*/ 2)",
+               "absl::bind_front(&VlSegmentChild, /*element_width*/ 2)";
+    vluxsegei32{(: rs1, vs2, vmask, nf :), (: nf : vd)},
+      disasm: "vluxseg%nf\\ei4.v", "%vd, (%rs1), %vs2, %vmask",
+      semfunc: "absl::bind_front(&VlSegmentIndexed, /*index_width*/ 4)",
+               "absl::bind_front(&VlSegmentChild, /*element_width*/ 4)";
+
+    // Vector indexed segment load ordered.
+
+    vloxsegei8{(: rs1, vs2, vmask, nf :), (: nf : vd)},
+      disasm: "vluxseg%nf\\ei1.v", "%vd, (%rs1), %vs2, %vmask",
+      semfunc: "absl::bind_front(&VlSegmentIndexed, /*index_width*/ 1)",
+               "absl::bind_front(&VlSegmentChild, /*element_width*/ 1)";
+    vloxsegei16{(: rs1, vs2, vmask, nf :), (: nf : vd)},
+      disasm: "vluxseg%nf\\ei2.v", "%vd, (%rs1), %vs2, %vmask",
+      semfunc: "absl::bind_front(&VlSegmentIndexed, /*index_width*/ 2)",
+               "absl::bind_front(&VlSegmentChild, /*element_width*/ 2)";
+    vloxsegei32{(: rs1, vs2, vmask, nf :), (: nf : vd)},
+      disasm: "vluxseg%nf\\ei4.v", "%vd, (%rs1), %vs2, %vmask",
+      semfunc: "absl::bind_front(&VlSegmentIndexed, /*index_width*/ 4)",
+               "absl::bind_front(&VlSegmentChild, /*element_width*/ 4)";
+
+    // VECTOR STORES
+
+    // Vector store, unit stride.
+    vse8{: vs3, rs1, const1, vmask : },
+      disasm: "vse8.v", "%vs3, (%rs1), %vmask",
+      semfunc: "absl::bind_front(&VsStrided, /*element_width*/ 1)";
+    vse16{: vs3, rs1, const2, vmask : },
+      disasm: "vse16.v", "%vs3, (%rs1), %vmask",
+      semfunc: "absl::bind_front(&VsStrided, /*element_width*/ 2)";
+    vse32{: vs3, rs1, const4, vmask : },
+      disasm: "vse32.v", "%vs3, (%rs1), %vmask",
+      semfunc: "absl::bind_front(&VsStrided, /*element_width*/ 4)";
+
+    // Vector store mask
+    vsm{: vs3, rs1, const1, vmask_true:},
+      disasm: "vsm",
+      semfunc: "absl::bind_front(&Vsm)";
+
+    // Vector store, unit stride, fault first.
+    vse8ff{: vs3, rs1, const1, vmask:},
+      disasm: "vse8ff.v", "%vs3, (%rs1), %vmask",
+      semfunc: "absl::bind_front(&VsStrided, /*element_width*/ 1)";
+    vse16ff{: vs3, rs1, const2, vmask:},
+      disasm: "vse16ff.v", "%vs3, (%rs1), %vmask",
+      semfunc: "absl::bind_front(&VsStrided, /*element_width*/ 2)";
+    vse32ff{: vs3, rs1, const4, vmask:},
+      disasm: "vse32ff.v", "%vs3, (%rs1), %vmask",
+      semfunc: "absl::bind_front(&VsStrided, /*element_width*/ 4)";
+
+    // Vector store register.
+    vs1re8{(: vs3, rs1 :)},
+      disasm: "vs1re8.v", "%vs3, (%rs1)",
+      semfunc: "absl::bind_front(&VsRegister, /*num_regs*/ 1)";
+    vs1re16{(: vs3, rs1 :)},
+      disasm: "vs1re16.v", "%vs3, (%rs1)",
+      semfunc: "absl::bind_front(&VsRegister, /*num_regs*/ 1)";
+    vs1re32{(: vs3, rs1 :)},
+      disasm: "vs1re32.v", "%vs3, (%rs1)",
+      semfunc: "absl::bind_front(&VsRegister, /*num_regs*/ 1)";
+    vs2re8{(: vs3, rs1 :)},
+      disasm: "vs2re8.v", "%vs3, (%rs1)",
+      semfunc: "absl::bind_front(&VsRegister, /*num_regs*/ 2)";
+    vs2re16{(: vs3, rs1 :)},
+      disasm: "vs2re16.v", "%vs3, (%rs1)",
+      semfunc: "absl::bind_front(&VsRegister, /*num_regs*/ 2)";
+    vs2re32{(: vs3, rs1 :)},
+      disasm: "vs2re32.v", "%vs3, (%rs1)",
+      semfunc: "absl::bind_front(&VsRegister, /*num_regs*/ 2)";
+    vs4re8{(: vs3, rs1 :)},
+      disasm: "vs4re8.v", "%vs3, (%rs1)",
+      semfunc: "absl::bind_front(&VsRegister, /*num_regs*/ 4)";
+    vs4re16{(: vs3, rs1 :)},
+      disasm: "vs4re16.v", "%vs3, (%rs1)",
+      semfunc: "absl::bind_front(&VsRegister, /*num_regs*/ 4)";
+    vs4re32{(: vs3, rs1 :)},
+      disasm: "vs4re32.v", "%vs3, (%rs1)",
+      semfunc: "absl::bind_front(&VsRegister, /*num_regs*/ 4)";
+    vs8re8{(: vs3, rs1 :)},
+      disasm: "vs8re8.v", "%vs3, (%rs1)",
+      semfunc: "absl::bind_front(&VsRegister, /*num_regs*/8)";
+    vs8re16{(: vs3, rs1 :)},
+      disasm: "vs8re16.v", "%vs3, (%rs1)",
+      semfunc: "absl::bind_front(&VsRegister, /*num_regs*/8)";
+    vs8re32{(: vs3, rs1 :)},
+      disasm: "vs8re32.v", "%vs3, (%rs1)",
+      semfunc: "absl::bind_front(&VsRegister, /*num_regs*/8)";
+
+    // Vector store, strided.
+    vsse8{: vs3, rs1, rs2, vmask : },
+      disasm: "vsse8.v", "%vs3, (%rs1), %rs2, %vmask",
+      semfunc: "absl::bind_front(&VsStrided, /*element_width*/ 1)";
+    vsse16{: vs3, rs1, rs2, vmask : },
+      disasm: "vsse16.v", "%vs3, (%rs1), %rs2, %vmask",
+      semfunc: "absl::bind_front(&VsStrided, /*element_width*/ 2)";
+    vsse32{: vs3, rs1, rs2, vmask : },
+      disasm: "vsse32.v", "%vs3, (%rs1), %rs2, %vmask",
+      semfunc: "absl::bind_front(&VsStrided, /*element_width*/ 4)";
+
+    // Vector store, indexed, unordered.
+    vsuxei8{: vs3, rs1, vs2, vmask: },
+      disasm: "vsuxei8", "%vs3, (%rs1), %vs2, %vmask",
+      semfunc: "absl::bind_front(&VsIndexed, /*index_width*/ 1)";
+    vsuxei16{: vs3, rs1, vs2, vmask:},
+      disasm: "vsuxei16", "%vs3, (%rs1), %vs2, %vmask",
+      semfunc: "absl::bind_front(&VsIndexed, /*index_width*/ 2)";
+    vsuxei32{: vs3, rs1, vs2, vmask:},
+      disasm: "vsuxei32", "%vs3, (%rs1), %vs2, %vmask",
+      semfunc: "absl::bind_front(&VsIndexed, /*index_width*/ 4)";
+
+    // Vector store, indexed, unordered
+    vsoxei8{: vs3, rs1, vs2, vmask:},
+      disasm: "vsoxei8", "%vs3, (%rs1), %vs2, %vmask",
+      semfunc: "absl::bind_front(&VsIndexed, /*index_width*/ 1)";
+    vsoxei16{: vs3, rs1, vs2, vmask:},
+      disasm: "vsoxei16", "%vs3, (%rs1), %vs2, %vmask",
+      semfunc: "absl::bind_front(&VsIndexed, /*index_width*/ 2)";
+    vsoxei32{: vs3, rs1, vs2, vmask:},
+      disasm: "vsoxei32", "%vs3, (%rs1), %vs2, %vmask",
+      semfunc: "absl::bind_front(&VsIndexed, /*index_width*/ 4)";
+
+    // Vector unit-stride segment store.
+    vssege8{(: vs3, rs1, vmask, nf:)},
+      disasm: "vsseg%nf\\e.v", "%vs3, (%rs1), %vmask",
+      semfunc: "absl::bind_front(&VsSegment, /*element_width*/ 1)";
+    vssege16{(: vs3, rs1, vmask, nf:)},
+      disasm: "vsseg%nf\\e.v", "%vs3, (%rs1), %vmask",
+      semfunc: "absl::bind_front(&VsSegment, /*element_width*/ 2)";
+    vssege32{(: vs3, rs1, vmask, nf:)},
+      disasm: "vsseg%nf\\e.v", "%vs3, (%rs1), %vmask",
+      semfunc: "absl::bind_front(&VsSegment, /*element_width*/ 4)";
+
+    // Vector strided segment store.
+    vsssege8{(: vs3, rs1, rs2, vmask, nf: )},
+      disasm: "vssseg%nf\\e8.v", "%vs3, (%rs1), %rs2, %vmask",
+      semfunc: "absl::bind_front(&VsSegmentStrided, /*element_width*/ 1)";
+    vsssege16{(: vs3, rs1, rs2, vmask, nf: )},
+      disasm: "vssseg%nf\\e16.v", "%vs3, (%rs1), %rs2, %vmask",
+      semfunc: "absl::bind_front(&VsSegmentStrided, /*element_width*/ 2)";
+    vsssege32{(: vs3, rs1, rs2, vmask, nf: )},
+      disasm: "vssseg%nf\\e32.v", "%vs3, (%rs1), %rs2, %vmask",
+      semfunc: "absl::bind_front(&VsSegmentStrided, /*element_width*/ 4)";
+
+    // Vector indexed segment store unordered.
+    vsuxsegei8{(: vs3, rs1, vs2, vmask, nf :)},
+      disasm: "vsuxseg%nf\\ei1.v", "%vs3, (%rs1), %vs2, %vmask",
+      semfunc: "absl::bind_front(&VsSegmentStrided, /*element_width*/ 1)";
+    vsuxsegei16{(: vs3, rs1, vs2, vmask, nf :)},
+      disasm: "vsuxseg%nf\\ei2.v", "%vs3, (%rs1), %vs2, %vmask",
+      semfunc: "absl::bind_front(&VsSegmentStrided, /*element_width*/ 2)";
+    vsuxsegei32{(: vs3, rs1, vs2, vmask, nf :)},
+      disasm: "vsuxseg%nf\\ei4.v", "%vs3, (%rs1), %vs2, %vmask",
+      semfunc: "absl::bind_front(&VsSegmentStrided, /*element_width*/ 4)";
+
+    // Vector indexed segment store ordered.
+    vsoxsegei8{(: vs3, rs1, vs2, vmask, nf :)},
+      disasm: "vsuxseg%nf\\ei1.v", "%vs3, (%rs1), %vs2, %vmask",
+      semfunc: "absl::bind_front(&VsSegmentIndexed, /*index_width*/ 1)";
+    vsoxsegei16{(: vs3, rs1, vs2, vmask, nf :)},
+      disasm: "vsuxseg%nf\\ei2.v", "%vs3, (%rs1), %vs2, %vmask",
+      semfunc: "absl::bind_front(&VsSegmentIndexed, /*index_width*/ 2)";
+    vsoxsegei32{(: vs3, rs1, vs2, vmask, nf :)},
+      disasm: "vsuxseg%nf\\ei4.v", "%vs3, (%rs1), %vs2, %vmask",
+      semfunc: "absl::bind_front(&VsSegmentIndexed, /*index_width*/ 4)";
+
+    // Integer OPIVV, OPIVX, OPIVI.
+    vadd_vv{: vs2, vs1, vmask : vd},
+      disasm: "vadd.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vadd";
+    vadd_vx{: vs2, rs1, vmask : vd},
+      disasm: "vadd.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vadd";
+    vadd_vi{: vs2, simm5, vmask : vd},
+      disasm: "vadd.vi", "%vd, %simm5, %vmask",
+      semfunc: "&Vadd";
+    vsub_vv{: vs2, vs1, vmask : vd},
+      disasm: "vsub.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vsub";
+    vsub_vx{: vs2, rs1, vmask : vd},
+      disasm: "vsub.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vsub";
+    vrsub_vx{: vs2, rs1, vmask : vd},
+      disasm: "vrsub.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vrsub";
+    vrsub_vi{: vs2, simm5, vmask, vd},
+      disasm: "vrsub.vi", "%vd, %simm5, %vmask",
+      semfunc: "&Vrsub";
+    vminu_vv{: vs2, vs1, vmask : vd},
+      disasm: "vminu.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vminu";
+    vminu_vx{: vs2, rs1, vmask : vd},
+      disasm: "vminu.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vminu";
+    vmin_vv{: vs2, vs1, vmask : vd},
+      disasm: "vmin.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vmin";
+    vmin_vx{: vs2, rs1, vmask : vd},
+      disasm: "vmin.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vmin";
+    vmaxu_vv{: vs2, vs1, vmask : vd},
+      disasm: "vmax.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vmaxu";
+    vmaxu_vx{: vs2, rs1, vmask : vd},
+      disasm: "vmax.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vmaxu";
+    vmax_vv{: vs2, vs1, vmask : vd},
+      disasm: "vmax.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vmax";
+    vmax_vx{: vs2, rs1, vmask : vd},
+      disasm: "vmax.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vmax";
+    vand_vv{: vs2, vs1, vmask : vd},
+      disasm: "vand.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vand";
+    vand_vx{: vs2, rs1, vmask : vd},
+      disasm: "vand.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vand";
+    vand_vi{: vs2, simm5, vmask : vd},
+      disasm: "vand.vi", "%vd, %simm5, %vmask",
+      semfunc: "&Vand";
+    vor_vv{: vs2, vs1, vmask : vd},
+      disasm: "vor.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vor";
+    vor_vx{: vs2, rs1, vmask : vd},
+      disasm: "vor.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vor";
+    vor_vi{: vs2, simm5, vmask : vd},
+      disasm: "vor.vi", "%vd, %simm5, %vmask",
+      semfunc: "&Vor";
+    vxor_vv{: vs2, vs1, vmask : vd},
+      disasm: "vxor.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vxor";
+    vxor_vx{: vs2, rs1, vmask : vd},
+      disasm: "vxor.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vxor";
+    vxor_vi{: vs2, simm5, vmask : vd},
+      disasm: "vxor.vi", "%vd, %simm5, %vmask",
+      semfunc: "&Vxor";
+    vrgather_vv{: vs2, vs1, vmask: vd},
+      disasm: "vrgather.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vrgather";
+    vrgather_vx{: vs2, rs1, vmask: vd},
+      disasm: "vrgather.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vrgather";
+    vrgather_vi{: vs2, uimm5, vmask: vd},
+      disasm: "vrgather.vi", "%vd, %uimm5, %vmask",
+      semfunc: "&Vrgather";
+    vrgatherei16_vv{: vs2, vs1, vmask: vd},
+      disasm: "vrgatherei16.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vrgatherei16";
+    vslideup_vx{: vs2, rs1, vmask: vd},
+      disasm: "vslideup.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vslideup";
+    vslideup_vi{: vs2, uimm5, vmask: vd},
+      disasm: "vslideup.vi", "%vd, %vs2, %uimm5, %vmask",
+      semfunc: "&Vslideup";
+    vslidedown_vx{: vs2, rs1, vmask: vd},
+      disasm: "vslidedown.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vslidedown";
+    vslidedown_vi{: vs2, uimm5, vmask: vd},
+      disasm: "vslidedown.vi", "%vd, %vs2, %uimm5, %vmask",
+      semfunc: "&Vslidedown";
+    vadc_vv{: vs2, vs1, vmask: vd},
+      disasm: "vadc.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vadc";
+    vadc_vx{: vs2, rs1, vmask: vd},
+      disasm: "vadc.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vadc";
+    vadc_vi{: vs2, simm5, vmask: vd},
+      disasm: "vadc.vi", "%vd, %vs2, %simm5, %vmask",
+      semfunc: "&Vadc";
+    vmadc_vv{: vs2, vs1, vmask, vm: vd},
+      disasm: "vmadc.vv", "%vd, %vs2, %vs1, %vmask, %vm ",
+      semfunc: "&Vmadc";
+    vmadc_vx{: vs2, rs1, vmask, vm: vd},
+      disasm: "vmadc.vx", "%vd, %vs2, %rs1, %vmask, %vm",
+      semfunc: "&Vmadc";
+    vmadc_vi{: vs2, simm5, vmask, vm: vd},
+      disasm: "vmadc.vi", "%vd, %vs2, %simm5, %vmask, %vm",
+      semfunc: "&Vmadc";
+    vsbc_vv{: vs2, vs1, vmask: vd},
+      disasm: "vsbc.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vsbc";
+    vsbc_vx{: vs2, rs1, vmask: vd},
+      disasm: "vsbc.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vsbc";
+    vmsbc_vv{: vs2, vs1, vmask, vm: vd},
+      disasm: "vmsbc.vv", "%vd, %vs2, %vs1, %vmask, %vm",
+      semfunc: "&Vmsbc";
+    vmsbc_vx{: vs2, rs1, vmask, vm: vd},
+      disasm: "vmsbc.vx", "%vd, %vs2, %rs1, %vmask, %vm",
+      semfunc: "&Vmsbc";
+    vmerge_vv{: vs2, vs1, vmask: vd},
+      disasm: "vmerge.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vmerge";
+    vmerge_vx{: vs2, rs1, vmask: vd},
+      disasm: "vmerge.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vmerge";
+    vmerge_vi{: vs2, simm5, vmask: vd},
+      disasm: "vmerge.vi", "%vd, %vs2, %simm5, %vmask",
+      semfunc: "&Vmerge";
+    vmv_vv{: vs2, vs1, vmask_true: vd},
+      disasm: "vmv.vv", "%vd, %vs1",
+      semfunc: "&Vmerge";
+    vmv_vx{: vs2, rs1, vmask_true: vd},
+      disasm: "vmv.vx", "%vd, %rs1",
+      semfunc: "&Vmerge";
+    vmv_vi{: vs2, simm5, vmask_true: vd},
+      disasm: "vmv.vi", "%vd, %simm5",
+      semfunc: "&Vmerge";
+    vmseq_vv{: vs2, vs1, vmask: vd},
+      disasm: "vmseq.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vmseq";
+    vmseq_vx{: vs2, rs1, vmask: vd},
+      disasm: "vmseq.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vmseq";
+    vmseq_vi{: vs2, simm5, vmask: vd},
+      disasm: "vmseq.vi", "%vd, %vs2, %simm5, %vmask",
+      semfunc: "&Vmseq";
+    vmsne_vv{: vs2, vs1, vmask: vd},
+      disasm: "vmsne.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vmsne";
+    vmsne_vx{: vs2, rs1, vmask: vd},
+      disasm: "vmsne.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vmsne";
+    vmsne_vi{: vs2, simm5, vmask: vd},
+      disasm: "vmsne.vi", "%vd, %vs2, %simm5, %vmask",
+      semfunc: "&Vmsne";
+    vmsltu_vv{: vs2, vs1, vmask: vd},
+      disasm: "vmsltu.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vmsltu";
+    vmsltu_vx{: vs2, rs1, vmask: vd},
+      disasm: "vmsltu.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vmsltu";
+    vmslt_vv{: vs2, vs1, vmask: vd},
+      disasm: "vmslt.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vmslt";
+    vmslt_vx{: vs2, rs1, vmask: vd},
+      disasm: "vmslt.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vmslt";
+    vmsleu_vv{: vs2, vs1, vmask: vd},
+      disasm: "vmsleu.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vmsleu";
+    vmsleu_vx{: vs2, rs1, vmask: vd},
+      disasm: "vmsleu.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vmsleu";
+    vmsleu_vi{: vs2, simm5, vmask: vd},
+      disasm: "vmsleu.vi", "%vd, %vs2, %simm5, %vmask",
+      semfunc: "&Vmsleu";
+    vmsle_vv{: vs2, vs1, vmask: vd},
+      disasm: "vmsle.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vmsle";
+    vmsle_vx{: vs2, rs1, vmask: vd},
+      disasm: "vmsle.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vmsle";
+    vmsle_vi{: vs2, simm5, vmask: vd},
+      disasm: "vmsle.vi", "%vd, %vs2, %simm5, %vmask",
+      semfunc: "&Vmsle";
+    vmsgtu_vx{: vs2, rs1, vmask: vd},
+      disasm: "vmsgtu.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vmsgtu";
+    vmsgtu_vi{: vs2, simm5, vmask: vd},
+      disasm: "vmsgtu.vi", "%vd, %vs2, %simm5, %vmask",
+      semfunc: "&Vmsgtu";
+    vmsgt_vx{: vs2, rs1, vmask: vd},
+      disasm: "vmsgt.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vmsgt";
+    vmsgt_vi{: vs2, simm5, vmask: vd},
+      disasm: "vmsgt.vi", "%vd, %vs2, %simm5, %vmask",
+      semfunc: "&Vmsgt";
+    vsaddu_vv{: vs2, vs1, vmask: vd},
+      disasm: "vsaddu.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vsaddu";
+    vsaddu_vx{: vs2, rs1, vmask: vd},
+      disasm: "vsaddu.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vsaddu";
+    vsaddu_vi{: vs2, simm5, vmask: vd},
+      disasm: "vsaddu.vi", "%vd, %vs2, %simm5, %vmask",
+      semfunc: "&Vsaddu";
+    vsadd_vv{: vs2, vs1, vmask: vd},
+      disasm: "vsadd.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vsadd";
+    vsadd_vx{: vs2, rs1, vmask: vd},
+      disasm: "vsadd.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vsadd";
+    vsadd_vi{: vs2, simm5, vmask: vd},
+      disasm: "vsadd.vi", "%vd, %vs2, %simm5, %vmask",
+      semfunc: "&Vsadd";
+    vssubu_vv{: vs2, vs1, vmask: vd},
+      disasm: "vssubu.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vssubu";
+    vssubu_vx{: vs2, rs1, vmask: vd},
+      disasm: "vssubu.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vssubu";
+    vssub_vv{: vs2, vs1, vmask: vd},
+      disasm: "vssub.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vssub";
+    vssub_vx{: vs2, rs1, vmask: vd},
+      disasm: "vssub.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vssub";
+    vsll_vv{: vs2, vs1, vmask : vd},
+      disasm: "vsll.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vsll";
+    vsll_vx{: vs2, rs1, vmask : vd},
+      disasm: "vsll.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vsll";
+    vsll_vi{: vs2, simm5, vmask: vd},
+      disasm: "vsll.vi", "%vd, %simm5, %vmask",
+      semfunc: "&Vsll";
+    vsmul_vv{: vs2, vs1, vmask : vd},
+      disasm: "vsmul.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vsmul";
+    vsmul_vx{: vs2, rs1, vmask : vd},
+      disasm: "vsmul.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vsmul";
+    vmv1r_vi{: vs2 : vd},
+      disasm: "vmv1r.vi", "%vd, %vs2",
+      semfunc: "absl::bind_front(&Vmvr, 1)";
+    vmv2r_vi{: vs2 : vd},
+      disasm: "vmv2r.vi", "%vd, %vs2",
+      semfunc: "absl::bind_front(&Vmvr, 2)";
+    vmv4r_vi{: vs2 : vd},
+      disasm: "vmv4r.vi", "%vd, %vs2",
+      semfunc: "absl::bind_front(&Vmvr, 4)";
+    vmv8r_vi{: vs2 : vd},
+      disasm: "vmv8r.vi", "%vd, %vs2",
+      semfunc: "absl::bind_front(&Vmvr, 8)";
+    vsrl_vv{: vs2, vs1, vmask : vd},
+      disasm: "vsrl.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vsrl";
+    vsrl_vx{: vs2, rs1, vmask : vd},
+      disasm: "vsrl.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vsrl";
+    vsrl_vi{: vs2, simm5, vmask: vd},
+      disasm: "vsrl.vi", "%vd, %simm5, %vmask",
+      semfunc: "&Vsrl";
+    vsra_vv{: vs2, vs1, vmask : vd},
+      disasm: "vsra.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vsra";
+    vsra_vx{: vs2, rs1, vmask : vd},
+      disasm: "vsra.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vsra";
+    vsra_vi{: vs2, simm5, vmask: vd},
+      disasm: "vsra.vi", "%vd, %simm5, %vmask",
+      semfunc: "&Vsra";
+    vssrl_vv{: vs2, vs1, vmask: vd},
+      disasm: "vssrl.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vssrl";
+    vssrl_vx{: vs2, rs1, vmask: vd},
+      disasm: "vssrl.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vssrl";
+    vssrl_vi{: vs2, uimm5, vmask: vd},
+      disasm: "vssrl.vi", "%vd, %vs2, %uimm5, %vmask",
+      semfunc: "&Vssrl";
+    vssra_vv{: vs2, vs1, vmask: vd},
+      disasm: "vssra.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vssra";
+    vssra_vx{: vs2, rs1, vmask: vd},
+      disasm: "vssra.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vssra";
+    vssra_vi{: vs2, uimm5, vmask: vd},
+      disasm: "vssra.vi", "%vd, %vs2, %uimm5, %vmask",
+      semfunc: "&Vssra";
+    vnsrl_vv{: vs2, vs1, vmask : vd},
+      disasm: "vnsrl.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vnsrl";
+    vnsrl_vx{: vs2, rs1, vmask : vd},
+      disasm: "vnsrl.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vnsrl";
+    vnsrl_vi{: vs2, uimm5, vmask : vd},
+      disasm: "vnsrl.vi", "%vd, %vs2, %uimm5, %vmask",
+      semfunc: "&Vnsrl";
+    vnsra_vv{: vs2, vs1, vmask : vd},
+      disasm: "vnsra.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vnsra";
+    vnsra_vx{: vs2, rs1, vmask : vd},
+      disasm: "vnsra.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vnsra";
+    vnsra_vi{: vs2, uimm5, vmask : vd},
+      disasm: "vnsra.vi", "%vd, %vs2, %uimm5, %vmask",
+      semfunc: "&Vnsra";
+    vnclipu_vv{: vs2, vs1, vmask : vd},
+      disasm: "vnclipu_vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vnclipu";
+    vnclipu_vx{: vs2, rs1, vmask : vd},
+      disasm: "vnclipu_vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vnclipu";
+    vnclipu_vi{: vs2, uimm5, vmask : vd},
+      disasm: "vnclipu_vi", "%vd, %vs2, %uimm5, %vmask",
+      semfunc: "&Vnclipu";
+    vnclip_vv{: vs2, vs1, vmask : vd},
+      disasm: "vnclip_vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vnclip";
+    vnclip_vx{: vs2, rs1, vmask : vd},
+      disasm: "vnclip_vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vnclip";
+    vnclip_vi{: vs2, uimm5, vmask : vd},
+      disasm: "vnclip_vi", "%vd, %vs2, %uimm5, %vmask",
+      semfunc: "&Vnclip";
+    vwredsumu_vv{: vs2, vs1, vmask: vd},
+      disasm: "vwredsumu.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vwredsumu";
+    vwredsum_vv{: vs2, vs1, vmask: vd},
+      disasm: "vwredsum.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vwredsum";
+
+    // Integer OPMVV, OPMVX.
+    vredsum_vv{: vs2, vs1, vmask: vd},
+      disasm: "vredsum.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vredsum";
+    vredand_vv{: vs2, vs1, vmask: vd},
+      disasm: "vredand.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vredand";
+    vredor_vv{: vs2, vs1, vmask: vd},
+      disasm: "vredor.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vredor";
+    vredxor_vv{: vs2, vs1, vmask: vd},
+      disasm: "vredxor.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vredxor";
+    vredminu_vv{: vs2, vs1, vmask: vd},
+      disasm: "vredminu.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vredminu";
+    vredmin_vv{: vs2, vs1, vmask: vd},
+      disasm: "vredmin.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vredmin";
+    vredmaxu_vv{: vs2, vs1, vmask: vd},
+      disasm: "vredmaxu.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vredmaxu";
+    vredmax_vv{: vs2, vs1, vmask: vd},
+      disasm: "vredmax.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vredmax";
+    vaaddu_vv{: vs2, vs1, vmask: vd},
+      disasm: "vaaddu.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vaaddu";
+    vaaddu_vx{: vs2, rs1, vmask: vd},
+      disasm: "vaaddu.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vaaddu";
+    vaadd_vv{: vs2, vs1, vmask: vd},
+      disasm: "vaadd.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vaadd";
+    vaadd_vx{: vs2, rs1, vmask: vd},
+      disasm: "vaadd.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vaadd";
+    vasubu_vv{: vs2, vs1, vmask: vd},
+      disasm: "vasubu.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vasubu";
+    vasubu_vx{: vs2, rs1, vmask: vd},
+      disasm: "vasubu.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vasubu";
+    vasub_vv{: vs2, vs1, vmask: vd},
+      disasm: "vasub.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vasub";
+    vasub_vx{: vs2, rs1, vmask: vd},
+      disasm: "vasub.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vasub";
+    vslide1up_vx{: vs2, rs1, vmask: vd},
+      disasm: "vslide1up.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vslide1up";
+    vslide1down_vx{: vs2, rs1, vmask: vd},
+      disasm: "vslide1down.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vslide1down";
+    vcompress_vv{: vs2, vs1: vd},
+      disasm: "vcompress.vv", "%vd, %vs2, %vs1",
+      semfunc: "&Vcompress";
+    vmandnot_vv{: vs2, vs1: vd},
+      disasm: "vwmandnot.vv", "%vd, %vs2, %vs1",
+      semfunc: "&Vmandnot";
+    vmand_vv{: vs2, vs1: vd},
+      disasm: "vmand.vv", "%vd, %vs2, %vs1",
+      semfunc: "&Vmand";
+    vmor_vv{: vs2, vs1: vd},
+      disasm: "vmor.vv", "%vd, %vs2, %vs1",
+      semfunc: "&Vmor";
+    vmxor_vv{: vs2, vs1: vd},
+      disasm: "vmxor.vv", "%vd, %vs2, %vs1",
+      semfunc: "&Vmxor";
+    vmornot_vv{: vs2, vs1: vd},
+      disasm: "vmornot.vv", "%vd, %vs2, %vs1",
+      semfunc: "&Vmornot";
+    vmnand_vv{: vs2, vs1: vd},
+      disasm: "vmnand.vv", "%vd, %vs2, %vs1",
+      semfunc: "&Vmnand";
+    vmnor_vv{: vs2, vs1: vd},
+      disasm: "vmnor.vv", "%vd, %vs2, %vs1",
+      semfunc: "&Vmnor";
+    vmxnor_vv{: vs2, vs1: vd},
+      disasm: "vmxnor.vv", "%vd, %vs2, %vs1",
+      semfunc: "&Vmxnor";
+    vdivu_vv{: vs2, vs1, vmask: vd},
+      disasm: "vdivu.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vdivu";
+    vdivu_vx{: vs2, rs1, vmask: vd},
+      disasm: "vdivu.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vdivu";
+    vdiv_vv{: vs2, vs1, vmask: vd},
+      disasm: "vdiv.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vdiv";
+    vdiv_vx{: vs2, rs1, vmask: vd},
+      disasm: "vdiv.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vdiv";
+    vremu_vv{: vs2, vs1, vmask: vd},
+      disasm: "vremu.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vremu";
+    vremu_vx{: vs2, rs1, vmask: vd},
+      disasm: "vremu.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vremu";
+    vrem_vv{: vs2, vs1, vmask: vd},
+      disasm: "vrem.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vrem";
+    vrem_vx{: vs2, rs1, vmask: vd},
+      disasm: "vrem.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vrem";
+    vmulhu_vv{: vs2, vs1, vmask: vd},
+      disasm: "vmulhu.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vmulhu";
+    vmulhu_vx{: vs2, rs1, vmask: vd},
+      disasm: "vmulhu.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vmulhu";
+    vmul_vv{: vs2, vs1, vmask: vd},
+      disasm: "vmul.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vmul";
+    vmul_vx{: vs2, rs1, vmask: vd},
+      disasm: "vmul.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vmul";
+    vmulhsu_vv{: vs2, vs1, vmask: vd},
+      disasm: "vmulhsu.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vmulhsu";
+    vmulhsu_vx{: vs2, rs1, vmask: vd},
+      disasm: "vmulhsu.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vmulhsu";
+    vmulh_vv{: vs2, vs1, vmask: vd},
+      disasm: "vmulh.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vmulh";
+    vmulh_vx{: vs2, rs1, vmask: vd},
+      disasm: "vmulh.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vmulh";
+    vmadd_vv{: vs2, vs1, vd, vmask: vd},
+      disasm: "vmadd.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vmadd";
+    vmadd_vx{: vs2, rs1, vd, vmask: vd},
+      disasm: "vmadd.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vmadd";
+    vnmsub_vv{: vs2, vs1, vd, vmask: vd},
+      disasm: "vnmsub.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vnmsub";
+    vnmsub_vx{: vs2, rs1, vd, vmask: vd},
+      disasm: "vnmsub.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vnmsub";
+    vmacc_vv{: vs2, vs1, vd, vmask: vd},
+      disasm: "vmacc.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vmacc";
+    vmacc_vx{: vs2, rs1, vd, vmask: vd},
+      disasm: "vmacc.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vmacc";
+    vnmsac_vv{: vs2, vs1, vd, vmask: vd},
+      disasm: "vnmsac.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vnmsac";
+    vnmsac_vx{: vs2, rs1, vd, vmask: vd},
+      disasm: "vnmsac.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vnmsac";
+    vwaddu_vv{: vs2, vs1, vmask : vd},
+      disasm: "vwaddu.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vwaddu";
+    vwaddu_vx{: vs2, rs1, vmask : vd},
+      disasm: "vwaddu.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vwaddu";
+    vwadd_vv{: vs2, vs1, vmask : vd},
+      disasm: "vwadd_vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vwadd";
+    vwadd_vx{: vs2, rs1, vmask : vd},
+      disasm: "vwadd.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vwadd";
+    vwsubu_vv{: vs2, vs1, vmask : vd},
+      disasm: "vwsubu.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vwsubu";
+    vwsubu_vx{: vs2, rs1, vmask : vd},
+      disasm: "vwsubu.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vwsubu";
+    vwsub_vv{: vs2, vs1, vmask : vd},
+      disasm: "vwsub.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vwsub";
+    vwsub_vx{: vs2, rs1, vmask : vd},
+      disasm: "vwsub.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vwsub";
+    vwaddu_w_vv{: vs2, vs1, vmask : vd},
+      disasm: "vwaddu.wv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vwadduw";
+    vwaddu_w_vx{: vs2, rs1, vmask : vd},
+      disasm: "vwaddu.wx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vwadduw";
+    vwadd_w_vv{: vs2, vs1, vmask : vd},
+      disasm: "vwadd.wv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vwaddw";
+    vwadd_w_vx{: vs2, rs1, vmask : vd},
+      disasm: "vwadd.wx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vwaddw";
+    vwsubu_w_vv{: vs2, vs1, vmask : vd},
+      disasm: "vwsubu.wv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vwsubuw";
+    vwsubu_w_vx{: vs2, rs1, vmask : vd},
+      disasm: "vwsubu.wx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vwsubuw";
+    vwsub_w_vv{: vs2, vs1, vmask : vd},
+      disasm: "vwsub.wv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vwsubw";
+    vwsub_w_vx{: vs2, rs1, vmask : vd},
+      disasm: "vwsub.wx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vwsubw";
+    vwmulu_vv{: vs2, vs1, vmask: vd},
+      disasm: "vwmulu.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vwmulu";
+    vwmulu_vx{: vs2, rs1, vmask: vd},
+      disasm: "vwmulu.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vwmulu";
+    vwmulsu_vv{: vs2, vs1, vmask: vd},
+      disasm: "vwmulsu.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vwmulsu";
+    vwmulsu_vx{: vs2, rs1, vmask: vd},
+      disasm: "vwmulsu.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vwmulsu";
+    vwmul_vv{: vs2, vs1, vmask: vd},
+      disasm: "vwmul.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vwmul";
+    vwmul_vx{: vs2, rs1, vmask: vd},
+      disasm: "vwmul.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vwmul";
+    vwmaccu_vv{: vs2, vs1, vd, vmask: vd},
+      disasm: "vwmaccu.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vwmaccu";
+    vwmaccu_vx{: vs2, rs1, vd, vmask: vd},
+      disasm: "vwmaccu.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vwmaccu";
+    vwmacc_vv{: vs2, vs1, vd, vmask: vd},
+      disasm: "vwmacc.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vwmacc";
+    vwmacc_vx{: vs2, rs1, vd, vmask: vd},
+      disasm: "vwmacc.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vwmacc";
+    vwmaccus_vv{: vs2, vs1, vd, vmask: vd},
+      disasm: "vwmaccus.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vwmaccus";
+    vwmaccus_vx{: vs2, rs1, vd, vmask: vd},
+      disasm: "vwmaccus.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vwmaccus";
+    vwmaccsu_vv{: vs2, vs1, vd, vmask: vd},
+      disasm: "vwmaccsu.vv", "%vd, %vs2, %vs1, %vmask",
+      semfunc: "&Vwmaccsu";
+    vwmaccsu_vx{: vs2, rs1, vd, vmask: vd},
+      disasm: "vwmaccsu.vx", "%vd, %vs2, %rs1, %vmask",
+      semfunc: "&Vwmaccsu";
+
+    // VWXUNARY0
+    vmv_x_s{: vs2 : rd},
+      disasm: "vmv.x.s", "%rd, %vs2",
+      semfunc: "&VmvToScalar";
+    vcpop{: vs2, vmask: rd},
+      disasm: "vcpop", "%rd, %vs2, %vmask",
+      semfunc: "&Vcpop";
+    vfirst{: vs2, vmask: rd},
+      disasm: "vfirst", "%rd, %vs2, %vmask",
+      semfunc: "&Vfirst";
+    // VRXUNARY0
+    vmv_s_x{: rs1 : vd},
+      disasm: "vmv.s.x", "%vd, %rs1",
+      semfunc: "&VmvFromScalar";
+    // VXUNARY0
+    vzext_vf8{: vs2, vmask: vd},
+      disasm: "vzext.vf8", "%vd, %vs2, %vmask",
+      semfunc: "&Vzext8";
+    vsext_vf8{: vs2, vmask: vd},
+      disasm: "vsext.vf8", "%vd, %vs2, %vmask",
+      semfunc: "&Vsext8";
+    vzext_vf4{: vs2, vmask: vd},
+      disasm: "vzext.vf4", "%vd, %vs2, %vmask",
+      semfunc: "&Vzext4";
+    vsext_vf4{: vs2, vmask: vd},
+      disasm: "vsext.vf4", "%vd, %vs2, %vmask",
+      semfunc: "&Vsext4";
+    vzext_vf2{: vs2, vmask: vd},
+      disasm: "vzext.vf2", "%vd, %vs2, %vmask",
+      semfunc: "&Vzext2";
+    vsext_vf2{: vs2, vmask: vd},
+      disasm: "vsext.vf2", "%vd, %vs2, %vmask",
+      semfunc: "&Vsext2";
+    // VMUNARY0
+    vmsbf{:vs2, vmask: vd},
+      disasm: "vmsbf.m", "%vd, %vs2, %vmask",
+      semfunc: "&Vmsbf";
+    vmsof{:vs2, vmask: vd},
+      disasm: "vmsof.m", "%vd, %vs2, %vmask",
+      semfunc: "&Vmsof";
+    vmsif{:vs2, vmask: vd},
+      disasm: "vmsif.m", "%vd, %vs2, %vmask",
+      semfunc: "&Vmsif";
+    viota{:vs2, vmask: vd},
+      disasm: "viota.m", "%vd, %vs2, %vmask",
+      semfunc: "&Viota";
+    vid{: vmask: vd},
+      disasm: "vid.v", "%vd, %vmask",
+      semfunc: "&Vid";
+  }
+}

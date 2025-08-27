@@ -26,9 +26,22 @@ decoder RiscV32G {
 #include "riscv_format32.bin_fmt"
 #include "riscv_format16.bin_fmt"
 
-instruction group RiscVGInst32 = {RiscVGInstBase32, RiscVGHints32};
+instruction group RiscVIInst32 = {RiscVIInstBase32, RiscVIHints32};
 
-instruction group RiscVGInstBase32[32] : Inst32Format {
+instruction group RiscVGInst32 = {
+  RiscVIInst32,
+  RiscVZifenceiInst32,
+  RiscVZicsrInst32,
+  RiscVMInst32,
+  RiscVAInst32,
+  RiscVFInst32,
+  RiscVDInst32,
+  RiscVPrivInst32
+};
+
+
+instruction group RiscVIInstBase32[32] : Inst32Format {
+  // RV32I Base Instruction Set
   lui    : UType  : opcode == 0b011'0111, rd != 0;
   auipc  : UType  : opcode == 0b001'0111, rd != 0;
   jal    : JType  : rd != 0, opcode == 0b110'1111;
@@ -73,9 +86,36 @@ instruction group RiscVGInstBase32[32] : Inst32Format {
   fence_tso : Fence : fm == 0b1000, pred == 0b0011, succ == 0b0011, func3 == 0b000, opcode == 0b000'1111;
   ecall  : Inst32Format : bits == 0b0000'0000'0000'00000'000'00000, opcode == 0b111'0011;
   ebreak : Inst32Format : bits == 0b0000'0000'0001'00000'000'00000, opcode == 0b111'0011;
-  // RiscV32 Instruction fence.
+};
+
+instruction group RiscVZifenceiInst32[32] : Inst32Format {
+  // RV32/RV64 Zifencei Standard Extension
   fencei : IType  : func3 == 001, opcode == 0b000'1111;
-  // RiscV32 multiply divide.
+};
+
+instruction group RiscVZicsrInst32[32] : Inst32Format {
+  // RV32/RV64 Zicsr Standard Extension
+  csrrw    : IType  : func3 == 0b001, u_imm12 != 0b1100'0000'0000, rd != 0,  opcode == 0b111'0011;
+  csrrs    : IType  : func3 == 0b010, rs1 != 0, rd != 0, opcode == 0b111'0011;
+  csrrc    : IType  : func3 == 0b011, rs1 != 0, rd != 0, opcode == 0b111'0011;
+  csrrs_nr : IType  : func3 == 0b010, rs1 != 0, rd == 0, opcode == 0b111'0011;
+  csrrc_nr : IType  : func3 == 0b011, rs1 != 0, rd == 0, opcode == 0b111'0011;
+  csrrw_nr : IType  : func3 == 0b001, u_imm12 != 0b1100'0000'0000, rd == 0,  opcode == 0b111'0011;
+  csrrs_nw : IType  : func3 == 0b010, rs1 == 0, opcode == 0b111'0011;
+  csrrc_nw : IType  : func3 == 0b011, rs1 == 0, opcode == 0b111'0011;
+  csrrwi   : IType  : func3 == 0b101, rd != 0,  opcode == 0b111'0011;
+  csrrsi   : IType  : func3 == 0b110, rs1 != 0, rd != 0, opcode == 0b111'0011;
+  csrrci   : IType  : func3 == 0b111, rs1 != 0, rd != 0, opcode == 0b111'0011;
+  csrrsi_nr: IType  : func3 == 0b110, rs1 != 0, rd == 0, opcode == 0b111'0011;
+  csrrci_nr: IType  : func3 == 0b111, rs1 != 0, rd == 0, opcode == 0b111'0011;
+  csrrwi_nr: IType  : func3 == 0b101, rd == 0,  opcode == 0b111'0011;
+  csrrsi_nw: IType  : func3 == 0b110, rs1 == 0, opcode == 0b111'0011;
+  csrrci_nw: IType  : func3 == 0b111, rs1 == 0, opcode == 0b111'0011;
+  unimp    : IType  : func3 == 0b001, u_imm12 == 0b1100'0000'0000, rs1 == 0, rd == 0, opcode == 0b111'0011;
+};
+
+instruction group RiscVMInst32[32] : Inst32Format {
+  // RV32M Standard Extension
   mul    : RType  : func7 == 0b000'0001, func3 == 0b000, opcode == 0b011'0011;
   mulh   : RType  : func7 == 0b000'0001, func3 == 0b001, opcode == 0b011'0011;
   mulhsu : RType  : func7 == 0b000'0001, func3 == 0b010, opcode == 0b011'0011;
@@ -84,7 +124,10 @@ instruction group RiscVGInstBase32[32] : Inst32Format {
   divu   : RType  : func7 == 0b000'0001, func3 == 0b101, opcode == 0b011'0011;
   rem    : RType  : func7 == 0b000'0001, func3 == 0b110, opcode == 0b011'0011;
   remu   : RType  : func7 == 0b000'0001, func3 == 0b111, opcode == 0b011'0011;
-  // RiscV32 atomic instructions.
+};
+
+instruction group RiscVAInst32[32] : Inst32Format {
+  // RV32A Standard Extension
   lrw       : AType  : func5 == 0b0'0010, rs2 == 0, func3 == 0b010, opcode == 0b010'1111;
   scw       : AType  : func5 == 0b0'0011, func3 == 0b010, opcode == 0b010'1111;
   amoswapw : AType  : func5 == 0b0'0001,  func3 == 0b010, opcode == 0b010'1111;
@@ -96,7 +139,10 @@ instruction group RiscVGInstBase32[32] : Inst32Format {
   amomaxw  : AType  : func5 == 0b1'0100, func3 == 0b010, opcode == 0b010'1111;
   amominuw : AType  : func5 == 0b1'1000, func3 == 0b010, opcode == 0b010'1111;
   amomaxuw : AType  : func5 == 0b1'1100, func3 == 0b010, opcode == 0b010'1111;
-  // RiscV32 single precision floating point instructions.
+};
+
+instruction group RiscVFInst32[32] : Inst32Format {
+  // RV32F Standard Extension
   flw      : IType  : func3 == 0b010, opcode == 0b000'0111;
   fsw      : SType  : func3 == 0b010, opcode == 0b010'0111;
   fmadd_s  : R4Type : func2 == 0b00,  opcode == 0b100'0011;
@@ -123,7 +169,10 @@ instruction group RiscVGInstBase32[32] : Inst32Format {
   fcvt_sw  : RType  : func7 == 0b110'1000, rs2 == 0, opcode == 0b101'0011;
   fcvt_swu : RType  : func7 == 0b110'1000, rs2 == 1, opcode == 0b101'0011;
   fmv_wx   : RType  : func7 == 0b111'1000, rs2 == 0, func3 == 0b000, opcode == 0b101'0011;
-  // RiscV32 double precision floating point instructions.
+};
+
+instruction group RiscVDInst32[32] : Inst32Format {
+  // RV32D Standard Extension
   fld      : IType  : func3 == 0b011, opcode == 0b000'0111;
   fsd      : SType  : func3 == 0b011, opcode == 0b010'0111;
   fmadd_d  : R4Type : func2 == 0b01,  opcode == 0b100'0011;
@@ -150,24 +199,9 @@ instruction group RiscVGInstBase32[32] : Inst32Format {
   fcvt_wud : RType  : func7 == 0b110'0001, rs2 == 1, opcode == 0b101'0011;
   fcvt_dw  : RType  : func7 == 0b110'1001, rs2 == 0, opcode == 0b101'0011;
   fcvt_dwu : RType  : func7 == 0b110'1001, rs2 == 1, opcode == 0b101'0011;
-  // RiscV32 CSR manipulation instructions.
-  csrrw    : IType  : func3 == 0b001, u_imm12 != 0b1100'0000'0000, rd != 0,  opcode == 0b111'0011;
-  csrrs    : IType  : func3 == 0b010, rs1 != 0, rd != 0, opcode == 0b111'0011;
-  csrrc    : IType  : func3 == 0b011, rs1 != 0, rd != 0, opcode == 0b111'0011;
-  csrrs_nr : IType  : func3 == 0b010, rs1 != 0, rd == 0, opcode == 0b111'0011;
-  csrrc_nr : IType  : func3 == 0b011, rs1 != 0, rd == 0, opcode == 0b111'0011;
-  csrrw_nr : IType  : func3 == 0b001, u_imm12 != 0b1100'0000'0000, rd == 0,  opcode == 0b111'0011;
-  csrrs_nw : IType  : func3 == 0b010, rs1 == 0, opcode == 0b111'0011;
-  csrrc_nw : IType  : func3 == 0b011, rs1 == 0, opcode == 0b111'0011;
-  csrrwi   : IType  : func3 == 0b101, rd != 0,  opcode == 0b111'0011;
-  csrrsi   : IType  : func3 == 0b110, rs1 != 0, rd != 0, opcode == 0b111'0011;
-  csrrci   : IType  : func3 == 0b111, rs1 != 0, rd != 0, opcode == 0b111'0011;
-  csrrsi_nr: IType  : func3 == 0b110, rs1 != 0, rd == 0, opcode == 0b111'0011;
-  csrrci_nr: IType  : func3 == 0b111, rs1 != 0, rd == 0, opcode == 0b111'0011;
-  csrrwi_nr: IType  : func3 == 0b101, rd == 0,  opcode == 0b111'0011;
-  csrrsi_nw: IType  : func3 == 0b110, rs1 == 0, opcode == 0b111'0011;
-  csrrci_nw: IType  : func3 == 0b111, rs1 == 0, opcode == 0b111'0011;
-  unimp    : IType  : func3 == 0b001, u_imm12 == 0b1100'0000'0000, rs1 == 0, rd == 0, opcode == 0b111'0011;
+};
+
+instruction group RiscVPrivInst32[32] : Inst32Format {
   // RiscV32 Privileged instructions.
   uret    : Inst32Format  : bits == 0b000'0000'00010'00000'000'00000, opcode == 0b111'0011;
   sret    : Inst32Format  : bits == 0b000'1000'00010'00000'000'00000, opcode == 0b111'0011;
@@ -180,7 +214,7 @@ instruction group RiscVGInstBase32[32] : Inst32Format {
 };
 
 // Encoding for RiscV hint instructions.
-instruction group RiscVGHints32[32] : Inst32Format {
+instruction group RiscVIHints32[32] : Inst32Format {
   lui_hint: UType      : opcode == 0b011'0111, rd == 0;
   auipc_hint: UType    : opcode == 0b001'0111, rd == 0;
   addi_hint1: IType    : func3 == 0b000, opcode == 0b001'0011, rd == 0, rs1 != 0;
