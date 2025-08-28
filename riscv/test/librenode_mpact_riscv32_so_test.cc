@@ -12,7 +12,11 @@
 
 namespace {
 
+#if defined(__APPLE__)
+constexpr char kFileName[] = "librenode_mpact_riscv32.dylib";
+#else
 constexpr char kFileName[] = "librenode_mpact_riscv32.so";
+#endif
 constexpr char kDepotPath[] = "riscv/";
 constexpr char kExecFileName[] = "hello_world_arm.elf";
 
