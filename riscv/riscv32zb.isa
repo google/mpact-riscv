@@ -38,15 +38,15 @@ slot riscv32_zba {
     sh1add{: rs1, rs2, const1 : rd},
       resources: ThreeOp,
       disasm: "sh1add", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVShAdd";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVShAdd";
     sh2add{: rs1, rs2, const2 : rd},
       resources: ThreeOp,
       disasm: "sh2add", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVShAdd";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVShAdd";
     sh3add{: rs1, rs2, const3 : rd},
       resources: ThreeOp,
       disasm: "sh3add", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVShAdd";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVShAdd";
   }
 }
 
@@ -59,78 +59,78 @@ slot riscv32_zbb {
     andn{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "andn", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVAndn";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVAndn";
     orn{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "orn", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVOrn";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVOrn";
     xnor{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "xor", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVXnor";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVXnor";
     // Counte leading/trailing zero bits.
     clz{: rs1 : rd},
       resources: TwoOp,
       disasm: "clz", "%rd, %rs1",
-      semfunc: "&RV32::RiscVClz";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVClz";
     ctz{: rs1 : rd},
       resources: TwoOp,
       disasm: "ctz", "%rd, %rs1",
-      semfunc: "&RV32::RiscVCtz";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVCtz";
     // Count population
     cpop{: rs1 : rd},
       resources: TwoOp,
       disasm: "cpop", "%rd, %rs1",
-      semfunc: "&RV32::RiscVCpop";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVCpop";
     // Integer minimum/maximum.
     max{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "max", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVMax";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVMax";
     maxu{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "max", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVMaxu";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVMaxu";
     min{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "min", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVMin";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVMin";
     minu{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "min", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVMinu";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVMinu";
     // Sign and zero extension.
     sext_b{: rs1 : rd},
       resources: TwoOp,
       disasm: "sext.b", "%rd, %rs1",
-      semfunc: "&RV32::RiscVSextB";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVSextB";
     sext_h{: rs1 : rd},
       resources: TwoOp,
       disasm: "sext.h", "%rd, %rs1",
-      semfunc: "&RV32::RiscVSextH";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVSextH";
     zext_h{: rs1 : rd},
       resources: TwoOp,
       disasm: "zext.h", "%rd, %rs1",
-      semfunc: "&RV32::RiscVZextH";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVZextH";
     // Bitwise rotation.
     rol{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "rol", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVRol";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVRol";
     ror{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "ror", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVRor";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVRor";
     // OR combine.
     orcb{: rs1 : rd},
       resources: TwoOp,
       disasm: "orc", "%rd, %rs1",
-      semfunc: "&RV32::RiscVOrcb";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVOrcb";
     // Byte reverse.
     rev8{: rs1 : rd},
       resources: TwoOp,
       disasm: "rev8", "%rd, %rs1",
-      semfunc: "&RV32::RiscVRev8";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVRev8";
   }
 }
 
@@ -142,7 +142,7 @@ slot riscv32_zbb_imm {
     rori{: rs1, r_uimm5 : rd},
       resources: TwoOp,
       disasm: "rori", "%rd, %rs1, %r_uimm5",
-      semfunc: "&RV32::RiscVRor";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVRor";
   }
 }
 
@@ -154,15 +154,15 @@ slot riscv32_zbc {
     clmul{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "clmul", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVClmul";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVClmul";
     clmulh{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "clmulh", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVClmulh";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVClmulh";
     clmulr{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "clmulr", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVClmulr";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVClmulr";
   }
 }
 
@@ -175,19 +175,19 @@ slot riscv32_zbs {
     bclr{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "bclr", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVBclr";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVBclr";
     bext{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "bext", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVBext";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVBext";
     binv{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "binv", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVBinv";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVBinv";
     bset{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "bset", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVBset";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVBset";
   }
 }
 
@@ -199,18 +199,18 @@ slot riscv32_zbs_imm {
     bclri{: rs1, r_uimm5 : rd},
       resources: TwoOp,
       disasm: "bclri", "%rd, %rs1, %r_uimm5",
-      semfunc: "&RV32::RiscVBclr";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVBclr";
     bexti{: rs1, r_uimm5 : rd},
       resources: TwoOp,
       disasm: "bexti", "%rd, %rs1, %r_uimm5",
-      semfunc: "&RV32::RiscVBext";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVBext";
     binvi{: rs1, r_uimm5 : rd},
       resources: TwoOp,
       disasm: "binvi", "%rd, %rs1, %r_uimm5",
-      semfunc: "&RV32::RiscVBinv";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVBinv";
     bseti{: rs1, r_uimm5 : rd},
       resources: TwoOp,
       disasm: "bseti", "%rd, %rs1, %r_uimm5",
-      semfunc: "&RV32::RiscVBset";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVBset";
   }
 }

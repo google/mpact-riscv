@@ -1421,972 +1421,1002 @@ slot riscv_zve32x {
     // Configuration.
     vsetvli_xn{: rs1, zimm11: rd},
       disasm: "vsetvli","%rd,", "%rs1, %zimm11",
-      semfunc: "absl::bind_front(&Vsetvl, /*rd_zero*/ false, /*rs1_zero*/ false)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::Vsetvl, /*rd_zero*/ false, /*rs1_zero*/ false)";
     vsetvli_nz{: rs1, zimm11: rd},
       disasm: "vsetvli", "%rd, %rs1, %zimm11",
-      semfunc: "absl::bind_front(&Vsetvl, /*rd_zero*/false, /*rs1_zero*/ true)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::Vsetvl, /*rd_zero*/false, /*rs1_zero*/ true)";
     vsetvli_zz{: rs1, zimm11: rd},
       disasm: "vsetvli", "%rd, %rs1, %zimm11",
-      semfunc: "absl::bind_front(&Vsetvl, /*rd_zero*/true, /*rs1_zero*/ true)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::Vsetvl, /*rd_zero*/true, /*rs1_zero*/ true)";
     vsetivli{: uimm5, zimm10: rd},
       disasm: "vsetivli %uimm5, %zimm10",
-      semfunc: "absl::bind_front(&Vsetvl, /*rd_zero*/false, /*rs1_zero*/ false)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::Vsetvl, /*rd_zero*/false, /*rs1_zero*/ false)";
     vsetvl_xn{: rs1, rs2: rd},
       disasm: "vsetvl", "%rd, %rs1, %rs2",
-      semfunc: "absl::bind_front(&Vsetvl, /*rd_zero*/false, /*rs1_zero*/ false)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::Vsetvl, /*rd_zero*/false, /*rs1_zero*/ false)";
     vsetvl_nz{: rs1, rs2: rd},
       disasm: "vsetvl", "%rd, %rs1, %rs2",
-      semfunc: "absl::bind_front(&Vsetvl, /*rd_zero*/false, /*rs1_zero*/ true)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::Vsetvl, /*rd_zero*/false, /*rs1_zero*/ true)";
     vsetvl_zz{: rs1, rs2: rd},
       disasm: "vsetvl", "%rd, %rs1, %rs2",
-      semfunc: "absl::bind_front(&Vsetvl, /*rd_zero*/true, /*rs1_zero*/ true)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::Vsetvl, /*rd_zero*/true, /*rs1_zero*/ true)";
 
     // VECTOR LOADS
 
     // Unit stride loads, masked (vm=0)
     vle8{(: rs1, const1, vmask :), (: : vd )},
       disasm: "vle8.v", "%vd, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 1)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlStrided, /*element_width*/ 1)",
+               "&::mpact::sim::riscv::VlChild";
     vle16{(: rs1, const2, vmask :), (: : vd )},
       disasm: "vle16.v", "%vd, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 2)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlStrided, /*element_width*/ 2)",
+               "&::mpact::sim::riscv::VlChild";
     vle32{(: rs1, const4, vmask :), ( : : vd) },
       disasm: "vle32.v", "%vd, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 4)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlStrided, /*element_width*/ 4)",
+               "&::mpact::sim::riscv::VlChild";
 
     // Unit stride loads, unmasked (vm=1)
     vle8_vm1{(: rs1, const1, vmask_true :), (: : vd )},
       disasm: "vle8.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 1)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlStrided, /*element_width*/ 1)",
+               "&::mpact::sim::riscv::VlChild";
     vle16_vm1{(: rs1, const2, vmask_true :), (: : vd )},
       disasm: "vle16.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 2)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlStrided, /*element_width*/ 2)",
+               "&::mpact::sim::riscv::VlChild";
     vle32_vm1{(: rs1, const4, vmask_true :), ( : : vd) },
       disasm: "vle32.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 4)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlStrided, /*element_width*/ 4)",
+               "&::mpact::sim::riscv::VlChild";
 
     // Vector strided loads
     vlse8{(: rs1, rs2, vmask :), (: : vd)},
       disasm: "vlse8.v", "%vd, (%rs1), %rs2, %vmask",
-      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 1)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlStrided, /*element_width*/ 1)",
+               "&::mpact::sim::riscv::VlChild";
     vlse16{(: rs1, rs2, vmask :), (: : vd)},
       disasm: "vlse16.v", "%vd, (%rs1), %rs2, %vmask",
-      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 2)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlStrided, /*element_width*/ 2)",
+               "&::mpact::sim::riscv::VlChild";
     vlse32{(: rs1, rs2, vmask :), (: : vd)},
       disasm: "vlse32.v", "%vd, (%rs1), %rs2, %vmask",
-      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 4)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlStrided, /*element_width*/ 4)",
+               "&::mpact::sim::riscv::VlChild";
 
     // Vector mask load
     vlm{(: rs1, const1, vmask_true :), (: : vd)},
       disasm: "vlm.v", "%vd, (%rs1)",
-      semfunc: "&Vlm", "&VlChild";
+      semfunc: "&::mpact::sim::riscv::Vlm", "&::mpact::sim::riscv::VlChild";
 
     // Unit stride vector load, fault first
     vle8ff{(: rs1, const1, vmask:), (: : vd)},
       disasm: "vle8ff.v", "%vd, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 1)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlStrided, /*element_width*/ 1)",
+               "&::mpact::sim::riscv::VlChild";
     vle16ff{(: rs1, const2, vmask:), (: : vd)},
       disasm: "vle16ff.v", "%vd, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 2)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlStrided, /*element_width*/ 2)",
+               "&::mpact::sim::riscv::VlChild";
     vle32ff{(: rs1, const4, vmask:), (: : vd)},
       disasm: "vle32ff.v", "%vd, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&VlStrided, /*element_width*/ 4)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlStrided, /*element_width*/ 4)",
+               "&::mpact::sim::riscv::VlChild";
 
     // Vector register load
     vl1re8{(: rs1 :), (: : vd)},
       disasm: "vl1re8.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 1, /*element_width*/ 1)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlRegister, /*num_regs*/ 1, /*element_width*/ 1)",
+               "&::mpact::sim::riscv::VlChild";
     vl1re16{(: rs1 :), (: : vd)},
       disasm: "vl1re16.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 1, /*element_width*/ 2)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlRegister, /*num_regs*/ 1, /*element_width*/ 2)",
+               "&::mpact::sim::riscv::VlChild";
     vl1re32{(: rs1 :), (: : vd)},
       disasm: "vl1re32.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 1, /*element_width*/ 4)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlRegister, /*num_regs*/ 1, /*element_width*/ 4)",
+               "&::mpact::sim::riscv::VlChild";
     vl2re8{(: rs1 :), (: : vd)},
       disasm: "vl2re8.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 2, /*element_width*/ 1)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlRegister, /*num_regs*/ 2, /*element_width*/ 1)",
+               "&::mpact::sim::riscv::VlChild";
     vl2re16{(: rs1 :), (: : vd)},
       disasm: "vl2re16.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 2, /*element_width*/ 2)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlRegister, /*num_regs*/ 2, /*element_width*/ 2)",
+               "&::mpact::sim::riscv::VlChild";
     vl2re32{(: rs1 :), (: : vd)},
       disasm: "vl2re32.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 2, /*element_width*/ 4)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlRegister, /*num_regs*/ 2, /*element_width*/ 4)",
+               "&::mpact::sim::riscv::VlChild";
     vl4re8{(: rs1 :), (: : vd)},
       disasm: "vl4re8.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 4, /*element_width*/ 1)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlRegister, /*num_regs*/ 4, /*element_width*/ 1)",
+               "&::mpact::sim::riscv::VlChild";
     vl4re16{(: rs1 :), (: : vd)},
       disasm: "vl4re16.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 4, /*element_width*/ 2)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlRegister, /*num_regs*/ 4, /*element_width*/ 2)",
+               "&::mpact::sim::riscv::VlChild";
     vl4re32{(: rs1 :), (: : vd)},
       disasm: "vl4re32.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 4, /*element_width*/ 4)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlRegister, /*num_regs*/ 4, /*element_width*/ 4)",
+               "&::mpact::sim::riscv::VlChild";
     vl8re8{(: rs1 :), (: : vd)},
       disasm: "vl8re8.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 8, /*element_width*/ 1)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlRegister, /*num_regs*/ 8, /*element_width*/ 1)",
+               "&::mpact::sim::riscv::VlChild";
     vl8re16{(: rs1 :), (: : vd)},
       disasm: "vl8re16.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 8, /*element_width*/ 2)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlRegister, /*num_regs*/ 8, /*element_width*/ 2)",
+               "&::mpact::sim::riscv::VlChild";
     vl8re32{(: rs1 :), (: : vd)},
       disasm: "vl8re32.v", "%vd, (%rs1)",
-      semfunc: "absl::bind_front(&VlRegister, /*num_regs*/ 8, /*element_width*/ 4)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlRegister, /*num_regs*/ 8, /*element_width*/ 4)",
+               "&::mpact::sim::riscv::VlChild";
 
     // Vector load, indexed, unordered.
     vluxei8{(: rs1, vs2, vmask:), (: : vd)},
       disasm: "vluxei8.v", "%vd, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&VlIndexed, /*index_width*/ 1)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlIndexed, /*index_width*/ 1)",
+               "&::mpact::sim::riscv::VlChild";
     vluxei16{(: rs1, vs2, vmask:), (: : vd)},
       disasm: "vluxei16.v", "%vd, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&VlIndexed, /*index_width*/ 2)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlIndexed, /*index_width*/ 2)",
+               "&::mpact::sim::riscv::VlChild";
     vluxei32{(: rs1, vs2, vmask:), (: : vd)},
       disasm: "vluxei32.v", "%vd, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&VlIndexed, /*index_width*/ 4)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlIndexed, /*index_width*/ 4)",
+               "&::mpact::sim::riscv::VlChild";
 
     // Vector load, indexed, ordered.
     vloxei8{(: rs1, vs2, vmask:), (: : vd)},
       disasm: "vloxei8.v", "%vd, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&VlIndexed, /*index_width*/ 1)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlIndexed, /*index_width*/ 1)",
+               "&::mpact::sim::riscv::VlChild";
     vloxei16{(: rs1, vs2, vmask:), (: : vd)},
       disasm: "vloxei16.v", "%vd, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&VlIndexed, /*index_width*/ 2)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlIndexed, /*index_width*/ 2)",
+               "&::mpact::sim::riscv::VlChild";
     vloxei32{(: rs1, vs2, vmask:), (: : vd)},
       disasm: "vloxei32.v", "%vd, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&VlIndexed, /*index_width*/ 4)", "&VlChild";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlIndexed, /*index_width*/ 4)",
+               "&::mpact::sim::riscv::VlChild";
 
     // Vector unit-stride segment load
     vlsege8{(: rs1, vmask, nf:), (: nf : vd)},
       disasm: "vlseg%nf\\e.v", "%vd, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&VlSegment, /*element_width*/ 1)",
-               "absl::bind_front(&VlSegmentChild, /*element_width*/ 1)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlSegment, /*element_width*/ 1)",
+               "absl::bind_front(&::mpact::sim::riscv::VlSegmentChild, /*element_width*/ 1)";
     vlsege16{(: rs1, vmask, nf:), (: nf : vd)},
       disasm: "vlseg%nf\\e.v", "%vd, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&VlSegment, /*element_width*/ 2)",
-               "absl::bind_front(&VlSegmentChild, /*element_width*/ 2)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlSegment, /*element_width*/ 2)",
+               "absl::bind_front(&::mpact::sim::riscv::VlSegmentChild, /*element_width*/ 2)";
     vlsege32{(: rs1, vmask, nf:), (: nf : vd)},
       disasm: "vlseg%nf\\e.v", "%vd, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&VlSegment, /*element_width*/ 4)",
-               "absl::bind_front(&VlSegmentChild, /*element_width*/ 4)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlSegment, /*element_width*/ 4)",
+               "absl::bind_front(&::mpact::sim::riscv::VlSegmentChild, /*element_width*/ 4)";
 
     // Vector strided segment load.
     vlssege8{(: rs1, rs2, vmask, nf: ), (: nf : vd)},
       disasm: "vlsseg%nf\\e8.v", "%vd, (%rs1), %rs2, %vmask",
-      semfunc: "absl::bind_front(&VlSegmentStrided, /*element_width*/ 1)",
-               "absl::bind_front(&VlSegmentChild, /*element_width*/ 1)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlSegmentStrided, /*element_width*/ 1)",
+               "absl::bind_front(&::mpact::sim::riscv::VlSegmentChild, /*element_width*/ 1)";
     vlssege16{(: rs1, rs2, vmask, nf: ), (: nf : vd)},/*element_width*/ 
       disasm: "vlsseg%nf\\e16.v", "%vd, (%rs1), %rs2, %vmask",
-      semfunc: "absl::bind_front(&VlSegmentStrided, /*element_width*/ 2)",
-               "absl::bind_front(&VlSegmentChild, /*element_width*/ 2)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlSegmentStrided, /*element_width*/ 2)",
+               "absl::bind_front(&::mpact::sim::riscv::VlSegmentChild, /*element_width*/ 2)";
     vlssege32{(: rs1, rs2, vmask, nf: ), (: nf : vd)},
       disasm: "vlsseg%nf\\e32.v", "%vd, (%rs1), %rs2, %vmask",
-      semfunc: "absl::bind_front(&VlSegmentStrided, /*element_width*/ 4)",
-               "absl::bind_front(&VlSegmentChild, /*element_width*/ 4)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlSegmentStrided, /*element_width*/ 4)",
+               "absl::bind_front(&::mpact::sim::riscv::VlSegmentChild, /*element_width*/ 4)";
 
     // Vector indexed segment load unordered.
     vluxsegei8{(: rs1, vs2, vmask, nf :), (: nf : vd)},
       disasm: "vluxseg%nf\\ei1.v", "%vd, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&VlSegmentIndexed, /*index_width*/ 1)",
-               "absl::bind_front(&VlSegmentChild, /*element_width*/ 1)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlSegmentIndexed, /*index_width*/ 1)",
+               "absl::bind_front(&::mpact::sim::riscv::VlSegmentChild, /*element_width*/ 1)";
     vluxsegei16{(: rs1, vs2, vmask, nf :), (: nf : vd)},
       disasm: "vluxseg%nf\\ei2.v", "%vd, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&VlSegmentIndexed, /*index_width*/ 2)",
-               "absl::bind_front(&VlSegmentChild, /*element_width*/ 2)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlSegmentIndexed, /*index_width*/ 2)",
+               "absl::bind_front(&::mpact::sim::riscv::VlSegmentChild, /*element_width*/ 2)";
     vluxsegei32{(: rs1, vs2, vmask, nf :), (: nf : vd)},
       disasm: "vluxseg%nf\\ei4.v", "%vd, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&VlSegmentIndexed, /*index_width*/ 4)",
-               "absl::bind_front(&VlSegmentChild, /*element_width*/ 4)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlSegmentIndexed, /*index_width*/ 4)",
+               "absl::bind_front(&::mpact::sim::riscv::VlSegmentChild, /*element_width*/ 4)";
 
     // Vector indexed segment load ordered.
 
     vloxsegei8{(: rs1, vs2, vmask, nf :), (: nf : vd)},
       disasm: "vluxseg%nf\\ei1.v", "%vd, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&VlSegmentIndexed, /*index_width*/ 1)",
-               "absl::bind_front(&VlSegmentChild, /*element_width*/ 1)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlSegmentIndexed, /*index_width*/ 1)",
+               "absl::bind_front(&::mpact::sim::riscv::VlSegmentChild, /*element_width*/ 1)";
     vloxsegei16{(: rs1, vs2, vmask, nf :), (: nf : vd)},
       disasm: "vluxseg%nf\\ei2.v", "%vd, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&VlSegmentIndexed, /*index_width*/ 2)",
-               "absl::bind_front(&VlSegmentChild, /*element_width*/ 2)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlSegmentIndexed, /*index_width*/ 2)",
+               "absl::bind_front(&::mpact::sim::riscv::VlSegmentChild, /*element_width*/ 2)";
     vloxsegei32{(: rs1, vs2, vmask, nf :), (: nf : vd)},
       disasm: "vluxseg%nf\\ei4.v", "%vd, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&VlSegmentIndexed, /*index_width*/ 4)",
-               "absl::bind_front(&VlSegmentChild, /*element_width*/ 4)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VlSegmentIndexed, /*index_width*/ 4)",
+               "absl::bind_front(&::mpact::sim::riscv::VlSegmentChild, /*element_width*/ 4)";
 
     // VECTOR STORES
 
     // Vector store, unit stride.
     vse8{: vs3, rs1, const1, vmask : },
       disasm: "vse8.v", "%vs3, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&VsStrided, /*element_width*/ 1)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsStrided, /*element_width*/ 1)";
     vse16{: vs3, rs1, const2, vmask : },
       disasm: "vse16.v", "%vs3, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&VsStrided, /*element_width*/ 2)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsStrided, /*element_width*/ 2)";
     vse32{: vs3, rs1, const4, vmask : },
       disasm: "vse32.v", "%vs3, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&VsStrided, /*element_width*/ 4)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsStrided, /*element_width*/ 4)";
 
     // Vector store mask
     vsm{: vs3, rs1, const1, vmask_true:},
       disasm: "vsm",
-      semfunc: "absl::bind_front(&Vsm)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::Vsm)";
 
     // Vector store, unit stride, fault first.
     vse8ff{: vs3, rs1, const1, vmask:},
       disasm: "vse8ff.v", "%vs3, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&VsStrided, /*element_width*/ 1)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsStrided, /*element_width*/ 1)";
     vse16ff{: vs3, rs1, const2, vmask:},
       disasm: "vse16ff.v", "%vs3, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&VsStrided, /*element_width*/ 2)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsStrided, /*element_width*/ 2)";
     vse32ff{: vs3, rs1, const4, vmask:},
       disasm: "vse32ff.v", "%vs3, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&VsStrided, /*element_width*/ 4)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsStrided, /*element_width*/ 4)";
 
     // Vector store register.
     vs1re8{(: vs3, rs1 :)},
       disasm: "vs1re8.v", "%vs3, (%rs1)",
-      semfunc: "absl::bind_front(&VsRegister, /*num_regs*/ 1)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsRegister, /*num_regs*/ 1)";
     vs1re16{(: vs3, rs1 :)},
       disasm: "vs1re16.v", "%vs3, (%rs1)",
-      semfunc: "absl::bind_front(&VsRegister, /*num_regs*/ 1)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsRegister, /*num_regs*/ 1)";
     vs1re32{(: vs3, rs1 :)},
       disasm: "vs1re32.v", "%vs3, (%rs1)",
-      semfunc: "absl::bind_front(&VsRegister, /*num_regs*/ 1)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsRegister, /*num_regs*/ 1)";
     vs2re8{(: vs3, rs1 :)},
       disasm: "vs2re8.v", "%vs3, (%rs1)",
-      semfunc: "absl::bind_front(&VsRegister, /*num_regs*/ 2)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsRegister, /*num_regs*/ 2)";
     vs2re16{(: vs3, rs1 :)},
       disasm: "vs2re16.v", "%vs3, (%rs1)",
-      semfunc: "absl::bind_front(&VsRegister, /*num_regs*/ 2)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsRegister, /*num_regs*/ 2)";
     vs2re32{(: vs3, rs1 :)},
       disasm: "vs2re32.v", "%vs3, (%rs1)",
-      semfunc: "absl::bind_front(&VsRegister, /*num_regs*/ 2)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsRegister, /*num_regs*/ 2)";
     vs4re8{(: vs3, rs1 :)},
       disasm: "vs4re8.v", "%vs3, (%rs1)",
-      semfunc: "absl::bind_front(&VsRegister, /*num_regs*/ 4)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsRegister, /*num_regs*/ 4)";
     vs4re16{(: vs3, rs1 :)},
       disasm: "vs4re16.v", "%vs3, (%rs1)",
-      semfunc: "absl::bind_front(&VsRegister, /*num_regs*/ 4)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsRegister, /*num_regs*/ 4)";
     vs4re32{(: vs3, rs1 :)},
       disasm: "vs4re32.v", "%vs3, (%rs1)",
-      semfunc: "absl::bind_front(&VsRegister, /*num_regs*/ 4)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsRegister, /*num_regs*/ 4)";
     vs8re8{(: vs3, rs1 :)},
       disasm: "vs8re8.v", "%vs3, (%rs1)",
-      semfunc: "absl::bind_front(&VsRegister, /*num_regs*/8)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsRegister, /*num_regs*/8)";
     vs8re16{(: vs3, rs1 :)},
       disasm: "vs8re16.v", "%vs3, (%rs1)",
-      semfunc: "absl::bind_front(&VsRegister, /*num_regs*/8)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsRegister, /*num_regs*/8)";
     vs8re32{(: vs3, rs1 :)},
       disasm: "vs8re32.v", "%vs3, (%rs1)",
-      semfunc: "absl::bind_front(&VsRegister, /*num_regs*/8)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsRegister, /*num_regs*/8)";
 
     // Vector store, strided.
     vsse8{: vs3, rs1, rs2, vmask : },
       disasm: "vsse8.v", "%vs3, (%rs1), %rs2, %vmask",
-      semfunc: "absl::bind_front(&VsStrided, /*element_width*/ 1)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsStrided, /*element_width*/ 1)";
     vsse16{: vs3, rs1, rs2, vmask : },
       disasm: "vsse16.v", "%vs3, (%rs1), %rs2, %vmask",
-      semfunc: "absl::bind_front(&VsStrided, /*element_width*/ 2)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsStrided, /*element_width*/ 2)";
     vsse32{: vs3, rs1, rs2, vmask : },
       disasm: "vsse32.v", "%vs3, (%rs1), %rs2, %vmask",
-      semfunc: "absl::bind_front(&VsStrided, /*element_width*/ 4)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsStrided, /*element_width*/ 4)";
 
     // Vector store, indexed, unordered.
     vsuxei8{: vs3, rs1, vs2, vmask: },
       disasm: "vsuxei8", "%vs3, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&VsIndexed, /*index_width*/ 1)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsIndexed, /*index_width*/ 1)";
     vsuxei16{: vs3, rs1, vs2, vmask:},
       disasm: "vsuxei16", "%vs3, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&VsIndexed, /*index_width*/ 2)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsIndexed, /*index_width*/ 2)";
     vsuxei32{: vs3, rs1, vs2, vmask:},
       disasm: "vsuxei32", "%vs3, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&VsIndexed, /*index_width*/ 4)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsIndexed, /*index_width*/ 4)";
 
     // Vector store, indexed, unordered
     vsoxei8{: vs3, rs1, vs2, vmask:},
       disasm: "vsoxei8", "%vs3, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&VsIndexed, /*index_width*/ 1)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsIndexed, /*index_width*/ 1)";
     vsoxei16{: vs3, rs1, vs2, vmask:},
       disasm: "vsoxei16", "%vs3, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&VsIndexed, /*index_width*/ 2)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsIndexed, /*index_width*/ 2)";
     vsoxei32{: vs3, rs1, vs2, vmask:},
       disasm: "vsoxei32", "%vs3, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&VsIndexed, /*index_width*/ 4)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsIndexed, /*index_width*/ 4)";
 
     // Vector unit-stride segment store.
     vssege8{(: vs3, rs1, vmask, nf:)},
       disasm: "vsseg%nf\\e.v", "%vs3, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&VsSegment, /*element_width*/ 1)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsSegment, /*element_width*/ 1)";
     vssege16{(: vs3, rs1, vmask, nf:)},
       disasm: "vsseg%nf\\e.v", "%vs3, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&VsSegment, /*element_width*/ 2)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsSegment, /*element_width*/ 2)";
     vssege32{(: vs3, rs1, vmask, nf:)},
       disasm: "vsseg%nf\\e.v", "%vs3, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&VsSegment, /*element_width*/ 4)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsSegment, /*element_width*/ 4)";
 
     // Vector strided segment store.
     vsssege8{(: vs3, rs1, rs2, vmask, nf: )},
       disasm: "vssseg%nf\\e8.v", "%vs3, (%rs1), %rs2, %vmask",
-      semfunc: "absl::bind_front(&VsSegmentStrided, /*element_width*/ 1)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsSegmentStrided, /*element_width*/ 1)";
     vsssege16{(: vs3, rs1, rs2, vmask, nf: )},
       disasm: "vssseg%nf\\e16.v", "%vs3, (%rs1), %rs2, %vmask",
-      semfunc: "absl::bind_front(&VsSegmentStrided, /*element_width*/ 2)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsSegmentStrided, /*element_width*/ 2)";
     vsssege32{(: vs3, rs1, rs2, vmask, nf: )},
       disasm: "vssseg%nf\\e32.v", "%vs3, (%rs1), %rs2, %vmask",
-      semfunc: "absl::bind_front(&VsSegmentStrided, /*element_width*/ 4)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsSegmentStrided, /*element_width*/ 4)";
 
     // Vector indexed segment store unordered.
     vsuxsegei8{(: vs3, rs1, vs2, vmask, nf :)},
       disasm: "vsuxseg%nf\\ei1.v", "%vs3, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&VsSegmentStrided, /*element_width*/ 1)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsSegmentStrided, /*element_width*/ 1)";
     vsuxsegei16{(: vs3, rs1, vs2, vmask, nf :)},
       disasm: "vsuxseg%nf\\ei2.v", "%vs3, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&VsSegmentStrided, /*element_width*/ 2)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsSegmentStrided, /*element_width*/ 2)";
     vsuxsegei32{(: vs3, rs1, vs2, vmask, nf :)},
       disasm: "vsuxseg%nf\\ei4.v", "%vs3, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&VsSegmentStrided, /*element_width*/ 4)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsSegmentStrided, /*element_width*/ 4)";
 
     // Vector indexed segment store ordered.
     vsoxsegei8{(: vs3, rs1, vs2, vmask, nf :)},
       disasm: "vsuxseg%nf\\ei1.v", "%vs3, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&VsSegmentIndexed, /*index_width*/ 1)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsSegmentIndexed, /*index_width*/ 1)";
     vsoxsegei16{(: vs3, rs1, vs2, vmask, nf :)},
       disasm: "vsuxseg%nf\\ei2.v", "%vs3, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&VsSegmentIndexed, /*index_width*/ 2)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsSegmentIndexed, /*index_width*/ 2)";
     vsoxsegei32{(: vs3, rs1, vs2, vmask, nf :)},
       disasm: "vsuxseg%nf\\ei4.v", "%vs3, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&VsSegmentIndexed, /*index_width*/ 4)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsSegmentIndexed, /*index_width*/ 4)";
 
     // Integer OPIVV, OPIVX, OPIVI.
     vadd_vv{: vs2, vs1, vmask : vd},
       disasm: "vadd.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vadd";
+      semfunc: "&::mpact::sim::riscv::Vadd";
     vadd_vx{: vs2, rs1, vmask : vd},
       disasm: "vadd.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vadd";
+      semfunc: "&::mpact::sim::riscv::Vadd";
     vadd_vi{: vs2, simm5, vmask : vd},
       disasm: "vadd.vi", "%vd, %simm5, %vmask",
-      semfunc: "&Vadd";
+      semfunc: "&::mpact::sim::riscv::Vadd";
     vsub_vv{: vs2, vs1, vmask : vd},
       disasm: "vsub.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vsub";
+      semfunc: "&::mpact::sim::riscv::Vsub";
     vsub_vx{: vs2, rs1, vmask : vd},
       disasm: "vsub.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vsub";
+      semfunc: "&::mpact::sim::riscv::Vsub";
     vrsub_vx{: vs2, rs1, vmask : vd},
       disasm: "vrsub.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vrsub";
+      semfunc: "&::mpact::sim::riscv::Vrsub";
     vrsub_vi{: vs2, simm5, vmask, vd},
       disasm: "vrsub.vi", "%vd, %simm5, %vmask",
-      semfunc: "&Vrsub";
+      semfunc: "&::mpact::sim::riscv::Vrsub";
     vminu_vv{: vs2, vs1, vmask : vd},
       disasm: "vminu.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vminu";
+      semfunc: "&::mpact::sim::riscv::Vminu";
     vminu_vx{: vs2, rs1, vmask : vd},
       disasm: "vminu.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vminu";
+      semfunc: "&::mpact::sim::riscv::Vminu";
     vmin_vv{: vs2, vs1, vmask : vd},
       disasm: "vmin.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vmin";
+      semfunc: "&::mpact::sim::riscv::Vmin";
     vmin_vx{: vs2, rs1, vmask : vd},
       disasm: "vmin.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vmin";
+      semfunc: "&::mpact::sim::riscv::Vmin";
     vmaxu_vv{: vs2, vs1, vmask : vd},
       disasm: "vmax.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vmaxu";
+      semfunc: "&::mpact::sim::riscv::Vmaxu";
     vmaxu_vx{: vs2, rs1, vmask : vd},
       disasm: "vmax.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vmaxu";
+      semfunc: "&::mpact::sim::riscv::Vmaxu";
     vmax_vv{: vs2, vs1, vmask : vd},
       disasm: "vmax.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vmax";
+      semfunc: "&::mpact::sim::riscv::Vmax";
     vmax_vx{: vs2, rs1, vmask : vd},
       disasm: "vmax.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vmax";
+      semfunc: "&::mpact::sim::riscv::Vmax";
     vand_vv{: vs2, vs1, vmask : vd},
       disasm: "vand.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vand";
+      semfunc: "&::mpact::sim::riscv::Vand";
     vand_vx{: vs2, rs1, vmask : vd},
       disasm: "vand.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vand";
+      semfunc: "&::mpact::sim::riscv::Vand";
     vand_vi{: vs2, simm5, vmask : vd},
       disasm: "vand.vi", "%vd, %simm5, %vmask",
-      semfunc: "&Vand";
+      semfunc: "&::mpact::sim::riscv::Vand";
     vor_vv{: vs2, vs1, vmask : vd},
       disasm: "vor.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vor";
+      semfunc: "&::mpact::sim::riscv::Vor";
     vor_vx{: vs2, rs1, vmask : vd},
       disasm: "vor.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vor";
+      semfunc: "&::mpact::sim::riscv::Vor";
     vor_vi{: vs2, simm5, vmask : vd},
       disasm: "vor.vi", "%vd, %simm5, %vmask",
-      semfunc: "&Vor";
+      semfunc: "&::mpact::sim::riscv::Vor";
     vxor_vv{: vs2, vs1, vmask : vd},
       disasm: "vxor.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vxor";
+      semfunc: "&::mpact::sim::riscv::Vxor";
     vxor_vx{: vs2, rs1, vmask : vd},
       disasm: "vxor.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vxor";
+      semfunc: "&::mpact::sim::riscv::Vxor";
     vxor_vi{: vs2, simm5, vmask : vd},
       disasm: "vxor.vi", "%vd, %simm5, %vmask",
-      semfunc: "&Vxor";
+      semfunc: "&::mpact::sim::riscv::Vxor";
     vrgather_vv{: vs2, vs1, vmask: vd},
       disasm: "vrgather.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vrgather";
+      semfunc: "&::mpact::sim::riscv::Vrgather";
     vrgather_vx{: vs2, rs1, vmask: vd},
       disasm: "vrgather.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vrgather";
+      semfunc: "&::mpact::sim::riscv::Vrgather";
     vrgather_vi{: vs2, uimm5, vmask: vd},
       disasm: "vrgather.vi", "%vd, %uimm5, %vmask",
-      semfunc: "&Vrgather";
+      semfunc: "&::mpact::sim::riscv::Vrgather";
     vrgatherei16_vv{: vs2, vs1, vmask: vd},
       disasm: "vrgatherei16.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vrgatherei16";
+      semfunc: "&::mpact::sim::riscv::Vrgatherei16";
     vslideup_vx{: vs2, rs1, vmask: vd},
       disasm: "vslideup.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vslideup";
+      semfunc: "&::mpact::sim::riscv::Vslideup";
     vslideup_vi{: vs2, uimm5, vmask: vd},
       disasm: "vslideup.vi", "%vd, %vs2, %uimm5, %vmask",
-      semfunc: "&Vslideup";
+      semfunc: "&::mpact::sim::riscv::Vslideup";
     vslidedown_vx{: vs2, rs1, vmask: vd},
       disasm: "vslidedown.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vslidedown";
+      semfunc: "&::mpact::sim::riscv::Vslidedown";
     vslidedown_vi{: vs2, uimm5, vmask: vd},
       disasm: "vslidedown.vi", "%vd, %vs2, %uimm5, %vmask",
-      semfunc: "&Vslidedown";
+      semfunc: "&::mpact::sim::riscv::Vslidedown";
     vadc_vv{: vs2, vs1, vmask: vd},
       disasm: "vadc.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vadc";
+      semfunc: "&::mpact::sim::riscv::Vadc";
     vadc_vx{: vs2, rs1, vmask: vd},
       disasm: "vadc.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vadc";
+      semfunc: "&::mpact::sim::riscv::Vadc";
     vadc_vi{: vs2, simm5, vmask: vd},
       disasm: "vadc.vi", "%vd, %vs2, %simm5, %vmask",
-      semfunc: "&Vadc";
+      semfunc: "&::mpact::sim::riscv::Vadc";
     vmadc_vv{: vs2, vs1, vmask, vm: vd},
       disasm: "vmadc.vv", "%vd, %vs2, %vs1, %vmask, %vm ",
-      semfunc: "&Vmadc";
+      semfunc: "&::mpact::sim::riscv::Vmadc";
     vmadc_vx{: vs2, rs1, vmask, vm: vd},
       disasm: "vmadc.vx", "%vd, %vs2, %rs1, %vmask, %vm",
-      semfunc: "&Vmadc";
+      semfunc: "&::mpact::sim::riscv::Vmadc";
     vmadc_vi{: vs2, simm5, vmask, vm: vd},
       disasm: "vmadc.vi", "%vd, %vs2, %simm5, %vmask, %vm",
-      semfunc: "&Vmadc";
+      semfunc: "&::mpact::sim::riscv::Vmadc";
     vsbc_vv{: vs2, vs1, vmask: vd},
       disasm: "vsbc.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vsbc";
+      semfunc: "&::mpact::sim::riscv::Vsbc";
     vsbc_vx{: vs2, rs1, vmask: vd},
       disasm: "vsbc.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vsbc";
+      semfunc: "&::mpact::sim::riscv::Vsbc";
     vmsbc_vv{: vs2, vs1, vmask, vm: vd},
       disasm: "vmsbc.vv", "%vd, %vs2, %vs1, %vmask, %vm",
-      semfunc: "&Vmsbc";
+      semfunc: "&::mpact::sim::riscv::Vmsbc";
     vmsbc_vx{: vs2, rs1, vmask, vm: vd},
       disasm: "vmsbc.vx", "%vd, %vs2, %rs1, %vmask, %vm",
-      semfunc: "&Vmsbc";
+      semfunc: "&::mpact::sim::riscv::Vmsbc";
     vmerge_vv{: vs2, vs1, vmask: vd},
       disasm: "vmerge.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vmerge";
+      semfunc: "&::mpact::sim::riscv::Vmerge";
     vmerge_vx{: vs2, rs1, vmask: vd},
       disasm: "vmerge.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vmerge";
+      semfunc: "&::mpact::sim::riscv::Vmerge";
     vmerge_vi{: vs2, simm5, vmask: vd},
       disasm: "vmerge.vi", "%vd, %vs2, %simm5, %vmask",
-      semfunc: "&Vmerge";
+      semfunc: "&::mpact::sim::riscv::Vmerge";
     vmv_vv{: vs2, vs1, vmask_true: vd},
       disasm: "vmv.vv", "%vd, %vs1",
-      semfunc: "&Vmerge";
+      semfunc: "&::mpact::sim::riscv::Vmerge";
     vmv_vx{: vs2, rs1, vmask_true: vd},
       disasm: "vmv.vx", "%vd, %rs1",
-      semfunc: "&Vmerge";
+      semfunc: "&::mpact::sim::riscv::Vmerge";
     vmv_vi{: vs2, simm5, vmask_true: vd},
       disasm: "vmv.vi", "%vd, %simm5",
-      semfunc: "&Vmerge";
+      semfunc: "&::mpact::sim::riscv::Vmerge";
     vmseq_vv{: vs2, vs1, vmask: vd},
       disasm: "vmseq.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vmseq";
+      semfunc: "&::mpact::sim::riscv::Vmseq";
     vmseq_vx{: vs2, rs1, vmask: vd},
       disasm: "vmseq.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vmseq";
+      semfunc: "&::mpact::sim::riscv::Vmseq";
     vmseq_vi{: vs2, simm5, vmask: vd},
       disasm: "vmseq.vi", "%vd, %vs2, %simm5, %vmask",
-      semfunc: "&Vmseq";
+      semfunc: "&::mpact::sim::riscv::Vmseq";
     vmsne_vv{: vs2, vs1, vmask: vd},
       disasm: "vmsne.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vmsne";
+      semfunc: "&::mpact::sim::riscv::Vmsne";
     vmsne_vx{: vs2, rs1, vmask: vd},
       disasm: "vmsne.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vmsne";
+      semfunc: "&::mpact::sim::riscv::Vmsne";
     vmsne_vi{: vs2, simm5, vmask: vd},
       disasm: "vmsne.vi", "%vd, %vs2, %simm5, %vmask",
-      semfunc: "&Vmsne";
+      semfunc: "&::mpact::sim::riscv::Vmsne";
     vmsltu_vv{: vs2, vs1, vmask: vd},
       disasm: "vmsltu.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vmsltu";
+      semfunc: "&::mpact::sim::riscv::Vmsltu";
     vmsltu_vx{: vs2, rs1, vmask: vd},
       disasm: "vmsltu.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vmsltu";
+      semfunc: "&::mpact::sim::riscv::Vmsltu";
     vmslt_vv{: vs2, vs1, vmask: vd},
       disasm: "vmslt.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vmslt";
+      semfunc: "&::mpact::sim::riscv::Vmslt";
     vmslt_vx{: vs2, rs1, vmask: vd},
       disasm: "vmslt.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vmslt";
+      semfunc: "&::mpact::sim::riscv::Vmslt";
     vmsleu_vv{: vs2, vs1, vmask: vd},
       disasm: "vmsleu.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vmsleu";
+      semfunc: "&::mpact::sim::riscv::Vmsleu";
     vmsleu_vx{: vs2, rs1, vmask: vd},
       disasm: "vmsleu.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vmsleu";
+      semfunc: "&::mpact::sim::riscv::Vmsleu";
     vmsleu_vi{: vs2, simm5, vmask: vd},
       disasm: "vmsleu.vi", "%vd, %vs2, %simm5, %vmask",
-      semfunc: "&Vmsleu";
+      semfunc: "&::mpact::sim::riscv::Vmsleu";
     vmsle_vv{: vs2, vs1, vmask: vd},
       disasm: "vmsle.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vmsle";
+      semfunc: "&::mpact::sim::riscv::Vmsle";
     vmsle_vx{: vs2, rs1, vmask: vd},
       disasm: "vmsle.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vmsle";
+      semfunc: "&::mpact::sim::riscv::Vmsle";
     vmsle_vi{: vs2, simm5, vmask: vd},
       disasm: "vmsle.vi", "%vd, %vs2, %simm5, %vmask",
-      semfunc: "&Vmsle";
+      semfunc: "&::mpact::sim::riscv::Vmsle";
     vmsgtu_vx{: vs2, rs1, vmask: vd},
       disasm: "vmsgtu.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vmsgtu";
+      semfunc: "&::mpact::sim::riscv::Vmsgtu";
     vmsgtu_vi{: vs2, simm5, vmask: vd},
       disasm: "vmsgtu.vi", "%vd, %vs2, %simm5, %vmask",
-      semfunc: "&Vmsgtu";
+      semfunc: "&::mpact::sim::riscv::Vmsgtu";
     vmsgt_vx{: vs2, rs1, vmask: vd},
       disasm: "vmsgt.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vmsgt";
+      semfunc: "&::mpact::sim::riscv::Vmsgt";
     vmsgt_vi{: vs2, simm5, vmask: vd},
       disasm: "vmsgt.vi", "%vd, %vs2, %simm5, %vmask",
-      semfunc: "&Vmsgt";
+      semfunc: "&::mpact::sim::riscv::Vmsgt";
     vsaddu_vv{: vs2, vs1, vmask: vd},
       disasm: "vsaddu.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vsaddu";
+      semfunc: "&::mpact::sim::riscv::Vsaddu";
     vsaddu_vx{: vs2, rs1, vmask: vd},
       disasm: "vsaddu.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vsaddu";
+      semfunc: "&::mpact::sim::riscv::Vsaddu";
     vsaddu_vi{: vs2, simm5, vmask: vd},
       disasm: "vsaddu.vi", "%vd, %vs2, %simm5, %vmask",
-      semfunc: "&Vsaddu";
+      semfunc: "&::mpact::sim::riscv::Vsaddu";
     vsadd_vv{: vs2, vs1, vmask: vd},
       disasm: "vsadd.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vsadd";
+      semfunc: "&::mpact::sim::riscv::Vsadd";
     vsadd_vx{: vs2, rs1, vmask: vd},
       disasm: "vsadd.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vsadd";
+      semfunc: "&::mpact::sim::riscv::Vsadd";
     vsadd_vi{: vs2, simm5, vmask: vd},
       disasm: "vsadd.vi", "%vd, %vs2, %simm5, %vmask",
-      semfunc: "&Vsadd";
+      semfunc: "&::mpact::sim::riscv::Vsadd";
     vssubu_vv{: vs2, vs1, vmask: vd},
       disasm: "vssubu.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vssubu";
+      semfunc: "&::mpact::sim::riscv::Vssubu";
     vssubu_vx{: vs2, rs1, vmask: vd},
       disasm: "vssubu.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vssubu";
+      semfunc: "&::mpact::sim::riscv::Vssubu";
     vssub_vv{: vs2, vs1, vmask: vd},
       disasm: "vssub.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vssub";
+      semfunc: "&::mpact::sim::riscv::Vssub";
     vssub_vx{: vs2, rs1, vmask: vd},
       disasm: "vssub.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vssub";
+      semfunc: "&::mpact::sim::riscv::Vssub";
     vsll_vv{: vs2, vs1, vmask : vd},
       disasm: "vsll.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vsll";
+      semfunc: "&::mpact::sim::riscv::Vsll";
     vsll_vx{: vs2, rs1, vmask : vd},
       disasm: "vsll.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vsll";
+      semfunc: "&::mpact::sim::riscv::Vsll";
     vsll_vi{: vs2, simm5, vmask: vd},
       disasm: "vsll.vi", "%vd, %simm5, %vmask",
-      semfunc: "&Vsll";
+      semfunc: "&::mpact::sim::riscv::Vsll";
     vsmul_vv{: vs2, vs1, vmask : vd},
       disasm: "vsmul.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vsmul";
+      semfunc: "&::mpact::sim::riscv::Vsmul";
     vsmul_vx{: vs2, rs1, vmask : vd},
       disasm: "vsmul.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vsmul";
+      semfunc: "&::mpact::sim::riscv::Vsmul";
     vmv1r_vi{: vs2 : vd},
       disasm: "vmv1r.vi", "%vd, %vs2",
-      semfunc: "absl::bind_front(&Vmvr, 1)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::Vmvr, 1)";
     vmv2r_vi{: vs2 : vd},
       disasm: "vmv2r.vi", "%vd, %vs2",
-      semfunc: "absl::bind_front(&Vmvr, 2)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::Vmvr, 2)";
     vmv4r_vi{: vs2 : vd},
       disasm: "vmv4r.vi", "%vd, %vs2",
-      semfunc: "absl::bind_front(&Vmvr, 4)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::Vmvr, 4)";
     vmv8r_vi{: vs2 : vd},
       disasm: "vmv8r.vi", "%vd, %vs2",
-      semfunc: "absl::bind_front(&Vmvr, 8)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::Vmvr, 8)";
     vsrl_vv{: vs2, vs1, vmask : vd},
       disasm: "vsrl.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vsrl";
+      semfunc: "&::mpact::sim::riscv::Vsrl";
     vsrl_vx{: vs2, rs1, vmask : vd},
       disasm: "vsrl.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vsrl";
+      semfunc: "&::mpact::sim::riscv::Vsrl";
     vsrl_vi{: vs2, simm5, vmask: vd},
       disasm: "vsrl.vi", "%vd, %simm5, %vmask",
-      semfunc: "&Vsrl";
+      semfunc: "&::mpact::sim::riscv::Vsrl";
     vsra_vv{: vs2, vs1, vmask : vd},
       disasm: "vsra.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vsra";
+      semfunc: "&::mpact::sim::riscv::Vsra";
     vsra_vx{: vs2, rs1, vmask : vd},
       disasm: "vsra.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vsra";
+      semfunc: "&::mpact::sim::riscv::Vsra";
     vsra_vi{: vs2, simm5, vmask: vd},
       disasm: "vsra.vi", "%vd, %simm5, %vmask",
-      semfunc: "&Vsra";
+      semfunc: "&::mpact::sim::riscv::Vsra";
     vssrl_vv{: vs2, vs1, vmask: vd},
       disasm: "vssrl.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vssrl";
+      semfunc: "&::mpact::sim::riscv::Vssrl";
     vssrl_vx{: vs2, rs1, vmask: vd},
       disasm: "vssrl.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vssrl";
+      semfunc: "&::mpact::sim::riscv::Vssrl";
     vssrl_vi{: vs2, uimm5, vmask: vd},
       disasm: "vssrl.vi", "%vd, %vs2, %uimm5, %vmask",
-      semfunc: "&Vssrl";
+      semfunc: "&::mpact::sim::riscv::Vssrl";
     vssra_vv{: vs2, vs1, vmask: vd},
       disasm: "vssra.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vssra";
+      semfunc: "&::mpact::sim::riscv::Vssra";
     vssra_vx{: vs2, rs1, vmask: vd},
       disasm: "vssra.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vssra";
+      semfunc: "&::mpact::sim::riscv::Vssra";
     vssra_vi{: vs2, uimm5, vmask: vd},
       disasm: "vssra.vi", "%vd, %vs2, %uimm5, %vmask",
-      semfunc: "&Vssra";
+      semfunc: "&::mpact::sim::riscv::Vssra";
     vnsrl_vv{: vs2, vs1, vmask : vd},
       disasm: "vnsrl.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vnsrl";
+      semfunc: "&::mpact::sim::riscv::Vnsrl";
     vnsrl_vx{: vs2, rs1, vmask : vd},
       disasm: "vnsrl.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vnsrl";
+      semfunc: "&::mpact::sim::riscv::Vnsrl";
     vnsrl_vi{: vs2, uimm5, vmask : vd},
       disasm: "vnsrl.vi", "%vd, %vs2, %uimm5, %vmask",
-      semfunc: "&Vnsrl";
+      semfunc: "&::mpact::sim::riscv::Vnsrl";
     vnsra_vv{: vs2, vs1, vmask : vd},
       disasm: "vnsra.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vnsra";
+      semfunc: "&::mpact::sim::riscv::Vnsra";
     vnsra_vx{: vs2, rs1, vmask : vd},
       disasm: "vnsra.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vnsra";
+      semfunc: "&::mpact::sim::riscv::Vnsra";
     vnsra_vi{: vs2, uimm5, vmask : vd},
       disasm: "vnsra.vi", "%vd, %vs2, %uimm5, %vmask",
-      semfunc: "&Vnsra";
+      semfunc: "&::mpact::sim::riscv::Vnsra";
     vnclipu_vv{: vs2, vs1, vmask : vd},
       disasm: "vnclipu_vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vnclipu";
+      semfunc: "&::mpact::sim::riscv::Vnclipu";
     vnclipu_vx{: vs2, rs1, vmask : vd},
       disasm: "vnclipu_vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vnclipu";
+      semfunc: "&::mpact::sim::riscv::Vnclipu";
     vnclipu_vi{: vs2, uimm5, vmask : vd},
       disasm: "vnclipu_vi", "%vd, %vs2, %uimm5, %vmask",
-      semfunc: "&Vnclipu";
+      semfunc: "&::mpact::sim::riscv::Vnclipu";
     vnclip_vv{: vs2, vs1, vmask : vd},
       disasm: "vnclip_vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vnclip";
+      semfunc: "&::mpact::sim::riscv::Vnclip";
     vnclip_vx{: vs2, rs1, vmask : vd},
       disasm: "vnclip_vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vnclip";
+      semfunc: "&::mpact::sim::riscv::Vnclip";
     vnclip_vi{: vs2, uimm5, vmask : vd},
       disasm: "vnclip_vi", "%vd, %vs2, %uimm5, %vmask",
-      semfunc: "&Vnclip";
+      semfunc: "&::mpact::sim::riscv::Vnclip";
     vwredsumu_vv{: vs2, vs1, vmask: vd},
       disasm: "vwredsumu.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vwredsumu";
+      semfunc: "&::mpact::sim::riscv::Vwredsumu";
     vwredsum_vv{: vs2, vs1, vmask: vd},
       disasm: "vwredsum.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vwredsum";
+      semfunc: "&::mpact::sim::riscv::Vwredsum";
 
     // Integer OPMVV, OPMVX.
     vredsum_vv{: vs2, vs1, vmask: vd},
       disasm: "vredsum.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vredsum";
+      semfunc: "&::mpact::sim::riscv::Vredsum";
     vredand_vv{: vs2, vs1, vmask: vd},
       disasm: "vredand.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vredand";
+      semfunc: "&::mpact::sim::riscv::Vredand";
     vredor_vv{: vs2, vs1, vmask: vd},
       disasm: "vredor.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vredor";
+      semfunc: "&::mpact::sim::riscv::Vredor";
     vredxor_vv{: vs2, vs1, vmask: vd},
       disasm: "vredxor.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vredxor";
+      semfunc: "&::mpact::sim::riscv::Vredxor";
     vredminu_vv{: vs2, vs1, vmask: vd},
       disasm: "vredminu.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vredminu";
+      semfunc: "&::mpact::sim::riscv::Vredminu";
     vredmin_vv{: vs2, vs1, vmask: vd},
       disasm: "vredmin.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vredmin";
+      semfunc: "&::mpact::sim::riscv::Vredmin";
     vredmaxu_vv{: vs2, vs1, vmask: vd},
       disasm: "vredmaxu.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vredmaxu";
+      semfunc: "&::mpact::sim::riscv::Vredmaxu";
     vredmax_vv{: vs2, vs1, vmask: vd},
       disasm: "vredmax.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vredmax";
+      semfunc: "&::mpact::sim::riscv::Vredmax";
     vaaddu_vv{: vs2, vs1, vmask: vd},
       disasm: "vaaddu.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vaaddu";
+      semfunc: "&::mpact::sim::riscv::Vaaddu";
     vaaddu_vx{: vs2, rs1, vmask: vd},
       disasm: "vaaddu.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vaaddu";
+      semfunc: "&::mpact::sim::riscv::Vaaddu";
     vaadd_vv{: vs2, vs1, vmask: vd},
       disasm: "vaadd.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vaadd";
+      semfunc: "&::mpact::sim::riscv::Vaadd";
     vaadd_vx{: vs2, rs1, vmask: vd},
       disasm: "vaadd.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vaadd";
+      semfunc: "&::mpact::sim::riscv::Vaadd";
     vasubu_vv{: vs2, vs1, vmask: vd},
       disasm: "vasubu.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vasubu";
+      semfunc: "&::mpact::sim::riscv::Vasubu";
     vasubu_vx{: vs2, rs1, vmask: vd},
       disasm: "vasubu.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vasubu";
+      semfunc: "&::mpact::sim::riscv::Vasubu";
     vasub_vv{: vs2, vs1, vmask: vd},
       disasm: "vasub.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vasub";
+      semfunc: "&::mpact::sim::riscv::Vasub";
     vasub_vx{: vs2, rs1, vmask: vd},
       disasm: "vasub.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vasub";
+      semfunc: "&::mpact::sim::riscv::Vasub";
     vslide1up_vx{: vs2, rs1, vmask: vd},
       disasm: "vslide1up.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vslide1up";
+      semfunc: "&::mpact::sim::riscv::Vslide1up";
     vslide1down_vx{: vs2, rs1, vmask: vd},
       disasm: "vslide1down.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vslide1down";
+      semfunc: "&::mpact::sim::riscv::Vslide1down";
     vcompress_vv{: vs2, vs1: vd},
       disasm: "vcompress.vv", "%vd, %vs2, %vs1",
-      semfunc: "&Vcompress";
+      semfunc: "&::mpact::sim::riscv::Vcompress";
     vmandnot_vv{: vs2, vs1: vd},
       disasm: "vwmandnot.vv", "%vd, %vs2, %vs1",
-      semfunc: "&Vmandnot";
+      semfunc: "&::mpact::sim::riscv::Vmandnot";
     vmand_vv{: vs2, vs1: vd},
       disasm: "vmand.vv", "%vd, %vs2, %vs1",
-      semfunc: "&Vmand";
+      semfunc: "&::mpact::sim::riscv::Vmand";
     vmor_vv{: vs2, vs1: vd},
       disasm: "vmor.vv", "%vd, %vs2, %vs1",
-      semfunc: "&Vmor";
+      semfunc: "&::mpact::sim::riscv::Vmor";
     vmxor_vv{: vs2, vs1: vd},
       disasm: "vmxor.vv", "%vd, %vs2, %vs1",
-      semfunc: "&Vmxor";
+      semfunc: "&::mpact::sim::riscv::Vmxor";
     vmornot_vv{: vs2, vs1: vd},
       disasm: "vmornot.vv", "%vd, %vs2, %vs1",
-      semfunc: "&Vmornot";
+      semfunc: "&::mpact::sim::riscv::Vmornot";
     vmnand_vv{: vs2, vs1: vd},
       disasm: "vmnand.vv", "%vd, %vs2, %vs1",
-      semfunc: "&Vmnand";
+      semfunc: "&::mpact::sim::riscv::Vmnand";
     vmnor_vv{: vs2, vs1: vd},
       disasm: "vmnor.vv", "%vd, %vs2, %vs1",
-      semfunc: "&Vmnor";
+      semfunc: "&::mpact::sim::riscv::Vmnor";
     vmxnor_vv{: vs2, vs1: vd},
       disasm: "vmxnor.vv", "%vd, %vs2, %vs1",
-      semfunc: "&Vmxnor";
+      semfunc: "&::mpact::sim::riscv::Vmxnor";
     vdivu_vv{: vs2, vs1, vmask: vd},
       disasm: "vdivu.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vdivu";
+      semfunc: "&::mpact::sim::riscv::Vdivu";
     vdivu_vx{: vs2, rs1, vmask: vd},
       disasm: "vdivu.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vdivu";
+      semfunc: "&::mpact::sim::riscv::Vdivu";
     vdiv_vv{: vs2, vs1, vmask: vd},
       disasm: "vdiv.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vdiv";
+      semfunc: "&::mpact::sim::riscv::Vdiv";
     vdiv_vx{: vs2, rs1, vmask: vd},
       disasm: "vdiv.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vdiv";
+      semfunc: "&::mpact::sim::riscv::Vdiv";
     vremu_vv{: vs2, vs1, vmask: vd},
       disasm: "vremu.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vremu";
+      semfunc: "&::mpact::sim::riscv::Vremu";
     vremu_vx{: vs2, rs1, vmask: vd},
       disasm: "vremu.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vremu";
+      semfunc: "&::mpact::sim::riscv::Vremu";
     vrem_vv{: vs2, vs1, vmask: vd},
       disasm: "vrem.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vrem";
+      semfunc: "&::mpact::sim::riscv::Vrem";
     vrem_vx{: vs2, rs1, vmask: vd},
       disasm: "vrem.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vrem";
+      semfunc: "&::mpact::sim::riscv::Vrem";
     vmulhu_vv{: vs2, vs1, vmask: vd},
       disasm: "vmulhu.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vmulhu";
+      semfunc: "&::mpact::sim::riscv::Vmulhu";
     vmulhu_vx{: vs2, rs1, vmask: vd},
       disasm: "vmulhu.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vmulhu";
+      semfunc: "&::mpact::sim::riscv::Vmulhu";
     vmul_vv{: vs2, vs1, vmask: vd},
       disasm: "vmul.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vmul";
+      semfunc: "&::mpact::sim::riscv::Vmul";
     vmul_vx{: vs2, rs1, vmask: vd},
       disasm: "vmul.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vmul";
+      semfunc: "&::mpact::sim::riscv::Vmul";
     vmulhsu_vv{: vs2, vs1, vmask: vd},
       disasm: "vmulhsu.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vmulhsu";
+      semfunc: "&::mpact::sim::riscv::Vmulhsu";
     vmulhsu_vx{: vs2, rs1, vmask: vd},
       disasm: "vmulhsu.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vmulhsu";
+      semfunc: "&::mpact::sim::riscv::Vmulhsu";
     vmulh_vv{: vs2, vs1, vmask: vd},
       disasm: "vmulh.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vmulh";
+      semfunc: "&::mpact::sim::riscv::Vmulh";
     vmulh_vx{: vs2, rs1, vmask: vd},
       disasm: "vmulh.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vmulh";
+      semfunc: "&::mpact::sim::riscv::Vmulh";
     vmadd_vv{: vs2, vs1, vd, vmask: vd},
       disasm: "vmadd.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vmadd";
+      semfunc: "&::mpact::sim::riscv::Vmadd";
     vmadd_vx{: vs2, rs1, vd, vmask: vd},
       disasm: "vmadd.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vmadd";
+      semfunc: "&::mpact::sim::riscv::Vmadd";
     vnmsub_vv{: vs2, vs1, vd, vmask: vd},
       disasm: "vnmsub.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vnmsub";
+      semfunc: "&::mpact::sim::riscv::Vnmsub";
     vnmsub_vx{: vs2, rs1, vd, vmask: vd},
       disasm: "vnmsub.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vnmsub";
+      semfunc: "&::mpact::sim::riscv::Vnmsub";
     vmacc_vv{: vs2, vs1, vd, vmask: vd},
       disasm: "vmacc.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vmacc";
+      semfunc: "&::mpact::sim::riscv::Vmacc";
     vmacc_vx{: vs2, rs1, vd, vmask: vd},
       disasm: "vmacc.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vmacc";
+      semfunc: "&::mpact::sim::riscv::Vmacc";
     vnmsac_vv{: vs2, vs1, vd, vmask: vd},
       disasm: "vnmsac.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vnmsac";
+      semfunc: "&::mpact::sim::riscv::Vnmsac";
     vnmsac_vx{: vs2, rs1, vd, vmask: vd},
       disasm: "vnmsac.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vnmsac";
+      semfunc: "&::mpact::sim::riscv::Vnmsac";
     vwaddu_vv{: vs2, vs1, vmask : vd},
       disasm: "vwaddu.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vwaddu";
+      semfunc: "&::mpact::sim::riscv::Vwaddu";
     vwaddu_vx{: vs2, rs1, vmask : vd},
       disasm: "vwaddu.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vwaddu";
+      semfunc: "&::mpact::sim::riscv::Vwaddu";
     vwadd_vv{: vs2, vs1, vmask : vd},
       disasm: "vwadd_vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vwadd";
+      semfunc: "&::mpact::sim::riscv::Vwadd";
     vwadd_vx{: vs2, rs1, vmask : vd},
       disasm: "vwadd.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vwadd";
+      semfunc: "&::mpact::sim::riscv::Vwadd";
     vwsubu_vv{: vs2, vs1, vmask : vd},
       disasm: "vwsubu.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vwsubu";
+      semfunc: "&::mpact::sim::riscv::Vwsubu";
     vwsubu_vx{: vs2, rs1, vmask : vd},
       disasm: "vwsubu.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vwsubu";
+      semfunc: "&::mpact::sim::riscv::Vwsubu";
     vwsub_vv{: vs2, vs1, vmask : vd},
       disasm: "vwsub.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vwsub";
+      semfunc: "&::mpact::sim::riscv::Vwsub";
     vwsub_vx{: vs2, rs1, vmask : vd},
       disasm: "vwsub.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vwsub";
+      semfunc: "&::mpact::sim::riscv::Vwsub";
     vwaddu_w_vv{: vs2, vs1, vmask : vd},
       disasm: "vwaddu.wv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vwadduw";
+      semfunc: "&::mpact::sim::riscv::Vwadduw";
     vwaddu_w_vx{: vs2, rs1, vmask : vd},
       disasm: "vwaddu.wx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vwadduw";
+      semfunc: "&::mpact::sim::riscv::Vwadduw";
     vwadd_w_vv{: vs2, vs1, vmask : vd},
       disasm: "vwadd.wv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vwaddw";
+      semfunc: "&::mpact::sim::riscv::Vwaddw";
     vwadd_w_vx{: vs2, rs1, vmask : vd},
       disasm: "vwadd.wx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vwaddw";
+      semfunc: "&::mpact::sim::riscv::Vwaddw";
     vwsubu_w_vv{: vs2, vs1, vmask : vd},
       disasm: "vwsubu.wv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vwsubuw";
+      semfunc: "&::mpact::sim::riscv::Vwsubuw";
     vwsubu_w_vx{: vs2, rs1, vmask : vd},
       disasm: "vwsubu.wx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vwsubuw";
+      semfunc: "&::mpact::sim::riscv::Vwsubuw";
     vwsub_w_vv{: vs2, vs1, vmask : vd},
       disasm: "vwsub.wv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vwsubw";
+      semfunc: "&::mpact::sim::riscv::Vwsubw";
     vwsub_w_vx{: vs2, rs1, vmask : vd},
       disasm: "vwsub.wx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vwsubw";
+      semfunc: "&::mpact::sim::riscv::Vwsubw";
     vwmulu_vv{: vs2, vs1, vmask: vd},
       disasm: "vwmulu.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vwmulu";
+      semfunc: "&::mpact::sim::riscv::Vwmulu";
     vwmulu_vx{: vs2, rs1, vmask: vd},
       disasm: "vwmulu.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vwmulu";
+      semfunc: "&::mpact::sim::riscv::Vwmulu";
     vwmulsu_vv{: vs2, vs1, vmask: vd},
       disasm: "vwmulsu.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vwmulsu";
+      semfunc: "&::mpact::sim::riscv::Vwmulsu";
     vwmulsu_vx{: vs2, rs1, vmask: vd},
       disasm: "vwmulsu.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vwmulsu";
+      semfunc: "&::mpact::sim::riscv::Vwmulsu";
     vwmul_vv{: vs2, vs1, vmask: vd},
       disasm: "vwmul.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vwmul";
+      semfunc: "&::mpact::sim::riscv::Vwmul";
     vwmul_vx{: vs2, rs1, vmask: vd},
       disasm: "vwmul.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vwmul";
+      semfunc: "&::mpact::sim::riscv::Vwmul";
     vwmaccu_vv{: vs2, vs1, vd, vmask: vd},
       disasm: "vwmaccu.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vwmaccu";
+      semfunc: "&::mpact::sim::riscv::Vwmaccu";
     vwmaccu_vx{: vs2, rs1, vd, vmask: vd},
       disasm: "vwmaccu.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vwmaccu";
+      semfunc: "&::mpact::sim::riscv::Vwmaccu";
     vwmacc_vv{: vs2, vs1, vd, vmask: vd},
       disasm: "vwmacc.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vwmacc";
+      semfunc: "&::mpact::sim::riscv::Vwmacc";
     vwmacc_vx{: vs2, rs1, vd, vmask: vd},
       disasm: "vwmacc.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vwmacc";
+      semfunc: "&::mpact::sim::riscv::Vwmacc";
     vwmaccus_vv{: vs2, vs1, vd, vmask: vd},
       disasm: "vwmaccus.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vwmaccus";
+      semfunc: "&::mpact::sim::riscv::Vwmaccus";
     vwmaccus_vx{: vs2, rs1, vd, vmask: vd},
       disasm: "vwmaccus.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vwmaccus";
+      semfunc: "&::mpact::sim::riscv::Vwmaccus";
     vwmaccsu_vv{: vs2, vs1, vd, vmask: vd},
       disasm: "vwmaccsu.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&Vwmaccsu";
+      semfunc: "&::mpact::sim::riscv::Vwmaccsu";
     vwmaccsu_vx{: vs2, rs1, vd, vmask: vd},
       disasm: "vwmaccsu.vx", "%vd, %vs2, %rs1, %vmask",
-      semfunc: "&Vwmaccsu";
+      semfunc: "&::mpact::sim::riscv::Vwmaccsu";
 
     // VWXUNARY0
     vmv_x_s{: vs2 : rd},
       disasm: "vmv.x.s", "%rd, %vs2",
-      semfunc: "&VmvToScalar";
+      semfunc: "&::mpact::sim::riscv::VmvToScalar";
     vcpop{: vs2, vmask: rd},
       disasm: "vcpop", "%rd, %vs2, %vmask",
-      semfunc: "&Vcpop";
+      semfunc: "&::mpact::sim::riscv::Vcpop";
     vfirst{: vs2, vmask: rd},
       disasm: "vfirst", "%rd, %vs2, %vmask",
-      semfunc: "&Vfirst";
+      semfunc: "&::mpact::sim::riscv::Vfirst";
     // VRXUNARY0
     vmv_s_x{: rs1 : vd},
       disasm: "vmv.s.x", "%vd, %rs1",
-      semfunc: "&VmvFromScalar";
+      semfunc: "&::mpact::sim::riscv::VmvFromScalar";
     // VXUNARY0
     vzext_vf8{: vs2, vmask: vd},
       disasm: "vzext.vf8", "%vd, %vs2, %vmask",
-      semfunc: "&Vzext8";
+      semfunc: "&::mpact::sim::riscv::Vzext8";
     vsext_vf8{: vs2, vmask: vd},
       disasm: "vsext.vf8", "%vd, %vs2, %vmask",
-      semfunc: "&Vsext8";
+      semfunc: "&::mpact::sim::riscv::Vsext8";
     vzext_vf4{: vs2, vmask: vd},
       disasm: "vzext.vf4", "%vd, %vs2, %vmask",
-      semfunc: "&Vzext4";
+      semfunc: "&::mpact::sim::riscv::Vzext4";
     vsext_vf4{: vs2, vmask: vd},
       disasm: "vsext.vf4", "%vd, %vs2, %vmask",
-      semfunc: "&Vsext4";
+      semfunc: "&::mpact::sim::riscv::Vsext4";
     vzext_vf2{: vs2, vmask: vd},
       disasm: "vzext.vf2", "%vd, %vs2, %vmask",
-      semfunc: "&Vzext2";
+      semfunc: "&::mpact::sim::riscv::Vzext2";
     vsext_vf2{: vs2, vmask: vd},
       disasm: "vsext.vf2", "%vd, %vs2, %vmask",
-      semfunc: "&Vsext2";
+      semfunc: "&::mpact::sim::riscv::Vsext2";
     // VMUNARY0
     vmsbf{:vs2, vmask: vd},
       disasm: "vmsbf.m", "%vd, %vs2, %vmask",
-      semfunc: "&Vmsbf";
+      semfunc: "&::mpact::sim::riscv::Vmsbf";
     vmsof{:vs2, vmask: vd},
       disasm: "vmsof.m", "%vd, %vs2, %vmask",
-      semfunc: "&Vmsof";
+      semfunc: "&::mpact::sim::riscv::Vmsof";
     vmsif{:vs2, vmask: vd},
       disasm: "vmsif.m", "%vd, %vs2, %vmask",
-      semfunc: "&Vmsif";
+      semfunc: "&::mpact::sim::riscv::Vmsif";
     viota{:vs2, vmask: vd},
       disasm: "viota.m", "%vd, %vs2, %vmask",
-      semfunc: "&Viota";
+      semfunc: "&::mpact::sim::riscv::Viota";
     vid{: vmask: vd},
       disasm: "vid.v", "%vd, %vmask",
-      semfunc: "&Vid";
+      semfunc: "&::mpact::sim::riscv::Vid";
   }
 }

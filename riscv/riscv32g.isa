@@ -41,178 +41,183 @@ slot riscv32i {
     addi{: rs1, I_imm12 : rd},
       resources: TwoOp,
       disasm: "addi", "%rd, %rs1, %I_imm12",
-      semfunc: "&RV32::RiscVIAdd";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIAdd";
     nop{},
       resources: { next_pc },
       disasm: "nop",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     slti{: rs1, I_imm12 : rd},
       resources: TwoOp,
       disasm: "slti", "%rd, %rs1, %I_imm12",
-      semfunc: "&RV32::RiscVISlt";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVISlt";
     sltiu{: rs1, I_imm12 : rd},
       resources: TwoOp,
       disasm: "sltiu", "%rd, %rs1, %I_imm12",
-      semfunc: "&RV32::RiscVISltu";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVISltu";
     andi{: rs1, I_imm12 : rd},
       resources: TwoOp,
       disasm: "andi", "%rd, %rs1, %I_imm12",
-      semfunc: "&RV32::RiscVIAnd";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIAnd";
     ori{: rs1, I_imm12 : rd},
       resources: TwoOp,
       disasm: "ori", "%rd, %rs1, %I_imm12",
-      semfunc: "&RV32::RiscVIOr";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIOr";
     xori{: rs1, I_imm12 : rd},
       resources: TwoOp,
       disasm: "xori", "%rd, %rs1, %I_imm12",
-      semfunc: "&RV32::RiscVIXor";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIXor";
     slli{: rs1, I_uimm5 : rd},
       resources: TwoOp,
       disasm: "slli", "%rd, %rs1, 0x%(I_uimm5:x)",
-      semfunc: "&RV32::RiscVISll";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVISll";
     srli{: rs1, I_uimm5 : rd},
       resources: TwoOp,
       disasm: "srli", "%rd  %rs1, 0x%(I_uimm5:x)",
-      semfunc: "&RV32::RiscVISrl";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVISrl";
     srai{: rs1, I_uimm5 : rd},
       resources: TwoOp,
       disasm: "srai", "%rd, %rs1, 0x%(I_uimm5:x)",
-      semfunc: "&RV32::RiscVISra";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVISra";
     lui{: U_imm20 : rd},
       resources: { next_pc : rd[0..]},
       disasm: "lui", "%rd, 0x%(U_imm20:08x)",
-      semfunc: "&RV32::RiscVILui";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVILui";
     auipc{: U_imm20 : rd},
       resources: { next_pc : rd[0..]},
       disasm: "auipc", "%rd, 0x%(U_imm20:08x)",
-      semfunc: "&RV32::RiscVIAuipc";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIAuipc";
     add{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "add", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVIAdd";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIAdd";
     slt{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "slt", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVISlt";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVISlt";
     sltu{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "sltu", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVISltu";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVISltu";
     and{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "and", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVIAnd";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIAnd";
     or{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "or", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVIOr";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIOr";
     xor{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "xor", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVIXor";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIXor";
     sll{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "sll", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVISll";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVISll";
     srl{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "srl", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVISrl";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVISrl";
     sub{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "sub", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVISub";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVISub";
     sra{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "sra", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::RiscVISra";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVISra";
     hint{},
       disasm: "hint",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     jal{: J_imm20 : next_pc, rd},
       resources: { next_pc : next_pc[0..], rd[0..]},
       disasm: "jal", "%rd, 0x%(@+J_imm20:08x)",
-      semfunc: "&RV32::RiscVIJal";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIJal";
     jalr{: rs1, J_imm12 : next_pc, rd},
       resources: { next_pc, rs1 : next_pc[0..], rd[0..]},
       disasm: "jalr", "%rd, %rs1, %J_imm12",
-      semfunc: "&RV32::RiscVIJalr";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIJalr";
     j{: J_imm20 : next_pc, rd},
       resources: { next_pc : next_pc[0..], rd[0..]},
       disasm: "j", "0x%(@+J_imm20:08x)",
-      semfunc: "&RV32::RiscVIJal";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIJal";
     jr{: rs1, J_imm12 : next_pc, rd},
       resources: { next_pc, rs1 : next_pc[0..], rd[0..]},
       disasm: "jr", "%rs1, %J_imm12",
-      semfunc: "&RV32::RiscVIJalr";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIJalr";
     beq{: rs1, rs2, B_imm12 : next_pc},
       resources: { next_pc, rs1, rs2 : next_pc[0..]},
       disasm: "beq", "%rs1, %rs2, 0x%(@+B_imm12:08x)",
-      semfunc: "&RV32::RiscVIBeq";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIBeq";
     bne{: rs1, rs2, B_imm12 : next_pc},
       resources: { next_pc, rs1, rs2 : next_pc[0..]},
       disasm: "bne", "%rs1, %rs2, 0x%(@+B_imm12:08x)",
-      semfunc: "&RV32::RiscVIBne";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIBne";
     blt{: rs1, rs2, B_imm12 : next_pc},
       resources: { next_pc, rs1, rs2 : next_pc[0..]},
       disasm: "blt", "%rs1, %rs2, 0x%(@+B_imm12:08x)",
-      semfunc: "&RV32::RiscVIBlt";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIBlt";
     bltu{: rs1, rs2, B_imm12 : next_pc},
       resources: { next_pc, rs1, rs2 : next_pc[0..]},
       disasm: "bltu", "%rs1, %rs2, 0x%(@+B_imm12:08x)",
-      semfunc: "&RV32::RiscVIBltu";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIBltu";
     bge{: rs1, rs2, B_imm12 : next_pc},
       resources: { next_pc, rs1, rs2 : next_pc[0..]},
       disasm: "bge", "%rs1, %rs2, 0x%(@+B_imm12:08x)",
-      semfunc: "&RV32::RiscVIBge";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIBge";
     bgeu{: rs1, rs2, B_imm12 : next_pc},
       resources: { next_pc, rs1, rs2 : next_pc[0..]},
       disasm: "bgeu", "%rs1, %rs2, 0x%(@+B_imm12:08x)",
-      semfunc: "&RV32::RiscVIBgeu";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIBgeu";
     lw{(: rs1, I_imm12), (: : rd)},
       resources: { next_pc, rs1 : rd[0..]},
       disasm: "lw", "%rd, %I_imm12(%rs1)",
-      semfunc: "&RV32::RiscVILw", "&RV32::RiscVILwChild";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVILw",
+               "&::mpact::sim::riscv::RV32::RiscVILwChild";
     lh{(: rs1, I_imm12 :), (: : rd)},
       resources: { next_pc, rs1 : rd[0..]},
       disasm: "lh", "%rd, %I_imm12(%rs1)",
-      semfunc: "&RV32::RiscVILh", "&RV32::RiscVILhChild";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVILh",
+               "&::mpact::sim::riscv::RV32::RiscVILhChild";
     lhu{(: rs1, I_imm12 :), (: : rd)},
       resources: { next_pc, rs1 : rd[0..]},
       disasm: "lhu", "%rd, %I_imm12(%rs1)",
-      semfunc: "&RV32::RiscVILhu", "&RV32::RiscVILhuChild";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVILhu",
+               "&::mpact::sim::riscv::RV32::RiscVILhuChild";
     lb{(: rs1, I_imm12 :), (: : rd)},
       resources: { next_pc, rs1 : rd[0..]},
       disasm: "lb", "%rd, %I_imm12(%rs1)",
-      semfunc: "&RV32::RiscVILb", "&RV32::RiscVILbChild";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVILb",
+               "&::mpact::sim::riscv::RV32::RiscVILbChild";
     lbu{(: rs1, I_imm12 :), (: : rd)},
       resources: { next_pc, rs1 : rd[0..]},
       disasm: "lbu", "%rd, %I_imm12(%rs1)",
-      semfunc: "&RV32::RiscVILbu", "&RV32::RiscVILbuChild";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVILbu",
+               "&::mpact::sim::riscv::RV32::RiscVILbuChild";
     sw{: rs1, S_imm12, rs2 : },
       resources: { next_pc, rs1, rs2 : },
       disasm: "sw", "%rs2, %S_imm12(%rs1)",
-      semfunc: "&RV32::RiscVISw";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVISw";
     sh{: rs1, S_imm12, rs2 : },
       resources: { next_pc, rs1, rs2 : },
       disasm: "sh", "%rs2, %S_imm12(%rs1)",
-      semfunc: "&RV32::RiscVISh";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVISh";
     sb{: rs1, S_imm12, rs2 : },
       resources: { next_pc, rs1, rs2 : },
       disasm: "sb", "%rs2, %S_imm12(%rs1)",
-      semfunc: "&RV32::RiscVISb";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVISb";
     fence{: pred, succ : },
       disasm: "fence",
-      semfunc: "&RiscVIFence";
+      semfunc: "&::mpact::sim::riscv::RiscVIFence";
     fence_tso{},
       disasm: "fence.tso",
-      semfunc: "&RiscVIFenceTso";
+      semfunc: "&::mpact::sim::riscv::RiscVIFenceTso";
     ecall{},
       disasm: "ecall",
-      semfunc: "&RiscVIEcall";
+      semfunc: "&::mpact::sim::riscv::RiscVIEcall";
     ebreak{},
       disasm: "ebreak",
-      semfunc: "&RiscVIEbreak";
+      semfunc: "&::mpact::sim::riscv::RiscVIEbreak";
   }
 }
 
@@ -230,136 +235,136 @@ slot riscv32_hints {
     addi_hint1{: rs1, I_imm12 : rd},
       resources: TwoOp,
       disasm: "addi", "%rd, %rs1, %I_imm12",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     addi_hint2{: rs1, I_imm12 : rd},
       resources: TwoOp,
       disasm: "addi", "%rd, %rs1, %I_imm12",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     slti_hint{: rs1, I_imm12 : rd},
       resources: TwoOp,
       disasm: "slti", "%rd, %rs1, %I_imm12",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     sltiu_hint{: rs1, I_imm12 : rd},
       resources: TwoOp,
       disasm: "sltiu", "%rd, %rs1, %I_imm12",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     andi_hint{: rs1, I_imm12 : rd},
       resources: TwoOp,
       disasm: "andi", "%rd, %rs1, %I_imm12",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     ori_hint{: rs1, I_imm12 : rd},
       resources: TwoOp,
       disasm: "ori", "%rd, %rs1, %I_imm12",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     xori_hint{: rs1, I_imm12 : rd},
       resources: TwoOp,
       disasm: "xori", "%rd, %rs1, %I_imm12",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     slli_semihost{: rs1, I_uimm5 : rd},
       resources: TwoOp,
       disasm: "slli", "%rd, %rs1, 0x%(I_uimm5:x)",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     slli_hint1{: rs1, I_uimm5 : rd},
       resources: TwoOp,
       disasm: "slli", "%rd, %rs1, 0x%(I_uimm5:x)",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     slli_hint2{: rs1, I_uimm5 : rd},
       resources: TwoOp,
       disasm: "slli", "%rd, %rs1, 0x%(I_uimm5:x)",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     srli_hint{: rs1, I_uimm5 : rd},
       resources: TwoOp,
       disasm: "srli", "%rd  %rs1, 0x%(I_uimm5:x)",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     srai_semihost{: rs1, I_uimm5 : rd},
       resources: TwoOp,
       disasm: "srai", "%rd, %rs1, 0x%(I_uimm5:x)",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     srai_hint1{: rs1, I_uimm5 : rd},
       resources: TwoOp,
       disasm: "srai", "%rd, %rs1, 0x%(I_uimm5:x)",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     srai_hint2{: rs1, I_uimm5 : rd},
       resources: TwoOp,
       disasm: "srai", "%rd, %rs1, 0x%(I_uimm5:x)",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     lui_hint{: U_imm20 : rd},
       resources: { next_pc : rd[0..]},
       disasm: "lui", "%rd, 0x%(U_imm20:08x)",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     auipc_hint{: U_imm20 : rd},
       resources: { next_pc : rd[0..]},
       disasm: "auipc", "%rd, 0x%(U_imm20:08x)",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     add_hint1{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "add", "%rd, %rs1, %rs2",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     add_hint2{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "add", "%rd, %rs1, %rs2",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     add_hint3{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "add", "%rd, %rs1, %rs2",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     and_hint{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "and", "%rd, %rs1, %rs2",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     or_hint{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "or", "%rd, %rs1, %rs2",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     xor_hint{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "xor", "%rd, %rs1, %rs2",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     sll_hint{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "sll", "%rd, %rs1, %rs2",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     srl_hint{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "srl", "%rd, %rs1, %rs2",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     sub_hint{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "sub", "%rd, %rs1, %rs2",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     sra_hint{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "sra", "%rd, %rs1, %rs2",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     slt_hint{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "slt", "%rd, %rs1, %rs2",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     sltu_hint{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "sltu", "%rd, %rs1, %rs2",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     fence_hint1{: pred, succ :},
       disasm: "fence",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     fence_hint2{: pred, succ :},
       disasm: "fence",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     fence_hint3{: pred, succ :},
       disasm: "fence",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     fence_hint4{: pred, succ :},
       disasm: "fence",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     fence_hint5{: pred, succ :},
       disasm: "fence",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     fence_hint6{: pred, succ :},
       disasm: "fence",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     fence_hint7{: pred, succ :},
       disasm: "fence",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
   }
 }
 
@@ -373,34 +378,34 @@ slot privileged {
   opcodes {
     uret{: : next_pc(0)},
       disasm: "uret",
-      semfunc: "&RV32::RiscVPrivURet";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVPrivURet";
     sret{: : next_pc(0)},
       disasm: "sret",
-      semfunc: "&RV32::RiscVPrivSRet";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVPrivSRet";
     mret{: : next_pc(0)},
       disasm: "mret",
-      semfunc: "&RV32::RiscVPrivMRet";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVPrivMRet";
     wfi{},
       disasm: "wfi",
-      semfunc: "&RiscVPrivWfi";
+      semfunc: "&::mpact::sim::riscv::RiscVPrivWfi";
     // The sfence instruction has 4 behaviors depending on if rs1 and/or rs2
     // are 0. These behaviors are split into 4 instructions.
     sfence_vma_zz{: rs1, rs2},
       resources: {},
       disasm: "sfence.vma", "%rs1, %rs2",
-      semfunc: "&RiscVPrivSFenceVmaZZ";
+      semfunc: "&::mpact::sim::riscv::RiscVPrivSFenceVmaZZ";
     sfence_vma_zn{: rs1, rs2},
       resources: {rs2},
       disasm: "sfence.vma", "%rs1, %rs2",
-      semfunc: "&RiscVPrivSFenceVmaZN";
+      semfunc: "&::mpact::sim::riscv::RiscVPrivSFenceVmaZN";
     sfence_vma_nz{: rs1, rs2},
       resources: { rs1 },
       disasm: "sfence.vma", "%rs1, %rs2",
-      semfunc: "&RiscVPrivSFenceVmaNZ";
+      semfunc: "&::mpact::sim::riscv::RiscVPrivSFenceVmaNZ";
     sfence_vma_nn{: rs1, rs2},
       resources: {rs1, rs2},
       disasm: "sfence.vma", "%rs1, %rs2",
-      semfunc: "&RiscVPrivSFenceVmaNN";
+      semfunc: "&::mpact::sim::riscv::RiscVPrivSFenceVmaNN";
     // Skipping hypervisor memory management instructions for now.
   }
 }
@@ -415,7 +420,7 @@ slot zfencei {
   opcodes {
     fencei{: I_imm12 : },
       disasm: "fence.i",
-      semfunc: "&RiscVZFencei";
+      semfunc: "&::mpact::sim::riscv::RiscVZFencei";
   }
 }
 
@@ -431,35 +436,35 @@ slot riscv32m {
     mul{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "mul", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::MMul";
+      semfunc: "&::mpact::sim::riscv::RV32::MMul";
     mulh{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "mulh", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::MMulh";
+      semfunc: "&::mpact::sim::riscv::RV32::MMulh";
     mulhu{: rs1, rs2: rd},
       resources: ThreeOp,
       disasm: "mulhu", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::MMulhu";
+      semfunc: "&::mpact::sim::riscv::RV32::MMulhu";
     mulhsu{: rs1, rs2: rd},
       resources: ThreeOp,
       disasm: "mulhsu", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::MMulhsu";
+      semfunc: "&::mpact::sim::riscv::RV32::MMulhsu";
     div{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "div", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::MDiv";
+      semfunc: "&::mpact::sim::riscv::RV32::MDiv";
     divu{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "divu", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::MDivu";
+      semfunc: "&::mpact::sim::riscv::RV32::MDivu";
     rem{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "rem", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::MRem";
+      semfunc: "&::mpact::sim::riscv::RV32::MRem";
     remu{: rs1, rs2 : rd},
       resources: ThreeOp,
       disasm: "remu", "%rd, %rs1, %rs2",
-      semfunc: "&RV32::MRemu";
+      semfunc: "&::mpact::sim::riscv::RV32::MRemu";
   }
 }
 
@@ -478,10 +483,10 @@ slot riscv32_amo_none {
   opcodes {
     lrw{(: rs1, A_aq, A_rl :),(: : rd)},
       resources: TwoOp,
-      semfunc: "&ALrw", "&RV32::RiscVILwChild";
+      semfunc: "&ALrw", "&::mpact::sim::riscv::RV32::RiscVILwChild";
     scw{(: rs1, rs2, A_aq, A_rl :), (: : rd)},
       resources: ThreeOp,
-      semfunc: "&AScw", "&RV32::RiscVILwChild";
+      semfunc: "&AScw", "&::mpact::sim::riscv::RV32::RiscVILwChild";
   }
 }
 
@@ -494,7 +499,7 @@ slot riscv32_amo_swap : riscv32_amo_none {
   opcodes {
     amoswapw{(: rs1, rs2, A_aq, A_rl: ), (: : rd)},
       resources: ThreeOp,
-      semfunc: "&AAmoswapw", "&RV32::RiscVILwChild";
+      semfunc: "&AAmoswapw", "&::mpact::sim::riscv::RV32::RiscVILwChild";
   }
 }
 
@@ -507,13 +512,13 @@ slot riscv32_amo_logical : riscv32_amo_swap {
   opcodes {
     amoandw{(: rs1, rs2, A_aq, A_rl: ), (: : rd)},
       resources: ThreeOp,
-      semfunc: "&AAmoandw", "&RV32::RiscVILwChild";
+      semfunc: "&AAmoandw", "&::mpact::sim::riscv::RV32::RiscVILwChild";
     amoorw{(: rs1, rs2, A_aq, A_rl: ), (: : rd)},
       resources: ThreeOp,
-      semfunc: "&AAmoorw", "&RV32::RiscVILwChild";
+      semfunc: "&AAmoorw", "&::mpact::sim::riscv::RV32::RiscVILwChild";
     amoxorw{(: rs1, rs2, A_aq, A_rl: ), (: : rd)},
       resources: ThreeOp,
-      semfunc: "&AAmoxorw", "&RV32::RiscVILwChild";
+      semfunc: "&AAmoxorw", "&::mpact::sim::riscv::RV32::RiscVILwChild";
   }
 }
 
@@ -526,19 +531,19 @@ slot riscv32_amo_arithmetic : riscv32_amo_logical {
   opcodes {
     amoaddw{(: rs1, rs2, A_aq, A_rl: ), (: : rd)},
       resources: ThreeOp,
-      semfunc: "&AAmoaddw", "&RV32::RiscVILwChild";
+      semfunc: "&AAmoaddw", "&::mpact::sim::riscv::RV32::RiscVILwChild";
     amomaxw{(: rs1, rs2, A_aq, A_rl: ), (: : rd)},
       resources: ThreeOp,
-      semfunc: "&AAmomaxw", "&RV32::RiscVILwChild";
+      semfunc: "&AAmomaxw", "&::mpact::sim::riscv::RV32::RiscVILwChild";
     amomaxuw{(: rs1, rs2, A_aq, A_rl: ), (: : rd)},
       resources: ThreeOp,
-      semfunc: "&AAmomaxuw", "&RV32::RiscVILwChild";
+      semfunc: "&AAmomaxuw", "&::mpact::sim::riscv::RV32::RiscVILwChild";
     amominw{(: rs1, rs2, A_aq, A_rl: ), (: : rd)},
       resources: ThreeOp,
-      semfunc: "&AAmominw", "&RV32::RiscVILwChild";
+      semfunc: "&AAmominw", "&::mpact::sim::riscv::RV32::RiscVILwChild";
     amominuw{(: rs1, rs2, A_aq, A_rl: ), (: : rd)},
       resources: ThreeOp,
-      semfunc: "&AAmominuw", "&RV32::RiscVILwChild";
+      semfunc: "&AAmominuw", "&::mpact::sim::riscv::RV32::RiscVILwChild";
   }
 }
 
@@ -552,71 +557,71 @@ slot zicsr {
   opcodes {
     csrrw{: rs1, csr : rd, csr},
       resources: { next_pc, rs1, csr : rd[0..], csr[0..]},
-      semfunc: "&RV32::RiscVZiCsrrw",
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVZiCsrrw",
       disasm: "csrw", "%rd, %csr, %rs1";
     csrrs{: rs1, csr : rd, csr},
       resources: { next_pc, rs1, csr : rd[0..], csr[0..]},
-      semfunc: "&RV32::RiscVZiCsrrs",
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVZiCsrrs",
       disasm: "csrs", "%rd, %csr, %rs1";
     csrrc{: rs1, csr : rd, csr},
       resources: { next_pc, rs1, csr : rd[0..], csr[0..]},
-      semfunc: "&RV32::RiscVZiCsrrc",
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVZiCsrrc",
       disasm: "csrc", "%rd, %csr, %rs1";
     csrrs_nr{: rs1, csr : rd, csr},
       resources: { next_pc, rs1, csr : rd[0..], csr[0..]},
-      semfunc: "&RV32::RiscVZiCsrrs",
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVZiCsrrs",
       disasm: "csrs", "%csr, %rs1";
     csrrc_nr{: rs1, csr : rd, csr},
       resources: { next_pc, rs1, csr : rd[0..], csr[0..]},
-      semfunc: "&RV32::RiscVZiCsrrc",
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVZiCsrrc",
       disasm: "csrc", "%csr, %rs1";
     csrrw_nr{: rs1, csr : csr},
       resources: { next_pc, rs1: csr[0..]},
-      semfunc: "&RV32::RiscVZiCsrrwNr", // rd == 0 (x0).
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVZiCsrrwNr", // rd == 0 (x0).
       disasm: "csrw", "%csr, %rs1";
     csrrs_nw{: csr : rd},
       resources: { next_pc, csr: rd[0..]},
-      semfunc: "&RV32::RiscVZiCsrrNw", // rs1 == 0 (x0).
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVZiCsrrNw", // rs1 == 0 (x0).
       disasm: "csrs", "%rd, %csr";
     csrrc_nw{: csr : rd},
       resources: { next_pc, csr: rd[0..]},
-      semfunc: "&RV32::RiscVZiCsrrNw", // rs1 == 0 (x0).
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVZiCsrrNw", // rs1 == 0 (x0).
       disasm: "csrc", "%rd, %csr";
     csrrwi{: CSR_uimm5, csr : rd, csr},
       resources: { next_pc, csr: rd[0..], csr[0..]},
-      semfunc: "&RV32::RiscVZiCsrrw",
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVZiCsrrw",
       disasm: "csrwi", "%rd, %csr, %CSR_uimm5";
     csrrsi{: CSR_uimm5, csr : rd, csr},
       resources: { next_pc, csr: rd[0..], csr[0..]},
-      semfunc: "&RV32::RiscVZiCsrrs",
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVZiCsrrs",
       disasm: "csrsi", "%rd, %csr, %CSR_uimm5";
     csrrci{: CSR_uimm5, csr : rd, csr},
       resources: { next_pc, csr: rd[0..], csr[0..]},
-      semfunc: "&RV32::RiscVZiCsrrc",
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVZiCsrrc",
       disasm: "csrci", "%rd, %csr, %CSR_uimm5";
     csrrsi_nr{: CSR_uimm5, csr : rd, csr},
       resources: { next_pc, csr: rd[0..], csr[0..]},
-      semfunc: "&RV32::RiscVZiCsrrs",
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVZiCsrrs",
       disasm: "csrsi", "%csr, %CSR_uimm5";
     csrrci_nr{: CSR_uimm5, csr : rd, csr},
       resources: { next_pc, csr: rd[0..], csr[0..]},
-      semfunc: "&RV32::RiscVZiCsrrc",
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVZiCsrrc",
       disasm: "csrci", "%csr, %CSR_uimm5";
     csrrwi_nr{: CSR_uimm5, csr : csr},
       resources: { next_pc : csr[0..]},
-      semfunc: "&RV32::RiscVZiCsrrwNr",  // rd == 0 (x0).
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVZiCsrrwNr",  // rd == 0 (x0).
       disasm: "csrrwi", "%csr, %CSR_uimm5";
     csrrsi_nw{: csr : rd},
       resources: { next_pc, csr : rd[0..]},
-      semfunc: "&RV32::RiscVZiCsrrNw", // uimm5 == 0.
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVZiCsrrNw", // uimm5 == 0.
       disasm: "csrsi", "%rd, %csr, 0";
     csrrci_nw{: csr : rd},
       resources: { next_pc, csr : rd[0..]},
-      semfunc: "&RV32::RiscVZiCsrrNw", // uimm5 == 0.
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVZiCsrrNw", // uimm5 == 0.
       disasm: "csrwi", "%rd, %csr, 0";
     unimp{},
       disasm: "unimp",
-      semfunc: "&RiscVIUnimplemented";
+      semfunc: "&::mpact::sim::riscv::RiscVIUnimplemented";
   }
 }
 
@@ -633,107 +638,108 @@ slot riscv32f {
   opcodes {
     flw{(: rs1, I_imm12 : ), (: : frd)},
       resources: { next_pc, rs1 : frd[0..]},
-      semfunc: "&RV32::RiscVILw", "&RiscVIFlwChild",
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVILw",
+               "&::mpact::sim::riscv::RiscVIFlwChild",
       disasm: "flw", "%frd, %I_imm12(%rs1)";
     fsw{: rs1, S_imm12, frs2},
       resources: { next_pc, rs1, frs2},
-      semfunc: "&RV32::RiscVFSw",
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVFSw",
       disasm: "fsw", "%frs2, %S_imm12(%rs1)";
     fadd_s{: frs1, frs2, rm : frd},
       resources: ThreeOp,
-      semfunc: "&RiscVFAdd",
+      semfunc: "&::mpact::sim::riscv::RiscVFAdd",
       disasm: "fadd", "%frd, %frs1, %frs2";
     fsub_s{: frs1, frs2, rm : frd},
       resources: ThreeOp,
-      semfunc: "&RiscVFSub",
+      semfunc: "&::mpact::sim::riscv::RiscVFSub",
       disasm: "fsub", "%frd, %frs1, %frs2";
     fmul_s{: frs1, frs2, rm : frd},
       resources: ThreeOp,
-      semfunc: "&RiscVFMul",
+      semfunc: "&::mpact::sim::riscv::RiscVFMul",
       disasm: "fmul", "%frd, %frs1, %frs2";
     fdiv_s{: frs1, frs2, rm : frd},
       resources: ThreeOp,
-      semfunc: "&RiscVFDiv",
+      semfunc: "&::mpact::sim::riscv::RiscVFDiv",
       disasm: "fdiv", "%frd, %frs1, %frs2";
     fsqrt_s{: frs1, rm : frd, fflags},
       resources: TwoOp,
-      semfunc: "&RiscVFSqrt",
+      semfunc: "&::mpact::sim::riscv::RiscVFSqrt",
       disasm: "fsqrt", "%frd, %frs1";
     fmin_s{: frs1, frs2 : frd, fflags},
       resources: ThreeOp,
-      semfunc: "&RiscVFMin",
+      semfunc: "&::mpact::sim::riscv::RiscVFMin",
       disasm: "fmin", "%frd, %frs1, %frs2";
     fmax_s{: frs1, frs2 : frd, fflags},
       resources: ThreeOp,
-      semfunc: "&RiscVFMax",
+      semfunc: "&::mpact::sim::riscv::RiscVFMax",
       disasm: "fmax", "%frd, %frs1, %frs2";
     fmadd_s{: frs1, frs2, frs3, rm : frd, fflags},
       resources: FourOp,
-      semfunc: "&RiscVFMadd",
+      semfunc: "&::mpact::sim::riscv::RiscVFMadd",
       disasm: "fmadd", "%frd, %frs1, %frs2, %frs3";
     fmsub_s{: frs1, frs2, frs3, rm : frd, fflags},
       resources: FourOp,
-      semfunc: "&RiscVFMsub",
+      semfunc: "&::mpact::sim::riscv::RiscVFMsub",
       disasm: "fmsub", "%frd, %frs1, %frs2, %frs3";
     fnmadd_s{: frs1, frs2, frs3, rm : frd, fflags},
       resources: FourOp,
-      semfunc: "&RiscVFNmadd",
+      semfunc: "&::mpact::sim::riscv::RiscVFNmadd",
       disasm: "fnmadd", "%frd, %frs1, %frs2, %frs3";
     fnmsub_s{: frs1, frs2, frs3, rm : frd, fflags},
       resources: FourOp,
-      semfunc: "&RiscVFNmsub",
+      semfunc: "&::mpact::sim::riscv::RiscVFNmsub",
       disasm: "fnmsub", "%frd, %frs1, %frs2, %frs3";
     fcvt_ws{: frs1, rm : rd, fflags},
       resources: TwoOp,
-      semfunc: "&RV32::RiscVFCvtWs",
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVFCvtWs",
       disasm: "fcvt.w.s", "%rd, %frs1";
     fcvt_sw{: rs1, rm : frd},
       resources: TwoOp,
-      semfunc: "&RiscVFCvtSw",
+      semfunc: "&::mpact::sim::riscv::RiscVFCvtSw",
       disasm: "fcvt.s.w", "%frd, %rs1";
     fcvt_wus{: frs1, rm : rd, fflags},
       resources: TwoOp,
-      semfunc: "&RV32::RiscVFCvtWus",
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVFCvtWus",
       disasm: "fcvt.wu.s", "%rd, %frs1";
     fcvt_swu{: rs1, rm : frd},
       resources: TwoOp,
-      semfunc: "&RiscVFCvtSwu",
+      semfunc: "&::mpact::sim::riscv::RiscVFCvtSwu",
       disasm: "fcvt.s.wu", "%frd, %rs1";
     fsgnj_s{: frs1, frs2 : frd},
       resources: ThreeOp,
-      semfunc: "&RiscVFSgnj",
+      semfunc: "&::mpact::sim::riscv::RiscVFSgnj",
       disasm: "fsgn.s", "%frd, %frs1, %frs2";
     fsgnjn_s{: frs1, frs2 : frd},
       resources: ThreeOp,
-      semfunc: "&RiscVFSgnjn",
+      semfunc: "&::mpact::sim::riscv::RiscVFSgnjn",
       disasm: "fsgnjx.s", "%frd, %frs1, %frs2";
     fsgnjx_s{: frs1, frs2 : frd},
       resources: ThreeOp,
-      semfunc: "&RiscVFSgnjx",
+      semfunc: "&::mpact::sim::riscv::RiscVFSgnjx",
       disasm: "fsgnjx.s", "%frd, %frs1, %frs2";
     fmv_xw{: frs1 : rd},
       resources: { next_pc, frs1 : rd[0..]},
       disasm: "mv.x.w", "%rd, %frs1",
-      semfunc: "&RV32::RiscVFMvxw";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVFMvxw";
     fmv_wx{: rs1 : frd},
       resources: { next_pc, rs1 : frd[0..]},
       disasm: "mv.w.x", "%frd, %rs1",
-      semfunc: "&RiscVFMvwx";
+      semfunc: "&::mpact::sim::riscv::RiscVFMvwx";
     fcmpeq_s{: frs1, frs2 : rd, fflags},
       resources: { next_pc, frs1, frs2 : rd[0..]},
-      semfunc: "&RV32::RiscVFCmpeq",
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVFCmpeq",
       disasm: "fcmpeq", "%rd, %frs1, %frs2";
     fcmplt_s{: frs1, frs2 : rd, fflags},
       resources: { next_pc, frs1, frs2 : rd[0..]},
-      semfunc: "&RV32::RiscVFCmplt",
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVFCmplt",
       disasm: "fcmplt", "%rd, %frs1, %frs2";
     fcmple_s{: frs1, frs2 : rd, fflags},
       resources: { next_pc, frs1, frs2 : rd[0..]},
-      semfunc: "&RV32::RiscVFCmple",
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVFCmple",
       disasm: "fcmple", "%rd, %frs1, %frs2";
     fclass_s{: frs1 : rd},
       resources: { next_pc, frs1 : rd[0..]},
-      semfunc: "&RV32::RiscVFClass",
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVFClass",
       disasm: "fclass", "%rd, %frs1";
   }
 }
@@ -748,107 +754,107 @@ slot riscv32d {
   opcodes {
     fld{(: rs1, I_imm12 : ), (: : drd)},
       resources: {next_pc, rs1 : drd[0..]},
-      semfunc: "&RV32::RiscVILd", "&RV64::RiscVILdChild",
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVILd", "&RV64::RiscVILdChild",
       disasm: "fld", "%drd, %I_imm12(%rs1)";
     fsd{: rs1, S_imm12, drs2},
       resources: {next_pc, rs1, drs2},
-      semfunc: "&RV32::RiscVDSd",
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVDSd",
       disasm: "fsd", "%drs2, %S_imm12(%rs1)";
     fadd_d{: drs1, drs2, rm : drd},
       resources: {next_pc, drs1, drs2 : drd[0..]},
-      semfunc: "&RiscVDAdd",
+      semfunc: "&::mpact::sim::riscv::RiscVDAdd",
       disasm: "fadd.d", "%drd, %drs1, %drs2";
     fsub_d{: drs1, drs2, rm : drd},
       resources: {next_pc, drs1, drs2 : drd[0..]},
-      semfunc: "&RiscVDSub",
+      semfunc: "&::mpact::sim::riscv::RiscVDSub",
       disasm: "fsub.d", "%drd, %drs1, %drs2";
     fmul_d{: drs1, drs2, rm : drd},
       resources: {next_pc, drs1, drs2 : drd[0..]},
-      semfunc: "&RiscVDMul",
+      semfunc: "&::mpact::sim::riscv::RiscVDMul",
       disasm: "fmul.d", "%drd, %drs1, %drs2";
     fdiv_d{: drs1, drs2, rm : drd},
       resources: {next_pc, drs1, drs2 : drd[0..]},
-      semfunc: "&RiscVDDiv",
+      semfunc: "&::mpact::sim::riscv::RiscVDDiv",
       disasm: "fdiv.d", "%drd, %drs1, %drs2";
     fsqrt_d{: drs1, rm : drd, fflags},
       resources: {next_pc, drs1 : drd[0..]},
-      semfunc: "&RiscVDSqrt",
+      semfunc: "&::mpact::sim::riscv::RiscVDSqrt",
       disasm: "fsqrt.d", "%drd, %drs1";
     fmin_d{: drs1, drs2 : drd, fflags},
       resources: {next_pc, drs1, drs2 : drd[0..]},
-      semfunc: "&RiscVDMin",
+      semfunc: "&::mpact::sim::riscv::RiscVDMin",
       disasm: "fmin.d", "%drd, %drs1, %drs2";
     fmax_d{: drs1, drs2 : drd, fflags},
       resources: {next_pc, drs1, drs2 : drd[0..]},
-      semfunc: "&RiscVDMax",
+      semfunc: "&::mpact::sim::riscv::RiscVDMax",
       disasm: "fmax.d", "%drd, %drs1, %drs2";
     fmadd_d{: drs1, drs2, drs3, rm : drd, fflags},
       resources: {next_pc, drs1, drs2, drs3 : drd[0..]},
-      semfunc: "&RiscVDMadd",
+      semfunc: "&::mpact::sim::riscv::RiscVDMadd",
       disasm: "fmadd.d", "%drd, %drs1, %drs2, %drs3";
     fmsub_d{: drs1, drs2, drs3, rm : drd, fflags},
       resources: {next_pc, drs1, drs2, drs3 : drd[0..]},
-      semfunc: "&RiscVDMsub",
+      semfunc: "&::mpact::sim::riscv::RiscVDMsub",
       disasm: "fmsub.d", "%drd, %drs1, %drs2, %drs3";
     fnmadd_d{: drs1, drs2, drs3, rm : drd, fflags},
       resources: {next_pc, drs1, drs2, drs3 : drd[0..]},
-      semfunc: "&RiscVDNmadd",
+      semfunc: "&::mpact::sim::riscv::RiscVDNmadd",
       disasm: "fnmadd.d", "%drd, %drs1, %drs2, %drs3";
     fnmsub_d{: drs1, drs2, drs3, rm : drd, fflags},
       resources: {next_pc, drs1, drs2, drs3 : drd[0..]},
-      semfunc: "&RiscVDNmsub",
+      semfunc: "&::mpact::sim::riscv::RiscVDNmsub",
       disasm: "fnmsub.d", "%drd, %drs1, %drs2, %drs3";
     fcvt_wd{: drs1, rm : rd, fflags},
       resources: {next_pc, drs1 : rd[0..]},
-      semfunc: "&RV32::RiscVDCvtWd",
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVDCvtWd",
       disasm: "fcvt.w.d", "%rd, %drs1";
     fcvt_dw{: rs1, rm : drd},
       resources: {next_pc, rs1 : drd[0..]},
-      semfunc: "&RiscVDCvtDw",
+      semfunc: "&::mpact::sim::riscv::RiscVDCvtDw",
       disasm: "fcvt.d.w", "%drd, %rs1";
     fcvt_wud{: drs1, rm : rd, fflags},
       resources: {next_pc, drs1 : rd[0..]},
-      semfunc: "&RV32::RiscVDCvtWud",
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVDCvtWud",
       disasm: "fcvt.wu.d", "%rd, %drs1";
     fcvt_dwu{: rs1, rm : drd},
       resources: {next_pc, rs1 : drd[0..]},
-      semfunc: "&RiscVDCvtDwu",
+      semfunc: "&::mpact::sim::riscv::RiscVDCvtDwu",
       disasm: "fcvt.d.wu", "%drd, %rs1";
     fcvt_sd{: drs1, rm : drd},
       resources: {next_pc, drs1 : drd[0..]},
-      semfunc: "&RiscVDCvtSd",
+      semfunc: "&::mpact::sim::riscv::RiscVDCvtSd",
       disasm: "fcvt.s.d", "%drd, %drs1";
     fcvt_ds{: drs1, rm : drd},
       resources: {next_pc, drs1 : drd[0..]},
-      semfunc: "&RiscVDCvtDs",
+      semfunc: "&::mpact::sim::riscv::RiscVDCvtDs",
       disasm: "fcvt.d.s", "%drd, %drs1";
     fsgnj_d{: drs1, drs2 : drd},
       resources: {next_pc, drs1, drs2 : drd[0..]},
-      semfunc: "&RiscVDSgnj",
+      semfunc: "&::mpact::sim::riscv::RiscVDSgnj",
       disasm: "fsgnj.d", "%drd, %drs1, %drs2";
     fsgnjn_d{: drs1, drs2 : drd},
       resources: {next_pc, drs1, drs2 : drd[0..]},
-      semfunc: "&RiscVDSgnjn",
+      semfunc: "&::mpact::sim::riscv::RiscVDSgnjn",
       disasm: "fsgnjn.d", "%drd, %drs1, %drs2";
     fsgnjx_d{: drs1, drs2 : drd},
       resources: {next_pc, drs1, drs2 : drd[0..]},
-      semfunc: "&RiscVDSgnjx",
+      semfunc: "&::mpact::sim::riscv::RiscVDSgnjx",
       disasm: "fsgnjx.d", "%drd, %drs1, %drs2";
     fcmpeq_d{: drs1, drs2 : rd, fflags},
       resources: {next_pc, drs1, drs2 : rd[0..]},
-      semfunc: "&RV32::RiscVDCmpeq",
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVDCmpeq",
       disasm: "fcmpeq.d", "%rd, %drs1, %drs2";
     fcmplt_d{: drs1, drs2 : rd, fflags},
       resources: {next_pc, drs1, drs2 : rd[0..]},
-      semfunc: "&RV32::RiscVDCmplt",
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVDCmplt",
       disasm: "fcmplt.d", "%rd, %drs1, %drs2";
     fcmple_d{: drs1, drs2 : rd, fflags},
       resources: {next_pc, drs1, drs2 : rd[0..]},
-      semfunc: "&RV32::RiscVDCmple",
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVDCmple",
       disasm: "fcmple.d", "%rd, %drs1, %drs2";
     fclass_d{: drs1 : rd},
       resources: {next_pc, drs1 : rd[0..]},
-      semfunc: "&RV32::RiscVDClass",
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVDClass",
       disasm: "fclass.d", "%rd, %drs1";
   }
 }
@@ -861,11 +867,13 @@ slot riscv32c {
     clwsp{(: x2, I_ci_uimm6x4 : ), (: : rd)},
       resources:{next_pc,x2 : rd[0..]},
       disasm: "lw", "%rd, %I_ci_uimm6x4(%x2)",
-      semfunc: "&RV32::RiscVILw", "&RV32::RiscVILwChild";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVILw",
+               "&::mpact::sim::riscv::RV32::RiscVILwChild";
     cflwsp{(: x2, I_ci_uimm6x4 : ), (: : frd)},
       resources:{next_pc,x2 : frd[0..]},
       disasm: "flw", "%frd, %I_ci_uimm6x4(%x2)",
-      semfunc: "&RV32::RiscVILw", "&RV32::RiscVILwChild";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVILw",
+               "&::mpact::sim::riscv::RV32::RiscVILwChild";
     cfldsp{(: x2, I_ci_uimm6x8 : ), (: : drd)},
       resources:{next_pc,x2 : drd[0..]},
       disasm: "fld", "%drd, %I_ci_uimm6x8(%x2)",
@@ -873,11 +881,11 @@ slot riscv32c {
     cswsp{: x2, I_css_uimm6x4, crs2 : },
       resources: {next_pc,x2, crs2},
       disasm: "sw", "%crs2, %I_css_uimm6x4(%x2)",
-      semfunc: "&RV32::RiscVISw";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVISw";
     cfswsp{: x2, I_css_uimm6x4, cfrs2 : },
       resources: {next_pc,x2, cfrs2},
       disasm: "fsw", "%cfrs2, %I_css_uimm6x4(%x2)",
-      semfunc: "&RV32::RiscVISw";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVISw";
     cfsdsp{: x2, I_css_uimm6x8, cdrs2 : },
       resources: {next_pc,x2, cdrs2},
       disasm: "fsd", "%cdrs2, %I_css_uimm6x8(%x2)",
@@ -885,11 +893,13 @@ slot riscv32c {
     clw{(: c3rs1, I_cl_uimm5x4 : ), (: : c3rd)},
       resources: {next_pc,c3rs1 : c3rd[0..]},
       disasm: "lw", "%c3rd, %I_cl_uimm5x4(%c3rs1)",
-      semfunc: "&RV32::RiscVILw", "&RV32::RiscVILwChild";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVILw",
+               "&::mpact::sim::riscv::RV32::RiscVILwChild";
     cflw{(: c3rs1, I_cl_uimm5x4 : ), (: : c3frd)},
       resources: {next_pc,c3rs1 : c3frd[0..]},
       disasm: "flw", "%c3frd, %I_cl_uimm5x4(%c3rs1)",
-      semfunc: "&RV32::RiscVILw", "&RV32::RiscVILwChild";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVILw",
+               "&::mpact::sim::riscv::RV32::RiscVILwChild";
     cfld{(: c3rs1, I_cl_uimm5x8 : ), (: : c3drd)},
       resources: {next_pc,c3rs1 : c3drd[0..]},
       disasm: "fld", "%c3drd, %I_cl_uimm5x8(%c3rs1)",
@@ -897,111 +907,111 @@ slot riscv32c {
     csw{: c3rs1, I_cl_uimm5x4, c3rs2 : },
       resources: {next_pc,c3rs1, c3rs2},
       disasm: "sw", "%c3rs2, %I_cl_uimm5x4(%c3rs1)",
-      semfunc: "&RV32::RiscVISw";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVISw";
     cfsw{: c3rs1, I_cl_uimm5x4, c3frs2 : },
       resources: {next_pc,c3rs1, c3frs2},
       disasm: "fsw", "%c3frs2, %I_cl_uimm5x4(%c3rs1)",
-      semfunc: "&RV32::RiscVISw";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVISw";
     cfsd{: c3rs1, I_cl_uimm5x8, c3drs2 : },
       resources: {next_pc,c3rs1, c3drs2},
       disasm: "fsd", "%c3drs2, %I_cl_uimm5x8(%c3rs1)",
-      semfunc: "&RV32::RiscVDSd";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVDSd";
     cj{: I_cj_imm11, x0 : next_pc, x0},
       resources: {next_pc,x0 : next_pc[0..], x0[0..]},
       disasm: "j", "0x%(@+I_cj_imm11:08x)",
-      semfunc: "&RV32::RiscVIJal";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIJal";
     cjal{: I_cj_imm11, x0 : next_pc, x1},
       resources: {next_pc,x0 : next_pc[0..], x1[0..]},
       disasm: "jal", "0x%(@+I_cj_imm11:08x)",
-      semfunc: "&RV32::RiscVIJal";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIJal";
     cjr{: crs1, x0 : next_pc, x0},
       resources: {next_pc, crs1, x0 : next_pc[0..], x0[0..]},
       disasm: "jr", "%crs1",
-      semfunc: "&RV32::RiscVIJalr";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIJalr";
     cjalr{: crs1, x0 : next_pc, x1},
       resources: {next_pc,crs1, x0 : next_pc[0..], x1[0..]},
       disasm: "jalr", "%crs1",
-      semfunc: "&RV32::RiscVIJalr";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIJalr";
     cbeqz{: c3rs1, x0, I_cb_imm8 : next_pc},
       resources: {next_pc,c3rs1, x0 : next_pc[0..]},
       disasm: "beqz", "%c3rs1, 0x%(@+I_cb_imm8:08x)",
-      semfunc: "&RV32::RiscVIBeq";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIBeq";
     cbnez{: c3rs1, x0, I_cb_imm8 : next_pc},
       resources: {next_pc,c3rs1, x0 : next_pc[0..]},
       disasm: "bnez", "%c3rs1, 0x%(@+I_cb_imm8:08x)",
-      semfunc: "&RV32::RiscVIBne";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIBne";
     cli{: x0, I_ci_imm6 : rd},
       resources: {next_pc,x0 : rd[0..]},
       disasm: "li", "%rd, %I_ci_imm6",
-      semfunc: "&RV32::RiscVIAdd";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIAdd";
     clui{: I_ci_imm6_12 : rd},
       resources: {next_pc : rd[0..]},
       disasm: "lui", "%rd, 0x%(I_ci_imm6_12:x)",
-      semfunc: "&RV32::RiscVILui";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVILui";
     caddi{: rd, I_ci_imm6 : rd},
       resources: {next_pc, rd : rd[0..]},
       disasm: "addi", "%rd, %rd, %I_ci_imm6",
-      semfunc: "&RV32::RiscVIAdd";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIAdd";
     caddi16sp{: x2, I_ci_imm6x16 : x2},
       resources: {next_pc, x2 : x2[0..]},
       disasm: "addi", "%x2, %x2, %(I_ci_imm6x16:d)",
-      semfunc: "&RV32::RiscVIAdd";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIAdd";
     caddi4spn{: x2, I_ciw_uimm8x4 : c3rd},
       resources: {next_pc, x2 : c3rd[0..]},
       disasm: "addi", "%c3rd, %x2, %I_ciw_uimm8x4",
-      semfunc: "&RV32::RiscVIAdd";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIAdd";
     cslli{: rd, I_ci_uimm6 : rd},
       resources: {next_pc, rd : rd[0..]},
       disasm: "slli", "%rd, %rd, 0x%(I_ci_uimm6:x)",
-      semfunc: "&RV32::RiscVISll";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVISll";
     csrli{: c3rs1, I_ci_uimm6 : c3rs1},
       resources: {next_pc, c3rs1 : c3rs1[0..]},
       disasm: "srli", "%c3rs1, %c3rs1, 0x%(I_ci_uimm6:x)",
-      semfunc: "&RV32::RiscVISrl";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVISrl";
     csrai{: c3rs1, I_ci_uimm6 : c3rs1},
       resources: {next_pc, c3rs1 : c3rs1[0..]},
       disasm: "srai", "%c3rs1, %c3rs1, 0x%(I_ci_uimm6:x)",
-      semfunc: "&RV32::RiscVISra";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVISra";
     candi{: c3rs1, I_ci_imm6 : c3rs1},
       resources: {next_pc, c3rs1 : c3rs1[0..]},
       disasm: "andi", "%c3rs1, %c3rs1, %I_ci_imm6",
-      semfunc: "&RV32::RiscVIAnd";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIAnd";
     cmv{: crs2 , x0: rd},
       resources: {next_pc, crs2, x0 : rd[0..]},
       disasm: "mv", "%rd, %crs2",
-      semfunc: "&RV32::RiscVIAdd";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIAdd";
     cadd{: crs2, rd: rd},
       resources: {next_pc, crs2, rd : rd[0..]},
       disasm: "add", "%rd, %rd, %crs2",
-      semfunc: "&RV32::RiscVIAdd";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIAdd";
     cand{: c3rs1, c3rs2 : c3rs1},
       resources: {next_pc, c3rs1, c3rs2 : c3rs1[0..]},
       disasm: "and", "%c3rs1, %c3rs1, %c3rs2",
-      semfunc: "&RV32::RiscVIAnd";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIAnd";
     cor{: c3rs1, c3rs2 : c3rs1},
       resources: {next_pc, c3rs1, c3rs2 : c3rs1[0..]},
       disasm: "or", "%c3rs1, %c3rs1, %c3rs2",
-      semfunc: "&RV32::RiscVIOr";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIOr";
     cxor{: c3rs1, c3rs2 : c3rs1},
       resources: {next_pc, c3rs1, c3rs2 : c3rs1[0..]},
       disasm: "xor", "%c3rs1, %c3rs1, %c3rs2",
-      semfunc: "&RV32::RiscVIXor";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVIXor";
     csub{: c3rs1, c3rs2 : c3rs1},
       resources: {next_pc, c3rs1, c3rs2 : c3rs1[0..]},
       disasm: "sub", "%c3rs1, %c3rs1, %c3rs2",
-      semfunc: "&RV32::RiscVISub";
+      semfunc: "&::mpact::sim::riscv::RV32::RiscVISub";
     cnop{},
       disasm: "nop",
       resources: {next_pc},
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     cebreak{},
       disasm: "ebreak",
       resources: {next_pc},
-      semfunc: "&RiscVIEbreak";
+      semfunc: "&::mpact::sim::riscv::RiscVIEbreak";
     cunimp{},
       disasm: "unimp",
       resources: {next_pc},
-      semfunc: "&RiscVIUnimplemented";
+      semfunc: "&::mpact::sim::riscv::RiscVIUnimplemented";
   }
 }
 
@@ -1011,32 +1021,34 @@ slot riscv32chints {
   opcodes {
     cnop_hint{},
       disasm: "cnop",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     cli_hint{: x0, I_ci_imm6 : rd},
       disasm: "li", "%rd, %I_ci_imm6",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     clui_hint{: I_ci_imm6_12 : rd},
       disasm: "lui", "%rd, 0x%(I_ci_imm6_12:x)",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     cmv_hint{: crs2 , x0: rd},
       disasm: "mv", "%rd, %crs2",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     caddi_hint{: rd, I_ci_imm6 : rd},
       disasm: "addi", "%rd, %rd, %I_ci_imm6",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     cslli_hint{: rd, I_ci_uimm6 : rd},
       disasm: "slli", "%rd, %rd, 0x%(I_ci_uimm6:x)",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
     cadd_hint{: crs2, rd: rd},
       disasm: "add", "%rd, %rd, %crs2",
-      semfunc: "&RiscVINop";
+      semfunc: "&::mpact::sim::riscv::RiscVINop";
   }
 }
 
 // This should be the RiscV32G set, where G stands for IMAFDZicsr_Zifencei.
-slot riscv32g : riscv32i, riscv32c, riscv32chints, riscv32m, riscv32_amo_arithmetic, riscv32f, riscv32d, riscv32_hints, zicsr, zfencei, privileged {
+slot riscv32g : riscv32i, riscv32c, riscv32chints, riscv32m, 
+                riscv32_amo_arithmetic, riscv32f, riscv32d, riscv32_hints,
+                zicsr, zfencei, privileged {
   default size = 4;
   default opcode =
     disasm: "Illegal instruction at 0x%(@:08x)",
-    semfunc: "&RiscVIllegalInstruction";
+    semfunc: "&::mpact::sim::riscv::RiscVIllegalInstruction";
 }
