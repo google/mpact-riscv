@@ -185,37 +185,33 @@ void DebugCommandShell::Run(std::istream& is, std::ostream& os) {
   std::string previous_line;
   current_core_ = 0;
   absl::string_view line_view;
-  bool halt_reason = false;
   while (true) {
     // Prompt and read in the next command.
     auto pc_result =
         core_access_[current_core_].debug_interface->ReadRegister("pc");
     std::string prompt;
-    if (halt_reason) {
-      halt_reason = false;
-      auto result =
-          core_access_[current_core_].debug_interface->GetLastHaltReason();
-      if (result.ok()) {
-        switch (result.value()) {
-          case *HaltReason::kSoftwareBreakpoint:
-            absl::StrAppend(&prompt, "Stopped at software breakpoint\n");
-            break;
-          case *HaltReason::kUserRequest:
-            absl::StrAppend(&prompt, "Stopped at user request\n");
-            break;
-          case *HaltReason::kDataWatchPoint:
-            absl::StrAppend(&prompt, "Stopped at data watchpoint\n");
-            break;
-          case *HaltReason::kProgramDone:
-            absl::StrAppend(&prompt, "Program done\n");
-            break;
-          default:
-            if ((result.value() >= *HaltReason::kUserSpecifiedMin) &&
-                (result.value() <= *HaltReason::kUserSpecifiedMax)) {
-              absl::StrAppend(&prompt, "Stopped for custom halt reason\n");
-            }
-            break;
-        }
+    auto result =
+        core_access_[current_core_].debug_interface->GetLastHaltReason();
+    if (result.ok()) {
+      switch (result.value()) {
+        case *HaltReason::kSoftwareBreakpoint:
+          absl::StrAppend(&prompt, "Stopped at software breakpoint\n");
+          break;
+        case *HaltReason::kUserRequest:
+          absl::StrAppend(&prompt, "Stopped at user request\n");
+          break;
+        case *HaltReason::kDataWatchPoint:
+          absl::StrAppend(&prompt, "Stopped at data watchpoint\n");
+          break;
+        case *HaltReason::kProgramDone:
+          absl::StrAppend(&prompt, "Program done\n");
+          break;
+        default:
+          if ((result.value() >= *HaltReason::kUserSpecifiedMin) &&
+              (result.value() <= *HaltReason::kUserSpecifiedMax)) {
+            absl::StrAppend(&prompt, "Stopped for custom halt reason\n");
+          }
+          break;
       }
     }
     if (pc_result.ok()) {

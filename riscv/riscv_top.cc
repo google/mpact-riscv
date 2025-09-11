@@ -434,6 +434,7 @@ absl::Status RiscVTop::Run() {
         // Reset the halt reason and continue;
         halted_ = false;
         halt_reason_ = *HaltReason::kNone;
+        need_to_step_over_ = false;
         continue;
       }
       break;
@@ -766,6 +767,8 @@ absl::StatusOr<Instruction*> RiscVTop::GetInstruction(uint64_t address) {
   if (inst_swap) {
     (void)rv_action_point_manager_->ap_memory_interface()
         ->WriteOriginalInstruction(address);
+    // Invalidate the cache entry so that the original instruction is used.
+    rv_decode_cache_->Invalidate(address);
   }
   // Get the decoded instruction.
   Instruction* inst = rv_decode_cache_->GetDecodedInstruction(address);
