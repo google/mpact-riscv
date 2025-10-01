@@ -1120,7 +1120,7 @@ class RiscVFPInstructionTestBase : public testing::Test {
         if (!sign && unsigned_value > kMax) {
           flags = (uint32_t)FPExceptions::kInvalidOp;
           value = kMax;
-        } else if (sign && (unsigned_value > 0 && -unsigned_value < kMin)) {
+        } else if (sign && (unsigned_value > 0 && unsigned_value > kMax)) {
           // Negative value but exceeds the min value.
           flags = (uint32_t)FPExceptions::kInvalidOp;
           value = kMin;
