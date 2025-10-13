@@ -308,7 +308,7 @@ absl::StatusOr<int> RiscVTop::Step(int num) {
       state_->AdvanceDelayLines();
       // Check for interrupt.
       if (state_->is_interrupt_available()) {
-        uint64_t epc = (executed ? state_->pc_operand()->AsUint64(0) : next_pc);
+        uint64_t epc = (executed ? next_pc : state_->pc_operand()->AsUint64(0));
         state_->TakeAvailableInterrupt(epc);
       }
     } while (!executed);
@@ -404,7 +404,8 @@ absl::Status RiscVTop::Run() {
         state_->AdvanceDelayLines();
         // Check for interrupt.
         if (state_->is_interrupt_available()) {
-          uint64_t epc = (executed ? state_->pc_operand()->AsUint64(0) : pc);
+          uint64_t epc =
+              (executed ? next_pc : state_->pc_operand()->AsUint64(0));
           state_->TakeAvailableInterrupt(epc);
         }
       } while (!executed);

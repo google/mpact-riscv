@@ -133,7 +133,7 @@ class RiscVRenode : public util::renode::RenodeDebugInterface {
 
  private:
   std::string name_;
-  MemoryInterface* renode_sysbus_ = nullptr;
+  [[maybe_unused]] MemoryInterface* renode_sysbus_ = nullptr;
   RiscVState* rv_state_ = nullptr;
   RiscVFPState* rv_fp_state_ = nullptr;
   generic::DecoderInterface* rv_decoder_ = nullptr;
@@ -153,8 +153,8 @@ class RiscVRenode : public util::renode::RenodeDebugInterface {
   InstructionProfiler* inst_profiler_ = nullptr;
   MemoryUseProfiler* mem_profiler_ = nullptr;
   RiscVInstrumentationControl* instrumentation_control_ = nullptr;
-  uint64_t stack_size_ = 32 * 1024;
-  uint64_t stack_end_ = 0;
+  [[maybe_unused]] uint64_t stack_size_ = 32 * 1024;
+  [[maybe_unused]] uint64_t stack_end_ = 0;
 };
 
 }  // namespace riscv

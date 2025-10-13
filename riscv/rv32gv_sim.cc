@@ -263,7 +263,7 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-  mpact::sim::util::MemoryInterface* memory_interface = memory;
+  [[maybe_unused]] mpact::sim::util::MemoryInterface* memory_interface = memory;
   if (memory_watcher != nullptr) {
     memory_interface = memory_watcher;
   }

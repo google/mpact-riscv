@@ -359,7 +359,7 @@ TEST_F(RV32BitmanipInstructionTest, RV32Rol) {
     SetRegisterValues<uint32_t>({{kX1, val1}, {kX2, val2}});
     instruction_->Execute(nullptr);
     EXPECT_EQ(GetRegisterValue<uint32_t>(kX3),
-              (val1 << val2) | (val1 >> (32 - val2)));
+              (val1 << val2) | ((val2 == 0) ? 0 : (val1 >> (32 - val2))));
   }
 }
 
@@ -375,7 +375,7 @@ TEST_F(RV32BitmanipInstructionTest, RV32Ror) {
     SetRegisterValues<uint32_t>({{kX1, val1}, {kX2, val2}});
     instruction_->Execute(nullptr);
     EXPECT_EQ(GetRegisterValue<uint32_t>(kX3),
-              (val1 >> val2) | (val1 << (32 - val2)));
+              (val1 >> val2) | ((val2 == 0) ? 0 : (val1 << (32 - val2))));
   }
 }
 
