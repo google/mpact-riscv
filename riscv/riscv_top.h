@@ -179,6 +179,9 @@ class RiscVTop : public generic::Component, public RiscVDebugInterface {
   HaltReasonValueType halt_reason_ = *HaltReason::kNone;
   // Halting flag. This is set to true when execution must halt.
   bool halted_ = false;
+  // Paused flag. This is set to true when execution must pause due to an action
+  // point or breakpoint.
+  bool paused_ = false;
   // Set to true if the next instruction requires a step-over.
   bool need_to_step_over_ = false;
   absl::Notification* run_halted_ = nullptr;

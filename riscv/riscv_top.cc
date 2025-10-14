@@ -279,6 +279,7 @@ absl::StatusOr<int> RiscVTop::Step(int num) {
   run_status_ = RunStatus::kSingleStep;
   int count = 0;
   halted_ = false;
+  paused_ = false;
   halt_reason_ = *HaltReason::kNone;
   // First check to see if the previous halt was due to a breakpoint. If so,
   // need to step over the breakpoint.
@@ -289,6 +290,7 @@ absl::StatusOr<int> RiscVTop::Step(int num) {
       run_status_ = RunStatus::kHalted;
       return status;
     }
+    paused_ |= halted_;
     count++;
   }
 
@@ -303,7 +305,7 @@ absl::StatusOr<int> RiscVTop::Step(int num) {
   // be executed.
   uint64_t next_pc = pc_operand->AsUint64(0);
   pc = next_pc;
-  while (!halted_ && (count < num)) {
+  while (!paused_ && (count < num)) {
     SetPc(pc);
     auto* inst = rv_decode_cache_->GetDecodedInstruction(pc);
     // Set the next_pc to the next sequential instruction.
@@ -323,6 +325,7 @@ absl::StatusOr<int> RiscVTop::Step(int num) {
         state_->TakeAvailableInterrupt(epc);  // Will set state_->branch().
       }
     } while (!executed);
+    paused_ |= halted_;
     count++;
     // Update counters.
     counter_opcode_[inst->opcode()].Increment(1);
@@ -334,7 +337,7 @@ absl::StatusOr<int> RiscVTop::Step(int num) {
       AddToBranchTrace(pc, pc_val);
       next_pc = pc_val;
     }
-    if (!halted_) {
+    if (!paused_) {
       pc = next_pc;
       continue;
     }
@@ -343,10 +346,11 @@ absl::StatusOr<int> RiscVTop::Step(int num) {
       auto status = StepPastBreakpoint();
       if (!status.ok()) {
         run_status_ = RunStatus::kHalted;
+        halted_ = true;
         return status;
       }
       // Reset the halt reason and continue;
-      halted_ = false;
+      paused_ = halted_;
       halt_reason_ = *HaltReason::kNone;
       need_to_step_over_ = false;
       continue;
@@ -391,6 +395,7 @@ absl::Status RiscVTop::Run() {
   std::thread([this]() {
     run_status_ = RunStatus::kRunning;
     halted_ = false;
+    paused_ = false;
     halt_reason_ = *HaltReason::kNone;
     run_started_->Notify();
     auto pc_operand = state_->pc_operand();
@@ -401,7 +406,7 @@ absl::Status RiscVTop::Run() {
     // This holds the value of the current pc, and post-loop, the address of
     // the most recently executed instruction.
     uint64_t pc = next_pc;
-    while (!halted_) {
+    while (!paused_) {
       auto* inst = rv_decode_cache_->GetDecodedInstruction(pc);
       SetPc(pc);
       next_pc = pc + inst->size();
@@ -423,6 +428,7 @@ absl::Status RiscVTop::Run() {
           state_->TakeAvailableInterrupt(epc);  // Will set state_->branch().
         }
       } while (!executed);
+      paused_ |= halted_;
       // Update counters.
       counter_opcode_[inst->opcode()].Increment(1);
       counter_num_instructions_.Increment(1);
@@ -433,7 +439,7 @@ absl::Status RiscVTop::Run() {
         AddToBranchTrace(pc, pc_val);
         next_pc = pc_val;
       }
-      if (!halted_) {
+      if (!paused_) {
         pc = next_pc;
         continue;
       }
@@ -447,7 +453,7 @@ absl::Status RiscVTop::Run() {
           break;
         };
         // Reset the halt reason and continue;
-        halted_ = false;
+        paused_ = halted_;
         halt_reason_ = *HaltReason::kNone;
         need_to_step_over_ = false;
         continue;
@@ -814,7 +820,16 @@ void RiscVTop::RequestHalt(HaltReasonValueType halt_reason,
                            const Instruction* inst) {
   // First set the halt_reason_, then the halt flag.
   halt_reason_ = halt_reason;
-  halted_ = true;
+  // Action point halts are always called from the thread that is executing the
+  // instructions. In this case we set paused_ to true, and not halted_, since
+  // we want to keep running after the action point by resetting paused_. If we
+  // use halted_ there would be a race condition between clearing halted_ and
+  // an asynchronous halt request from a different thread.
+  if (halt_reason == *HaltReason::kActionPoint) {
+    paused_ = true;
+  } else {
+    halted_ = true;
+  }
   // If the halt reason is either sw breakpoint or action point, set
   // need_to_step_over to true.
   if ((halt_reason_ == *HaltReason::kSoftwareBreakpoint) ||
