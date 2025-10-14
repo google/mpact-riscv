@@ -250,6 +250,14 @@ absl::Status RiscVTop::StepPastBreakpoint() {
   // Re-enable the breakpoint.
   (void)rv_action_point_manager_->ap_memory_interface()
       ->WriteBreakpointInstruction(bpt_pc);
+  // Check for interrupt.
+  if (state_->is_interrupt_available()) {
+    uint64_t epc = pc;
+    if (executed) {
+      epc = state_->branch() ? state_->pc_operand()->AsUint64(0) : next_pc;
+    }
+    state_->TakeAvailableInterrupt(epc);  // Will set state_->branch().
+  }
   if (state_->branch()) {
     state_->set_branch(false);
     auto new_pc = state_->pc_operand()->AsUint64(0);
@@ -308,8 +316,11 @@ absl::StatusOr<int> RiscVTop::Step(int num) {
       state_->AdvanceDelayLines();
       // Check for interrupt.
       if (state_->is_interrupt_available()) {
-        uint64_t epc = (executed ? next_pc : state_->pc_operand()->AsUint64(0));
-        state_->TakeAvailableInterrupt(epc);
+        uint64_t epc = pc;
+        if (executed) {
+          epc = state_->branch() ? state_->pc_operand()->AsUint64(0) : next_pc;
+        }
+        state_->TakeAvailableInterrupt(epc);  // Will set state_->branch().
       }
     } while (!executed);
     count++;
@@ -404,9 +415,12 @@ absl::Status RiscVTop::Run() {
         state_->AdvanceDelayLines();
         // Check for interrupt.
         if (state_->is_interrupt_available()) {
-          uint64_t epc =
-              (executed ? next_pc : state_->pc_operand()->AsUint64(0));
-          state_->TakeAvailableInterrupt(epc);
+          uint64_t epc = pc;
+          if (executed) {
+            epc =
+                state_->branch() ? state_->pc_operand()->AsUint64(0) : next_pc;
+          }
+          state_->TakeAvailableInterrupt(epc);  // Will set state_->branch().
         }
       } while (!executed);
       // Update counters.
