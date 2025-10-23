@@ -24,78 +24,77 @@ namespace sim {
 namespace riscv {
 
 // Machine Interrupt Pending methods.
-RiscVMIp::RiscVMIp(uint32_t initial_value, ArchState* state)
-    : RiscVSimpleCsr<uint32_t>("mip", RiscVCsrEnum::kMIp, initial_value,
+RiscVMIp::RiscVMIp(uint64_t initial_value, ArchState* state)
+    : RiscVSimpleCsr<uint64_t>("mip", RiscVCsrEnum::kMIp, initial_value,
                                kReadMask, kWriteMask, state) {}
-void RiscVMIp::Set(uint32_t value) {
-  this->RiscVSimpleCsr<uint32_t>::Set(value);
+void RiscVMIp::Set(uint64_t value) {
+  this->RiscVSimpleCsr<uint64_t>::Set(value);
   if (value != 0) {
     state()->CheckForInterrupt();
   }
 }
 
-void RiscVMIp::Set(uint64_t value) { Set(static_cast<uint32_t>(value)); }
+void RiscVMIp::Set(uint32_t value) { Set(static_cast<uint64_t>(value)); }
 
-uint32_t RiscVMIp::GetUint32() {
-  return this->RiscVSimpleCsr<uint32_t>::GetUint32() | ext_seip_;
+uint32_t RiscVMIp::GetUint32() { return static_cast<uint32_t>(GetUint64()); }
+
+uint64_t RiscVMIp::GetUint64() {
+  return this->RiscVSimpleCsr<uint64_t>::GetUint64() | ext_seip_;
 }
-
-uint64_t RiscVMIp::GetUint64() { return GetUint32(); }
 
 // Supervisor Interrupt Pending methods.
 RiscVSIp::RiscVSIp(RiscVMIp* mip, RiscVCsrInterface* mideleg, ArchState* state)
-    : RiscVSimpleCsr<uint32_t>("sip", RiscVCsrEnum::kSIp, kReadMask, kWriteMask,
+    : RiscVSimpleCsr<uint64_t>("sip", RiscVCsrEnum::kSIp, kReadMask, kWriteMask,
                                state),
       mip_(mip),
       mideleg_(mideleg) {}
 
-void RiscVSIp::Set(uint32_t value) {
-  auto wmask = write_mask() | mideleg_->GetUint32();
-  mip_->Set((mip_->GetUint32() & wmask) | (value & wmask));
+void RiscVSIp::Set(uint64_t value) {
+  auto wmask = write_mask() | mideleg_->GetUint64();
+  mip_->Set((mip_->GetUint64() & wmask) | (value & wmask));
 }
 
-void RiscVSIp::Set(uint64_t value) { Set(static_cast<uint32_t>(value)); }
+void RiscVSIp::Set(uint32_t value) { Set(static_cast<uint64_t>(value)); }
 
 // Machine Interrupt Enable methods.
-RiscVMIe::RiscVMIe(uint32_t initial_value, ArchState* state)
-    : RiscVSimpleCsr<uint32_t>("mie", RiscVCsrEnum::kMIe, initial_value,
+RiscVMIe::RiscVMIe(uint64_t initial_value, ArchState* state)
+    : RiscVSimpleCsr<uint64_t>("mie", RiscVCsrEnum::kMIe, initial_value,
                                kReadMask, kWriteMask, state) {}
-void RiscVMIe::Set(uint32_t value) {
-  this->RiscVSimpleCsr<uint32_t>::Set(value);
+
+void RiscVMIe::Set(uint32_t value) { Set(static_cast<uint64_t>(value)); }
+
+void RiscVMIe::Set(uint64_t value) {
+  this->RiscVSimpleCsr<uint64_t>::Set(value);
   if (value != 0) {
     state()->CheckForInterrupt();
   }
 }
 
-uint32_t RiscVSIp::GetUint32() {
-  return mip_->GetUint32() & (mideleg_->GetUint32() | read_mask());
+uint64_t RiscVSIp::GetUint64() {
+  return mip_->GetUint64() & (mideleg_->GetUint64() | read_mask());
 }
 
-uint64_t RiscVSIp::GetUint64() { return GetUint32(); }
-
-void RiscVMIe::Set(uint64_t value) {
-  this->RiscVSimpleCsr<uint32_t>::Set(value);
-}
+uint32_t RiscVSIp::GetUint32() { return static_cast<uint32_t>(GetUint64()); }
 
 // Supervisor Interrupt Enable methods.
 RiscVSIe::RiscVSIe(RiscVMIe* mie, RiscVCsrInterface* mideleg, ArchState* state)
-    : RiscVSimpleCsr<uint32_t>("sie", RiscVCsrEnum::kSIe, kReadMask, kWriteMask,
+    : RiscVSimpleCsr<uint64_t>("sie", RiscVCsrEnum::kSIe, kReadMask, kWriteMask,
                                state),
       mie_(mie),
       mideleg_(mideleg) {}
 
-void RiscVSIe::Set(uint32_t value) {
-  auto wmask = write_mask() | mideleg_->GetUint32();
-  mie_->Set((mie_->GetUint32() & wmask) | (value & wmask));
+void RiscVSIe::Set(uint64_t value) {
+  auto wmask = write_mask() | mideleg_->GetUint64();
+  mie_->Set((mie_->GetUint64() & wmask) | (value & wmask));
 }
 
-void RiscVSIe::Set(uint64_t value) { Set(static_cast<uint32_t>(value)); }
+void RiscVSIe::Set(uint32_t value) { Set(static_cast<uint64_t>(value)); }
 
-uint32_t RiscVSIe::GetUint32() {
-  return mie_->GetUint32() & (mideleg_->GetUint32() | read_mask());
+uint64_t RiscVSIe::GetUint64() {
+  return mie_->GetUint64() & (mideleg_->GetUint64() | read_mask());
 }
 
-uint64_t RiscVSIe::GetUint64() { return GetUint32(); }
+uint32_t RiscVSIe::GetUint32() { return static_cast<uint32_t>(GetUint64()); }
 
 }  // namespace riscv
 }  // namespace sim

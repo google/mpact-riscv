@@ -538,7 +538,7 @@ TEST_F(RV32BitmanipInstructionTest, RV32Bset) {
     T val1 = absl::Uniform(absl::IntervalClosed, bitgen_,
                            std::numeric_limits<T>::min(),
                            std::numeric_limits<T>::max());
-    T val2 = absl::Uniform(absl::IntervalClosed, bitgen_, 0, 32);
+    T val2 = absl::Uniform(absl::IntervalClosed, bitgen_, 0, 31);
     SetRegisterValues<uint32_t>({{kX1, val1}, {kX2, val2}});
     instruction_->Execute(nullptr);
     EXPECT_EQ(GetRegisterValue<uint32_t>(kX3), val1 | (1 << val2));
