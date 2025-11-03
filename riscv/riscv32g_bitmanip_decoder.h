@@ -26,6 +26,7 @@
 #include "riscv/riscv32gzb_decoder.h"
 #include "riscv/riscv32gzb_encoding.h"
 #include "riscv/riscv32gzb_enums.h"
+#include "riscv/riscv_generic_decoder.h"
 #include "riscv/riscv_state.h"
 
 namespace mpact {
@@ -55,7 +56,6 @@ class RiscV32GBitmanipDecoder : public generic::DecoderInterface {
 
   RiscV32GBitmanipDecoder(RiscVState* state, util::MemoryInterface* memory);
   RiscV32GBitmanipDecoder() = delete;
-  ~RiscV32GBitmanipDecoder() override;
 
   // This will always return a valid instruction that can be executed. In the
   // case of a decode error, the semantic function in the instruction object
@@ -70,16 +70,20 @@ class RiscV32GBitmanipDecoder : public generic::DecoderInterface {
 
   // Getter.
   isa32gzb::RiscV32GZBEncoding* riscv_encoding() const {
-    return riscv_encoding_;
+    return riscv_encoding_.get();
   }
 
  private:
   RiscVState* state_;
+  std::unique_ptr<
+      RiscVGenericDecoder<isa32gzb::OpcodeEnum, isa32gzb::RiscV32GZBEncoding,
+                          isa32gzb::RiscV32GZBInstructionSet>>
+      decoder_;
   util::MemoryInterface* memory_;
   generic::DataBuffer* inst_db_;
-  isa32gzb::RiscV32GZBEncoding* riscv_encoding_;
-  RV32GZBIsaFactory* riscv_isa_factory_;
-  isa32gzb::RiscV32GZBInstructionSet* riscv_isa_;
+  std::unique_ptr<isa32gzb::RiscV32GZBEncoding> riscv_encoding_;
+  std::unique_ptr<RV32GZBIsaFactory> riscv_isa_factory_;
+  std::unique_ptr<isa32gzb::RiscV32GZBInstructionSet> riscv_isa_;
 };
 
 }  // namespace riscv

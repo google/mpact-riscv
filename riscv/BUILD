@@ -761,6 +761,23 @@ mpact_bin_fmt_decoder(
 )
 
 cc_library(
+    name = "riscv_generic_decoder",
+    hdrs = [
+        "riscv_generic_decoder.h",
+    ],
+    deps = [
+        ":riscv_state",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/status",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:program_error",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
+    ],
+)
+
+cc_library(
     name = "riscv32g_decoder",
     srcs = [
         "riscv32_decoder.cc",
@@ -774,6 +791,7 @@ cc_library(
     deps = [
         ":riscv32g_bin_fmt",
         ":riscv32g_isa",
+        ":riscv_generic_decoder",
         ":riscv_state",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/functional:any_invocable",
@@ -835,6 +853,7 @@ cc_library(
         ":riscv32gzb_bin_fmt",
         ":riscv32gzb_isa",
         ":riscv_encoding_common",
+        ":riscv_generic_decoder",
         ":riscv_getters",
         ":riscv_state",
         "@com_google_absl//absl/log",
@@ -861,6 +880,7 @@ cc_library(
         ":riscv64gzb_bin_fmt",
         ":riscv64gzb_isa",
         ":riscv_encoding_common",
+        ":riscv_generic_decoder",
         ":riscv_getters",
         ":riscv_state",
         "@com_google_absl//absl/log",
@@ -886,6 +906,7 @@ cc_library(
     deps = [
         ":riscv32gv_bin_fmt",
         ":riscv32gv_isa",
+        ":riscv_generic_decoder",
         ":riscv_state",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/functional:any_invocable",
@@ -916,6 +937,7 @@ cc_library(
         ":riscv32gvzb_bin_fmt",
         ":riscv32gvzb_isa",
         ":riscv_encoding_common",
+        ":riscv_generic_decoder",
         ":riscv_getters",
         ":riscv_state",
         "@com_google_absl//absl/log",
@@ -942,6 +964,7 @@ cc_library(
     deps = [
         ":riscv64g_bin_fmt",
         ":riscv64g_isa",
+        ":riscv_generic_decoder",
         ":riscv_state",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/functional:any_invocable",
@@ -1015,6 +1038,7 @@ cc_library(
     deps = [
         ":riscv64gv_bin_fmt",
         ":riscv64gv_isa",
+        ":riscv_generic_decoder",
         ":riscv_state",
         "@com_google_absl//absl/base",
         "@com_google_absl//absl/container:flat_hash_map",
@@ -1046,6 +1070,7 @@ cc_library(
         ":riscv64gvzb_bin_fmt",
         ":riscv64gvzb_isa",
         ":riscv_encoding_common",
+        ":riscv_generic_decoder",
         ":riscv_getters",
         ":riscv_state",
         "@com_google_absl//absl/log",

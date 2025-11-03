@@ -18,15 +18,14 @@
 #include <cstdint>
 #include <memory>
 
-#include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/decoder_interface.h"
 #include "mpact/sim/generic/instruction.h"
-#include "mpact/sim/generic/program_error.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/memory_interface.h"
 #include "riscv/riscv32g_vec_encoding.h"
 #include "riscv/riscv32gv_decoder.h"
 #include "riscv/riscv32gv_enums.h"
+#include "riscv/riscv_generic_decoder.h"
 #include "riscv/riscv_state.h"
 
 namespace mpact {
@@ -55,7 +54,6 @@ class RiscV32GVecDecoder : public generic::DecoderInterface {
 
   RiscV32GVecDecoder(RiscVState* state, util::MemoryInterface* memory);
   RiscV32GVecDecoder() = delete;
-  ~RiscV32GVecDecoder() override;
 
   // This will always return a valid instruction that can be executed. In the
   // case of a decode error, the semantic function in the instruction object
@@ -71,17 +69,19 @@ class RiscV32GVecDecoder : public generic::DecoderInterface {
 
   // Getter.
   isa32v::RiscV32GVecEncoding* riscv_encoding() const {
-    return riscv_encoding_;
+    return riscv_encoding_.get();
   }
 
  private:
   RiscVState* state_;
   util::MemoryInterface* memory_;
-  std::unique_ptr<generic::ProgramError> decode_error_;
-  generic::DataBuffer* inst_db_;
-  isa32v::RiscV32GVecEncoding* riscv_encoding_;
-  RV32GVIsaFactory* riscv_isa_factory_;
-  isa32v::RiscV32GVInstructionSet* riscv_isa_;
+  std::unique_ptr<
+      RiscVGenericDecoder<isa32v::OpcodeEnum, isa32v::RiscV32GVecEncoding,
+                          isa32v::RiscV32GVInstructionSet>>
+      decoder_;
+  std::unique_ptr<isa32v::RiscV32GVecEncoding> riscv_encoding_;
+  std::unique_ptr<RV32GVIsaFactory> riscv_isa_factory_;
+  std::unique_ptr<isa32v::RiscV32GVInstructionSet> riscv_isa_;
 };
 
 }  // namespace riscv

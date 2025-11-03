@@ -26,18 +26,28 @@
 #include "elfio/elfio_section.hpp"
 #include "elfio/elfio_symbols.hpp"
 #include "googlemock/include/gmock/gmock.h"
+#include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/instruction.h"
+#include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "mpact/sim/util/other/log_sink.h"
 #include "mpact/sim/util/program_loader/elf_program_loader.h"
+#include "riscv/riscv64g_enums.h"
+#include "riscv/riscv_csr.h"
 #include "riscv/riscv_state.h"
 
 namespace {
 
+using ::mpact::sim::generic::operator*;  // NOLINT: clang-tidy false positive.
+using ::mpact::sim::riscv::IsaExtensions;
 using ::mpact::sim::riscv::RiscV64Decoder;
+using ::mpact::sim::riscv::RiscVCsrEnum;
 using ::mpact::sim::riscv::RiscVState;
 using ::mpact::sim::riscv::RiscVXlen;
+using ::mpact::sim::riscv::isa64::OpcodeEnum;
 using ::mpact::sim::util::LogSink;
+
+constexpr uint16_t kCNopOpcode = 0b000'0'00000'00000'01;
 
 constexpr char kFileName[] = "hello_world_64.elf";
 
@@ -69,6 +79,7 @@ class RiscV64DecoderTest : public testing::Test {
   mpact::sim::util::FlatDemandMemory memory_;
   mpact::sim::util::ElfProgramLoader loader_;
   RiscV64Decoder decoder_;
+  mpact::sim::generic::DataBufferFactory db_factory_;
   SymbolAccessor* symbol_accessor_;
 };
 
@@ -125,6 +136,31 @@ TEST_F(RiscV64DecoderTest, BadAddress) {
   auto* inst = decoder_.DecodeInstruction(0x4321);
   ASSERT_NE(inst, nullptr);
   inst->Execute(nullptr);
+  inst->DecRef();
+}
+
+TEST_F(RiscV64DecoderTest, BadAddressNoCompressedInstructions) {
+  // Write opcode to memory.
+  auto* db = db_factory_.Allocate<uint16_t>(1);
+  db->Set<uint16_t>(0, kCNopOpcode);
+  memory_.Store(0x4322, db);
+  db->DecRef();
+  // Get a handle to the MISA CSR.
+  auto res = state_.csr_set()->GetCsr(*RiscVCsrEnum::kMIsa);
+  CHECK_OK(res.status());
+  auto* misa_csr = res.value();
+  misa_csr->Set(misa_csr->GetUint64() | *IsaExtensions::kCompressed);
+  // If the C bit is set, then the decoder should succeed.
+  auto* inst = decoder_.DecodeInstruction(0x4322);
+  ASSERT_NE(inst, nullptr);
+  EXPECT_EQ(inst->opcode(), static_cast<uint32_t>(OpcodeEnum::kCnop));
+  inst->DecRef();
+  misa_csr->Set(misa_csr->GetUint64() & ~*IsaExtensions::kCompressed);
+  // If the C bit is not set, then the decoder should generate an invalid
+  // address exception.
+  inst = decoder_.DecodeInstruction(0x4322);
+  ASSERT_NE(inst, nullptr);
+  EXPECT_EQ(inst->opcode(), static_cast<uint32_t>(OpcodeEnum::kNone));
   inst->DecRef();
 }
 

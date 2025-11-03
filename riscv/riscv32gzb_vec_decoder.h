@@ -18,15 +18,14 @@
 #include <cstdint>
 #include <memory>
 
-#include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/decoder_interface.h"
 #include "mpact/sim/generic/instruction.h"
-#include "mpact/sim/generic/program_error.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/memory_interface.h"
 #include "riscv/riscv32gvzb_decoder.h"
 #include "riscv/riscv32gvzb_enums.h"
 #include "riscv/riscv32gzb_vec_encoding.h"
+#include "riscv/riscv_generic_decoder.h"
 #include "riscv/riscv_state.h"
 
 namespace mpact {
@@ -56,7 +55,6 @@ class RiscV32GZBVecDecoder : public generic::DecoderInterface {
 
   RiscV32GZBVecDecoder(RiscVState* state, util::MemoryInterface* memory);
   RiscV32GZBVecDecoder() = delete;
-  ~RiscV32GZBVecDecoder() override;
 
   // This will always return a valid instruction that can be executed. In the
   // case of a decode error, the semantic function in the instruction object
@@ -72,12 +70,10 @@ class RiscV32GZBVecDecoder : public generic::DecoderInterface {
  private:
   RiscVState* const state_;
   util::MemoryInterface* const memory_;
-
-  // Buffer used to load instructions from memory. Re-used for each instruction
-  // word.
-  generic::DataBuffer* const inst_db_;
-
-  std::unique_ptr<generic::ProgramError> decode_error_;
+  std::unique_ptr<RiscVGenericDecoder<isa32gvzb::OpcodeEnum,
+                                      isa32gvzb::RiscV32GZBVecEncoding,
+                                      isa32gvzb::RiscV32GVZBInstructionSet>>
+      decoder_;
   std::unique_ptr<isa32gvzb::RiscV32GZBVecEncoding> riscv_encoding_;
   std::unique_ptr<RV32GVZBIsaFactory> riscv_isa_factory_;
   std::unique_ptr<isa32gvzb::RiscV32GVZBInstructionSet> riscv_isa_;

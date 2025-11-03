@@ -18,22 +18,18 @@
 #include <cstdint>
 #include <memory>
 
-#include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/decoder_interface.h"
 #include "mpact/sim/generic/instruction.h"
-#include "mpact/sim/generic/program_error.h"
-#include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/memory_interface.h"
 #include "riscv/riscv32g_decoder.h"
 #include "riscv/riscv32g_encoding.h"
 #include "riscv/riscv32g_enums.h"
+#include "riscv/riscv_generic_decoder.h"
 #include "riscv/riscv_state.h"
 
 namespace mpact {
 namespace sim {
 namespace riscv {
-
-using ::mpact::sim::generic::operator*;  // NOLINT: clang-tidy false positive.
 
 // This is the factory class needed by the generated decoder. It is responsible
 // for creating the decoder for each slot instance. Since the riscv architecture
@@ -55,7 +51,6 @@ class RiscV32Decoder : public generic::DecoderInterface {
 
   RiscV32Decoder(RiscVState* state, util::MemoryInterface* memory);
   RiscV32Decoder() = delete;
-  ~RiscV32Decoder() override;
 
   // This will always return a valid instruction that can be executed. In the
   // case of a decode error, the semantic function in the instruction object
@@ -69,16 +64,20 @@ class RiscV32Decoder : public generic::DecoderInterface {
   }
 
   // Getter.
-  isa32::RiscV32GEncoding* riscv_encoding() const { return riscv_encoding_; }
+  isa32::RiscV32GEncoding* riscv_encoding() const {
+    return riscv_encoding_.get();
+  }
 
  private:
   RiscVState* state_;
   util::MemoryInterface* memory_;
-  std::unique_ptr<generic::ProgramError> decode_error_;
-  generic::DataBuffer* inst_db_;
-  isa32::RiscV32GEncoding* riscv_encoding_;
-  RV32IsaFactory* riscv_isa_factory_;
-  isa32::RiscV32GInstructionSet* riscv_isa_;
+  std::unique_ptr<
+      RiscVGenericDecoder<isa32::OpcodeEnum, isa32::RiscV32GEncoding,
+                          isa32::RiscV32GInstructionSet>>
+      decoder_;
+  std::unique_ptr<isa32::RiscV32GEncoding> riscv_encoding_;
+  std::unique_ptr<RV32IsaFactory> riscv_isa_factory_;
+  std::unique_ptr<isa32::RiscV32GInstructionSet> riscv_isa_;
 };
 
 }  // namespace riscv

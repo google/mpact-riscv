@@ -18,22 +18,18 @@
 #include <cstdint>
 #include <memory>
 
-#include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/decoder_interface.h"
 #include "mpact/sim/generic/instruction.h"
-#include "mpact/sim/generic/program_error.h"
-#include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/memory_interface.h"
 #include "riscv/riscv64gvzb_decoder.h"
 #include "riscv/riscv64gvzb_enums.h"
 #include "riscv/riscv64gzb_vec_encoding.h"
+#include "riscv/riscv_generic_decoder.h"
 #include "riscv/riscv_state.h"
 
 namespace mpact {
 namespace sim {
 namespace riscv {
-
-using ::mpact::sim::generic::operator*;  // NOLINT: clang-tidy false positive.
 
 // This is the factory class needed by the generated decoder. It is responsible
 // for creating the decoder for each slot instance. Since the riscv architecture
@@ -56,7 +52,6 @@ class RiscV64GZBVecDecoder : public generic::DecoderInterface {
 
   RiscV64GZBVecDecoder(RiscVState* state, util::MemoryInterface* memory);
   RiscV64GZBVecDecoder() = delete;
-  ~RiscV64GZBVecDecoder() override;
 
   // This will always return a valid instruction that can be executed. In the
   // case of a decode error, the semantic function in the instruction object
@@ -69,15 +64,18 @@ class RiscV64GZBVecDecoder : public generic::DecoderInterface {
     return isa64gvzb::kOpcodeNames[index];
   }
 
+  // Getter.
+  isa64gvzb::RiscV64GZBVecEncoding* riscv_encoding() const {
+    return riscv_encoding_.get();
+  }
+
  private:
   RiscVState* const state_;
   util::MemoryInterface* const memory_;
-
-  // Buffer used to load instructions from memory. Re-used for each instruction
-  // word.
-  generic::DataBuffer* const inst_db_;
-
-  std::unique_ptr<generic::ProgramError> decode_error_;
+  std::unique_ptr<RiscVGenericDecoder<isa64gvzb::OpcodeEnum,
+                                      isa64gvzb::RiscV64GZBVecEncoding,
+                                      isa64gvzb::RiscV64GVZBInstructionSet>>
+      decoder_;
   std::unique_ptr<isa64gvzb::RiscV64GZBVecEncoding> riscv_encoding_;
   std::unique_ptr<RV64GVZBIsaFactory> riscv_isa_factory_;
   std::unique_ptr<isa64gvzb::RiscV64GVZBInstructionSet> riscv_isa_;

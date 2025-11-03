@@ -16,7 +16,6 @@
 #include <cstdint>
 #include <ios>
 #include <limits>
-#include <new>
 #include <string>
 #include <tuple>
 #include <vector>

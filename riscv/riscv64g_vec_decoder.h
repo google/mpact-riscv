@@ -18,22 +18,18 @@
 #include <cstdint>
 #include <memory>
 
-#include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/decoder_interface.h"
 #include "mpact/sim/generic/instruction.h"
-#include "mpact/sim/generic/program_error.h"
-#include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/memory_interface.h"
 #include "riscv/riscv64g_vec_encoding.h"
 #include "riscv/riscv64gv_decoder.h"
 #include "riscv/riscv64gv_enums.h"
+#include "riscv/riscv_generic_decoder.h"
 #include "riscv/riscv_state.h"
 
 namespace mpact {
 namespace sim {
 namespace riscv {
-
-using ::mpact::sim::generic::operator*;  // NOLINT: clang-tidy false positive.
 
 // This is the factory class needed by the generated decoder. It is responsible
 // for creating the decoder for each slot instance. Since the riscv architecture
@@ -56,7 +52,6 @@ class RiscV64GVecDecoder : public generic::DecoderInterface {
 
   RiscV64GVecDecoder(RiscVState* state, util::MemoryInterface* memory);
   RiscV64GVecDecoder() = delete;
-  ~RiscV64GVecDecoder() override;
 
   // This will always return a valid instruction that can be executed. In the
   // case of a decode error, the semantic function in the instruction object
@@ -69,15 +64,18 @@ class RiscV64GVecDecoder : public generic::DecoderInterface {
     return isa64v::kOpcodeNames[index];
   }
 
+  // Getter.
+  isa64v::RiscV64GVecEncoding* riscv_encoding() const {
+    return riscv_encoding_.get();
+  }
+
  private:
   RiscVState* const state_;
   util::MemoryInterface* const memory_;
-
-  // Buffer used to load instructions from memory. Re-used for each instruction
-  // word.
-  generic::DataBuffer* const inst_db_;
-
-  std::unique_ptr<generic::ProgramError> decode_error_;
+  std::unique_ptr<
+      RiscVGenericDecoder<isa64v::OpcodeEnum, isa64v::RiscV64GVecEncoding,
+                          isa64v::RiscV64GVInstructionSet>>
+      decoder_;
   std::unique_ptr<isa64v::RiscV64GVecEncoding> riscv_encoding_;
   std::unique_ptr<RV64GVIsaFactory> riscv_isa_factory_;
   std::unique_ptr<isa64v::RiscV64GVInstructionSet> riscv_isa_;

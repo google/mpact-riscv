@@ -48,6 +48,36 @@ using DataBuffer = ::mpact::sim::generic::DataBuffer;
 using Instruction = ::mpact::sim::generic::Instruction;
 using ReferenceCount = ::mpact::sim::generic::ReferenceCount;
 
+enum class IsaExtensions : uint64_t {
+  kAtomic = 1 << 0,
+  kBitManipulation = 1 << 1,
+  kCompressed = 1 << 2,
+  kDoublePrecisionFp = 1 << 3,
+  kEBaseIsa = 1 << 4,
+  kSinglePrecisionFp = 1 << 5,
+  kGReserved = 1 << 6,
+  kHypervisor = 1 << 7,
+  kIBaseIsa = 1 << 8,
+  kJReserved = 1 << 9,
+  kKReserved = 1 << 10,
+  kLReserved = 1 << 11,
+  kIntegerMulDiv = 1 << 12,
+  kUserLevelInterrupts = 1 << 13,
+  kOReserved = 1 << 14,
+  kPReserved = 1 << 15,
+  kQuadPrecisionFp = 1 << 16,
+  kRReserved = 1 << 17,
+  kSupervisorMode = 1 << 18,
+  kTReserved = 1 << 19,
+  kUserMode = 1 << 20,
+  kVector = 1 << 21,
+  kWReserved = 1 << 22,
+  kNonStandardExtension = 1 << 23,
+  kYReserved = 1 << 24,
+  kZReserved = 1 << 25,
+};
+
+constexpr uint64_t kCompressedExtension = 1 << 2;
 // Exception codes.
 enum class ExceptionCode : uint64_t {
   kInstructionAddressMisaligned = 0,

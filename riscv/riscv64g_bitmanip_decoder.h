@@ -18,14 +18,13 @@
 #include <cstdint>
 #include <memory>
 
-#include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/decoder_interface.h"
 #include "mpact/sim/generic/instruction.h"
-#include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/memory_interface.h"
 #include "riscv/riscv64gzb_decoder.h"
 #include "riscv/riscv64gzb_encoding.h"
 #include "riscv/riscv64gzb_enums.h"
+#include "riscv/riscv_generic_decoder.h"
 #include "riscv/riscv_state.h"
 
 namespace mpact {
@@ -33,7 +32,6 @@ namespace sim {
 namespace riscv {
 
 using ::mpact::sim::generic::Instruction;
-using ::mpact::sim::generic::operator*;  // NOLINT: clang-tidy false positive.
 
 // This is the factory class needed by the generated decoder. It is responsible
 // for creating the decoder for each slot instance. Since the riscv architecture
@@ -55,7 +53,6 @@ class RiscV64GBitmanipDecoder : public generic::DecoderInterface {
 
   RiscV64GBitmanipDecoder(RiscVState* state, util::MemoryInterface* memory);
   RiscV64GBitmanipDecoder() = delete;
-  ~RiscV64GBitmanipDecoder() override;
 
   // This will always return a valid instruction that can be executed. In the
   // case of a decode error, the semantic function in the instruction object
@@ -70,16 +67,19 @@ class RiscV64GBitmanipDecoder : public generic::DecoderInterface {
 
   // Getter.
   isa64gzb::RiscV64GZBEncoding* riscv_encoding() const {
-    return riscv_encoding_;
+    return riscv_encoding_.get();
   }
 
  private:
   RiscVState* state_;
   util::MemoryInterface* memory_;
-  generic::DataBuffer* inst_db_;
-  isa64gzb::RiscV64GZBEncoding* riscv_encoding_;
-  RV64GZBIsaFactory* riscv_isa_factory_;
-  isa64gzb::RiscV64GZBInstructionSet* riscv_isa_;
+  std::unique_ptr<
+      RiscVGenericDecoder<isa64gzb::OpcodeEnum, isa64gzb::RiscV64GZBEncoding,
+                          isa64gzb::RiscV64GZBInstructionSet>>
+      decoder_;
+  std::unique_ptr<isa64gzb::RiscV64GZBEncoding> riscv_encoding_;
+  std::unique_ptr<RV64GZBIsaFactory> riscv_isa_factory_;
+  std::unique_ptr<isa64gzb::RiscV64GZBInstructionSet> riscv_isa_;
 };
 
 }  // namespace riscv
