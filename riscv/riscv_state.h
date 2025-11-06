@@ -43,6 +43,9 @@ namespace mpact {
 namespace sim {
 namespace riscv {
 
+static constexpr int kNumHardwarePerfCounters = 29;
+static constexpr int kMinimumHardwarePerfIndex = 3;
+
 using ArchState = ::mpact::sim::generic::ArchState;
 using DataBuffer = ::mpact::sim::generic::DataBuffer;
 using Instruction = ::mpact::sim::generic::Instruction;

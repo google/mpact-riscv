@@ -107,6 +107,7 @@ cc_test(
     deps = [
         "//riscv:riscv_state",
         "@com_google_absl//absl/log:check",
+        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
         "@com_google_mpact-sim//mpact/sim/util/memory",
     ],

@@ -129,6 +129,13 @@ void RiscVTop::Initialize() {
   memory_watcher_ = new util::MemoryWatcher(state_->memory());
   state_->set_memory(memory_watcher_);
 
+  counter_hardware_perf_.resize(kNumHardwarePerfCounters);
+  for (int i = 0; i < kNumHardwarePerfCounters; i++) {
+    counter_hardware_perf_[i].Initialize(absl::StrCat("hardware_perf_", i), 0);
+    CHECK_OK(AddCounter(&counter_hardware_perf_[i]))
+        << "Failed to register hardware_perf counter";
+  }
+
   // Register instruction and cycle counters.
   CHECK_OK(AddCounter(&counter_num_instructions_))
       << "Failed to register instruction counter";
@@ -153,6 +160,20 @@ void RiscVTop::Initialize() {
   CHECK_OK(SetCsrCounter("instret", counter_num_instructions_));
   CHECK_OK(SetCsrCounter("cycle", counter_num_cycles_));
   CHECK_OK(SetCsrCounter("time", counter_num_cycles_));
+
+  // Add Zihpm counters - Unprivileged.
+  for (int i = 0; i < kNumHardwarePerfCounters; i++) {
+    std::string name =
+        absl::StrCat("hpmcounter", i + kMinimumHardwarePerfIndex);
+    CHECK_OK(SetCsrCounter(name, counter_hardware_perf_[i]));
+  }
+
+  // Add Zihpm counters - Machine Privileged.
+  for (int i = 0; i < kNumHardwarePerfCounters; i++) {
+    std::string name =
+        absl::StrCat("mhpmcounter", i + kMinimumHardwarePerfIndex);
+    CHECK_OK(SetCsrCounter(name, counter_hardware_perf_[i]));
+  }
 
   // Set up break and action points.
   rv_action_point_memory_interface_ = new RiscVActionPointMemoryInterface(

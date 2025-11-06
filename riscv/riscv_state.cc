@@ -289,6 +289,59 @@ void CreateCsrs(RiscVState* state, std::vector<RiscVCsrInterface*>& csr_vec) {
         nullptr);
   }
 
+  // hpmcounterN + hpmcounterNh (N=3..31)
+  uint32_t hpmcounter_base = static_cast<uint32_t>(RiscVCsrEnum::kCycle);
+  uint32_t hpmcounter_base_high = static_cast<uint32_t>(RiscVCsrEnum::kCycleH);
+  for (int i = 0; i < kNumHardwarePerfCounters; i++) {
+    RiscVCounterCsr<T, RiscVState>* hpmcounter =
+        CreateCsr<RiscVCounterCsr<T, RiscVState>>(
+            state, csr_vec,
+            absl::StrCat("hpmcounter", i + kMinimumHardwarePerfIndex),
+            static_cast<RiscVCsrEnum>(hpmcounter_base + i +
+                                      kMinimumHardwarePerfIndex),
+            state);
+    CHECK_NE(hpmcounter, nullptr);
+    if (std::is_same_v<T, uint32_t>) {
+      CHECK_NE(
+          CreateCsr<RiscVCounterCsrHigh<RiscVState>>(
+              state, csr_vec,
+              absl::StrCat("hpmcounter", i + kMinimumHardwarePerfIndex, "h"),
+              static_cast<RiscVCsrEnum>(hpmcounter_base_high + i +
+                                        kMinimumHardwarePerfIndex),
+              state,
+              reinterpret_cast<RiscVCounterCsr<uint32_t, RiscVState>*>(
+                  hpmcounter)),
+          nullptr);
+    }
+  }
+
+  // mhpmcounterN + mhpmcounterNh (N=3..31)
+  uint32_t mhpmcounter_base = static_cast<uint32_t>(RiscVCsrEnum::kMCycle);
+  uint32_t mhpmcounter_base_high =
+      static_cast<uint32_t>(RiscVCsrEnum::kMCycleH);
+  for (int i = 0; i < kNumHardwarePerfCounters; i++) {
+    RiscVCounterCsr<T, RiscVState>* mhpmcounter =
+        CreateCsr<RiscVCounterCsr<T, RiscVState>>(
+            state, csr_vec,
+            absl::StrCat("mhpmcounter", i + kMinimumHardwarePerfIndex),
+            static_cast<RiscVCsrEnum>(mhpmcounter_base + i +
+                                      kMinimumHardwarePerfIndex),
+            state);
+    CHECK_NE(mhpmcounter, nullptr);
+    if (std::is_same_v<T, uint32_t>) {
+      CHECK_NE(
+          CreateCsr<RiscVCounterCsrHigh<RiscVState>>(
+              state, csr_vec,
+              absl::StrCat("mhpmcounter", i + kMinimumHardwarePerfIndex, "h"),
+              static_cast<RiscVCsrEnum>(mhpmcounter_base_high + i +
+                                        kMinimumHardwarePerfIndex),
+              state,
+              reinterpret_cast<RiscVCounterCsr<uint32_t, RiscVState>*>(
+                  mhpmcounter + kMinimumHardwarePerfIndex)),
+          nullptr);
+    }
+  }
+
   // Hypervisor level CSRs
 
   // henvcfg

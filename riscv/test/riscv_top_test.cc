@@ -16,10 +16,12 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 #include "absl/log/check.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/generic/decoder_interface.h"
@@ -590,6 +592,39 @@ TEST_F(RiscVTopTest, RiscV64) {
   EXPECT_NE(riscv_top_->ReadRegister("cycle").value(), 0);
   EXPECT_NE(riscv_top_->ReadRegister("time").value(), 0);
   EXPECT_NE(riscv_top_->ReadRegister("instret").value(), 0);
+
+  // Verify that the hardware perf counters are initialized. These checks are
+  // based on coverage gaps found in mutation testing.
+  std::vector<int> uninitialized_perf_counter_indices;
+  for (int i = 0; i < riscv_top_->counter_hardware_perf()->size(); ++i) {
+    if (!riscv_top_->counter_hardware_perf()->at(i).IsInitialized()) {
+      uninitialized_perf_counter_indices.push_back(i);
+    }
+  }
+  EXPECT_EQ(uninitialized_perf_counter_indices.size(), 0)
+      << "Uninitialized perf counters: "
+      << absl::StrJoin(uninitialized_perf_counter_indices, ",");
+
+  // Verify that the hardware perf counters are connected to the CSRs.
+  // This is based on a mutation testing finding.
+  // Get the CSR value, increment the underlying counter, and verify that the
+  // CSR value changes.
+  std::vector<std::string> failed_perf_counter_csr_names;
+  for (int i = 0; i < riscv_top_->counter_hardware_perf()->size(); ++i) {
+    std::string csr_name = absl::StrCat("hpmcounter", i + 3);
+    std::string machine_csr_name = absl::StrCat("mhpmcounter", i + 3);
+    auto csr_value = riscv_top_->ReadRegister(csr_name).value();
+    riscv_top_->counter_hardware_perf()->at(i).Increment(1);
+    if (riscv_top_->ReadRegister(csr_name).value() == csr_value) {
+      failed_perf_counter_csr_names.push_back(csr_name);
+    }
+    if (riscv_top_->ReadRegister(machine_csr_name).value() == csr_value) {
+      failed_perf_counter_csr_names.push_back(machine_csr_name);
+    }
+  }
+  EXPECT_EQ(failed_perf_counter_csr_names.size(), 0)
+      << "Failed CSR names: "
+      << absl::StrJoin(failed_perf_counter_csr_names, ",");
 }
 
 }  // namespace

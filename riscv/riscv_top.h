@@ -145,6 +145,9 @@ class RiscVTop : public generic::Component, public RiscVDebugInterface {
     return &counter_num_cycles_;
   }
   generic::SimpleCounter<uint64_t>* counter_pc() { return &counter_pc_; }
+  std::vector<generic::SimpleCounter<uint64_t>>* counter_hardware_perf() {
+    return &counter_hardware_perf_;
+  }
   // Memory watchers used for data watch points.
   util::MemoryWatcher* memory_watcher() { return memory_watcher_; }
 
@@ -218,6 +221,8 @@ class RiscVTop : public generic::Component, public RiscVDebugInterface {
   std::vector<generic::SimpleCounter<uint64_t>> counter_opcode_;
   generic::SimpleCounter<uint64_t> counter_num_instructions_;
   generic::SimpleCounter<uint64_t> counter_num_cycles_;
+  // Placeholders for the counters required for the Zihpm extension.
+  std::vector<generic::SimpleCounter<uint64_t>> counter_hardware_perf_;
   // Counter used for profiling by connecting it to a profiler. This allows
   // the pc to be written to the counter, and the profiling can be enabled/
   // disabled with the other counters.

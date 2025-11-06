@@ -16,16 +16,21 @@
 
 #include <cstdint>
 #include <iostream>
+#include <memory>
 #include <ostream>
 #include <string>
 
 #include "absl/log/check.h"
+#include "absl/strings/str_cat.h"
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
+#include "riscv/riscv_csr.h"
 #include "riscv/riscv_register.h"
 
 namespace {
 
+using ::mpact::sim::riscv::RiscVCsrEnum;
+using ::mpact::sim::riscv::RiscVCsrInterface;
 using ::mpact::sim::riscv::RiscVState;
 using ::mpact::sim::riscv::RiscVXlen;
 using ::mpact::sim::riscv::RV32Register;
@@ -40,7 +45,7 @@ constexpr uint32_t kMemValue = 0xdeadbeef;
 
 TEST(RiscVStateTest, Basic) {
   FlatDemandMemory memory;
-  auto* state = new RiscVState("test", RiscVXlen::RV32, &memory);
+  auto state = std::make_unique<RiscVState>("test", RiscVXlen::RV32, &memory);
   // Make sure pc has been created.
   auto iter = state->registers()->find("pc");
   auto* ptr = (iter != state->registers()->end()) ? iter->second : nullptr;
@@ -50,12 +55,11 @@ TEST(RiscVStateTest, Basic) {
   pc->data_buffer()->Set<uint32_t>(0, kPcValue);
   auto* pc_op = state->pc_operand();
   EXPECT_EQ(pc_op->AsUint32(0), kPcValue);
-  delete state;
 }
 
 TEST(RiscVStateTest, Memory) {
   FlatDemandMemory memory;
-  auto* state = new RiscVState("test", RiscVXlen::RV32, &memory);
+  auto state = std::make_unique<RiscVState>("test", RiscVXlen::RV32, &memory);
   auto* db = state->db_factory()->Allocate<uint32_t>(1);
   state->LoadMemory(nullptr, kMemAddr, db, nullptr, nullptr);
   EXPECT_EQ(db->Get<uint32_t>(0), 0);
@@ -65,12 +69,11 @@ TEST(RiscVStateTest, Memory) {
   state->LoadMemory(nullptr, kMemAddr, db, nullptr, nullptr);
   EXPECT_EQ(db->Get<uint32_t>(0), kMemValue);
   db->DecRef();
-  delete state;
 }
 
 TEST(RiscVStateTest, OutOfBoundLoad) {
   FlatDemandMemory memory;
-  auto* state = new RiscVState("test", RiscVXlen::RV32, &memory);
+  auto state = std::make_unique<RiscVState>("test", RiscVXlen::RV32, &memory);
   state->set_max_physical_address(kMemAddr - 4);
   state->set_on_trap([](bool is_interrupt, uint64_t trap_value,
                         uint64_t exception_code, uint64_t epc,
@@ -93,7 +96,67 @@ TEST(RiscVStateTest, OutOfBoundLoad) {
   EXPECT_THAT(stderr, testing::HasSubstr("Load Access Fault"));
   db->DecRef();
   dummy_inst->DecRef();
-  delete state;
+}
+
+TEST(RiscVStateTest, PerfCounterCsrNameAndIndexMatch_hpm) {
+  FlatDemandMemory memory;
+  auto state = std::make_unique<RiscVState>("test", RiscVXlen::RV32, &memory);
+
+  uint32_t hpmcounter_base = static_cast<uint32_t>(RiscVCsrEnum::kCycle);
+  for (int i = 3; i < 32; i++) {
+    ASSERT_OK_AND_ASSIGN(
+        RiscVCsrInterface * csr_by_name,
+        state->csr_set()->GetCsr(absl::StrCat("hpmcounter", i)));
+    ASSERT_OK_AND_ASSIGN(RiscVCsrInterface * csr_by_index,
+                         state->csr_set()->GetCsr(hpmcounter_base + i));
+    EXPECT_EQ(csr_by_name, csr_by_index);
+  }
+}
+
+TEST(RiscVStateTest, PerfCounterCsrNameAndIndexMatch_hpm_high) {
+  FlatDemandMemory memory;
+  auto state = std::make_unique<RiscVState>("test", RiscVXlen::RV32, &memory);
+
+  uint32_t hpmcounter_base_high = static_cast<uint32_t>(RiscVCsrEnum::kCycleH);
+  for (int i = 3; i < 32; i++) {
+    ASSERT_OK_AND_ASSIGN(
+        RiscVCsrInterface * csr_by_name,
+        state->csr_set()->GetCsr(absl::StrCat("hpmcounter", i, "h")));
+    ASSERT_OK_AND_ASSIGN(RiscVCsrInterface * csr_by_index,
+                         state->csr_set()->GetCsr(hpmcounter_base_high + i));
+    EXPECT_EQ(csr_by_name, csr_by_index);
+  }
+}
+
+TEST(RiscVStateTest, PerfCounterCsrNameAndIndexMatch_mhpm) {
+  FlatDemandMemory memory;
+  auto state = std::make_unique<RiscVState>("test", RiscVXlen::RV32, &memory);
+
+  uint32_t mhpmcounter_base = static_cast<uint32_t>(RiscVCsrEnum::kMCycle);
+  for (int i = 3; i < 32; i++) {
+    ASSERT_OK_AND_ASSIGN(
+        RiscVCsrInterface * csr_by_name,
+        state->csr_set()->GetCsr(absl::StrCat("mhpmcounter", i)));
+    ASSERT_OK_AND_ASSIGN(RiscVCsrInterface * csr_by_index,
+                         state->csr_set()->GetCsr(mhpmcounter_base + i));
+    EXPECT_EQ(csr_by_name, csr_by_index);
+  }
+}
+
+TEST(RiscVStateTest, PerfCounterCsrNameAndIndexMatch_mhpm_high) {
+  FlatDemandMemory memory;
+  auto state = std::make_unique<RiscVState>("test", RiscVXlen::RV32, &memory);
+
+  uint32_t mhpmcounter_base_high =
+      static_cast<uint32_t>(RiscVCsrEnum::kMCycleH);
+  for (int i = 3; i < 32; i++) {
+    ASSERT_OK_AND_ASSIGN(
+        RiscVCsrInterface * csr_by_name,
+        state->csr_set()->GetCsr(absl::StrCat("mhpmcounter", i, "h")));
+    ASSERT_OK_AND_ASSIGN(RiscVCsrInterface * csr_by_index,
+                         state->csr_set()->GetCsr(mhpmcounter_base_high + i));
+    EXPECT_EQ(csr_by_name, csr_by_index);
+  }
 }
 
 }  // namespace
