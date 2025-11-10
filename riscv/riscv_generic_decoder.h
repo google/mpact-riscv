@@ -33,10 +33,10 @@ using ::mpact::sim::generic::operator*;  // NOLINT: clang-tidy false positive.
 
 using ::mpact::sim::generic::Instruction;
 
-template <typename OpcodeEnum, typename Encoding, typename Isa>
+template <typename State, typename OpcodeEnum, typename Encoding, typename Isa>
 class RiscVGenericDecoder {
  public:
-  RiscVGenericDecoder(RiscVState* state, util::MemoryInterface* memory,
+  RiscVGenericDecoder(State* state, util::MemoryInterface* memory,
                       Encoding* encoding, Isa* isa)
       : state_(state), memory_(memory), encoding_(encoding), isa_(isa) {
     auto res =

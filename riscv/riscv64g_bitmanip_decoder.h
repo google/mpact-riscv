@@ -73,9 +73,9 @@ class RiscV64GBitmanipDecoder : public generic::DecoderInterface {
  private:
   RiscVState* state_;
   util::MemoryInterface* memory_;
-  std::unique_ptr<
-      RiscVGenericDecoder<isa64gzb::OpcodeEnum, isa64gzb::RiscV64GZBEncoding,
-                          isa64gzb::RiscV64GZBInstructionSet>>
+  std::unique_ptr<RiscVGenericDecoder<RiscVState, isa64gzb::OpcodeEnum,
+                                      isa64gzb::RiscV64GZBEncoding,
+                                      isa64gzb::RiscV64GZBInstructionSet>>
       decoder_;
   std::unique_ptr<isa64gzb::RiscV64GZBEncoding> riscv_encoding_;
   std::unique_ptr<RV64GZBIsaFactory> riscv_isa_factory_;

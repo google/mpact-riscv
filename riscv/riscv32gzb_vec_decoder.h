@@ -70,7 +70,7 @@ class RiscV32GZBVecDecoder : public generic::DecoderInterface {
  private:
   RiscVState* const state_;
   util::MemoryInterface* const memory_;
-  std::unique_ptr<RiscVGenericDecoder<isa32gvzb::OpcodeEnum,
+  std::unique_ptr<RiscVGenericDecoder<RiscVState, isa32gvzb::OpcodeEnum,
                                       isa32gvzb::RiscV32GZBVecEncoding,
                                       isa32gvzb::RiscV32GVZBInstructionSet>>
       decoder_;

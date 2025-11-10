@@ -72,9 +72,9 @@ class RiscV64GVecDecoder : public generic::DecoderInterface {
  private:
   RiscVState* const state_;
   util::MemoryInterface* const memory_;
-  std::unique_ptr<
-      RiscVGenericDecoder<isa64v::OpcodeEnum, isa64v::RiscV64GVecEncoding,
-                          isa64v::RiscV64GVInstructionSet>>
+  std::unique_ptr<RiscVGenericDecoder<RiscVState, isa64v::OpcodeEnum,
+                                      isa64v::RiscV64GVecEncoding,
+                                      isa64v::RiscV64GVInstructionSet>>
       decoder_;
   std::unique_ptr<isa64v::RiscV64GVecEncoding> riscv_encoding_;
   std::unique_ptr<RV64GVIsaFactory> riscv_isa_factory_;

@@ -42,7 +42,7 @@ RiscV32GZBVecDecoder::RiscV32GZBVecDecoder(RiscVState* state,
       state, riscv_isa_factory_.get());
   riscv_encoding_ = std::make_unique<isa32gvzb::RiscV32GZBVecEncoding>(state);
   decoder_ = std::make_unique<RiscVGenericDecoder<
-      isa32gvzb::OpcodeEnum, isa32gvzb::RiscV32GZBVecEncoding,
+      RiscVState, isa32gvzb::OpcodeEnum, isa32gvzb::RiscV32GZBVecEncoding,
       isa32gvzb::RiscV32GVZBInstructionSet>>(
       state, memory, riscv_encoding_.get(), riscv_isa_.get());
 }

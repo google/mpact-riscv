@@ -75,9 +75,9 @@ class RiscV32GBitmanipDecoder : public generic::DecoderInterface {
 
  private:
   RiscVState* state_;
-  std::unique_ptr<
-      RiscVGenericDecoder<isa32gzb::OpcodeEnum, isa32gzb::RiscV32GZBEncoding,
-                          isa32gzb::RiscV32GZBInstructionSet>>
+  std::unique_ptr<RiscVGenericDecoder<RiscVState, isa32gzb::OpcodeEnum,
+                                      isa32gzb::RiscV32GZBEncoding,
+                                      isa32gzb::RiscV32GZBInstructionSet>>
       decoder_;
   util::MemoryInterface* memory_;
   generic::DataBuffer* inst_db_;

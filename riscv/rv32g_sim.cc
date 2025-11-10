@@ -53,6 +53,7 @@
 #include "riscv/riscv32_htif_semihost.h"
 #include "riscv/riscv32g_bitmanip_decoder.h"
 #include "riscv/riscv_arm_semihost.h"
+#include "riscv/riscv_csr.h"
 #include "riscv/riscv_fp_state.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_register_aliases.h"
@@ -155,6 +156,9 @@ ABSL_FLAG(bool, quiet, false, "Suppress informational and warning messages");
 // Flag to enable and configure the instruction and data caches.
 ABSL_FLAG(std::string, icache, "", "Instruction cache configuration");
 ABSL_FLAG(std::string, dcache, "", "Data cache configuration");
+
+// Flag to set the default value for the misa CSR.
+ABSL_FLAG(std::optional<uint64_t>, misa, std::nullopt, "misa value");
 
 constexpr char kStackEndSymbolName[] = "__stack_end";
 constexpr char kStackSizeSymbolName[] = "__stack_size";
@@ -293,6 +297,16 @@ int main(int argc, char** argv) {
     (void)rv_state.AddRegister<RVFpRegister>(reg_name);
     (void)rv_state.AddRegisterAlias<RVFpRegister>(
         reg_name, ::mpact::sim::riscv::kFRegisterAliases[i]);
+  }
+
+  if (absl::GetFlag(FLAGS_misa).has_value()) {
+    auto misa_res = rv_state.csr_set()->GetCsr(
+        static_cast<uint32_t>(::mpact::sim::riscv::RiscVCsrEnum::kMIsa));
+    if (!misa_res.ok()) {
+      LOG(FATAL) << "Failed to get misa CSR: " << misa_res.status();
+    }
+    auto misa_csr = misa_res.value();
+    misa_csr->Set(absl::GetFlag(FLAGS_misa).value());
   }
 
   RiscVTop riscv_top("RiscV32Sim", &rv_state, rv_decoder);

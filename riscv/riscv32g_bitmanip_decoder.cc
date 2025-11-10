@@ -38,10 +38,11 @@ RiscV32GBitmanipDecoder::RiscV32GBitmanipDecoder(RiscVState* state,
   riscv_isa_ = std::make_unique<isa32gzb::RiscV32GZBInstructionSet>(
       state, riscv_isa_factory_.get());
   riscv_encoding_ = std::make_unique<isa32gzb::RiscV32GZBEncoding>(state);
-  decoder_ = std::make_unique<
-      RiscVGenericDecoder<isa32gzb::OpcodeEnum, isa32gzb::RiscV32GZBEncoding,
-                          isa32gzb::RiscV32GZBInstructionSet>>(
-      state, memory, riscv_encoding_.get(), riscv_isa_.get());
+  decoder_ =
+      std::make_unique<RiscVGenericDecoder<RiscVState, isa32gzb::OpcodeEnum,
+                                           isa32gzb::RiscV32GZBEncoding,
+                                           isa32gzb::RiscV32GZBInstructionSet>>(
+          state, memory, riscv_encoding_.get(), riscv_isa_.get());
 }
 
 generic::Instruction* RiscV32GBitmanipDecoder::DecodeInstruction(

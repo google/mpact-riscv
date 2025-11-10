@@ -50,6 +50,7 @@
 #include "riscv/debug_command_shell.h"
 #include "riscv/riscv64_decoder.h"
 #include "riscv/riscv_arm_semihost.h"
+#include "riscv/riscv_csr.h"
 #include "riscv/riscv_fp_state.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_register_aliases.h"
@@ -145,6 +146,9 @@ ABSL_FLAG(bool, exit_on_tohost, false, "Exit on write to 'tohost'");
 
 // Quiet mode. Suppress informational and warning messages.
 ABSL_FLAG(bool, quiet, false, "Suppress informational and warning messages");
+
+// Flag to set the default value for the misa CSR.
+ABSL_FLAG(std::optional<uint64_t>, misa, std::nullopt, "misa value");
 
 constexpr char kStackEndSymbolName[] = "__stack_end";
 constexpr char kStackSizeSymbolName[] = "__stack_size";
@@ -257,6 +261,16 @@ int main(int argc, char** argv) {
     (void)rv_state.AddRegister<RVFpRegister>(reg_name);
     (void)rv_state.AddRegisterAlias<RVFpRegister>(
         reg_name, ::mpact::sim::riscv::kFRegisterAliases[i]);
+  }
+
+  if (absl::GetFlag(FLAGS_misa).has_value()) {
+    auto misa_res = rv_state.csr_set()->GetCsr(
+        static_cast<uint32_t>(::mpact::sim::riscv::RiscVCsrEnum::kMIsa));
+    if (!misa_res.ok()) {
+      LOG(FATAL) << "Failed to get misa CSR: " << misa_res.status();
+    }
+    auto misa_csr = misa_res.value();
+    misa_csr->Set(absl::GetFlag(FLAGS_misa).value());
   }
 
   RiscVTop riscv_top("RiscV32Sim", &rv_state, &rv_decoder);
@@ -439,7 +453,7 @@ int main(int argc, char** argv) {
   std::fstream proto_file(proto_file_name.c_str(), std::ios_base::out);
   std::string serialized;
   if (!proto_file.good() || !google::protobuf::TextFormat::PrintToString(
-                                *component_proto.get(), &serialized)) {
+                                *component_proto, &serialized)) {
     LOG(ERROR) << "Failed to write proto to file";
   } else {
     proto_file << serialized;

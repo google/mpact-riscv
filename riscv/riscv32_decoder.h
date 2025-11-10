@@ -71,9 +71,9 @@ class RiscV32Decoder : public generic::DecoderInterface {
  private:
   RiscVState* state_;
   util::MemoryInterface* memory_;
-  std::unique_ptr<
-      RiscVGenericDecoder<isa32::OpcodeEnum, isa32::RiscV32GEncoding,
-                          isa32::RiscV32GInstructionSet>>
+  std::unique_ptr<RiscVGenericDecoder<RiscVState, isa32::OpcodeEnum,
+                                      isa32::RiscV32GEncoding,
+                                      isa32::RiscV32GInstructionSet>>
       decoder_;
   std::unique_ptr<isa32::RiscV32GEncoding> riscv_encoding_;
   std::unique_ptr<RV32IsaFactory> riscv_isa_factory_;

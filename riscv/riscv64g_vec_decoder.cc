@@ -38,10 +38,11 @@ RiscV64GVecDecoder::RiscV64GVecDecoder(RiscVState* state,
   riscv_isa_ = std::make_unique<isa64v::RiscV64GVInstructionSet>(
       state, riscv_isa_factory_.get());
   riscv_encoding_ = std::make_unique<isa64v::RiscV64GVecEncoding>(state);
-  decoder_ = std::make_unique<
-      RiscVGenericDecoder<isa64v::OpcodeEnum, isa64v::RiscV64GVecEncoding,
-                          isa64v::RiscV64GVInstructionSet>>(
-      state, memory, riscv_encoding_.get(), riscv_isa_.get());
+  decoder_ =
+      std::make_unique<RiscVGenericDecoder<RiscVState, isa64v::OpcodeEnum,
+                                           isa64v::RiscV64GVecEncoding,
+                                           isa64v::RiscV64GVInstructionSet>>(
+          state, memory, riscv_encoding_.get(), riscv_isa_.get());
 }
 
 generic::Instruction* RiscV64GVecDecoder::DecodeInstruction(uint64_t address) {
