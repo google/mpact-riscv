@@ -104,12 +104,13 @@ TEST(RiscVStateTest, PerfCounterCsrNameAndIndexMatch_hpm) {
 
   uint32_t hpmcounter_base = static_cast<uint32_t>(RiscVCsrEnum::kCycle);
   for (int i = 3; i < 32; i++) {
-    ASSERT_OK_AND_ASSIGN(
-        RiscVCsrInterface * csr_by_name,
-        state->csr_set()->GetCsr(absl::StrCat("hpmcounter", i)));
-    ASSERT_OK_AND_ASSIGN(RiscVCsrInterface * csr_by_index,
-                         state->csr_set()->GetCsr(hpmcounter_base + i));
-    EXPECT_EQ(csr_by_name, csr_by_index);
+    absl::StatusOr<RiscVCsrInterface*> csr_by_name =
+        state->csr_set()->GetCsr(absl::StrCat("hpmcounter", i));
+    absl::StatusOr<RiscVCsrInterface*> csr_by_index =
+        state->csr_set()->GetCsr(hpmcounter_base + i);
+    ASSERT_TRUE(csr_by_name.ok());
+    ASSERT_TRUE(csr_by_index.ok());
+    EXPECT_EQ(*csr_by_name, *csr_by_index);
   }
 }
 
@@ -119,12 +120,13 @@ TEST(RiscVStateTest, PerfCounterCsrNameAndIndexMatch_hpm_high) {
 
   uint32_t hpmcounter_base_high = static_cast<uint32_t>(RiscVCsrEnum::kCycleH);
   for (int i = 3; i < 32; i++) {
-    ASSERT_OK_AND_ASSIGN(
-        RiscVCsrInterface * csr_by_name,
-        state->csr_set()->GetCsr(absl::StrCat("hpmcounter", i, "h")));
-    ASSERT_OK_AND_ASSIGN(RiscVCsrInterface * csr_by_index,
-                         state->csr_set()->GetCsr(hpmcounter_base_high + i));
-    EXPECT_EQ(csr_by_name, csr_by_index);
+    absl::StatusOr<RiscVCsrInterface*> csr_by_name =
+        state->csr_set()->GetCsr(absl::StrCat("hpmcounter", i, "h"));
+    absl::StatusOr<RiscVCsrInterface*> csr_by_index =
+        state->csr_set()->GetCsr(hpmcounter_base_high + i);
+    ASSERT_TRUE(csr_by_name.ok());
+    ASSERT_TRUE(csr_by_index.ok());
+    EXPECT_EQ(*csr_by_name, *csr_by_index);
   }
 }
 
@@ -134,12 +136,13 @@ TEST(RiscVStateTest, PerfCounterCsrNameAndIndexMatch_mhpm) {
 
   uint32_t mhpmcounter_base = static_cast<uint32_t>(RiscVCsrEnum::kMCycle);
   for (int i = 3; i < 32; i++) {
-    ASSERT_OK_AND_ASSIGN(
-        RiscVCsrInterface * csr_by_name,
-        state->csr_set()->GetCsr(absl::StrCat("mhpmcounter", i)));
-    ASSERT_OK_AND_ASSIGN(RiscVCsrInterface * csr_by_index,
-                         state->csr_set()->GetCsr(mhpmcounter_base + i));
-    EXPECT_EQ(csr_by_name, csr_by_index);
+    absl::StatusOr<RiscVCsrInterface*> csr_by_name =
+        state->csr_set()->GetCsr(absl::StrCat("mhpmcounter", i));
+    absl::StatusOr<RiscVCsrInterface*> csr_by_index =
+        state->csr_set()->GetCsr(mhpmcounter_base + i);
+    ASSERT_TRUE(csr_by_name.ok());
+    ASSERT_TRUE(csr_by_index.ok());
+    EXPECT_EQ(*csr_by_name, *csr_by_index);
   }
 }
 
@@ -150,12 +153,13 @@ TEST(RiscVStateTest, PerfCounterCsrNameAndIndexMatch_mhpm_high) {
   uint32_t mhpmcounter_base_high =
       static_cast<uint32_t>(RiscVCsrEnum::kMCycleH);
   for (int i = 3; i < 32; i++) {
-    ASSERT_OK_AND_ASSIGN(
-        RiscVCsrInterface * csr_by_name,
-        state->csr_set()->GetCsr(absl::StrCat("mhpmcounter", i, "h")));
-    ASSERT_OK_AND_ASSIGN(RiscVCsrInterface * csr_by_index,
-                         state->csr_set()->GetCsr(mhpmcounter_base_high + i));
-    EXPECT_EQ(csr_by_name, csr_by_index);
+    absl::StatusOr<RiscVCsrInterface*> csr_by_name =
+        state->csr_set()->GetCsr(absl::StrCat("mhpmcounter", i, "h"));
+    absl::StatusOr<RiscVCsrInterface*> csr_by_index =
+        state->csr_set()->GetCsr(mhpmcounter_base_high + i);
+    ASSERT_TRUE(csr_by_name.ok());
+    ASSERT_TRUE(csr_by_index.ok());
+    EXPECT_EQ(*csr_by_name, *csr_by_index);
   }
 }
 
