@@ -28,6 +28,7 @@
 #include "mpact/sim/generic/operand_interface.h"
 #include "mpact/sim/generic/register.h"
 #include "mpact/sim/generic/type_helpers.h"
+#include "riscv/riscv_csr.h"
 #include "riscv/riscv_fp_host.h"
 #include "riscv/riscv_fp_info.h"
 #include "riscv/riscv_fp_state.h"
@@ -348,9 +349,24 @@ static inline void BranchConditional(
   if (cond(a, b)) {
     UIntType offset = generic::GetInstructionSource<UIntType>(instruction, 2);
     UIntType target = offset + instruction->address();
+    // Check target for proper alignment.
+    auto* state = static_cast<RiscVState*>(instruction->state());
+    auto res =
+        state->csr_set()->GetCsr(static_cast<uint64_t>(RiscVCsrEnum::kMIsa));
+    bool has_c_extension = true;
+    if (res.ok() || res.value() != nullptr) {
+      has_c_extension =
+          (res.value()->GetUint64() &
+           static_cast<uint64_t>(IsaExtensions::kCompressed)) != 0;
+    }
+    if (!has_c_extension && ((target & 0x3) != 0)) {
+      state->Trap(/*is_interrupt*/ false, instruction->address(),
+                  *ExceptionCode::kInstructionAddressMisaligned,
+                  instruction->address(), instruction);
+      return;
+    }
     auto* db = instruction->Destination(0)->AllocateDataBuffer();
     db->SetSubmit<UIntType>(0, target);
-    auto state = static_cast<RiscVState*>(instruction->state());
     state->set_branch(true);
   }
 }

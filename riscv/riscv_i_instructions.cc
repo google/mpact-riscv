@@ -24,6 +24,7 @@
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/register.h"
 #include "mpact/sim/generic/type_helpers.h"
+#include "riscv/riscv_csr.h"
 #include "riscv/riscv_instruction_helpers.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
@@ -140,10 +141,24 @@ void RiscVIJalr(const Instruction* instruction) {
   UIntReg reg_base = generic::GetInstructionSource<UIntReg>(instruction, 0);
   UIntReg offset = generic::GetInstructionSource<UIntReg>(instruction, 1);
   UIntReg target = (offset + reg_base) & ~0x1;
+  // Check target for proper alignment.
+  auto* state = static_cast<RiscVState*>(instruction->state());
+  auto res =
+      state->csr_set()->GetCsr(static_cast<uint64_t>(RiscVCsrEnum::kMIsa));
+  bool has_c_extension = true;
+  if (res.ok() || res.value() != nullptr) {
+    has_c_extension = (res.value()->GetUint64() &
+                       static_cast<uint64_t>(IsaExtensions::kCompressed)) != 0;
+  }
+  if (!has_c_extension && ((target & 0x3) != 0)) {
+    state->Trap(/*is_interrupt*/ false, instruction->address(),
+                *ExceptionCode::kInstructionAddressMisaligned,
+                instruction->address(), instruction);
+    return;
+  }
   UIntReg return_address = instruction->address() + instruction->size();
   auto* db = instruction->Destination(0)->AllocateDataBuffer();
   db->SetSubmit<UIntReg>(0, target);
-  auto* state = static_cast<RiscVState*>(instruction->state());
   state->set_branch(true);
   auto* reg = static_cast<generic::RegisterDestinationOperand<UIntReg>*>(
                   instruction->Destination(1))
@@ -294,10 +309,24 @@ void RiscVIJalr(const Instruction* instruction) {
   UIntReg offset = generic::GetInstructionSource<UIntReg>(instruction, 1);
   UIntReg target = offset + reg_base;
   target &= (std::numeric_limits<UIntReg>::max() << 1);
+  // Check target for proper alignment.
+  auto* state = static_cast<RiscVState*>(instruction->state());
+  auto res =
+      state->csr_set()->GetCsr(static_cast<uint64_t>(RiscVCsrEnum::kMIsa));
+  bool has_c_extension = true;
+  if (res.ok() || res.value() != nullptr) {
+    has_c_extension = (res.value()->GetUint64() &
+                       static_cast<uint64_t>(IsaExtensions::kCompressed)) != 0;
+  }
+  if (!has_c_extension && ((target & 0x3) != 0)) {
+    state->Trap(/*is_interrupt*/ false, instruction->address(),
+                *ExceptionCode::kInstructionAddressMisaligned,
+                instruction->address(), instruction);
+    return;
+  }
   UIntReg return_address = instruction->address() + instruction->size();
   auto* db = instruction->Destination(0)->AllocateDataBuffer();
   db->SetSubmit<UIntReg>(0, target);
-  auto* state = static_cast<RiscVState*>(instruction->state());
   state->set_branch(true);
   auto* reg = static_cast<generic::RegisterDestinationOperand<UIntReg>*>(
                   instruction->Destination(1))
