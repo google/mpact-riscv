@@ -34,9 +34,9 @@
 #include "mpact/sim/util/asm/opcode_assembler_interface.h"
 #include "mpact/sim/util/asm/resolver_interface.h"
 #include "mpact/sim/util/asm/simple_assembler.h"
-#include "re2/re2.h"
 #include "riscv/riscv64g_bin_encoder_interface.h"
 #include "riscv/riscv64g_encoder.h"
+#include "util/regexp/re2/re2.h"
 
 using ::mpact::sim::riscv::isa64::RiscV64GBinEncoderInterface;
 using ::mpact::sim::riscv::isa64::Riscv64gSlotMatcher;

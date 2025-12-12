@@ -46,7 +46,6 @@
 #include "mpact/sim/util/memory/memory_interface.h"
 #include "mpact/sim/util/memory/memory_watcher.h"
 #include "mpact/sim/util/program_loader/elf_program_loader.h"
-#include "re2/re2.h"
 #include "riscv/debug_command_shell.h"
 #include "riscv/riscv64_decoder.h"
 #include "riscv/riscv_arm_semihost.h"
@@ -57,6 +56,7 @@
 #include "riscv/riscv_state.h"
 #include "riscv/riscv_top.h"
 #include "src/google/protobuf/text_format.h"
+#include "util/regexp/re2/re2.h"
 
 using ::mpact::sim::generic::Instruction;
 using ::mpact::sim::proto::ComponentData;

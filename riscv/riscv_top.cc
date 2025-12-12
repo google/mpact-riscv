@@ -410,7 +410,9 @@ absl::Status RiscVTop::Run() {
   // The simulator is now run in a separate thread so as to allow a user
   // interface to continue operating. Allocate a new run_halted_ Notification
   // object, as they are single use only.
+  if (run_halted_ != nullptr) delete run_halted_;
   run_halted_ = new absl::Notification();
+  if (run_started_ != nullptr) delete run_started_;
   run_started_ = new absl::Notification();
   // The thread is detached so it executes without having to be joined.
   std::thread([this]() {
@@ -500,14 +502,8 @@ absl::Status RiscVTop::Run() {
 }
 
 absl::Status RiscVTop::Wait() {
-  // If the simulator isn't running, then just return after deleting
-  // the notification object.
-  if (run_status_ != RunStatus::kRunning) {
-    delete run_halted_;
-    run_halted_ = nullptr;
-    return absl::OkStatus();
-  }
-
+  // If there is no notification object, just return.
+  if (run_halted_ == nullptr) return absl::OkStatus();
   // Wait for the simulator to finish - i.e., a notification on run_halted_.
   run_halted_->WaitForNotification();
   // Now delete the notification object - it is single use only.

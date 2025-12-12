@@ -33,10 +33,10 @@
 #include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/type_helpers.h"
-#include "re2/re2.h"
 #include "riscv/riscv_debug_interface.h"
 #include "riscv/riscv_top.h"
 #include "riscv/stoull_wrapper.h"
+#include "util/regexp/re2/re2.h"
 
 namespace mpact {
 namespace sim {
