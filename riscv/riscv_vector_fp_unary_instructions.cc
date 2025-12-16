@@ -475,12 +475,12 @@ void Vfncvtxufw(const Instruction* inst) {
   }
   int sew = rv_vector->selected_element_width();
   switch (sew) {
-    case 4:
+    case 2:
       return RiscVUnaryVectorOpWithFflags<uint16_t, float>(
           rv_vector, inst, [](float vs2) -> std::tuple<uint16_t, uint32_t> {
             return CvtHelper<float, uint16_t>(vs2);
           });
-    case 8:
+    case 4:
       return RiscVUnaryVectorOpWithFflags<uint32_t, double>(
           rv_vector, inst, [](double vs2) -> std::tuple<uint32_t, uint32_t> {
             return CvtHelper<double, uint32_t>(vs2);
@@ -503,12 +503,12 @@ void Vfncvtxfw(const Instruction* inst) {
   }
   int sew = rv_vector->selected_element_width();
   switch (sew) {
-    case 4:
+    case 2:
       return RiscVUnaryVectorOpWithFflags<int16_t, float>(
           rv_vector, inst, [](float vs2) -> std::tuple<int16_t, uint32_t> {
             return CvtHelper<float, int16_t>(vs2);
           });
-    case 8:
+    case 4:
       return RiscVUnaryVectorOpWithFflags<int32_t, double>(
           rv_vector, inst, [](double vs2) -> std::tuple<int32_t, uint32_t> {
             return CvtHelper<double, int32_t>(vs2);
@@ -532,7 +532,7 @@ void Vfncvtffw(const Instruction* inst) {
   int sew = rv_vector->selected_element_width();
   ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface());
   switch (sew) {
-    case 8:
+    case 4:
       return RiscVUnaryVectorOp<float, double>(
           rv_vector, inst,
           [](double vs2) -> float { return static_cast<float>(vs2); });
@@ -557,7 +557,7 @@ void Vfncvtrodffw(const Instruction* inst) {
   // mantissa is either 1 or it is the logical or of all the bits to the right
   // in the original width mantissa.
   switch (sew) {
-    case 8:
+    case 4:
       return RiscVUnaryVectorOp<float, double>(
           rv_vector, inst, [](double vs2) -> float {
             if (FPTypeInfo<double>::IsNaN(vs2) ||
@@ -596,7 +596,7 @@ void Vfncvtfxuw(const Instruction* inst) {
   int sew = rv_vector->selected_element_width();
   ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface());
   switch (sew) {
-    case 8:
+    case 4:
       return RiscVUnaryVectorOp<float, uint64_t>(
           rv_vector, inst,
           [](uint64_t vs2) -> float { return static_cast<float>(vs2); });
@@ -607,7 +607,7 @@ void Vfncvtfxuw(const Instruction* inst) {
   }
 }
 
-// Narrowing conversion of signed integeer to floating point.
+// Narrowing conversion of signed integer to floating point.
 void Vfncvtfxw(const Instruction* inst) {
   auto* rv_fp = static_cast<RiscVState*>(inst->state())->rv_fp();
   auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
@@ -619,7 +619,7 @@ void Vfncvtfxw(const Instruction* inst) {
   int sew = rv_vector->selected_element_width();
   ScopedFPStatus set_fpstatus(rv_fp->host_fp_interface());
   switch (sew) {
-    case 8:
+    case 4:
       return RiscVUnaryVectorOp<float, int64_t>(
           rv_vector, inst,
           [](int64_t vs2) -> float { return static_cast<float>(vs2); });
@@ -636,12 +636,12 @@ void Vfncvtrtzxufw(const Instruction* inst) {
   auto* rv_vector = rv_state->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
-    case 4:
+    case 2:
       return RiscVUnaryVectorOpWithFflags<uint16_t, float>(
           rv_vector, inst, [](float vs2) -> std::tuple<uint16_t, uint32_t> {
             return CvtHelper<float, uint16_t>(vs2);
           });
-    case 8:
+    case 4:
       return RiscVUnaryVectorOpWithFflags<uint32_t, double>(
           rv_vector, inst, [](double vs2) -> std::tuple<uint32_t, uint32_t> {
             return CvtHelper<double, uint32_t>(vs2);
@@ -659,12 +659,12 @@ void Vfncvtrtzxfw(const Instruction* inst) {
   auto* rv_vector = rv_state->rv_vector();
   int sew = rv_vector->selected_element_width();
   switch (sew) {
-    case 4:
+    case 2:
       return RiscVUnaryVectorOpWithFflags<int16_t, float>(
           rv_vector, inst, [](float vs2) -> std::tuple<int16_t, uint32_t> {
             return CvtHelper<float, int16_t>(vs2);
           });
-    case 8:
+    case 4:
       return RiscVUnaryVectorOpWithFflags<int32_t, double>(
           rv_vector, inst, [](double vs2) -> std::tuple<int32_t, uint32_t> {
             return CvtHelper<double, int32_t>(vs2);

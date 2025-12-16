@@ -684,7 +684,7 @@ TEST_F(RiscVFPUnaryInstructionsTest, VfmvFromScalar) {
 TEST_F(RiscVFPUnaryInstructionsTest, Vfncvtfxuw) {
   SetSemanticFunction(&Vfncvtfxuw);
   UnaryOpTestHelperV<float, uint64_t>(
-      "Vfncvt.f.xu.w_64", /*sew*/ 64, instruction_,
+      "Vfncvt.f.xu.w_64", /*sew*/ 32, instruction_,
       [](uint64_t vs2) -> float { return static_cast<float>(vs2); });
 }
 
@@ -692,7 +692,7 @@ TEST_F(RiscVFPUnaryInstructionsTest, Vfncvtfxuw) {
 TEST_F(RiscVFPUnaryInstructionsTest, Vfncvtfxw) {
   SetSemanticFunction(&Vfncvtfxw);
   UnaryOpTestHelperV<float, int64_t>(
-      "Vfncvt.f.x.w_64", /*sew*/ 64, instruction_,
+      "Vfncvt.f.x.w_64", /*sew*/ 32, instruction_,
       [](int64_t vs2) -> float { return static_cast<float>(vs2); });
 }
 
@@ -700,7 +700,7 @@ TEST_F(RiscVFPUnaryInstructionsTest, Vfncvtfxw) {
 TEST_F(RiscVFPUnaryInstructionsTest, Vfncvtffw) {
   SetSemanticFunction(&Vfncvtffw);
   UnaryOpTestHelperV<float, double>(
-      "Vfncvt.f.f.w_64", /*sew*/ 64, instruction_,
+      "Vfncvt.f.f.w_64", /*sew*/ 32, instruction_,
       [](double vs2) -> float { return static_cast<float>(vs2); });
 }
 
@@ -708,7 +708,7 @@ TEST_F(RiscVFPUnaryInstructionsTest, Vfncvtffw) {
 TEST_F(RiscVFPUnaryInstructionsTest, Vfncvtrodffw) {
   SetSemanticFunction(&Vfncvtrodffw);
   UnaryOpTestHelperV<float, double>(
-      "Vfncvt.rod.f.f.w_64", /*sew*/ 64, instruction_, [](double vs2) -> float {
+      "Vfncvt.rod.f.f.w_64", /*sew*/ 32, instruction_, [](double vs2) -> float {
         if (std::isnan(vs2) || std::isinf(vs2)) {
           return static_cast<float>(vs2);
         }
@@ -731,7 +731,7 @@ TEST_F(RiscVFPUnaryInstructionsTest, Vfncvtrtzxfw) {
   SetSemanticFunction(&Vfncvtrtzxfw);
   rv_fp_->SetRoundingMode(FPRoundingMode::kRoundTowardsZero);
   UnaryOpWithFflagsFPTestHelperV<int16_t, float>(
-      "Vfncvt.rtz.x.f.w_32", /*sew*/ 32, instruction_, /*delta_position*/ 32,
+      "Vfncvt.rtz.x.f.w_32", /*sew*/ 16, instruction_, /*delta_position*/ 32,
       [this](float vs2) -> std::tuple<int16_t, uint32_t> {
         return ConvertHelper<float, int16_t>(vs2, this->rv_fp_);
       });
@@ -739,7 +739,7 @@ TEST_F(RiscVFPUnaryInstructionsTest, Vfncvtrtzxfw) {
   SetSemanticFunction(&Vfncvtrtzxfw);
   rv_fp_->SetRoundingMode(FPRoundingMode::kRoundTowardsZero);
   UnaryOpWithFflagsFPTestHelperV<int32_t, double>(
-      "Vfncvt.rtz.x.f.w_64", /*sew*/ 64, instruction_, /*delta_position*/ 64,
+      "Vfncvt.rtz.x.f.w_64", /*sew*/ 32, instruction_, /*delta_position*/ 64,
       [this](double vs2) -> std::tuple<int32_t, uint32_t> {
         return ConvertHelper<double, int32_t>(vs2, this->rv_fp_);
       });
@@ -750,7 +750,7 @@ TEST_F(RiscVFPUnaryInstructionsTest, Vfncvtrtzxufw) {
   SetSemanticFunction(&Vfncvtrtzxufw);
   rv_fp_->SetRoundingMode(FPRoundingMode::kRoundTowardsZero);
   UnaryOpWithFflagsFPTestHelperV<uint16_t, float>(
-      "Vfncvt.rtz.xu.f.w_32", /*sew*/ 32, instruction_, /*delta_position*/ 32,
+      "Vfncvt.rtz.xu.f.w_32", /*sew*/ 16, instruction_, /*delta_position*/ 32,
       [this](float vs2) -> std::tuple<uint16_t, uint32_t> {
         return ConvertHelper<float, uint16_t>(vs2, this->rv_fp_);
       });
@@ -758,7 +758,7 @@ TEST_F(RiscVFPUnaryInstructionsTest, Vfncvtrtzxufw) {
   SetSemanticFunction(&Vfncvtrtzxufw);
   rv_fp_->SetRoundingMode(FPRoundingMode::kRoundTowardsZero);
   UnaryOpWithFflagsFPTestHelperV<uint32_t, double>(
-      "Vfncvt.rtz.xu.f.w_64", /*sew*/ 64, instruction_, /*delta_position*/ 64,
+      "Vfncvt.rtz.xu.f.w_64", /*sew*/ 32, instruction_, /*delta_position*/ 64,
       [this](double vs2) -> std::tuple<uint32_t, uint32_t> {
         return ConvertHelper<double, uint32_t>(vs2, this->rv_fp_);
       });
@@ -768,14 +768,14 @@ TEST_F(RiscVFPUnaryInstructionsTest, Vfncvtrtzxufw) {
 TEST_F(RiscVFPUnaryInstructionsTest, Vfncvtxfw) {
   SetSemanticFunction(&Vfncvtxfw);
   UnaryOpWithFflagsFPTestHelperV<int16_t, float>(
-      "Vfncvt.x.f.w_32", /*sew*/ 32, instruction_, /*delta_position*/ 32,
+      "Vfncvt.x.f.w_32", /*sew*/ 16, instruction_, /*delta_position*/ 32,
       [this](float vs2) -> std::tuple<int16_t, uint32_t> {
         return ConvertHelper<float, int16_t>(vs2, this->rv_fp_);
       });
   ResetInstruction();
   SetSemanticFunction(&Vfncvtxfw);
   UnaryOpWithFflagsFPTestHelperV<int32_t, double>(
-      "Vfncvt.x.f.w_64", /*sew*/ 64, instruction_, /*delta_position*/ 32,
+      "Vfncvt.x.f.w_64", /*sew*/ 32, instruction_, /*delta_position*/ 64,
       [this](double vs2) -> std::tuple<int32_t, uint32_t> {
         return ConvertHelper<double, int32_t>(vs2, this->rv_fp_);
       });
@@ -785,14 +785,14 @@ TEST_F(RiscVFPUnaryInstructionsTest, Vfncvtxfw) {
 TEST_F(RiscVFPUnaryInstructionsTest, Vfncvtxufw) {
   SetSemanticFunction(&Vfncvtxufw);
   UnaryOpWithFflagsFPTestHelperV<uint16_t, float>(
-      "Vfncvt.xu.f.w_32", /*sew*/ 32, instruction_, /*delta_position*/ 32,
+      "Vfncvt.xu.f.w_32", /*sew*/ 16, instruction_, /*delta_position*/ 32,
       [this](float vs2) -> std::tuple<uint16_t, uint32_t> {
         return ConvertHelper<float, uint16_t>(vs2, this->rv_fp_);
       });
   ResetInstruction();
   SetSemanticFunction(&Vfncvtxufw);
   UnaryOpWithFflagsFPTestHelperV<uint32_t, double>(
-      "Vfncvt.xu.f.w_64", /*sew*/ 64, instruction_, /*delta_position*/ 64,
+      "Vfncvt.xu.f.w_64", /*sew*/ 32, instruction_, /*delta_position*/ 64,
       [this](double vs2) -> std::tuple<uint32_t, uint32_t> {
         return ConvertHelper<double, uint32_t>(vs2, this->rv_fp_);
       });
