@@ -71,7 +71,8 @@ class RiscV64GAssembler : public OpcodeAssemblerInterface {
     // with the current address.
     std::string label;
     if (RE2::Consume(&text, label_re_, &label)) {
-      auto status = add_symbol_callback(label, address, 0, STT_NOTYPE, 0, 0);
+      auto status =
+          add_symbol_callback(label, address, 0, ELFIO::STT_NOTYPE, 0, 0);
       if (!status.ok()) return status;
     }
     auto res = matcher_->Encode(address, text, 0, resolver, relocations);
@@ -130,10 +131,10 @@ int main(int argc, char* argv[]) {
   RiscV64GAssembler riscv_64g_assembler(&matcher);
   CHECK_OK(matcher.Initialize());
   // Instantiate the assembler.
-  SimpleAssembler assembler("#", ELFCLASS64, &riscv_64g_assembler);
+  SimpleAssembler assembler("#", ELFIO::ELFCLASS64, &riscv_64g_assembler);
   // Set up the abi and the machine type.
-  assembler.writer().set_os_abi(ELFOSABI_LINUX);
-  assembler.writer().set_machine(EM_RISCV);
+  assembler.writer().set_os_abi(ELFIO::ELFOSABI_LINUX);
+  assembler.writer().set_machine(ELFIO::EM_RISCV);
   // Set the appropriate ELF header flags.
   assembler.writer().set_flags(*RiscVElfFlags::kRiscvTso |
                                *RiscVElfFlags::kRiscvRvc);
