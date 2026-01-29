@@ -40,6 +40,28 @@ void RiscVIllegalInstruction(const Instruction* inst) {
               /*epc*/ inst->address(), inst);
 }
 
+namespace {
+// Helper function to check target alignment for jumps.
+// Returns true if trap was taken, false otherwise.
+template <typename UIntReg>
+bool IsTargetMisaligned(UIntReg target, const Instruction* instruction) {
+  auto* state = static_cast<RiscVState*>(instruction->state());
+  auto res =
+      state->csr_set()->GetCsr(static_cast<uint64_t>(RiscVCsrEnum::kMIsa));
+  bool has_c_extension =
+      res.ok() && (res.value() != nullptr) &&
+      ((res.value()->GetUint64() &
+        static_cast<uint64_t>(IsaExtensions::kCompressed)) != 0);
+  if (!has_c_extension && ((target & 0x3) != 0)) {
+    state->Trap(/*is_interrupt*/ false, /*trap_value*/ target,
+                *ExceptionCode::kInstructionAddressMisaligned,
+                instruction->address(), instruction);
+    return true;
+  }
+  return false;
+}
+}  // namespace
+
 // The following instruction semantic functions implement basic alu operations.
 // They are used for both register-register and register-immediate versions of
 // the corresponding instructions.
@@ -126,6 +148,9 @@ void RiscVIAuipc(const Instruction* instruction) {
 void RiscVIJal(const Instruction* instruction) {
   UIntReg offset = generic::GetInstructionSource<UIntReg>(instruction, 0);
   UIntReg target = (offset + instruction->address()) & ~0x1;
+
+  if (IsTargetMisaligned(target, instruction)) return;
+
   UIntReg return_address = instruction->address() + instruction->size();
   auto* db = instruction->Destination(0)->AllocateDataBuffer();
   db->SetSubmit<UIntReg>(0, target);
@@ -141,24 +166,13 @@ void RiscVIJalr(const Instruction* instruction) {
   UIntReg reg_base = generic::GetInstructionSource<UIntReg>(instruction, 0);
   UIntReg offset = generic::GetInstructionSource<UIntReg>(instruction, 1);
   UIntReg target = (offset + reg_base) & ~0x1;
-  // Check target for proper alignment.
-  auto* state = static_cast<RiscVState*>(instruction->state());
-  auto res =
-      state->csr_set()->GetCsr(static_cast<uint64_t>(RiscVCsrEnum::kMIsa));
-  bool has_c_extension = true;
-  if (res.ok() || res.value() != nullptr) {
-    has_c_extension = (res.value()->GetUint64() &
-                       static_cast<uint64_t>(IsaExtensions::kCompressed)) != 0;
-  }
-  if (!has_c_extension && ((target & 0x3) != 0)) {
-    state->Trap(/*is_interrupt*/ false, instruction->address(),
-                *ExceptionCode::kInstructionAddressMisaligned,
-                instruction->address(), instruction);
-    return;
-  }
+
+  if (IsTargetMisaligned(target, instruction)) return;
+
   UIntReg return_address = instruction->address() + instruction->size();
   auto* db = instruction->Destination(0)->AllocateDataBuffer();
   db->SetSubmit<UIntReg>(0, target);
+  auto* state = static_cast<RiscVState*>(instruction->state());
   state->set_branch(true);
   auto* reg = static_cast<generic::RegisterDestinationOperand<UIntReg>*>(
                   instruction->Destination(1))
@@ -293,6 +307,9 @@ void RiscVIJal(const Instruction* instruction) {
   UIntReg offset = generic::GetInstructionSource<UIntReg>(instruction, 0);
   UIntReg target = offset + instruction->address();
   target &= (std::numeric_limits<UIntReg>::max() << 1);
+
+  if (IsTargetMisaligned(target, instruction)) return;
+
   UIntReg return_address = instruction->address() + instruction->size();
   auto* db = instruction->Destination(0)->AllocateDataBuffer();
   db->SetSubmit<UIntReg>(0, target);
@@ -309,24 +326,13 @@ void RiscVIJalr(const Instruction* instruction) {
   UIntReg offset = generic::GetInstructionSource<UIntReg>(instruction, 1);
   UIntReg target = offset + reg_base;
   target &= (std::numeric_limits<UIntReg>::max() << 1);
-  // Check target for proper alignment.
-  auto* state = static_cast<RiscVState*>(instruction->state());
-  auto res =
-      state->csr_set()->GetCsr(static_cast<uint64_t>(RiscVCsrEnum::kMIsa));
-  bool has_c_extension = true;
-  if (res.ok() || res.value() != nullptr) {
-    has_c_extension = (res.value()->GetUint64() &
-                       static_cast<uint64_t>(IsaExtensions::kCompressed)) != 0;
-  }
-  if (!has_c_extension && ((target & 0x3) != 0)) {
-    state->Trap(/*is_interrupt*/ false, instruction->address(),
-                *ExceptionCode::kInstructionAddressMisaligned,
-                instruction->address(), instruction);
-    return;
-  }
+
+  if (IsTargetMisaligned(target, instruction)) return;
+
   UIntReg return_address = instruction->address() + instruction->size();
   auto* db = instruction->Destination(0)->AllocateDataBuffer();
   db->SetSubmit<UIntReg>(0, target);
+  auto* state = static_cast<RiscVState*>(instruction->state());
   state->set_branch(true);
   auto* reg = static_cast<generic::RegisterDestinationOperand<UIntReg>*>(
                   instruction->Destination(1))

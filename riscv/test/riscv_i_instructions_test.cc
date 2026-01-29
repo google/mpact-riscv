@@ -25,6 +25,7 @@
 #include "mpact/sim/generic/immediate_operand.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
+#include "riscv/riscv_csr.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
 
@@ -62,6 +63,16 @@ class RV32IInstructionTest : public testing::Test {
     state_ = new RiscVState("test", RiscVXlen::RV32, memory_);
     instruction_ = new Instruction(kInstAddress, state_);
     instruction_->set_size(4);
+    state_->set_on_trap([this](bool is_interrupt, uint64_t trap_value,
+                               uint64_t exception_code, uint64_t epc,
+                               const Instruction* inst) {
+      trap_taken_ = true;
+      trap_is_interrupt_ = is_interrupt;
+      trap_value_ = trap_value;
+      trap_code_ = exception_code;
+      trap_epc_ = epc;
+      return true;
+    });
   }
   ~RV32IInstructionTest() override {
     delete memory_;
@@ -126,6 +137,11 @@ class RV32IInstructionTest : public testing::Test {
   FlatDemandMemory* memory_;
   RiscVState* state_;
   Instruction* instruction_;
+  bool trap_taken_ = false;
+  uint64_t trap_epc_ = 0;
+  uint64_t trap_value_ = 0;
+  uint64_t trap_code_ = 0;
+  bool trap_is_interrupt_ = false;
 };
 
 // Almost all the tests below follow the same pattern. There are two phases.
@@ -273,6 +289,29 @@ TEST_F(RV32IInstructionTest, RV32IJal) {
   EXPECT_EQ(GetRegisterValue<uint32_t>(kX3), instruction_->address() + 4);
 }
 
+TEST_F(RV32IInstructionTest, RV32IJalMisaligned) {
+  AppendRegisterOperands({}, {RiscVState::kPcName, kX3});
+  AppendImmediateOperands<uint32_t>({2});
+  SetSemanticFunction(&::mpact::sim::riscv::RV32::RiscVIJal);
+  // Get misa and clear C bit
+  auto misa = state_->csr_set()
+                  ->GetCsr(static_cast<uint64_t>(
+                      ::mpact::sim::riscv::RiscVCsrEnum::kMIsa))
+                  .value();
+  misa->Set(
+      misa->GetUint64() &
+      ~static_cast<uint64_t>(::mpact::sim::riscv::IsaExtensions::kCompressed));
+  trap_taken_ = false;
+  instruction_->Execute(nullptr);
+  EXPECT_TRUE(trap_taken_);
+  EXPECT_FALSE(trap_is_interrupt_);
+  EXPECT_EQ(
+      trap_code_,
+      static_cast<uint64_t>(
+          ::mpact::sim::riscv::ExceptionCode::kInstructionAddressMisaligned));
+  EXPECT_EQ(trap_epc_, instruction_->address());
+}
+
 TEST_F(RV32IInstructionTest, RV32IJalr) {
   AppendRegisterOperands({kX1}, {RiscVState::kPcName, kX3});
   AppendImmediateOperands<uint32_t>({kOffset});
@@ -283,6 +322,30 @@ TEST_F(RV32IInstructionTest, RV32IJalr) {
   EXPECT_EQ(GetRegisterValue<uint32_t>(RiscVState::kPcName),
             kOffset + kMemAddress);
   EXPECT_EQ(GetRegisterValue<uint32_t>(kX3), instruction_->address() + 4);
+}
+
+TEST_F(RV32IInstructionTest, RV32IJalrMisaligned) {
+  AppendRegisterOperands({kX1}, {RiscVState::kPcName, kX3});
+  AppendImmediateOperands<uint32_t>({2});
+  SetSemanticFunction(&::mpact::sim::riscv::RV32::RiscVIJalr);
+  SetRegisterValues<uint32_t>({{kX1, 0}});
+  // Get misa and clear C bit
+  auto misa = state_->csr_set()
+                  ->GetCsr(static_cast<uint64_t>(
+                      ::mpact::sim::riscv::RiscVCsrEnum::kMIsa))
+                  .value();
+  misa->Set(
+      misa->GetUint64() &
+      ~static_cast<uint64_t>(::mpact::sim::riscv::IsaExtensions::kCompressed));
+  trap_taken_ = false;
+  instruction_->Execute(nullptr);
+  EXPECT_TRUE(trap_taken_);
+  EXPECT_FALSE(trap_is_interrupt_);
+  EXPECT_EQ(
+      trap_code_,
+      static_cast<uint64_t>(
+          ::mpact::sim::riscv::ExceptionCode::kInstructionAddressMisaligned));
+  EXPECT_EQ(trap_epc_, instruction_->address());
 }
 
 TEST_F(RV32IInstructionTest, RV32IBeq) {

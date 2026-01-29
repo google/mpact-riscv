@@ -990,6 +990,20 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "riscv64_i_instructions_test",
+    srcs = ["riscv64_i_instructions_test.cc"],
+    deps = [
+        "//riscv:riscv_g",
+        "//riscv:riscv_state",
+        "@com_google_absl//absl/strings:string_view",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
+    ],
+)
+
 config_setting(
     name = "arm_cpu",
     values = {"cpu": "arm"},
