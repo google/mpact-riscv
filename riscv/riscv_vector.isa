@@ -1802,7 +1802,7 @@ slot riscv_zve32x {
     vrsub_vx{: vs2, rs1, vmask : vd},
       disasm: "vrsub.vx", "%vd, %vs2, %rs1, %vmask",
       semfunc: "&::mpact::sim::riscv::Vrsub";
-    vrsub_vi{: vs2, simm5, vmask, vd},
+    vrsub_vi{: vs2, simm5, vmask : vd},
       disasm: "vrsub.vi", "%vd, %simm5, %vmask",
       semfunc: "&::mpact::sim::riscv::Vrsub";
     vminu_vv{: vs2, vs1, vmask : vd},
