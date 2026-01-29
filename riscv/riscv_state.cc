@@ -231,35 +231,35 @@ void CreateCsrs(RiscVState* state, std::vector<RiscVCsrInterface*>& csr_vec) {
            nullptr);
 
   // minstret/minstreth
-  auto* minstret = CreateCsr<RiscVCounterCsr<T, RiscVState>>(
+  auto* minstret = CreateCsr<RiscVPerformanceCounterCsr<T, RiscVState>>(
       state, csr_vec, "minstret", RiscVCsrEnum ::kMInstret, state);
   CHECK_NE(minstret, nullptr);
   if (std::is_same_v<T, uint32_t>) {
     CHECK_NE(
-        CreateCsr<RiscVCounterCsrHigh<RiscVState>>(
+        CreateCsr<RiscVPerformanceCounterCsrHigh<RiscVState>>(
             state, csr_vec, "minstreth", RiscVCsrEnum::kMInstretH, state,
             reinterpret_cast<RiscVCounterCsr<uint32_t, RiscVState>*>(minstret)),
         nullptr);
   }
   // mcycle/mcycleh
-  auto* mcycle = CreateCsr<RiscVCounterCsr<T, RiscVState>>(
+  auto* mcycle = CreateCsr<RiscVPerformanceCounterCsr<T, RiscVState>>(
       state, csr_vec, "mcycle", RiscVCsrEnum::kMCycle, state);
   CHECK_NE(mcycle, nullptr);
   if (std::is_same_v<T, uint32_t>) {
     CHECK_NE(
-        CreateCsr<RiscVCounterCsrHigh<RiscVState>>(
+        CreateCsr<RiscVPerformanceCounterCsrHigh<RiscVState>>(
             state, csr_vec, "mcycleh", RiscVCsrEnum::kMCycleH, state,
             reinterpret_cast<RiscVCounterCsr<uint32_t, RiscVState>*>(mcycle)),
         nullptr);
   }
 
   // cycle / cycleh
-  auto* cycle = CreateCsr<RiscVCounterCsr<T, RiscVState>>(
+  auto* cycle = CreateCsr<RiscVPerformanceCounterCsr<T, RiscVState>>(
       state, csr_vec, "cycle", RiscVCsrEnum::kCycle, state);
   CHECK_NE(cycle, nullptr);
   if (std::is_same_v<T, uint32_t>) {
     CHECK_NE(
-        CreateCsr<RiscVCounterCsrHigh<RiscVState>>(
+        CreateCsr<RiscVPerformanceCounterCsrHigh<RiscVState>>(
             state, csr_vec, "cycleh", RiscVCsrEnum::kCycleH, state,
             reinterpret_cast<RiscVCounterCsr<uint32_t, RiscVState>*>(cycle)),
         nullptr);
@@ -278,12 +278,12 @@ void CreateCsrs(RiscVState* state, std::vector<RiscVCsrInterface*>& csr_vec) {
   }
 
   // instret / instreth
-  auto* instret = CreateCsr<RiscVCounterCsr<T, RiscVState>>(
+  auto* instret = CreateCsr<RiscVPerformanceCounterCsr<T, RiscVState>>(
       state, csr_vec, "instret", RiscVCsrEnum::kInstret, state);
   CHECK_NE(instret, nullptr);
   if (std::is_same_v<T, uint32_t>) {
     CHECK_NE(
-        CreateCsr<RiscVCounterCsrHigh<RiscVState>>(
+        CreateCsr<RiscVPerformanceCounterCsrHigh<RiscVState>>(
             state, csr_vec, "instreth", RiscVCsrEnum::kInstretH, state,
             reinterpret_cast<RiscVCounterCsr<uint32_t, RiscVState>*>(instret)),
         nullptr);
