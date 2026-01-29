@@ -627,4 +627,37 @@ TEST_F(RiscVTopTest, RiscV64) {
       << absl::StrJoin(failed_perf_counter_csr_names, ",");
 }
 
+// Test that executing an illegal instruction does not increment minstret.
+TEST_F(RiscVTopTest, IllegalInstructionTrap) {
+  uint32_t illegal_instruction = 0;
+  EXPECT_OK(
+      riscv_top_->WriteMemory(0x1000, &illegal_instruction, sizeof(uint32_t)));
+  EXPECT_OK(riscv_top_->WriteRegister("pc", 0x1000));
+  EXPECT_OK(riscv_top_->WriteRegister("minstret", 1));
+
+  bool trap_called = false;
+  state_->set_on_trap([&trap_called](bool is_interrupt, uint64_t trap_value,
+                                     uint64_t exception_code, uint64_t epc,
+                                     const Instruction* inst) {
+    trap_called = true;
+    EXPECT_FALSE(is_interrupt);
+    EXPECT_EQ(exception_code,
+              *mpact::sim::riscv::ExceptionCode::kIllegalInstruction);
+    EXPECT_EQ(epc, 0x1000);
+    return false;  // in order to exercise default trap handling
+  });
+
+  auto minstret_before = riscv_top_->ReadRegister("minstret");
+  EXPECT_OK(minstret_before.status());
+  EXPECT_EQ(minstret_before.value(), 0);
+
+  auto res = riscv_top_->Step(1);
+  EXPECT_OK(res.status());
+
+  EXPECT_TRUE(trap_called);
+  auto minstret_after = riscv_top_->ReadRegister("minstret");
+  EXPECT_OK(minstret_after.status());
+  EXPECT_EQ(minstret_after.value(), 0);
+}
+
 }  // namespace

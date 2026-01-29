@@ -665,6 +665,19 @@ void RiscVState::Cease(const Instruction* inst) {
 void RiscVState::Trap(bool is_interrupt, uint64_t trap_value,
                       uint64_t exception_code, uint64_t epc,
                       const Instruction* inst) {
+  if (!is_interrupt) {
+    auto minstret_res =
+        csr_set()->GetCsr(static_cast<uint64_t>(RiscVCsrEnum::kMInstret));
+    if (minstret_res.ok()) {
+      // If an exception causes a trap, the instruction did not retire.
+      // The minstret counter is implemented using RiscVPerformanceCounterCsr
+      // which increments its value as part of instruction processing before it
+      // is known if it will cause a trap. The write below corrects for this
+      // by decrementing the minstret value by 1. This is a side-effect of
+      // RiscVPerformanceCounterCsr::Set().
+      (*minstret_res)->Set((*minstret_res)->AsUint64());
+    }
+  }
   if (on_trap_ != nullptr) {
     bool res = on_trap_(is_interrupt, trap_value, exception_code, epc, inst);
     if (res) return;

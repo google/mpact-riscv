@@ -446,6 +446,7 @@ class RiscVState : public ArchState {
   PrivilegeMode privilege_mode_ = PrivilegeMode::kMachine;
   // Flag set on branch instructions.
   bool branch_ = false;
+
   // Handles to frequently used CSRs.
   RiscVMStatus* mstatus_ = nullptr;
   RiscVMIsa* misa_ = nullptr;
