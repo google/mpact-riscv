@@ -29,6 +29,8 @@
 
 namespace {
 
+using ::mpact::sim::riscv::ExceptionCode;
+using ::mpact::sim::riscv::PrivilegeMode;
 using ::mpact::sim::riscv::RiscVCsrEnum;
 using ::mpact::sim::riscv::RiscVCsrInterface;
 using ::mpact::sim::riscv::RiscVState;
@@ -79,8 +81,7 @@ TEST(RiscVStateTest, OutOfBoundLoad) {
                         uint64_t exception_code, uint64_t epc,
                         const mpact::sim::riscv::Instruction* inst) -> bool {
     if (exception_code ==
-        static_cast<uint64_t>(
-            mpact::sim::riscv::ExceptionCode::kLoadAccessFault)) {
+        static_cast<uint64_t>(ExceptionCode::kLoadAccessFault)) {
       std::cerr << "Load Access Fault" << std::endl;
       return true;
     }
@@ -161,6 +162,38 @@ TEST(RiscVStateTest, PerfCounterCsrNameAndIndexMatch_mhpm_high) {
     ASSERT_TRUE(csr_by_index.ok());
     EXPECT_EQ(*csr_by_name, *csr_by_index);
   }
+}
+
+TEST(RiscVStateTest, Mtval) {
+  FlatDemandMemory memory;
+  auto state = std::make_unique<RiscVState>("test", RiscVXlen::RV32, &memory);
+  state->set_max_physical_address(kMemAddr - 4);
+  auto* db = state->db_factory()->Allocate<uint32_t>(1);
+  // Create a dummy instruction so trap can dereference the address.
+  auto* dummy_inst = new mpact::sim::riscv::Instruction(0x0, nullptr);
+  dummy_inst->set_size(4);
+  state->LoadMemory(dummy_inst, kMemAddr, db, nullptr, nullptr);
+  EXPECT_EQ(state->mtval()->AsUint64(), kMemAddr);
+  db->DecRef();
+  dummy_inst->DecRef();
+}
+
+TEST(RiscVStateTest, Stval) {
+  FlatDemandMemory memory;
+  auto state = std::make_unique<RiscVState>("test", RiscVXlen::RV32, &memory);
+  state->set_max_physical_address(kMemAddr - 4);
+  // Delegate LoadAccessFault to S-mode and set privilege to S-mode
+  state->medeleg()->Set(uint64_t{1}
+                        << static_cast<int>(ExceptionCode::kLoadAccessFault));
+  state->set_privilege_mode(PrivilegeMode::kSupervisor);
+  auto* db = state->db_factory()->Allocate<uint32_t>(1);
+  // Create a dummy instruction so trap can dereference the address.
+  auto* dummy_inst = new mpact::sim::riscv::Instruction(0x0, nullptr);
+  dummy_inst->set_size(4);
+  state->LoadMemory(dummy_inst, kMemAddr, db, nullptr, nullptr);
+  EXPECT_EQ(state->stval()->AsUint64(), kMemAddr);
+  db->DecRef();
+  dummy_inst->DecRef();
 }
 
 }  // namespace

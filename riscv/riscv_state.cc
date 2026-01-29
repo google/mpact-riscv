@@ -226,7 +226,7 @@ void CreateCsrs(RiscVState* state, std::vector<RiscVCsrInterface*>& csr_vec) {
                 CsrInfo<uint64_t>::kMstatusInitialValue, state, misa);
   CHECK_NE(mstatus, nullptr);
   // mtval
-  CHECK_NE(CreateCsr<RiscVSimpleCsr<T>>(state, csr_vec, "mtval",
+  CHECK_NE(CreateCsr<RiscVSimpleCsr<T>>(state, state->mtval_, csr_vec, "mtval",
                                         RiscVCsrEnum::kMTval, 0, state),
            nullptr);
 
@@ -389,7 +389,7 @@ void CreateCsrs(RiscVState* state, std::vector<RiscVCsrInterface*>& csr_vec) {
                                         RiscVCsrEnum::kSEpc, 0, state),
            nullptr);
   // stval
-  CHECK_NE(CreateCsr<RiscVSimpleCsr<T>>(state, csr_vec, "stval",
+  CHECK_NE(CreateCsr<RiscVSimpleCsr<T>>(state, state->stval_, csr_vec, "stval",
                                         RiscVCsrEnum::kSTval, 0, state),
            nullptr);
 
@@ -707,14 +707,17 @@ void RiscVState::Trap(bool is_interrupt, uint64_t trap_value,
   RiscVCsrInterface* epc_csr = nullptr;
   RiscVCsrInterface* cause_csr = nullptr;
   RiscVCsrInterface* tvec_csr = nullptr;
+  RiscVCsrInterface* tval_csr = nullptr;
   if (destination_mode == PrivilegeMode::kMachine) {
     epc_csr = mepc_;
     cause_csr = mcause_;
     tvec_csr = mtvec_;
+    tval_csr = mtval_;
   } else if (destination_mode == PrivilegeMode::kSupervisor) {
     epc_csr = sepc_;
     cause_csr = scause_;
     tvec_csr = stvec_;
+    tval_csr = stval_;
   } else {
     LOG(ERROR) << "Invalid destination execution mode";
     return;
@@ -729,6 +732,8 @@ void RiscVState::Trap(bool is_interrupt, uint64_t trap_value,
 
   // Set xepc.
   epc_csr->Set(epc);
+  // Set xtval.
+  tval_csr->Set(trap_value);
   // Set xcause.
   cause_csr->Set(exception_code);
   auto current_xlen = xlen();

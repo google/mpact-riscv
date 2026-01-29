@@ -400,6 +400,7 @@ class RiscVState : public ArchState {
   RiscVMIe* mie() const { return mie_; }
   RiscVCsrInterface* jvt() const { return jvt_; }
   RiscVCsrInterface* mtvec() const { return mtvec_; }
+  RiscVCsrInterface* mtval() const { return mtval_; }
   RiscVCsrInterface* mepc() const { return mepc_; }
   RiscVCsrInterface* mcause() const { return mcause_; }
   RiscVCsrInterface* medeleg() const { return medeleg_; }
@@ -407,6 +408,7 @@ class RiscVState : public ArchState {
   RiscVSIp* sip() const { return sip_; }
   RiscVSIe* sie() const { return sie_; }
   RiscVCsrInterface* stvec() const { return stvec_; }
+  RiscVCsrInterface* stval() const { return stval_; }
   RiscVCsrInterface* sepc() const { return sepc_; }
   RiscVCsrInterface* scause() const { return scause_; }
   RiscVCsrInterface* sideleg() const { return sideleg_; }
@@ -452,6 +454,7 @@ class RiscVState : public ArchState {
   RiscVPmp* pmp_ = nullptr;
   RiscVCsrInterface* jvt_ = nullptr;
   RiscVCsrInterface* mtvec_ = nullptr;
+  RiscVCsrInterface* mtval_ = nullptr;
   RiscVCsrInterface* mepc_ = nullptr;
   RiscVCsrInterface* mcause_ = nullptr;
   RiscVCsrInterface* medeleg_ = nullptr;
@@ -459,6 +462,7 @@ class RiscVState : public ArchState {
   RiscVSIp* sip_ = nullptr;
   RiscVSIe* sie_ = nullptr;
   RiscVCsrInterface* stvec_ = nullptr;
+  RiscVCsrInterface* stval_ = nullptr;
   RiscVCsrInterface* sepc_ = nullptr;
   RiscVCsrInterface* scause_ = nullptr;
   RiscVCsrInterface* sideleg_ = nullptr;
