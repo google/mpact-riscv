@@ -992,7 +992,6 @@ cc_library(
         ":riscv64g_bin_fmt",
         ":riscv64g_isa",
         ":riscv_getters",
-        "//util/regexp/re2",
         "@com_google_absl//absl/base:no_destructor",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/status",
@@ -1000,6 +999,7 @@ cc_library(
         "@com_google_absl//absl/strings",
         "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
         "@com_google_mpact-sim//mpact/sim/util/asm",
+        "@com_googlesource_code_re2//:re2",
     ],
 )
 
@@ -1010,7 +1010,6 @@ cc_binary(
     deps = [
         ":riscv64g_encoder",
         ":riscv64g_isa",
-        "//util/regexp/re2",
         "@com_github_serge1_elfio//:elfio",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
@@ -1021,6 +1020,7 @@ cc_binary(
         "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
         "@com_google_mpact-sim//mpact/sim/util/asm",
         "@com_google_mpact-sim//mpact/sim/util/asm:simple_assembler",
+        "@com_googlesource_code_re2//:re2",
     ],
 )
 
@@ -1240,7 +1240,6 @@ cc_library(
         ":riscv_debug_interface",
         ":riscv_top",
         ":stoull_wrapper",
-        "//util/regexp/re2",
         "@com_google_absl//absl/container:btree",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/functional:any_invocable",
@@ -1252,6 +1251,7 @@ cc_library(
         "@com_google_mpact-sim//mpact/sim/generic:core_debug_interface",
         "@com_google_mpact-sim//mpact/sim/generic:debug_command_shell_interface",
         "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
+        "@com_googlesource_code_re2//:re2",
     ],
 )
 
@@ -1300,7 +1300,6 @@ cc_binary(
         ":riscv_fp_state",
         ":riscv_state",
         ":riscv_top",
-        "//util/regexp/re2",
         "@com_google_absl//absl/base:log_severity",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
@@ -1318,6 +1317,7 @@ cc_binary(
         "@com_google_mpact-sim//mpact/sim/util/memory",
         "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
         "@com_google_protobuf//:protobuf",
+        "@com_googlesource_code_re2//:re2",
     ],
 )
 
@@ -1336,7 +1336,6 @@ cc_binary(
         ":riscv_fp_state",
         ":riscv_state",
         ":riscv_top",
-        "//util/regexp/re2",
         "@com_google_absl//absl/base:log_severity",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
@@ -1354,6 +1353,7 @@ cc_binary(
         "@com_google_mpact-sim//mpact/sim/util/memory",
         "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
         "@com_google_protobuf//:protobuf",
+        "@com_googlesource_code_re2//:re2",
     ],
 )
 
@@ -1370,7 +1370,6 @@ cc_binary(
         ":riscv_fp_state",
         ":riscv_state",
         ":riscv_top",
-        "//util/regexp/re2",
         "@com_google_absl//absl/base:log_severity",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
@@ -1387,6 +1386,7 @@ cc_binary(
         "@com_google_mpact-sim//mpact/sim/util/memory",
         "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
         "@com_google_protobuf//:protobuf",
+        "@com_googlesource_code_re2//:re2",
     ],
 )
 
@@ -1404,7 +1404,6 @@ cc_binary(
         ":riscv_fp_state",
         ":riscv_state",
         ":riscv_top",
-        "//util/regexp/re2",
         "@com_google_absl//absl/base:log_severity",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
@@ -1422,6 +1421,7 @@ cc_binary(
         "@com_google_mpact-sim//mpact/sim/util/memory",
         "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
         "@com_google_protobuf//:protobuf",
+        "@com_googlesource_code_re2//:re2",
     ],
 )
 
@@ -1468,7 +1468,6 @@ cc_library(
         "riscv_plic.h",
     ],
     deps = [
-        "//util/regexp/re2",
         "@com_google_absl//absl/container:btree",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/numeric:bits",
@@ -1477,6 +1476,7 @@ cc_library(
         "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
         "@com_google_mpact-sim//mpact/sim/util/memory",
+        "@com_googlesource_code_re2//:re2",
     ],
 )
 
@@ -1537,12 +1537,12 @@ cc_library(
         ":debug_command_shell",
         ":riscv_top",
         ":stoull_wrapper",
-        "//util/regexp/re2",
         "@com_google_absl//absl/functional:any_invocable",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:string_view",
         "@com_google_mpact-sim//mpact/sim/util/memory",
+        "@com_googlesource_code_re2//:re2",
     ],
 )
 

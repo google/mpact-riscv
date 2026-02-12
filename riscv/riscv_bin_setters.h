@@ -29,8 +29,8 @@
 #include "absl/strings/string_view.h"
 #include "mpact/sim/util/asm/opcode_assembler_interface.h"
 #include "mpact/sim/util/asm/resolver_interface.h"
+#include "re2/re2.h"
 #include "riscv/riscv_getter_helpers.h"
-#include "util/regexp/re2/re2.h"
 
 // This file contains various setters for the RiscV binary encoder that is used
 // by the assembler to map from operand text strings to integer values.

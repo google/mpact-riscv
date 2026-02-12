@@ -24,10 +24,10 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "mpact/sim/util/memory/memory_use_profiler.h"
+#include "re2/re2.h"
 #include "riscv/debug_command_shell.h"
 #include "riscv/riscv_top.h"
 #include "riscv/stoull_wrapper.h"
-#include "util/regexp/re2/re2.h"
 
 namespace mpact::sim::riscv {
 

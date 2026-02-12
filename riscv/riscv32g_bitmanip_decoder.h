@@ -18,7 +18,6 @@
 #include <cstdint>
 #include <memory>
 
-#include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/decoder_interface.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/type_helpers.h"
@@ -80,7 +79,6 @@ class RiscV32GBitmanipDecoder : public generic::DecoderInterface {
                                       isa32gzb::RiscV32GZBInstructionSet>>
       decoder_;
   util::MemoryInterface* memory_;
-  generic::DataBuffer* inst_db_;
   std::unique_ptr<isa32gzb::RiscV32GZBEncoding> riscv_encoding_;
   std::unique_ptr<RV32GZBIsaFactory> riscv_isa_factory_;
   std::unique_ptr<isa32gzb::RiscV32GZBInstructionSet> riscv_isa_;

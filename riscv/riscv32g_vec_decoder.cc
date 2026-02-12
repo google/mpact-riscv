@@ -42,7 +42,7 @@ RiscV32GVecDecoder::RiscV32GVecDecoder(RiscVState* state,
       std::make_unique<RiscVGenericDecoder<RiscVState, isa32v::OpcodeEnum,
                                            isa32v::RiscV32GVecEncoding,
                                            isa32v::RiscV32GVInstructionSet>>(
-          state, memory, riscv_encoding_.get(), riscv_isa_.get());
+          state_, memory_, riscv_encoding_.get(), riscv_isa_.get());
 }
 
 generic::Instruction* RiscV32GVecDecoder::DecodeInstruction(uint64_t address) {

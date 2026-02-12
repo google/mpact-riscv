@@ -31,7 +31,7 @@
 #include "absl/strings/string_view.h"
 #include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/generic/debug_command_shell_interface.h"
-#include "util/regexp/re2/re2.h"
+#include "re2/re2.h"
 
 namespace mpact {
 namespace sim {

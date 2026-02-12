@@ -41,7 +41,7 @@ RiscV64GZBVecDecoder::RiscV64GZBVecDecoder(RiscVState* state,
   decoder_ = std::make_unique<RiscVGenericDecoder<
       RiscVState, isa64gvzb::OpcodeEnum, isa64gvzb::RiscV64GZBVecEncoding,
       isa64gvzb::RiscV64GVZBInstructionSet>>(
-      state, memory, riscv_encoding_.get(), riscv_isa_.get());
+      state_, memory_, riscv_encoding_.get(), riscv_isa_.get());
 }
 
 generic::Instruction* RiscV64GZBVecDecoder::DecodeInstruction(
