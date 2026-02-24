@@ -594,7 +594,7 @@ void VlSegmentIndexed(int index_width, const Instruction* inst) {
   }
   // Index lmul is scaled from the lmul by the relative size of the index
   // element to the SEW (selected element width).
-  int index_emul = (element_width * lmul8) / element_width;
+  int index_emul = (index_width * lmul8) / element_width;
   // Validate that index_emul has a legal value.
   if ((index_emul > 64) || (index_emul == 0)) {
     // TODO: signal vector error.
@@ -644,7 +644,8 @@ void VlSegmentIndexed(int index_width, const Instruction* inst) {
     }
     for (int field = 0; field < num_fields; field++) {
       masks[field * num_segments + i] = mask_value;
-      addresses[field * num_segments + i] = base + offset + field;
+      addresses[field * num_segments + i] =
+          base + offset + field * element_width;
     }
   }
   auto* context = new VectorLoadContext(data_db, mask_db, element_width, start,

@@ -770,8 +770,12 @@ class RV32VInstructionsTest : public testing::Test {
               bool mask = (kA5Mask[mask_index] >> mask_offset) & 0x1;
               if (mask && (count < num_values)) {
                 // First compute the expected value, then compare it.
-                int address = 4096 + IndexValue<IndexType>(count) +
-                              field * sizeof(ValueType);
+                int values_per_reg = kVectorLengthInBytes / sizeof(IndexType);
+                auto index_span = vreg_[kVs2 + count / values_per_reg]
+                                      ->data_buffer()
+                                      ->Get<IndexType>();
+                IndexType index_val = index_span[count % values_per_reg];
+                int address = 4096 + index_val + field * sizeof(ValueType);
                 ValueType value = ComputeValue<ValueType>(address);
 
                 EXPECT_EQ(value, span[i])
@@ -1681,63 +1685,63 @@ TEST_F(RV32VInstructionsTest, Vluxsegei8_8) {
 }
 
 TEST_F(RV32VInstructionsTest, Vluxsegei8_16) {
-  VectorLoadIndexedSegmentHelper<uint8_t, uint8_t>();
+  VectorLoadIndexedSegmentHelper<uint8_t, uint16_t>();
 }
 
 TEST_F(RV32VInstructionsTest, Vluxsegei8_32) {
-  VectorLoadIndexedSegmentHelper<uint8_t, uint8_t>();
+  VectorLoadIndexedSegmentHelper<uint8_t, uint32_t>();
 }
 
 TEST_F(RV32VInstructionsTest, Vluxsegei8_64) {
-  VectorLoadIndexedSegmentHelper<uint8_t, uint8_t>();
+  VectorLoadIndexedSegmentHelper<uint8_t, uint64_t>();
 }
 
 TEST_F(RV32VInstructionsTest, Vluxsegei16_8) {
-  VectorLoadIndexedSegmentHelper<uint8_t, uint8_t>();
+  VectorLoadIndexedSegmentHelper<uint16_t, uint8_t>();
 }
 
 TEST_F(RV32VInstructionsTest, Vluxsegei16_16) {
-  VectorLoadIndexedSegmentHelper<uint8_t, uint8_t>();
+  VectorLoadIndexedSegmentHelper<uint16_t, uint16_t>();
 }
 
 TEST_F(RV32VInstructionsTest, Vluxsegei16_32) {
-  VectorLoadIndexedSegmentHelper<uint8_t, uint8_t>();
+  VectorLoadIndexedSegmentHelper<uint16_t, uint32_t>();
 }
 
 TEST_F(RV32VInstructionsTest, Vluxsegei16_64) {
-  VectorLoadIndexedSegmentHelper<uint8_t, uint8_t>();
+  VectorLoadIndexedSegmentHelper<uint16_t, uint64_t>();
 }
 
 TEST_F(RV32VInstructionsTest, Vluxsegei32_8) {
-  VectorLoadIndexedSegmentHelper<uint8_t, uint8_t>();
+  VectorLoadIndexedSegmentHelper<uint32_t, uint8_t>();
 }
 
 TEST_F(RV32VInstructionsTest, Vluxsegei32_16) {
-  VectorLoadIndexedSegmentHelper<uint8_t, uint8_t>();
+  VectorLoadIndexedSegmentHelper<uint32_t, uint16_t>();
 }
 
 TEST_F(RV32VInstructionsTest, Vluxsegei32_32) {
-  VectorLoadIndexedSegmentHelper<uint8_t, uint8_t>();
+  VectorLoadIndexedSegmentHelper<uint32_t, uint32_t>();
 }
 
 TEST_F(RV32VInstructionsTest, Vluxsegei32_64) {
-  VectorLoadIndexedSegmentHelper<uint8_t, uint8_t>();
+  VectorLoadIndexedSegmentHelper<uint32_t, uint64_t>();
 }
 
 TEST_F(RV32VInstructionsTest, Vluxsegei64_8) {
-  VectorLoadIndexedSegmentHelper<uint8_t, uint8_t>();
+  VectorLoadIndexedSegmentHelper<uint64_t, uint8_t>();
 }
 
 TEST_F(RV32VInstructionsTest, Vluxsegei64_16) {
-  VectorLoadIndexedSegmentHelper<uint8_t, uint8_t>();
+  VectorLoadIndexedSegmentHelper<uint64_t, uint16_t>();
 }
 
 TEST_F(RV32VInstructionsTest, Vluxsegei64_32) {
-  VectorLoadIndexedSegmentHelper<uint8_t, uint8_t>();
+  VectorLoadIndexedSegmentHelper<uint64_t, uint32_t>();
 }
 
 TEST_F(RV32VInstructionsTest, Vluxsegei64_64) {
-  VectorLoadIndexedSegmentHelper<uint8_t, uint8_t>();
+  VectorLoadIndexedSegmentHelper<uint64_t, uint64_t>();
 }
 
 // Test Vector store strided.
