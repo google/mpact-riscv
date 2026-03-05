@@ -155,6 +155,9 @@ ABSL_FLAG(bool, quiet, false, "Suppress informational and warning messages");
 // Flag to set the default value for the misa CSR.
 ABSL_FLAG(std::optional<uint64_t>, misa, std::nullopt, "misa value");
 
+// Flag to set the vector length in bytes (VLENB).
+ABSL_FLAG(int, vlen, 64, "Vector length in bytes (VLENB)");
+
 constexpr char kStackEndSymbolName[] = "__stack_end";
 constexpr char kStackSizeSymbolName[] = "__stack_size";
 
@@ -250,7 +253,7 @@ int main(int argc, char** argv) {
   RiscVFPState rv_fp_state(rv_state.csr_set(), &rv_state);
   rv_state.set_rv_fp(&rv_fp_state);
   // Set up the vector state.
-  RiscVVectorState rv_vector_state(&rv_state, 64);
+  RiscVVectorState rv_vector_state(&rv_state, absl::GetFlag(FLAGS_vlen));
   rv_state.set_rv_vector(&rv_vector_state);
   // Create the instruction decoder.
   mpact::sim::generic::DecoderInterface* rv_decoder = nullptr;

@@ -161,6 +161,9 @@ ABSL_FLAG(std::string, dcache, "", "Data cache configuration");
 // Flag to set the default value for the misa CSR.
 ABSL_FLAG(std::optional<uint64_t>, misa, std::nullopt, "misa value");
 
+// Flag to set the vector length in bytes (VLENB).
+ABSL_FLAG(int, vlen, 16, "Vector length in bytes (VLENB)");
+
 constexpr char kStackEndSymbolName[] = "__stack_end";
 constexpr char kStackSizeSymbolName[] = "__stack_size";
 
@@ -275,7 +278,7 @@ int main(int argc, char** argv) {
   RiscVState rv_state("RiscV32GV", RiscVXlen::RV32, memory, atomic_memory);
   // For floating point support add the fp state.
   RiscVFPState rv_fp_state(rv_state.csr_set(), &rv_state);
-  RiscVVectorState rvv_state(&rv_state, 16 /*vector byte length*/);
+  RiscVVectorState rvv_state(&rv_state, absl::GetFlag(FLAGS_vlen));
   rv_state.set_rv_fp(&rv_fp_state);
   // Create the instruction decoder.
   mpact::sim::generic::DecoderInterface* rv_decoder = nullptr;
