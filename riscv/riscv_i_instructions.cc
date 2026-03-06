@@ -201,7 +201,7 @@ void RiscVIAdd(const Instruction* instruction) {
 void RiscVIAddw(const Instruction* instruction) {
   RiscVBinaryOp<RegisterType, IntReg, NarrowIntReg>(
       instruction, [](NarrowIntReg a, NarrowIntReg b) {
-        IntReg c = static_cast<IntReg>(a) + static_cast<IntReg>(b);
+        IntReg c = static_cast<IntReg>(a + b);
         return c;
       });
 }
