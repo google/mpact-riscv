@@ -279,16 +279,27 @@ void Vlm(const Instruction* inst) {
   auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   // Compute base address.
   int start = rv_vector->vstart();
-  uint64_t base = GetInstructionSource<uint64_t>(inst, 0) + start;
-  // Compute the number of bytes to be loaded.
-  int num_bytes = rv_vector->vector_register_byte_length() - start;
+  uint64_t base = GetInstructionSource<uint64_t>(inst, 0);
+  // According to Spec Section 7.4, vlm.v/vsm.v are unique:
+  // 1. They transfer ceil(vl/8) bytes.
+  // 2. vstart is interpreted in units of bytes (not elements).
+  int num_bytes = (rv_vector->vector_length() + 7) / 8;
+  int num_bytes_to_load = num_bytes - start;
+  if (start >= rv_vector->vector_register_byte_length()) {
+    rv_vector->clear_vstart();
+    return;
+  }
+  if (num_bytes_to_load <= 0) {
+    rv_vector->clear_vstart();
+    return;
+  }
   // Allocate address data buffer.
   auto* db_factory = inst->state()->db_factory();
-  auto* address_db = db_factory->Allocate<uint64_t>(num_bytes);
+  auto* address_db = db_factory->Allocate<uint64_t>(num_bytes_to_load);
   // Allocate the value data buffer that the loaded data is returned in.
-  auto* value_db = db_factory->Allocate<uint8_t>(num_bytes);
+  auto* value_db = db_factory->Allocate<uint8_t>(num_bytes_to_load);
   // Allocate a byte mask data buffer.
-  auto* mask_db = db_factory->Allocate<bool>(num_bytes);
+  auto* mask_db = db_factory->Allocate<bool>(num_bytes_to_load);
   // Get the spans for addresses and masks.
   auto masks = mask_db->Get<bool>();
   auto addresses = address_db->Get<uint64_t>();
@@ -298,9 +309,8 @@ void Vlm(const Instruction* inst) {
     masks[i - start] = true;
   }
   // Set up the context, and submit the load.
-  auto* context =
-      new VectorLoadContext(value_db, mask_db, sizeof(uint8_t), start,
-                            rv_vector->vector_register_byte_length());
+  auto* context = new VectorLoadContext(value_db, mask_db, sizeof(uint8_t),
+                                        start, num_bytes);
   auto* rv32_state = static_cast<RiscVState*>(inst->state());
   value_db->set_latency(0);
   rv32_state->LoadMemory(inst, address_db, mask_db, sizeof(uint8_t), value_db,
@@ -803,14 +813,24 @@ void Vsm(const Instruction* inst) {
   // Compute base address.
   int start = rv_vector->vstart();
   uint64_t base = GetInstructionSource<uint64_t>(inst, 1);
-  // Compute the number of bytes and elements to be stored.
-  int num_bytes = rv_vector->vector_register_byte_length();
-  int num_bytes_stored = num_bytes - start;
+  // According to Spec Section 7.4, vlm.v/vsm.v are unique:
+  // 1. They transfer ceil(vl/8) bytes.
+  // 2. vstart is interpreted in units of bytes (not elements).
+  int num_bytes = (rv_vector->vector_length() + 7) / 8;
+  int num_bytes_to_store = num_bytes - start;
+  if (start >= rv_vector->vector_register_byte_length()) {
+    rv_vector->clear_vstart();
+    return;
+  }
+  if (num_bytes_to_store <= 0) {
+    rv_vector->clear_vstart();
+    return;
+  }
   // Allocate address data buffer.
   auto* db_factory = inst->state()->db_factory();
-  auto* address_db = db_factory->Allocate<uint64_t>(num_bytes_stored);
-  auto* store_data_db = db_factory->Allocate(num_bytes_stored);
-  auto* mask_db = db_factory->Allocate<uint8_t>(num_bytes_stored);
+  auto* address_db = db_factory->Allocate<uint64_t>(num_bytes_to_store);
+  auto* store_data_db = db_factory->Allocate(num_bytes_to_store);
+  auto* mask_db = db_factory->Allocate<bool>(num_bytes_to_store);
   // Get the spans for addresses, masks, and store data.
   auto addresses = address_db->Get<uint64_t>();
   auto masks = mask_db->Get<bool>();

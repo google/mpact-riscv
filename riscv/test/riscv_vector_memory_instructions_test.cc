@@ -289,10 +289,12 @@ class RV32VInstructionsTest : public testing::Test {
     child_instruction_->set_semantic_function(fcn);
   }
 
-  // Configure the vector unit according to the vtype and vlen values.
-  void ConfigureVectorUnit(uint32_t vtype, uint32_t vlen) {
+  // Configure the vector unit according to the vtype and avl values.
+  // Note: 'avl' (Application Vector Length) is the requested 'vl'.
+  // This is distinct from the hardware register width (VLEN).
+  void ConfigureVectorUnit(uint32_t vtype, uint32_t avl) {
     Instruction* inst = new Instruction(state_);
-    AppendImmediateOperands<uint32_t>(inst, {vlen, vtype});
+    AppendImmediateOperands<uint32_t>(inst, {avl, vtype});
     SetSemanticFunction(inst, absl::bind_front(&Vsetvl, true, false));
     inst->Execute(nullptr);
     inst->DecRef();
@@ -1546,18 +1548,100 @@ TEST_F(RV32VInstructionsTest, Vlse64) { VectorLoadStridedHelper<uint64_t>(); }
 // Test of vector load mask.
 TEST_F(RV32VInstructionsTest, Vlm) {
   // Set up operands and register values.
+  uint32_t avl = kVectorLengthInBytes * 8;
+  ConfigureVectorUnit(0, avl);
+  int vl = rv_vector_->vector_length();
+  int num_bytes = (vl + 7) / 8;
+
   AppendRegisterOperands({kRs1Name}, {});
   SetSemanticFunction(&Vlm);
   SetChildInstruction();
   AppendVectorRegisterOperands(child_instruction_, {}, {kVd});
   SetChildSemanticFunction(&VlChild);
   SetRegisterValues<uint32_t>({{kRs1Name, kDataLoadAddress}});
+
+  // Initialize destination register with 0xff.
+  for (int i = 0; i < kVectorLengthInBytes; i++) {
+    vreg_[kVd]->data_buffer()->Set<uint8_t>(i, 0xff);
+  }
+
   // Execute instruction.
   instruction_->Execute(nullptr);
   EXPECT_FALSE(rv_vector_->vector_exception());
   auto span = vreg_[kVd]->data_buffer()->Get<uint8_t>();
   for (int i = 0; i < kVectorLengthInBytes; i++) {
-    EXPECT_EQ(i & 0xff, span[i]) << "element: " << i;
+    if (i < num_bytes) {
+      EXPECT_EQ(i & 0xff, span[i]) << "element: " << i;
+    } else {
+      EXPECT_EQ(0xff, span[i]) << "element: " << i;
+    }
+  }
+}
+
+// Test of vector load mask with small vl.
+TEST_F(RV32VInstructionsTest, Vlm_RespectsVl) {
+  // We use vl=11 specifically to test the ceil(vl/8) logic.
+  // ceil(11/8) = 2 bytes. If the implementation used floor or
+  // standard integer division, it would incorrectly result in 1 byte.
+  ConfigureVectorUnit(0, /*avl=*/11);
+  ASSERT_EQ(rv_vector_->vector_length(), 11);
+
+  AppendRegisterOperands({kRs1Name}, {});
+  SetSemanticFunction(&Vlm);
+  SetChildInstruction();
+  AppendVectorRegisterOperands(child_instruction_, {}, {kVd});
+  SetChildSemanticFunction(&VlChild);
+  SetRegisterValues<uint32_t>({{kRs1Name, kDataLoadAddress}});
+
+  // Initialize destination register with 0xff.
+  for (int i = 0; i < kVectorLengthInBytes; i++) {
+    vreg_[kVd]->data_buffer()->Set<uint8_t>(i, 0xff);
+  }
+
+  // Execute instruction.
+  instruction_->Execute(nullptr);
+  EXPECT_FALSE(rv_vector_->vector_exception());
+
+  auto span = vreg_[kVd]->data_buffer()->Get<uint8_t>();
+  // vl=11, ceil(11/8) = 2 bytes.
+  EXPECT_EQ(span[0], 0);
+  EXPECT_EQ(span[1], 1);
+  // Byte 2 should remain 0xff.
+  EXPECT_EQ(span[2], 0xff);
+}
+
+// Test of vector load mask with vstart >= vl/8.
+TEST_F(RV32VInstructionsTest, Vlm_RespectsVstart) {
+  // vl=11, which means ceil(11/8) = 2 bytes are processed.
+  // Set vstart=2, which is the first byte beyond the vl reach.
+  // For vlm.v/vsm.v, vstart is interpreted in units of bytes (Spec
+  // Section 7.4).
+  ConfigureVectorUnit(0, /*avl=*/11);
+  ASSERT_EQ(rv_vector_->vector_length(), 11);
+  rv_vector_->set_vstart(2);
+
+  AppendRegisterOperands({kRs1Name}, {});
+  SetSemanticFunction(&Vlm);
+  SetChildInstruction();
+  AppendVectorRegisterOperands(child_instruction_, {}, {kVd});
+  SetChildSemanticFunction(&VlChild);
+  SetRegisterValues<uint32_t>({{kRs1Name, kDataLoadAddress}});
+
+  // Initialize destination register with 0xff.
+  for (int i = 0; i < kVectorLengthInBytes; i++) {
+    vreg_[kVd]->data_buffer()->Set<uint8_t>(i, 0xff);
+  }
+
+  // Execute instruction.
+  instruction_->Execute(nullptr);
+  EXPECT_FALSE(rv_vector_->vector_exception());
+  // vstart should be cleared.
+  EXPECT_EQ(rv_vector_->vstart(), 0);
+
+  auto span = vreg_[kVd]->data_buffer()->Get<uint8_t>();
+  // No bytes should be loaded.
+  for (int i = 0; i < kVectorLengthInBytes; i++) {
+    EXPECT_EQ(0xff, span[i]) << "element: " << i;
   }
 }
 
@@ -1755,7 +1839,9 @@ TEST_F(RV32VInstructionsTest, Vsse32) { VectorStoreStridedHelper<uint32_t>(); }
 TEST_F(RV32VInstructionsTest, Vsse64) { VectorStoreStridedHelper<uint64_t>(); }
 
 TEST_F(RV32VInstructionsTest, Vsm) {
-  ConfigureVectorUnit(0b0'0'000'000, /*vlen*/ 1024);
+  ConfigureVectorUnit(0b0'0'000'000, /*avl*/ 1024);
+  int vl = rv_vector_->vector_length();
+  int num_bytes = (vl + 7) / 8;
   // Set up operands and register values.
   AppendVectorRegisterOperands({kVs1}, {});
   AppendRegisterOperands({kRs1Name}, {});
@@ -1764,6 +1850,13 @@ TEST_F(RV32VInstructionsTest, Vsm) {
   for (int i = 0; i < kVectorLengthInBytes; i++) {
     vreg_[kVs1]->data_buffer()->Set<uint8_t>(i, i);
   }
+
+  // Zero out memory.
+  auto* zero_db = state_->db_factory()->Allocate<uint8_t>(kVectorLengthInBytes);
+  std::memset(zero_db->raw_ptr(), 0, kVectorLengthInBytes);
+  state_->StoreMemory(instruction_, kDataStoreAddress, zero_db);
+  zero_db->DecRef();
+
   // Execute instruction.
   instruction_->Execute(nullptr);
 
@@ -1774,7 +1867,100 @@ TEST_F(RV32VInstructionsTest, Vsm) {
                      nullptr);
   auto span = data_db->Get<uint8_t>();
   for (int i = 0; i < kVectorLengthInBytes; i++) {
-    EXPECT_EQ(static_cast<int>(span[i]), i);
+    if (i < num_bytes) {
+      EXPECT_EQ(static_cast<int>(span[i]), i);
+    } else {
+      EXPECT_EQ(static_cast<int>(span[i]), 0);
+    }
+  }
+  data_db->DecRef();
+}
+
+// Test of vector store mask with small vl.
+TEST_F(RV32VInstructionsTest, Vsm_RespectsVl) {
+  // We use vl=11 specifically to test the ceil(vl/8) logic.
+  // ceil(11/8) = 2 bytes. If the implementation used floor or
+  // standard integer division, it would incorrectly result in 1 byte.
+  ConfigureVectorUnit(0, /*avl=*/11);
+  ASSERT_EQ(rv_vector_->vector_length(), 11);
+
+  // Set up operands and register values.
+  AppendVectorRegisterOperands({kVs1}, {});
+  AppendRegisterOperands({kRs1Name}, {});
+  SetSemanticFunction(&Vsm);
+  SetRegisterValues<uint32_t>({{kRs1Name, kDataStoreAddress}});
+
+  // Initialize v1 with 0x55, 0xAA, 0x33, 0xCC, ...
+  for (int i = 0; i < kVectorLengthInBytes; i++) {
+    vreg_[kVs1]->data_buffer()->Set<uint8_t>(i, (i % 2 == 0) ? 0x55 : 0xaa);
+  }
+
+  // Zero out memory.
+  auto* zero_db = state_->db_factory()->Allocate<uint8_t>(kVectorLengthInBytes);
+  std::memset(zero_db->raw_ptr(), 0, kVectorLengthInBytes);
+  state_->StoreMemory(instruction_, kDataStoreAddress, zero_db);
+  zero_db->DecRef();
+
+  // Execute instruction.
+  instruction_->Execute(nullptr);
+
+  // Verify result.
+  EXPECT_FALSE(rv_vector_->vector_exception());
+  auto* data_db = state_->db_factory()->Allocate<uint8_t>(kVectorLengthInBytes);
+  state_->LoadMemory(instruction_, kDataStoreAddress, data_db, nullptr,
+                     nullptr);
+  auto span = data_db->Get<uint8_t>();
+  // vl=11, ceil(11/8) = 2 bytes.
+  EXPECT_EQ(span[0], 0x55);
+  EXPECT_EQ(span[1], 0xaa);
+  // Byte 2 should remain 0.
+  EXPECT_EQ(span[2], 0);
+
+  data_db->DecRef();
+}
+
+// Test of vector store mask with vstart >= vl/8.
+TEST_F(RV32VInstructionsTest, Vsm_RespectsVstart) {
+  // vl=11, which means ceil(11/8) = 2 bytes are processed.
+  // Set vstart=2, which is the first byte beyond the vl reach.
+  // For vlm.v/vsm.v, vstart is interpreted in units of bytes (Spec
+  // Section 7.4).
+  ConfigureVectorUnit(0, /*avl=*/11);
+  ASSERT_EQ(rv_vector_->vector_length(), 11);
+  rv_vector_->set_vstart(2);
+
+  // Set up operands and register values.
+  AppendVectorRegisterOperands({kVs1}, {});
+  AppendRegisterOperands({kRs1Name}, {});
+  SetSemanticFunction(&Vsm);
+  SetRegisterValues<uint32_t>({{kRs1Name, kDataStoreAddress}});
+
+  // Initialize v1 with 0x55, 0xAA, ...
+  for (int i = 0; i < kVectorLengthInBytes; i++) {
+    vreg_[kVs1]->data_buffer()->Set<uint8_t>(i, (i % 2 == 0) ? 0x55 : 0xaa);
+  }
+
+  // Zero out memory.
+  auto* zero_db = state_->db_factory()->Allocate<uint8_t>(kVectorLengthInBytes);
+  std::memset(zero_db->raw_ptr(), 0, kVectorLengthInBytes);
+  state_->StoreMemory(instruction_, kDataStoreAddress, zero_db);
+  zero_db->DecRef();
+
+  // Execute instruction.
+  instruction_->Execute(nullptr);
+
+  // Verify result.
+  EXPECT_FALSE(rv_vector_->vector_exception());
+  // vstart should be cleared.
+  EXPECT_EQ(rv_vector_->vstart(), 0);
+
+  auto* data_db = state_->db_factory()->Allocate<uint8_t>(kVectorLengthInBytes);
+  state_->LoadMemory(instruction_, kDataStoreAddress, data_db, nullptr,
+                     nullptr);
+  auto span = data_db->Get<uint8_t>();
+  // Memory should remain zero.
+  for (int i = 0; i < kVectorLengthInBytes; i++) {
+    EXPECT_EQ(0, span[i]) << "element: " << i;
   }
   data_db->DecRef();
 }
