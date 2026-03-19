@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "absl/functional/any_invocable.h"
+#include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/numbers.h"
@@ -948,6 +949,9 @@ void DebugCommandShell::Run(std::istream& is, std::ostream& os) {
         }
         std::string access_type;
         switch (info.access_type) {
+          case AccessType::kNone:
+            LOG(FATAL) << "Invalid access type - should not happen";
+            break;
           case AccessType::kStore:
             access_type = "w";
             break;
