@@ -17,7 +17,6 @@
 #ifndef THIRD_PARTY_MPACT_RISCV_RISCV_DEBUG_INTERFACE_H_
 #define THIRD_PARTY_MPACT_RISCV_RISCV_DEBUG_INTERFACE_H_
 
-#include <cstddef>
 #include <cstdint>
 
 #include "absl/functional/any_invocable.h"
@@ -33,14 +32,6 @@ class RiscVDebugInterface : public generic::CoreDebugInterface {
  public:
   ~RiscVDebugInterface() override = default;
 
-  // Set a data watchpoint for the given memory range. Any access matching the
-  // given access type (load/store) will halt execution following the completion
-  // of that access.
-  virtual absl::Status SetDataWatchpoint(uint64_t address, size_t length,
-                                         AccessType access_type) = 0;
-  // Clear data watchpoint for the given memory address and access type.
-  virtual absl::Status ClearDataWatchpoint(uint64_t address,
-                                           AccessType access_type) = 0;
   // Set an action point at the given address to execute the specified action.
   virtual absl::StatusOr<int> SetActionPoint(
       uint64_t address, absl::AnyInvocable<void(uint64_t, int)> action) = 0;

@@ -771,7 +771,6 @@ cc_library(
         "@abseil-cpp//absl/status",
         "@mpact-sim//mpact/sim/generic:core",
         "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/generic:program_error",
         "@mpact-sim//mpact/sim/generic:type_helpers",
         "@mpact-sim//mpact/sim/util/memory",
     ],
@@ -799,8 +798,6 @@ cc_library(
         "@abseil-cpp//absl/strings",
         "@mpact-sim//mpact/sim/generic:core",
         "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/generic:program_error",
-        "@mpact-sim//mpact/sim/generic:type_helpers",
         "@mpact-sim//mpact/sim/util/memory",
     ],
 )
@@ -916,7 +913,6 @@ cc_library(
         "@mpact-sim//mpact/sim/generic:arch_state",
         "@mpact-sim//mpact/sim/generic:core",
         "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/generic:program_error",
         "@mpact-sim//mpact/sim/generic:type_helpers",
         "@mpact-sim//mpact/sim/util/memory",
     ],
@@ -944,7 +940,6 @@ cc_library(
         "@abseil-cpp//absl/strings",
         "@mpact-sim//mpact/sim/generic:core",
         "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/generic:program_error",
         "@mpact-sim//mpact/sim/generic:type_helpers",
         "@mpact-sim//mpact/sim/util/memory",
     ],
@@ -972,7 +967,6 @@ cc_library(
         "@abseil-cpp//absl/strings",
         "@mpact-sim//mpact/sim/generic:core",
         "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/generic:program_error",
         "@mpact-sim//mpact/sim/generic:type_helpers",
         "@mpact-sim//mpact/sim/util/memory",
     ],
@@ -1049,7 +1043,6 @@ cc_library(
         "@mpact-sim//mpact/sim/generic:arch_state",
         "@mpact-sim//mpact/sim/generic:core",
         "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/generic:program_error",
         "@mpact-sim//mpact/sim/generic:type_helpers",
         "@mpact-sim//mpact/sim/util/memory",
     ],
@@ -1077,7 +1070,6 @@ cc_library(
         "@abseil-cpp//absl/strings",
         "@mpact-sim//mpact/sim/generic:core",
         "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/generic:program_error",
         "@mpact-sim//mpact/sim/generic:type_helpers",
         "@mpact-sim//mpact/sim/util/memory",
     ],
@@ -1589,6 +1581,32 @@ cc_library(
         "@mpact-sim//mpact/sim/util/program_loader:elf_loader",
         "@mpact-sim//mpact/sim/util/renode:renode_debug_interface",
         "@mpact-sim//mpact/sim/util/renode:socket_cli",
+    ],
+)
+
+cc_library(
+    name = "riscv_zc_getters",
+    hdrs = ["riscv_zc_getters.h"],
+    deps = [
+        ":riscv_encoding_common",
+        ":riscv_getters",
+        ":riscv_state",
+        "@abseil-cpp//absl/strings",
+        "@mpact-sim//mpact/sim/generic:core",
+    ],
+)
+
+cc_library(
+    name = "riscv_b_instructions",
+    srcs = ["riscv_b_instructions.cc"],
+    hdrs = ["riscv_b_instructions.h"],
+    deps = [
+        ":riscv_g",
+        ":riscv_state",
+        "@abseil-cpp//absl/base",
+        "@abseil-cpp//absl/numeric:bits",
+        "@abseil-cpp//absl/types:span",
+        "@mpact-sim//mpact/sim/generic:instruction",
     ],
 )
 
