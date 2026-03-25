@@ -14,6 +14,7 @@
 
 #include <signal.h>
 
+#include <array>
 #include <cstdint>
 #include <cstdlib>
 #include <fstream>
@@ -37,11 +38,13 @@
 #include "absl/strings/string_view.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
+#include "absl/types/span.h"
 #include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/generic/counters.h"
 #include "mpact/sim/generic/decoder_interface.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/proto/component_data.pb.h"
+#include "mpact/sim/util/gdbserver/gdbserver.h"
 #include "mpact/sim/util/memory/atomic_memory.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "mpact/sim/util/memory/memory_interface.h"
@@ -55,12 +58,14 @@
 #include "riscv/riscv_arm_semihost.h"
 #include "riscv/riscv_csr.h"
 #include "riscv/riscv_fp_state.h"
+#include "riscv/riscv_gdb_debug_info.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_register_aliases.h"
 #include "riscv/riscv_state.h"
 #include "riscv/riscv_top.h"
 #include "src/google/protobuf/text_format.h"
 
+using ::mpact::sim::generic::CoreDebugInterface;
 using ::mpact::sim::generic::Instruction;
 using ::mpact::sim::proto::ComponentData;
 using ::mpact::sim::proto::ComponentValueEntry;
@@ -69,10 +74,12 @@ using ::mpact::sim::riscv::RiscV32GBitmanipDecoder;
 using ::mpact::sim::riscv::RiscV32HtifSemiHost;
 using ::mpact::sim::riscv::RiscVArmSemihost;
 using ::mpact::sim::riscv::RiscVFPState;
+using ::mpact::sim::riscv::RiscVGdbDebugInfo;
 using ::mpact::sim::riscv::RiscVState;
 using ::mpact::sim::riscv::RiscVXlen;
 using ::mpact::sim::riscv::RV32Register;
 using ::mpact::sim::riscv::RVFpRegister;
+using ::mpact::sim::util::gdbserver::GdbServer;
 
 using AddressRange = mpact::sim::util::MemoryWatcher::AddressRange;
 
@@ -159,6 +166,10 @@ ABSL_FLAG(std::string, dcache, "", "Data cache configuration");
 
 // Flag to set the default value for the misa CSR.
 ABSL_FLAG(std::optional<uint64_t>, misa, std::nullopt, "misa value");
+
+// Flag to run the simulator with a gdbserver listening for connections on the
+// given port.
+ABSL_FLAG(int, gdbserver, -1, "Run simulator in gdbserver mode");
 
 constexpr char kStackEndSymbolName[] = "__stack_end";
 constexpr char kStackSizeSymbolName[] = "__stack_size";
@@ -482,9 +493,22 @@ int main(int argc, char** argv) {
   sa.sa_handler = &sim_sigint_handler;
   sigaction(SIGINT, &sa, nullptr);
 
-  // Determine if this is being run interactively or as a batch job.
+  // Determine if this is being run interactively, as gdbserver, or as a batch
+  // job.
   bool interactive = absl::GetFlag(FLAGS_i) || absl::GetFlag(FLAGS_interactive);
-  if (interactive) {
+  int gdbserver_port = absl::GetFlag(FLAGS_gdbserver);
+  if (interactive && gdbserver_port > 0) {
+    std::cerr << "Gdbserver cannot be used in interactive mode\n";
+    return -1;
+  }
+  if (gdbserver_port > 0) {
+    std::array<CoreDebugInterface*, 1> core_debug_interfaces = {&riscv_top};
+    RiscVGdbDebugInfo* debug_info = RiscVGdbDebugInfo::Instance(32);
+    GdbServer gdb_server(absl::MakeSpan(core_debug_interfaces), *debug_info);
+    std::cerr << "Starting gdbserver on port " << gdbserver_port << std::endl;
+    gdb_server.Connect(gdbserver_port);
+    std::cerr << "Gdbserver disconnected" << std::endl;
+  } else if (interactive) {
     mpact::sim::riscv::DebugCommandShell cmd_shell;
     cmd_shell.AddCore({&riscv_top, [&elf_loader]() { return &elf_loader; }});
     // Add custom command to interactive debug command shell.

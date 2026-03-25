@@ -29,7 +29,7 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
-#include "mpact/sim/generic/core_debug_interface.h"
+#include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/debug_command_shell_interface.h"
 #include "re2/re2.h"
 

@@ -102,6 +102,7 @@ class RiscVTop : public generic::Component, public RiscVDebugInterface {
   absl::Status SetSwBreakpoint(uint64_t address) override;
   absl::Status ClearSwBreakpoint(uint64_t address) override;
   absl::Status ClearAllSwBreakpoints() override;
+  uint64_t GetSwBreakpointInfo() const override;
 
   // Action points.
   absl::StatusOr<int> SetActionPoint(
@@ -115,6 +116,8 @@ class RiscVTop : public generic::Component, public RiscVDebugInterface {
                                  AccessType access_type) override;
   absl::Status ClearDataWatchpoint(uint64_t address,
                                    AccessType access_type) override;
+
+  void GetWatchpointInfo(uint64_t& address, AccessType& access_type) override;
 
   // If successful, returns a pointer to the instruction at the given address.
   // The instruction object is IncRef'ed, and the caller must DecRef the object
@@ -235,6 +238,9 @@ class RiscVTop : public generic::Component, public RiscVDebugInterface {
   Cache* dcache_ = nullptr;
   Cache* icache_ = nullptr;
   DataBuffer* inst_db_ = nullptr;
+  // Watchpoint info.
+  uint64_t last_watchpoint_address_ = 0;
+  generic::AccessType last_watchpoint_access_type_ = AccessType::kNone;
 };
 
 }  // namespace riscv

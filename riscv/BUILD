@@ -1250,11 +1250,22 @@ cc_library(
 
 cc_library(
     name = "riscv_debug_info",
-    srcs = ["riscv_debug_info.cc"],
-    hdrs = ["riscv_debug_info.h"],
+    srcs = [
+        "riscv_debug_info.cc",
+        "riscv_gdb_debug_info.cc",
+        "riscv_gdb_debug_info_32.inc",
+        "riscv_gdb_debug_info_64.inc",
+    ],
+    hdrs = [
+        "riscv_debug_info.h",
+        "riscv_gdb_debug_info.h",
+    ],
     copts = ["-O3"],
     deps = [
         "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+        "@mpact-sim//mpact/sim/generic:core_debug_interface",
         "@mpact-sim//mpact/sim/generic:type_helpers",
     ],
 )
@@ -1290,6 +1301,7 @@ cc_binary(
         ":riscv32g_bitmanip_decoder",
         ":riscv32g_decoder",
         ":riscv_arm_semihost",
+        ":riscv_debug_info",
         ":riscv_fp_state",
         ":riscv_state",
         ":riscv_top",
@@ -1302,6 +1314,7 @@ cc_binary(
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
         "@abseil-cpp//absl/time",
+        "@abseil-cpp//absl/types:span",
         "@com_google_protobuf//:protobuf",
         "@com_googlesource_code_re2//:re2",
         "@mpact-sim//mpact/sim/generic:core",
@@ -1309,6 +1322,7 @@ cc_binary(
         "@mpact-sim//mpact/sim/generic:counters",
         "@mpact-sim//mpact/sim/generic:instruction",
         "@mpact-sim//mpact/sim/proto:component_data_cc_proto",
+        "@mpact-sim//mpact/sim/util/gdbserver",
         "@mpact-sim//mpact/sim/util/memory",
         "@mpact-sim//mpact/sim/util/program_loader:elf_loader",
     ],

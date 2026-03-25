@@ -705,6 +705,10 @@ absl::Status RiscVTop::ClearSwBreakpoint(uint64_t address) {
   return rv_breakpoint_manager_->ClearBreakpoint(address);
 }
 
+uint64_t RiscVTop::GetSwBreakpointInfo() const {
+  return rv_breakpoint_manager_->last_breakpoint_address();
+}
+
 absl::Status RiscVTop::ClearAllSwBreakpoints() {
   // Don't try if the simulator is running.
   if (run_status_ != RunStatus::kHalted) {
@@ -756,7 +760,9 @@ absl::Status RiscVTop::SetDataWatchpoint(uint64_t address, size_t length,
       (access_type == AccessType::kLoadStore)) {
     auto rd_memory_status = memory_watcher_->SetLoadWatchCallback(
         util::MemoryWatcher::AddressRange(address, address + length - 1),
-        [this](uint64_t address, int size) {
+        [this, access_type](uint64_t address, int size) {
+          last_watchpoint_address_ = address;
+          last_watchpoint_access_type_ = access_type;
           set_halt_string(absl::StrFormat(
               "Watchpoint triggered due to load from %08x", address));
           RequestHalt(*HaltReason::kDataWatchPoint, nullptr);
@@ -767,7 +773,9 @@ absl::Status RiscVTop::SetDataWatchpoint(uint64_t address, size_t length,
       (access_type == AccessType::kLoadStore)) {
     auto wr_memory_status = memory_watcher_->SetStoreWatchCallback(
         util::MemoryWatcher::AddressRange(address, address + length - 1),
-        [this](uint64_t address, int size) {
+        [this, access_type](uint64_t address, int size) {
+          last_watchpoint_address_ = address;
+          last_watchpoint_access_type_ = access_type;
           set_halt_string(absl::StrFormat(
               "Watchpoint triggered due to store to %08x", address));
           RequestHalt(*HaltReason::kDataWatchPoint, nullptr);
@@ -796,6 +804,11 @@ absl::Status RiscVTop::ClearDataWatchpoint(uint64_t address,
     if (!wr_memory_status.ok()) return wr_memory_status;
   }
   return absl::OkStatus();
+}
+
+void RiscVTop::GetWatchpointInfo(uint64_t& address, AccessType& access_type) {
+  address = last_watchpoint_address_;
+  access_type = last_watchpoint_access_type_;
 }
 
 absl::StatusOr<Instruction*> RiscVTop::GetInstruction(uint64_t address) {
