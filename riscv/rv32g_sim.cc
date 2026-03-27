@@ -503,7 +503,8 @@ int main(int argc, char** argv) {
   }
   if (gdbserver_port > 0) {
     std::array<CoreDebugInterface*, 1> core_debug_interfaces = {&riscv_top};
-    RiscVGdbDebugInfo* debug_info = RiscVGdbDebugInfo::Instance(32);
+    RiscVGdbDebugInfo* debug_info = RiscVGdbDebugInfo::Instance(
+        /*gpr_width=*/32, /*fp_width=*/64, /*vec_width=*/0);
     GdbServer gdb_server(absl::MakeSpan(core_debug_interfaces), *debug_info);
     std::cerr << "Starting gdbserver on port " << gdbserver_port << std::endl;
     gdb_server.Connect(gdbserver_port);

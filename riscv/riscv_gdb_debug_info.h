@@ -30,8 +30,7 @@ namespace mpact::sim::riscv {
 enum class RiscVGdbRegisterEnum : int {
   // Integer registers.
   kGprFirst = 0,
-  kGprPc = kGprFirst,
-  kGprX0,
+  kGprX0 = kGprFirst,
   kGprX1,
   kGprX2,
   kGprX3,
@@ -63,7 +62,8 @@ enum class RiscVGdbRegisterEnum : int {
   kGprX29,
   kGprX30,
   kGprX31,
-  kGprLast = kGprX31,
+  kGprPc,
+  kGprLast = kGprPc,
   // Floating point registers.
   kFprFirst = kGprLast + 1,
   kFprF0 = kFprFirst,
@@ -99,23 +99,57 @@ enum class RiscVGdbRegisterEnum : int {
   kFprF30,
   kFprF31,
   kFprLast = kFprF31,
-  // CSRs.
-  kCsrFirst = 4096,
-  kFprFcsr = kCsrFirst + 0x003,
-  kVprVstart = kCsrFirst + 0x008,
-  kVprVxsat = kCsrFirst + 0x009,
-  kVprVxrm = kCsrFirst + 0x00a,
-  kVprVcsr = kCsrFirst + 0x00f,
-  kVprVl = kCsrFirst + 0xc20,
-  kVprVType = kCsrFirst + 0xc21,
-  kVprVlenb = kCsrFirst + 0xc22,
+  kFprFcsr,
+  // Vector registers.
+  kVprFirst = kFprFcsr + 1,
+  kVprV0 = kVprFirst,
+  kVprV1,
+  kVprV2,
+  kVprV3,
+  kVprV4,
+  kVprV5,
+  kVprV6,
+  kVprV7,
+  kVprV8,
+  kVprV9,
+  kVprV10,
+  kVprV11,
+  kVprV12,
+  kVprV13,
+  kVprV14,
+  kVprV15,
+  kVprV16,
+  kVprV17,
+  kVprV18,
+  kVprV19,
+  kVprV20,
+  kVprV21,
+  kVprV22,
+  kVprV23,
+  kVprV24,
+  kVprV25,
+  kVprV26,
+  kVprV27,
+  kVprV28,
+  kVprV29,
+  kVprV30,
+  kVprV31,
+  kVprLast = kVprV31,
+  kVprVstart,
+  kVprVxsat,
+  kVprVxrm,
+  kVprVcsr,
+  kVprVl,
+  kVprVtype,
+  kVprVlenb,
 };
 
 class RiscVGdbDebugInfo : public generic::DebugInfo {
  public:
   using DebugRegisterMap = generic::DebugInfo::DebugRegisterMap;
 
-  static RiscVGdbDebugInfo* Instance(int gpr_width);
+  static RiscVGdbDebugInfo* Instance(int gpr_width, int fp_width,
+                                     int vec_width);
 
   const DebugRegisterMap& debug_register_map() const override {
     return debug_register_map_;
@@ -139,11 +173,14 @@ class RiscVGdbDebugInfo : public generic::DebugInfo {
   }
 
  private:
-  explicit RiscVGdbDebugInfo(int gpr_width);
+  RiscVGdbDebugInfo(int gpr_width, int fp_width, int vec_width);
   int gpr_width_;
+  int fp_width_;
+  int vec_width_;
   std::string host_info_;
   DebugRegisterMap debug_register_map_;
-  std::string_view gdb_target_xml_;
+  // "Escaped" GDB target XML string.
+  std::string gdb_target_xml_;
 };
 
 }  // namespace mpact::sim::riscv
