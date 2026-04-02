@@ -160,6 +160,9 @@ class RiscVGdbDebugInfo : public generic::DebugInfo {
   int GetLastGpr() const override {
     return static_cast<int>(RiscVGdbRegisterEnum::kGprLast);
   }
+  int GetPcRegister() const override {
+    return static_cast<int>(RiscVGdbRegisterEnum::kGprPc);
+  }
   int GetGprWidth() const override { return gpr_width_; };
   // For now assume that all registers have the same width as the GPRs.
   int GetRegisterByteWidth(int register_number) const override {
