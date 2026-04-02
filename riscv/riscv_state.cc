@@ -232,7 +232,7 @@ void CreateCsrs(RiscVState* state, std::vector<RiscVCsrInterface*>& csr_vec) {
 
   // minstret/minstreth
   auto* minstret = CreateCsr<RiscVPerformanceCounterCsr<T, RiscVState>>(
-      state, csr_vec, "minstret", RiscVCsrEnum ::kMInstret, state);
+      state, csr_vec, "minstret", RiscVCsrEnum::kMInstret, state);
   CHECK_NE(minstret, nullptr);
   if (std::is_same_v<T, uint32_t>) {
     CHECK_NE(

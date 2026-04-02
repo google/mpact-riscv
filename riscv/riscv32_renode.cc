@@ -11,6 +11,6 @@
     std::string name, std::string cpu_type,
     ::mpact::sim::util::MemoryInterface* renode_sysbus) {
   auto* top = new ::mpact::sim::riscv::RiscVRenode(
-      name, renode_sysbus, ::mpact::sim::riscv::RiscVXlen ::RV32);
+      name, renode_sysbus, ::mpact::sim::riscv::RiscVXlen::RV32);
   return top;
 }
