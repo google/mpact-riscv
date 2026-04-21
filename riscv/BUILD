@@ -1241,6 +1241,7 @@ cc_library(
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
         "@com_googlesource_code_re2//:re2",
+        "@linenoise",
         "@mpact-sim//mpact/sim/generic:core",
         "@mpact-sim//mpact/sim/generic:core_debug_interface",
         "@mpact-sim//mpact/sim/generic:debug_command_shell_interface",

@@ -15,6 +15,7 @@
 #include "riscv/debug_command_shell.h"
 
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <fstream>
 #include <istream>
@@ -31,6 +32,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "linenoise.h"
 #include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/type_helpers.h"
@@ -186,45 +188,49 @@ void DebugCommandShell::Run(std::istream& is, std::ostream& os) {
   std::string previous_line;
   current_core_ = 0;
   absl::string_view line_view;
+  linenoiseHistorySetMaxLen(1000);
   while (true) {
     // Prompt and read in the next command.
     auto pc_result =
         core_access_[current_core_].debug_interface->ReadRegister("pc");
-    std::string prompt;
+    std::string pre_prompt;
     auto result =
         core_access_[current_core_].debug_interface->GetLastHaltReason();
     if (result.ok()) {
       switch (result.value()) {
         case *HaltReason::kSoftwareBreakpoint:
-          absl::StrAppend(&prompt, "Stopped at software breakpoint\n");
+          absl::StrAppend(&pre_prompt, "Stopped at software breakpoint\n");
           break;
         case *HaltReason::kUserRequest:
-          absl::StrAppend(&prompt, "Stopped at user request\n");
+          absl::StrAppend(&pre_prompt, "Stopped at user request\n");
           break;
         case *HaltReason::kDataWatchPoint:
-          absl::StrAppend(&prompt, "Stopped at data watchpoint\n");
+          absl::StrAppend(&pre_prompt, "Stopped at data watchpoint\n");
           break;
         case *HaltReason::kProgramDone:
-          absl::StrAppend(&prompt, "Program done\n");
+          absl::StrAppend(&pre_prompt, "Program done\n");
           break;
         default:
           if ((result.value() >= *HaltReason::kUserSpecifiedMin) &&
               (result.value() <= *HaltReason::kUserSpecifiedMax)) {
-            absl::StrAppend(&prompt, "Stopped for custom halt reason\n");
+            absl::StrAppend(&pre_prompt, "Stopped for custom halt reason\n");
           }
           break;
       }
     }
+    std::string prompt;
     if (pc_result.ok()) {
       auto* loader = core_access_[current_core_].loader_getter();
       if (loader != nullptr) {
         auto fcn_result = loader->GetFunctionName(pc_result.value());
         if (fcn_result.ok()) {
-          absl::StrAppend(&prompt, "[", fcn_result.value(), "]:\n");
+          absl::StrAppend(&pre_prompt, kSymbolColor, "[", fcn_result.value(),
+                          "]:\n", kDefaultColor);
         }
         auto symbol_result = loader->GetFcnSymbolName(pc_result.value());
         if (symbol_result.ok()) {
-          absl::StrAppend(&prompt, symbol_result.value(), ":\n");
+          absl::StrAppend(&pre_prompt, kSymbolColor, symbol_result.value(),
+                          kDefaultColor, ":\n");
         }
       }
       absl::StrAppend(&prompt,
@@ -233,9 +239,10 @@ void DebugCommandShell::Run(std::istream& is, std::ostream& os) {
           core_access_[current_core_].debug_interface->GetDisassembly(
               pc_result.value());
       if (disasm_result.ok()) {
-        absl::StrAppend(&prompt, "   ", disasm_result.value());
+        absl::StrAppend(&pre_prompt, "   ", kTextColor, disasm_result.value(),
+                        kDefaultColor);
       }
-      absl::StrAppend(&prompt, "\n");
+      absl::StrAppend(&pre_prompt, "\n");
     }
     absl::StrAppend(&prompt, "[", current_core_, "] > ");
     while (!command_streams_.empty()) {
@@ -245,8 +252,18 @@ void DebugCommandShell::Run(std::istream& is, std::ostream& os) {
       // Read a command from the input stream. If it's from a file, then ignore
       // empty lines and comments.
       do {
-        if (command_streams_.size() == 1) os << prompt;
-        current_is.getline(line, kLineSize);
+        if (command_streams_.size() == 1) {
+          os << pre_prompt;
+          char* line_c = linenoise(prompt.c_str());
+          if (line_c != nullptr) {
+            absl::SNPrintF(line, kLineSize, "%s", line_c);
+            free(line_c);
+          } else {
+            line[0] = '\0';
+          }
+        } else {
+          current_is.getline(line, kLineSize);
+        }
       } while ((is_file && RE2::FullMatch(line, *empty_re_)) &&
                !current_is.bad() && !current_is.eof());
 
@@ -276,6 +293,7 @@ void DebugCommandShell::Run(std::istream& is, std::ostream& os) {
 
     if (line[0] != '\0') {
       previous_line = line;
+      linenoiseHistoryAdd(line);
     }
     line_view = absl::string_view(previous_line);
 
@@ -510,14 +528,16 @@ void DebugCommandShell::Run(std::istream& is, std::ostream& os) {
 
     if (std::string str_value, format;
         RE2::FullMatch(line_view, *read_mem_re_, &str_value, &format)) {
-      os << ReadMemory(current_core_, str_value, format) << std::endl;
+      os << kValueColor << ReadMemory(current_core_, str_value, format)
+         << kDefaultColor << std::endl;
       continue;
     }
 
     if (std::string str_value1, format, str_value2; RE2::FullMatch(
             line_view, *write_mem_re_, &str_value1, &format, &str_value2)) {
-      os << WriteMemory(current_core_, str_value1, format, str_value2)
-         << std::endl;
+      os << kValueColor
+         << WriteMemory(current_core_, str_value1, format, str_value2)
+         << kDefaultColor << std::endl;
       continue;
     }
 
@@ -676,7 +696,9 @@ void DebugCommandShell::Run(std::istream& is, std::ostream& os) {
       auto result =
           core_access_[current_core_].debug_interface->ReadRegister(name);
       if (result.ok()) {
-        os << absl::StrCat(name, " = ", absl::Hex(result.value())) << std::endl;
+        os << absl::StrCat(kValueColor, name, " = ", absl::Hex(result.value()),
+                           kDefaultColor)
+           << std::endl;
       } else {
         os << "Error: " << result.status().message() << std::endl;
       }
@@ -976,7 +998,8 @@ void DebugCommandShell::Run(std::istream& is, std::ostream& os) {
 
     if (std::string str_value, format;
         RE2::FullMatch(line_view, *read_mem2_re_, &str_value, &format)) {
-      os << ReadMemory(current_core_, str_value, format) << std::endl;
+      os << kValueColor << ReadMemory(current_core_, str_value, format)
+         << kDefaultColor << std::endl;
       continue;
     }
     // Action points.
@@ -1472,7 +1495,8 @@ std::string DebugCommandShell::FormatRegister(
   auto result =
       core_access_[current_core_].debug_interface->ReadRegister(reg_name);
   if (result.ok()) {
-    absl::StrAppend(&output, reg_name, " = ", absl::Hex(result.value()));
+    absl::StrAppend(&output, kValueColor, reg_name, " = ",
+                    absl::Hex(result.value()), kDefaultColor);
   } else {
     absl::StrAppend(&output, "Error reading '", reg_name,
                     "': ", result.status().message());
