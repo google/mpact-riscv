@@ -408,7 +408,9 @@ void DebugCommandShell::Run(std::istream& is, std::ostream& os) {
       auto result =
           core_access_[current_core_].debug_interface->ReadRegister(name);
       if (result.ok()) {
-        os << absl::StrCat(name, " = ", absl::Hex(result.value())) << std::endl;
+        os << absl::StrCat(kValueColor, name, " = ", absl::Hex(result.value()),
+                           kDefaultColor)
+           << std::endl;
       } else {
         os << "Error: " << result.status().message() << std::endl;
       }
