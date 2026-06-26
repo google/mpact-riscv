@@ -23,7 +23,12 @@ package(
     default_visibility = ["//visibility:public"],
 )
 
+# LICENSE_REMOVED
+
 exports_files([
+    "riscv_zvt.isa",
+    "riscv_zvt.bin_fmt",
+    "LICENSE",
     "riscv32g.bin_fmt",
     "riscv32g.isa",
     "riscv32gzb.bin_fmt",
@@ -1718,5 +1723,54 @@ cc_binary(
         "@mpact-sim//mpact/sim/util/memory",
         "@mpact-sim//mpact/sim/util/renode",
         "@mpact-sim//mpact/sim/util/renode:renode_debug_interface",
+    ],
+)
+
+cc_library(
+    name = "riscv_zvt_state",
+    srcs = ["riscv_zvt_state.cc"],
+    hdrs = ["riscv_zvt_state.h"],
+    copts = ["-O3"],
+    deps = [
+        ":riscv_state",
+        "@abseil-cpp//absl/base:nullability",
+        "@abseil-cpp//absl/log",
+        "@abseil-cpp//absl/log:check",
+        "@abseil-cpp//absl/memory",
+        "@abseil-cpp//absl/status:statusor",
+        "@mpact-sim//mpact/sim/generic:core",
+        "@mpact-sim//mpact/sim/generic:instruction",
+    ],
+)
+
+cc_library(
+    name = "riscv_zvt_instructions",
+    srcs = ["riscv_zvt_instructions.cc"],
+    hdrs = ["riscv_zvt_instructions.h"],
+    copts = ["-O3"],
+    deps = [
+        ":riscv_state",
+        ":riscv_zvt_state",
+        "@abseil-cpp//absl/base",
+        "@abseil-cpp//absl/log:check",
+        "@abseil-cpp//absl/types:span",
+        "@mpact-sim//mpact/sim/generic:core",
+        "@mpact-sim//mpact/sim/generic:instruction",
+    ],
+)
+
+cc_library(
+    name = "riscv_zvt_getters",
+    hdrs = ["riscv_zvt_getters.h"],
+    copts = ["-O3"],
+    deps = [
+        ":riscv_encoding_common",
+        ":riscv_getters",
+        ":riscv_state",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/types:span",
+        "@mpact-sim//mpact/sim/generic:arch_state",
+        "@mpact-sim//mpact/sim/generic:core",
+        "@mpact-sim//mpact/sim/generic:type_helpers",
     ],
 )

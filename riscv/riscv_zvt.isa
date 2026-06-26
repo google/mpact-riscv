@@ -1,0 +1,89 @@
+// Copyright 2026 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Zvtbase matrix configuration instructions (spec 15.1.1.4).
+slot riscv_zvt {
+  includes {
+    #include "riscv/riscv_zvt_instructions.h"
+  }
+  default size = 4;
+  opcodes {
+    msetmtype{: rs1, rs2 : },
+      disasm: "msetmtype", "%rs1, %rs2",
+      semfunc: "&::mpact::sim::riscv::RiscVZvtMsetMtype";
+    msettn{: rs1 : rd},
+      disasm: "msettn", "%rd, %rs1",
+      semfunc: "&::mpact::sim::riscv::RiscVZvtMsetTn";
+    msettm{: rs1 : rd},
+      disasm: "msettm", "%rd, %rs1",
+      semfunc: "&::mpact::sim::riscv::RiscVZvtMsetTm";
+    msettk{: rs1 : rd},
+      disasm: "msettk", "%rd, %rs1",
+      semfunc: "&::mpact::sim::riscv::RiscVZvtMsetTk";
+
+    // Tile manipulation.
+    vtzero{: mtd : },
+      disasm: "vtzero", "%mtd",
+      semfunc: "&::mpact::sim::riscv::RiscVZvtVtZero";
+    vtdiscard{: : },
+      disasm: "vtdiscard",
+      semfunc: "&::mpact::sim::riscv::RiscVZvtVtDiscard";
+    vtmv_v_t{: rs1 : matVd},
+      disasm: "vtmv.v.t", "%matVd, %rs1",
+      semfunc: "&::mpact::sim::riscv::RiscVZvtVtmvVt";
+    vtmv_t_v{: matA, rs1 : },
+      disasm: "vtmv.t.v", "%rs1, %matA",
+      semfunc: "&::mpact::sim::riscv::RiscVZvtVtmvTv";
+
+    // Tile load/store to memory (EEW statically encoded).
+    vtle8{: rs1, rs2 : },
+      disasm: "vtle8", "%rs2, (%rs1)",
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::RiscVZvtVtle, 8)";
+    vtle16{: rs1, rs2 : },
+      disasm: "vtle16", "%rs2, (%rs1)",
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::RiscVZvtVtle, 16)";
+    vtle32{: rs1, rs2 : },
+      disasm: "vtle32", "%rs2, (%rs1)",
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::RiscVZvtVtle, 32)";
+    vtle64{: rs1, rs2 : },
+      disasm: "vtle64", "%rs2, (%rs1)",
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::RiscVZvtVtle, 64)";
+    vtse8{: rs1, rs2 : },
+      disasm: "vtse8", "%rs2, (%rs1)",
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::RiscVZvtVtse, 8)";
+    vtse16{: rs1, rs2 : },
+      disasm: "vtse16", "%rs2, (%rs1)",
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::RiscVZvtVtse, 16)";
+    vtse32{: rs1, rs2 : },
+      disasm: "vtse32", "%rs2, (%rs1)",
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::RiscVZvtVtse, 32)";
+    vtse64{: rs1, rs2 : },
+      disasm: "vtse64", "%rs2, (%rs1)",
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::RiscVZvtVtse, 64)";
+
+    // Matrix multiply: C += A^T * B.
+    vtmms_tvv{: matA, matB, mtd : },
+      disasm: "vtmms.tvv", "%mtd, %matA, %matB",
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::RiscVZvtMatmul, ::mpact::sim::riscv::RiscVZvtMatmulKind::kInt8Signed)";
+    vtmmu_tvv{: matA, matB, mtd : },
+      disasm: "vtmmu.tvv", "%mtd, %matA, %matB",
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::RiscVZvtMatmul, ::mpact::sim::riscv::RiscVZvtMatmulKind::kInt8Unsigned)";
+    vtfmm_tvv{: matA, matB, mtd : fflags},
+      disasm: "vtfmm.tvv", "%mtd, %matA, %matB",
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::RiscVZvtMatmul, ::mpact::sim::riscv::RiscVZvtMatmulKind::kFp32)";
+    vtfmm_alt_tvv{: matA, matB, mtd : fflags},
+      disasm: "vtfmm.alt.tvv", "%mtd, %matA, %matB",
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::RiscVZvtMatmul, ::mpact::sim::riscv::RiscVZvtMatmulKind::kBf16)";
+  }
+}

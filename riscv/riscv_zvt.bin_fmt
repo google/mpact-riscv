@@ -1,0 +1,50 @@
+// Copyright 2026 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Matrix configuration instructions, encoded in the vector-configuration
+// (OP-V) major opcode like the vset* family (spec 15.1.1.4). They are
+// distinguished from vsetvl (func7 == 0b100'0000) by func7:
+//   msetmtype       func7 == 0b100'0001
+// msettn/tm/tk    func7 == 0b100'0010, selected by the low rs2 bits.
+
+instruction group RiscVZvtInst32[32] : Inst32Format {
+  msetmtype     : VConfig : func7 == 0b100'0001,                 func3 == 0b111, opcode == 0b101'0111;
+  msettn        : VConfig : func7 == 0b100'0010, rs2 == 0b00000, func3 == 0b111, opcode == 0b101'0111;
+  msettm        : VConfig : func7 == 0b100'0010, rs2 == 0b00001, func3 == 0b111, opcode == 0b101'0111;
+  msettk        : VConfig : func7 == 0b100'0010, rs2 == 0b00010, func3 == 0b111, opcode == 0b101'0111;
+
+  // Tile manipulation (OP-V, func3 == 0b110).
+  vtmv_v_t      : VArith : func6 == 0b010'000, vs2 == 0b11111, func3 == 0b110, opcode == 0b101'0111;
+  vtmv_t_v      : VArith : func6 == 0b010'111,                 func3 == 0b110, opcode == 0b101'0111;
+  vtzero        : VArith : func6 == 0b010'000, vs2 == 0b11110, vs1 == 0b00000, func3 == 0b110, opcode == 0b101'0111;
+  vtdiscard     : VArith : func6 == 0b010'000, vs2 == 0b11100, vs1 == 0b00000, func3 == 0b110, opcode == 0b101'0111;
+
+  // Tile load/store to memory (LOAD-FP / STORE-FP, mew == 1, width == 0b111;
+  // the nf field selects EEW: 0->8, 1->16, 2->32, 3->64).
+  vtle8         : VMem : nf == 0b000, mew == 0b1, mop == 0b00, vm == 0b1, width == 0b111, opcode == 0b000'0111;
+  vtle16        : VMem : nf == 0b001, mew == 0b1, mop == 0b00, vm == 0b1, width == 0b111, opcode == 0b000'0111;
+  vtle32        : VMem : nf == 0b010, mew == 0b1, mop == 0b00, vm == 0b1, width == 0b111, opcode == 0b000'0111;
+  vtle64        : VMem : nf == 0b011, mew == 0b1, mop == 0b00, vm == 0b1, width == 0b111, opcode == 0b000'0111;
+  vtse8         : VMem : nf == 0b000, mew == 0b1, mop == 0b00, vm == 0b1, width == 0b111, opcode == 0b010'0111;
+  vtse16        : VMem : nf == 0b001, mew == 0b1, mop == 0b00, vm == 0b1, width == 0b111, opcode == 0b010'0111;
+  vtse32        : VMem : nf == 0b010, mew == 0b1, mop == 0b00, vm == 0b1, width == 0b111, opcode == 0b010'0111;
+  vtse64        : VMem : nf == 0b011, mew == 0b1, mop == 0b00, vm == 0b1, width == 0b111, opcode == 0b010'0111;
+
+  // Matrix multiply (OP-VE, func6 == 0b111100). func3 selects int(000)/fp(001);
+  // the alt bit selects the alternate datatype variant.
+  vtmmu_tvv     : VMatrix : func6 == 0b111'100, func3 == 0b000, alt == 0b0, opcode == 0b111'0111;
+  vtmms_tvv     : VMatrix : func6 == 0b111'100, func3 == 0b000, alt == 0b1, opcode == 0b111'0111;
+  vtfmm_tvv     : VMatrix : func6 == 0b111'100, func3 == 0b001, alt == 0b0, opcode == 0b111'0111;
+  vtfmm_alt_tvv : VMatrix : func6 == 0b111'100, func3 == 0b001, alt == 0b1, opcode == 0b111'0111;
+};

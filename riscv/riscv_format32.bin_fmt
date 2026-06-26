@@ -241,3 +241,20 @@ format VConfig[32] : Inst32Format {
     unsigned uimm5[5] = rs1;
     unsigned rs2[5] = top12[4..0];
 };
+
+// Matrix-multiply format (OP-VE). Same field layout as VArith but the rd field
+// carries the destination tile (MSBs) and an "alt format" bit (LSB).
+format VMatrix[32] : Inst32Format {
+  fields:
+    unsigned func6[6];
+    unsigned vm[1];
+    unsigned vs2[5];
+    unsigned vs1[5];
+    unsigned func3[3];
+    unsigned mtd[5];
+    unsigned opcode[7];
+  overlays:
+    unsigned alt[1] = mtd[0];
+    // Named tile index (mt0..mt15): rd[11:8], i.e. mtd[4..1].
+    unsigned mtile[4] = mtd[4..1];
+};
