@@ -23,6 +23,7 @@ isa RVM23 {
 #include "riscv32zb.isa"
 #include "riscv_vector.isa"
 #include "riscv_zc.isa"
+#include "riscv_zicbom.isa"
 #include "riscv_zicbop.isa"
 #include "riscv_zicond.isa"
 #include "riscv_zimop.isa"
@@ -52,6 +53,7 @@ slot rvm23 :
   riscv_zcf32,
   riscv_zcmp32,
   riscv_zcmt32,
+  riscv_zicbom32,
   riscv_zicbop32 {
   default opcode =
     disasm: "Illegal instruction at 0x%(@:08x)",

@@ -34,6 +34,7 @@ decoder RVM23 {
     RiscVZihintntl,
     // Cache prefetch instructions.
     RiscVZicbop,
+    RiscVZicbom,
   };
   RVM23Inst16 = {
     RiscVZcmop,
@@ -50,6 +51,7 @@ decoder RVM23 {
 #include "riscv32zb.bin_fmt"
 #include "riscv_zc.bin_fmt"
 #include "riscv_zhintpause.bin_fmt"
+#include "riscv_zicbom.bin_fmt"
 #include "riscv_zicbop.bin_fmt"
 #include "riscv_zicond.bin_fmt"
 #include "riscv_zihintntl.bin_fmt"
