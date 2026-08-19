@@ -298,7 +298,14 @@ void VSlide1Helper(RiscVVectorState* rv_vector, Instruction* inst, int offset) {
         // Compute result.
         Vd src_value = slide_value;
         int src_index = vector_index - offset;
-        if ((src_index > 0) && (src_index < rv_vector->max_vector_length())) {
+        // Fix for slide1 instructions:
+        // 1. For vslide1up (offset=1), src_index=0 is valid (vs2[0]), so check
+        // src_index >= 0.
+        // 2. For vslide1down (offset=-1), when vector_index=vl-1, src_index=vl.
+        // We must use
+        //    slide_value if src_index >= vl (num_elements), not
+        //    max_vector_length (VLMAX).
+        if ((src_index >= 0) && (src_index < num_elements)) {
           src_value = generic::GetInstructionSource<Vd>(inst, 0, src_index);
         }
         dest_span[i] = src_value;

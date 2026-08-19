@@ -14,6 +14,7 @@
 
 #include "riscv/riscv_vector_fp_unary_instructions.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <limits>
@@ -70,27 +71,50 @@ void Vfmvvf(const Instruction* inst) {
   const int sew = rv_vector->selected_element_width();
   auto dest_op =
       static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
-  auto dest_db = dest_op->CopyDataBuffer();
   switch (sew) {
-    case 4:
-      for (int i = 0; i < vl; ++i) {
-        dest_db->Set<uint32_t>(
-            i, generic::GetInstructionSource<uint32_t>(inst, 0, 0));
+    case 4: {
+      using Vd = uint32_t;
+      int elements_per_vector =
+          rv_vector->vector_register_byte_length() / sizeof(Vd);
+      int max_regs = (vl + elements_per_vector - 1) / elements_per_vector;
+      int vector_index = 0;
+      for (int reg = 0; reg < max_regs; reg++) {
+        auto* dest_db = dest_op->CopyDataBuffer(reg);
+        auto dest_span = dest_db->Get<Vd>();
+        int element_count = std::min(elements_per_vector, vl - vector_index);
+        uint32_t val = generic::GetInstructionSource<uint32_t>(inst, 0, 0);
+        for (int i = 0; i < element_count; ++i) {
+          dest_span[i] = val;
+          vector_index++;
+        }
+        dest_db->Submit();
       }
       break;
-    case 8:
-      for (int i = 0; i < vl; ++i) {
-        dest_db->Set<uint64_t>(
-            i, generic::GetInstructionSource<uint64_t>(inst, 0, 0));
+    }
+    case 8: {
+      using Vd = uint64_t;
+      int elements_per_vector =
+          rv_vector->vector_register_byte_length() / sizeof(Vd);
+      int max_regs = (vl + elements_per_vector - 1) / elements_per_vector;
+      int vector_index = 0;
+      for (int reg = 0; reg < max_regs; reg++) {
+        auto* dest_db = dest_op->CopyDataBuffer(reg);
+        auto dest_span = dest_db->Get<Vd>();
+        int element_count = std::min(elements_per_vector, vl - vector_index);
+        uint64_t val = generic::GetInstructionSource<uint64_t>(inst, 0, 0);
+        for (int i = 0; i < element_count; ++i) {
+          dest_span[i] = val;
+          vector_index++;
+        }
+        dest_db->Submit();
       }
       break;
+    }
     default:
-      dest_db->DecRef();
-      LOG(ERROR) << "Vfmv.s.f: Illegal sew (" << sew << ")";
+      LOG(ERROR) << "Vfmv.v.f: Illegal sew (" << sew << ")";
       rv_vector->set_vector_exception();
       return;
   }
-  dest_db->Submit();
   rv_vector->clear_vstart();
 }
 

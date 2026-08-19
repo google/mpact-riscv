@@ -55,6 +55,7 @@ using ::mpact::sim::riscv::Vfcvtxfv;
 using ::mpact::sim::riscv::Vfcvtxufv;
 using ::mpact::sim::riscv::Vfmvfs;
 using ::mpact::sim::riscv::Vfmvsf;
+using ::mpact::sim::riscv::Vfmvvf;
 using ::mpact::sim::riscv::Vfncvtffw;
 using ::mpact::sim::riscv::Vfncvtfxuw;
 using ::mpact::sim::riscv::Vfncvtfxw;
@@ -728,6 +729,50 @@ TEST_F(RiscVFPUnaryInstructionsTest, VfmvFromScalar) {
           EXPECT_EQ(vreg_[kVd]->data_buffer()->Get<uint64_t>(0),
                     static_cast<uint64_t>(value));
           break;
+      }
+    }
+  }
+}
+
+// Test vfmv.v.f instruction - broadcast scalar fp register across vector
+// register group.
+TEST_F(RiscVFPUnaryInstructionsTest, VfmvBroadcastScalar) {
+  SetSemanticFunction(&Vfmvvf);
+  AppendRegisterOperands<RVFpRegister>({kFs1Name}, {});
+  AppendVectorRegisterOperands({}, {kVd});
+  for (int byte_sew : {4, 8}) {
+    for (int lmul_index = 0; lmul_index < 7; lmul_index++) {
+      int lmul8 = kLmul8Values[lmul_index];
+      int vlen = lmul8 * kVectorLengthInBytes / (8 * byte_sew);
+      if (vlen == 0) vlen = 1;
+      uint32_t vtype =
+          (kSewSettingsByByteSize[byte_sew] << 3) | kLmulSettings[lmul_index];
+      ConfigureVectorUnit(vtype, vlen);
+      ClearVectorRegisterGroup(kVd, 8);
+      auto value = RandomValue<RVFpRegister::ValueType>();
+      freg_[kFs1]->data_buffer()->Set<RVFpRegister::ValueType>(0, value);
+      instruction_->Execute();
+      EXPECT_FALSE(rv_vector_->vector_exception());
+      int num_elements_per_reg = kVectorLengthInBytes / byte_sew;
+      for (int i = 0; i < vlen; i++) {
+        int reg_offset = i / num_elements_per_reg;
+        int elem_idx = i % num_elements_per_reg;
+        switch (byte_sew) {
+          case 4:
+            EXPECT_EQ(
+                vreg_[kVd + reg_offset]->data_buffer()->Get<uint32_t>(elem_idx),
+                static_cast<uint32_t>(value))
+                << "byte_sew: " << byte_sew << " lmul: " << lmul_index
+                << " i: " << i;
+            break;
+          case 8:
+            EXPECT_EQ(
+                vreg_[kVd + reg_offset]->data_buffer()->Get<uint64_t>(elem_idx),
+                static_cast<uint64_t>(value))
+                << "byte_sew: " << byte_sew << " lmul: " << lmul_index
+                << " i: " << i;
+            break;
+        }
       }
     }
   }
