@@ -15,6 +15,7 @@
 #include "riscv/riscv_vector_permute_instructions.h"
 
 #include <cstdint>
+#include <cstring>
 
 #include "absl/random/random.h"
 #include "googlemock/include/gmock/gmock.h"
@@ -622,6 +623,234 @@ TEST_F(RiscVVectorPermuteInstructionsTest, Vcompress64) {
   SetSemanticFunction(&Vcompress);
   AppendVectorRegisterOperands({kVs2, kVmask}, {kVd});
   CompressHelper<uint64_t>(this, instruction_);
+}
+
+// Test vrgather.vv where indices are >= VLMAX (with LMUL < 8).
+// Per spec: vd[i] = (vs1[i] >= VLMAX) ? 0 : vs2[vs1[i]].
+TEST_F(RiscVVectorPermuteInstructionsTest,
+       VrgatherVVIndexOutOfBoundsZeroesElement) {
+  SetSemanticFunction(&Vrgather);
+  AppendVectorRegisterOperands({kVs2, kVs1, kVmask}, {kVd});
+
+  // LMUL = 1, SEW = 32 bits (4 bytes). VLMAX = 64 / 4 = 16 elements.
+  uint32_t vtype = (kSewSettingsByByteSize[sizeof(uint32_t)] << 3) |
+                   kLmulSettingByLogSize[4];
+  ConfigureVectorUnit(vtype, 16);
+
+  int num_values_per_reg = kVectorLengthInBytes / sizeof(uint32_t);  // 16
+  // Set vs2 (v24) elements to distinct non-zero values.
+  auto vs2_span = vreg()[kVs2]->data_buffer()->Get<uint32_t>();
+  for (int i = 0; i < num_values_per_reg; i++) {
+    vs2_span[i] = 100 + i;
+  }
+  // Also populate v25 with non-zero values so that reading beyond VLMAX would
+  // yield non-zero.
+  auto vs2_plus1_span = vreg()[kVs2 + 1]->data_buffer()->Get<uint32_t>();
+  for (int i = 0; i < num_values_per_reg; i++) {
+    vs2_plus1_span[i] = 500 + i;
+  }
+
+  // Set vs1 (v16) with some indices in-bounds (< 16) and some out-of-bounds (>=
+  // 16).
+  auto vs1_span = vreg()[kVs1]->data_buffer()->Get<uint32_t>();
+  for (int i = 0; i < num_values_per_reg; i++) {
+    vs1_span[i] = (i % 2 == 0) ? (i / 2) : (16 + i);
+  }
+
+  // Unmasked (mask all 1s).
+  uint8_t all_ones_mask[kVectorLengthInBytes];
+  memset(all_ones_mask, 0xff, sizeof(all_ones_mask));
+  SetVectorRegisterValues<uint8_t>({{kVmaskName, all_ones_mask}});
+
+  instruction_->Execute();
+
+  auto vd_span = vreg()[kVd]->data_buffer()->Get<uint32_t>();
+  for (int i = 0; i < num_values_per_reg; i++) {
+    if (i % 2 == 0) {
+      EXPECT_EQ(vd_span[i], vs2_span[i / 2]) << "at index " << i;
+    } else {
+      EXPECT_EQ(vd_span[i], 0)
+          << "at index " << i << " (index value " << (16 + i) << " >= VLMAX)";
+    }
+  }
+}
+
+// Test vrgather.vx where scalar index rs1 >= VLMAX (with LMUL < 8).
+// Per spec: vd[i] = (rs1 >= VLMAX) ? 0 : vs2[rs1].
+TEST_F(RiscVVectorPermuteInstructionsTest,
+       VrgatherVXIndexOutOfBoundsZeroesElement) {
+  SetSemanticFunction(&Vrgather);
+  AppendVectorRegisterOperands({kVs2}, {});
+  AppendRegisterOperands<RV32Register>({kRs1Name}, {});
+  AppendVectorRegisterOperands({kVmask}, {kVd});
+
+  // LMUL = 1, SEW = 32 bits (4 bytes). VLMAX = 16 elements.
+  uint32_t vtype = (kSewSettingsByByteSize[sizeof(uint32_t)] << 3) |
+                   kLmulSettingByLogSize[4];
+  ConfigureVectorUnit(vtype, 16);
+
+  int num_values_per_reg = kVectorLengthInBytes / sizeof(uint32_t);  // 16
+  auto vs2_span = vreg()[kVs2]->data_buffer()->Get<uint32_t>();
+  for (int i = 0; i < num_values_per_reg; i++) {
+    vs2_span[i] = 100 + i;
+  }
+  auto vs2_plus1_span = vreg()[kVs2 + 1]->data_buffer()->Get<uint32_t>();
+  for (int i = 0; i < num_values_per_reg; i++) {
+    vs2_plus1_span[i] = 500 + i;
+  }
+
+  uint8_t all_ones_mask[kVectorLengthInBytes];
+  memset(all_ones_mask, 0xff, sizeof(all_ones_mask));
+  SetVectorRegisterValues<uint8_t>({{kVmaskName, all_ones_mask}});
+
+  // rs1 = 16 (>= VLMAX)
+  SetRegisterValues<RV32Register::ValueType>({{kRs1Name, 16}});
+
+  instruction_->Execute();
+
+  auto vd_span = vreg()[kVd]->data_buffer()->Get<uint32_t>();
+  for (int i = 0; i < num_values_per_reg; i++) {
+    EXPECT_EQ(vd_span[i], 0) << "at index " << i;
+  }
+}
+
+// Test vrgather.vi (immediate index) in-bounds and out-of-bounds.
+TEST_F(RiscVVectorPermuteInstructionsTest, VrgatherVIInBoundsAndOutOfBounds) {
+  // LMUL = 1, SEW = 64 bits (8 bytes). VLMAX = 8 elements.
+  uint32_t vtype = (kSewSettingsByByteSize[sizeof(uint64_t)] << 3) |
+                   kLmulSettingByLogSize[4];
+  ConfigureVectorUnit(vtype, 8);
+
+  int num_values_per_reg = kVectorLengthInBytes / sizeof(uint64_t);  // 8
+  auto vs2_span = vreg()[kVs2]->data_buffer()->Get<uint64_t>();
+  for (int i = 0; i < num_values_per_reg; i++) {
+    vs2_span[i] = 1000 + i;
+  }
+  auto vs2_plus1_span = vreg()[kVs2 + 1]->data_buffer()->Get<uint64_t>();
+  for (int i = 0; i < num_values_per_reg; i++) {
+    vs2_plus1_span[i] = 5000 + i;
+  }
+
+  uint8_t all_ones_mask[kVectorLengthInBytes];
+  memset(all_ones_mask, 0xff, sizeof(all_ones_mask));
+  SetVectorRegisterValues<uint8_t>({{kVmaskName, all_ones_mask}});
+
+  // Test in-bounds immediate: uimm = 3 (< VLMAX = 8).
+  ResetInstruction();
+  SetSemanticFunction(&Vrgather);
+  AppendVectorRegisterOperands({kVs2}, {});
+  AppendImmediateOperands<uint32_t>({3});
+  AppendVectorRegisterOperands({kVmask}, {kVd});
+
+  instruction_->Execute();
+
+  auto vd_span = vreg()[kVd]->data_buffer()->Get<uint64_t>();
+  for (int i = 0; i < num_values_per_reg; i++) {
+    EXPECT_EQ(vd_span[i], 1003) << "at index " << i;
+  }
+
+  // Test out-of-bounds immediate: uimm = 10 (>= VLMAX = 8).
+  ResetInstruction();
+  SetSemanticFunction(&Vrgather);
+  AppendVectorRegisterOperands({kVs2}, {});
+  AppendImmediateOperands<uint32_t>({10});
+  AppendVectorRegisterOperands({kVmask}, {kVd});
+
+  instruction_->Execute();
+
+  vd_span = vreg()[kVd]->data_buffer()->Get<uint64_t>();
+  for (int i = 0; i < num_values_per_reg; i++) {
+    EXPECT_EQ(vd_span[i], 0) << "at index " << i;
+  }
+}
+
+// Test vrgatherei16.vv where indices are >= VLMAX (with LMUL < 8).
+TEST_F(RiscVVectorPermuteInstructionsTest,
+       Vrgatherei16VVIndexOutOfBoundsZeroesElement) {
+  SetSemanticFunction(&Vrgatherei16);
+  AppendVectorRegisterOperands({kVs2, kVs1, kVmask}, {kVd});
+
+  // LMUL = 1, SEW = 32 bits (4 bytes), index SEW = 16 bits (2 bytes). VLMAX =
+  // 16 elements.
+  uint32_t vtype = (kSewSettingsByByteSize[sizeof(uint32_t)] << 3) |
+                   kLmulSettingByLogSize[4];
+  ConfigureVectorUnit(vtype, 16);
+
+  int num_values_per_reg = kVectorLengthInBytes / sizeof(uint32_t);  // 16
+  auto vs2_span = vreg()[kVs2]->data_buffer()->Get<uint32_t>();
+  for (int i = 0; i < num_values_per_reg; i++) {
+    vs2_span[i] = 200 + i;
+  }
+  auto vs2_plus1_span = vreg()[kVs2 + 1]->data_buffer()->Get<uint32_t>();
+  for (int i = 0; i < num_values_per_reg; i++) {
+    vs2_plus1_span[i] = 600 + i;
+  }
+
+  // Indices in vs1 (uint16_t).
+  auto vs1_span = vreg()[kVs1]->data_buffer()->Get<uint16_t>();
+  for (int i = 0; i < num_values_per_reg; i++) {
+    vs1_span[i] = (i % 2 == 0) ? (i / 2) : (16 + i);
+  }
+
+  uint8_t all_ones_mask[kVectorLengthInBytes];
+  memset(all_ones_mask, 0xff, sizeof(all_ones_mask));
+  SetVectorRegisterValues<uint8_t>({{kVmaskName, all_ones_mask}});
+
+  instruction_->Execute();
+
+  auto vd_span = vreg()[kVd]->data_buffer()->Get<uint32_t>();
+  for (int i = 0; i < num_values_per_reg; i++) {
+    if (i % 2 == 0) {
+      EXPECT_EQ(vd_span[i], vs2_span[i / 2]) << "at index " << i;
+    } else {
+      EXPECT_EQ(vd_span[i], 0)
+          << "at index " << i << " (index value " << (16 + i) << " >= VLMAX)";
+    }
+  }
+}
+
+// Test multi-register masking across register boundaries.
+TEST_F(RiscVVectorPermuteInstructionsTest, VrgatherMultiRegisterMask) {
+  SetSemanticFunction(&Vrgather);
+  AppendVectorRegisterOperands({kVs2, kVs1, kVmask}, {kVd});
+
+  // LMUL = 2, SEW = 32 bits (4 bytes). 2 registers = 32 elements.
+  uint32_t vtype = (kSewSettingsByByteSize[sizeof(uint32_t)] << 3) |
+                   kLmulSettingByLogSize[5];
+  ConfigureVectorUnit(vtype, 32);
+
+  int num_values_per_reg = kVectorLengthInBytes / sizeof(uint32_t);  // 16
+  for (int reg = 0; reg < 2; reg++) {
+    auto vs2_span = vreg()[kVs2 + reg]->data_buffer()->Get<uint32_t>();
+    auto vs1_span = vreg()[kVs1 + reg]->data_buffer()->Get<uint32_t>();
+    auto vd_span = vreg()[kVd + reg]->data_buffer()->Get<uint32_t>();
+    for (int i = 0; i < num_values_per_reg; i++) {
+      vs2_span[i] = 100 * (reg + 1) + i;
+      vs1_span[i] = reg * num_values_per_reg + i;
+      vd_span[i] = 0x55555555;
+    }
+  }
+
+  // Set mask: reg 0 (elements 0..15, bytes 0..1) = 0xFF (active).
+  //           reg 1 (elements 16..31, bytes 2..3) = 0x00 (inactive).
+  uint8_t mask[kVectorLengthInBytes];
+  memset(mask, 0, sizeof(mask));
+  mask[0] = 0xff;
+  mask[1] = 0xff;
+  SetVectorRegisterValues<uint8_t>({{kVmaskName, mask}});
+
+  instruction_->Execute();
+
+  // Elements 0..15 in vd (v8) should be updated.
+  auto vd0_span = vreg()[kVd]->data_buffer()->Get<uint32_t>();
+  for (int i = 0; i < num_values_per_reg; i++) {
+    EXPECT_EQ(vd0_span[i], 100 + i) << "at reg 0 index " << i;
+  }
+  // Elements 16..31 in vd (v9) should be UNMODIFIED (0x55555555).
+  auto vd1_span = vreg()[kVd + 1]->data_buffer()->Get<uint32_t>();
+  for (int i = 0; i < num_values_per_reg; i++) {
+    EXPECT_EQ(vd1_span[i], 0x55555555) << "at reg 1 index " << i;
+  }
 }
 
 }  // namespace

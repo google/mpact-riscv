@@ -35,8 +35,10 @@ template <typename Vd, typename Vs2, typename Vs1>
 void VrgatherHelper(RiscVVectorState* rv_vector, Instruction* inst) {
   if (rv_vector->vector_exception()) return;
   int num_elements = rv_vector->vector_length();
-  int elements_per_vector =
-      rv_vector->vector_register_byte_length() / sizeof(Vd);
+  int vlenb = rv_vector->vector_register_byte_length();
+  int elements_per_vector = vlenb / sizeof(Vd);
+  int vlmax = rv_vector->max_vector_length();
+
   // Verify that the lmul is compatible with index size.
   int index_emul =
       rv_vector->vector_length_multiplier() * sizeof(Vs1) / sizeof(Vd);
@@ -44,10 +46,12 @@ void VrgatherHelper(RiscVVectorState* rv_vector, Instruction* inst) {
     rv_vector->set_vector_exception();
     return;
   }
+
   int max_regs = std::max(
       1, (num_elements + elements_per_vector - 1) / elements_per_vector);
   auto* dest_op =
       static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
+
   // Verify that there are enough registers in the destination operand.
   if (dest_op->size() < max_regs) {
     rv_vector->set_vector_exception();
@@ -56,46 +60,66 @@ void VrgatherHelper(RiscVVectorState* rv_vector, Instruction* inst) {
         dest_op->size(), ") than required by the operation (", max_regs, ")");
     return;
   }
+
   // Get the vector mask.
   auto* mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(2));
   auto mask_span = mask_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
-  // Get the vector start element index and compute the where to start
-  // the operation.
+
+  auto* src0_op = static_cast<RV32VectorSourceOperand*>(inst->Source(0));
+
+  // Determine the type of the index source (Source 1).
+  // .vi: Source(1) is an immediate operand.
+  // .vx: Source(1) is a scalar GPR operand.
+  // .vv: Source(1) is a vector operand.
+  bool is_scalar_or_imm = (inst->Source(1)->shape()[0] == 1);
+  auto* src1_op = is_scalar_or_imm
+                      ? nullptr
+                      : static_cast<RV32VectorSourceOperand*>(inst->Source(1));
+
   int vector_index = rv_vector->vstart();
   int start_reg = vector_index / elements_per_vector;
   int item_index = vector_index % elements_per_vector;
-  // Determine if it's vector-vector or vector-scalar.
-  bool vector_scalar = inst->Source(1)->shape()[0] == 1;
-  auto src0_op = static_cast<RV32VectorSourceOperand*>(inst->Source(0));
-  int max_index = src0_op->size() * elements_per_vector;
-  // Iterate over the number of registers to write.
+
+  int vs1_els_per_reg = vlenb / sizeof(Vs1);
+  int vs2_els_per_reg = vlenb / sizeof(Vs2);
+
   for (int reg = start_reg; (reg < max_regs) && (vector_index < num_elements);
        reg++) {
     // Allocate data buffer for the new register data.
     auto* dest_db = dest_op->CopyDataBuffer(reg);
     auto dest_span = dest_db->Get<Vd>();
-    // Write data into register subject to masking.
+
     int element_count = std::min(elements_per_vector, num_elements);
     for (int i = item_index;
          (i < element_count) && (vector_index < num_elements); i++) {
-      // Get the mask value.
-      int mask_index = i >> 3;
-      int mask_offset = i & 0b111;
+      int mask_index = vector_index >> 3;
+      int mask_offset = vector_index & 0b111;
       bool mask_value = ((mask_span[mask_index] >> mask_offset) & 0b1) != 0;
+
       if (mask_value) {
-        // Compute result.
-        RV32Register::ValueType vs1;
-        if (vector_scalar) {
-          vs1 = generic::GetInstructionSource<RV32Register::ValueType>(inst, 1,
-                                                                       0);
+        uint64_t index_val = 0;
+        if (is_scalar_or_imm) {
+          // For .vx and .vi, index is the same for all elements.
+          index_val = generic::GetInstructionSource<uint32_t>(inst, 1, 0);
         } else {
-          vs1 = generic::GetInstructionSource<Vs1>(inst, 1, vector_index);
+          // For .vv and .ei16.vv, index is read from the vector register vs1.
+          int vs1_reg_off = vector_index / vs1_els_per_reg;
+          int vs1_el_off = vector_index % vs1_els_per_reg;
+          index_val = src1_op->GetRegister(vs1_reg_off)
+                          ->data_buffer()
+                          ->Get<Vs1>()[vs1_el_off];
         }
-        Vs2 vs2 = 0;
-        if (vs1 < max_index) {
-          vs2 = generic::GetInstructionSource<Vs2>(inst, 0, vs1);
+
+        Vs2 res_vs2 = 0;
+        // Spec: vd[i] = (index >= VLMAX) ? 0 : vs2[index]
+        if (index_val < static_cast<uint64_t>(vlmax)) {
+          int vs2_reg_off = index_val / vs2_els_per_reg;
+          int vs2_el_off = index_val % vs2_els_per_reg;
+          res_vs2 = src0_op->GetRegister(vs2_reg_off)
+                        ->data_buffer()
+                        ->Get<Vs2>()[vs2_el_off];
         }
-        dest_span[i] = vs2;
+        dest_span[i] = static_cast<Vd>(res_vs2);
       }
       vector_index++;
     }
