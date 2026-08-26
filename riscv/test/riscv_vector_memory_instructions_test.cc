@@ -900,7 +900,9 @@ class RV32VInstructionsTest : public testing::Test {
 
       // Skip if the number of values is greater than the offset representation.
       // This only happens for uint8_t.
-      if (num_values > 256) continue;
+      if (sizeof(IndexType) == 1 && (num_values * sizeof(ValueType) > 256)) {
+        continue;
+      }
 
       // Check the index vector length.
       if ((index_emul8 == 0) || (index_emul8 > 64)) {
@@ -915,7 +917,7 @@ class RV32VInstructionsTest : public testing::Test {
         int reg = i / index_values_per_reg;
         int element = i % index_values_per_reg;
         vreg_[kVs2 + reg]->data_buffer()->Set<IndexType>(
-            element, IndexValue<IndexType>(i));
+            element, IndexValue<ValueType>(i));
       }
 
       // Execute instruction.
@@ -926,7 +928,7 @@ class RV32VInstructionsTest : public testing::Test {
 
       // Check register values.
       for (int i = 0; i < 8 * kVectorLengthInBytes / sizeof(ValueType); i++) {
-        uint64_t address = kDataStoreAddress + IndexValue<IndexType>(i);
+        uint64_t address = kDataStoreAddress + IndexValue<ValueType>(i);
         state_->LoadMemory(instruction_, address, data_db, nullptr, nullptr);
         int mask_index = i / 8;
         int mask_offset = i % 8;
@@ -1971,63 +1973,63 @@ TEST_F(RV32VInstructionsTest, VsIndexed8_8) {
 }
 
 TEST_F(RV32VInstructionsTest, VsIndexed8_16) {
-  VectorStoreIndexedHelper<uint8_t, uint8_t>();
+  VectorStoreIndexedHelper<uint8_t, uint16_t>();
 }
 
 TEST_F(RV32VInstructionsTest, VsIndexed8_32) {
-  VectorStoreIndexedHelper<uint8_t, uint8_t>();
+  VectorStoreIndexedHelper<uint8_t, uint32_t>();
 }
 
 TEST_F(RV32VInstructionsTest, VsIndexed8_64) {
-  VectorStoreIndexedHelper<uint8_t, uint8_t>();
+  VectorStoreIndexedHelper<uint8_t, uint64_t>();
 }
 
 TEST_F(RV32VInstructionsTest, VsIndexed16_8) {
-  VectorStoreIndexedHelper<uint8_t, uint8_t>();
+  VectorStoreIndexedHelper<uint16_t, uint8_t>();
 }
 
 TEST_F(RV32VInstructionsTest, VsIndexed16_16) {
-  VectorStoreIndexedHelper<uint8_t, uint8_t>();
+  VectorStoreIndexedHelper<uint16_t, uint16_t>();
 }
 
 TEST_F(RV32VInstructionsTest, VsIndexed16_32) {
-  VectorStoreIndexedHelper<uint8_t, uint8_t>();
+  VectorStoreIndexedHelper<uint16_t, uint32_t>();
 }
 
 TEST_F(RV32VInstructionsTest, VsIndexed16_64) {
-  VectorStoreIndexedHelper<uint8_t, uint8_t>();
+  VectorStoreIndexedHelper<uint16_t, uint64_t>();
 }
 
 TEST_F(RV32VInstructionsTest, VsIndexed32_8) {
-  VectorStoreIndexedHelper<uint8_t, uint8_t>();
+  VectorStoreIndexedHelper<uint32_t, uint8_t>();
 }
 
 TEST_F(RV32VInstructionsTest, VsIndexed32_16) {
-  VectorStoreIndexedHelper<uint8_t, uint8_t>();
+  VectorStoreIndexedHelper<uint32_t, uint16_t>();
 }
 
 TEST_F(RV32VInstructionsTest, VsIndexed32_32) {
-  VectorStoreIndexedHelper<uint8_t, uint8_t>();
+  VectorStoreIndexedHelper<uint32_t, uint32_t>();
 }
 
 TEST_F(RV32VInstructionsTest, VsIndexed32_64) {
-  VectorStoreIndexedHelper<uint8_t, uint8_t>();
+  VectorStoreIndexedHelper<uint32_t, uint64_t>();
 }
 
 TEST_F(RV32VInstructionsTest, VsIndexed64_8) {
-  VectorStoreIndexedHelper<uint8_t, uint8_t>();
+  VectorStoreIndexedHelper<uint64_t, uint8_t>();
 }
 
 TEST_F(RV32VInstructionsTest, VsIndexed64_16) {
-  VectorStoreIndexedHelper<uint8_t, uint8_t>();
+  VectorStoreIndexedHelper<uint64_t, uint16_t>();
 }
 
 TEST_F(RV32VInstructionsTest, VsIndexed64_32) {
-  VectorStoreIndexedHelper<uint8_t, uint8_t>();
+  VectorStoreIndexedHelper<uint64_t, uint32_t>();
 }
 
 TEST_F(RV32VInstructionsTest, VsIndexed64_64) {
-  VectorStoreIndexedHelper<uint8_t, uint8_t>();
+  VectorStoreIndexedHelper<uint64_t, uint64_t>();
 }
 
 TEST_F(RV32VInstructionsTest, VsRegister) {
@@ -2169,4 +2171,403 @@ TEST_F(RV32VInstructionsTest, VsSegmentIndexed64_32) {
 TEST_F(RV32VInstructionsTest, VsSegmentIndexed64_64) {
   VectorStoreIndexedSegmentHelper<uint64_t, int64_t>();
 }
+
+// Test WriteBackLoadData with non-zero vstart.
+TEST_F(RV32VInstructionsTest, WriteBackLoadData_RespectsVstart) {
+  // Configure vector unit for 32-bit elements, LMUL=1, vl=16.
+  uint32_t vtype =
+      (kSewSettingsByByteSize[sizeof(uint32_t)] << 3) | kLmulSettings[3];
+  ConfigureVectorUnit(vtype, /*avl=*/16);
+  ASSERT_EQ(rv_vector_->vector_length(), 16);
+  rv_vector_->set_vstart(4);
+
+  AppendRegisterOperands({kRs1Name, kRs2Name}, {});
+  AppendVectorRegisterOperands({kVmask}, {});
+  SetSemanticFunction(absl::bind_front(&VlStrided, sizeof(uint32_t)));
+  SetChildInstruction();
+  SetChildSemanticFunction(&VlChild);
+  AppendVectorRegisterOperands(child_instruction_, {}, {kVd});
+
+  SetRegisterValues<uint32_t>({{kRs1Name, kDataLoadAddress}});
+  SetRegisterValues<int32_t>({{kRs2Name, sizeof(uint32_t)}});
+  uint8_t all_ones_mask[kVectorLengthInBytes];
+  std::memset(all_ones_mask, 0xff, sizeof(all_ones_mask));
+  SetVectorRegisterValues<uint8_t>(
+      {{kVmaskName, Span<const uint8_t>(all_ones_mask)}});
+
+  // Initialize destination register with sentinel 0xDEADBEEF.
+  for (int i = 0; i < kVectorLengthInBytes / sizeof(uint32_t); i++) {
+    vreg_[kVd]->data_buffer()->Set<uint32_t>(i, 0xDEADBEEF);
+  }
+
+  instruction_->Execute(nullptr);
+  EXPECT_FALSE(rv_vector_->vector_exception());
+  EXPECT_EQ(rv_vector_->vstart(), 0);
+
+  auto span = vreg_[kVd]->data_buffer()->Get<uint32_t>();
+  // Elements 0..3 should be untouched.
+  for (int i = 0; i < 4; i++) {
+    EXPECT_EQ(span[i], 0xDEADBEEF) << "element: " << i;
+  }
+  // Elements 4..15 should be loaded from memory.
+  for (int i = 4; i < 16; i++) {
+    uint32_t expected = ComputeValue<uint32_t>(4096 + i * sizeof(uint32_t));
+    EXPECT_EQ(span[i], expected) << "element: " << i;
+  }
+}
+
+TEST_F(RV32VInstructionsTest, VlIndexed_RespectsVstart) {
+  uint32_t vtype =
+      (kSewSettingsByByteSize[sizeof(uint32_t)] << 3) | kLmulSettings[3];
+  ConfigureVectorUnit(vtype, /*avl=*/16);
+  ASSERT_EQ(rv_vector_->vector_length(), 16);
+  rv_vector_->set_vstart(4);
+
+  AppendRegisterOperands({kRs1Name}, {});
+  AppendVectorRegisterOperands({kVs2, kVmask}, {});
+  SetSemanticFunction(absl::bind_front(&VlIndexed, sizeof(uint32_t)));
+  SetChildInstruction();
+  SetChildSemanticFunction(&VlChild);
+  AppendVectorRegisterOperands(child_instruction_, {}, {kVd});
+
+  SetRegisterValues<uint32_t>({{kRs1Name, kDataLoadAddress}});
+  uint8_t all_ones_mask[kVectorLengthInBytes];
+  std::memset(all_ones_mask, 0xff, sizeof(all_ones_mask));
+  SetVectorRegisterValues<uint8_t>(
+      {{kVmaskName, Span<const uint8_t>(all_ones_mask)}});
+
+  for (int i = 0; i < 16; i++) {
+    vreg_[kVs2]->data_buffer()->Set<uint32_t>(i, i * 4);
+    vreg_[kVd]->data_buffer()->Set<uint32_t>(i, 0xDEADBEEF);
+  }
+
+  instruction_->Execute(nullptr);
+  EXPECT_FALSE(rv_vector_->vector_exception());
+  EXPECT_EQ(rv_vector_->vstart(), 0);
+
+  auto span = vreg_[kVd]->data_buffer()->Get<uint32_t>();
+  for (int i = 0; i < 4; i++) {
+    EXPECT_EQ(span[i], 0xDEADBEEF) << "element: " << i;
+  }
+  for (int i = 4; i < 16; i++) {
+    uint32_t expected = ComputeValue<uint32_t>(4096 + i * 4);
+    EXPECT_EQ(span[i], expected) << "element: " << i;
+  }
+}
+
+TEST_F(RV32VInstructionsTest, VlIndexed_VstartGteVl) {
+  uint32_t vtype =
+      (kSewSettingsByByteSize[sizeof(uint32_t)] << 3) | kLmulSettings[3];
+  ConfigureVectorUnit(vtype, /*avl=*/16);
+  ASSERT_EQ(rv_vector_->vector_length(), 16);
+  rv_vector_->set_vstart(16);
+
+  AppendRegisterOperands({kRs1Name}, {});
+  AppendVectorRegisterOperands({kVs2, kVmask}, {});
+  SetSemanticFunction(absl::bind_front(&VlIndexed, sizeof(uint32_t)));
+  SetChildInstruction();
+  SetChildSemanticFunction(&VlChild);
+  AppendVectorRegisterOperands(child_instruction_, {}, {kVd});
+
+  SetRegisterValues<uint32_t>({{kRs1Name, kDataLoadAddress}});
+  uint8_t all_ones_mask[kVectorLengthInBytes];
+  std::memset(all_ones_mask, 0xff, sizeof(all_ones_mask));
+  SetVectorRegisterValues<uint8_t>(
+      {{kVmaskName, Span<const uint8_t>(all_ones_mask)}});
+
+  for (int i = 0; i < 16; i++) {
+    vreg_[kVs2]->data_buffer()->Set<uint32_t>(i, i * 4);
+    vreg_[kVd]->data_buffer()->Set<uint32_t>(i, 0xDEADBEEF);
+  }
+
+  instruction_->Execute(nullptr);
+  EXPECT_FALSE(rv_vector_->vector_exception());
+  EXPECT_EQ(rv_vector_->vstart(), 0);
+
+  auto span = vreg_[kVd]->data_buffer()->Get<uint32_t>();
+  for (int i = 0; i < 16; i++) {
+    EXPECT_EQ(span[i], 0xDEADBEEF) << "element: " << i;
+  }
+}
+
+TEST_F(RV32VInstructionsTest, VlIndexed_Rv32AddressWrap) {
+  uint32_t vtype =
+      (kSewSettingsByByteSize[sizeof(uint32_t)] << 3) | kLmulSettings[3];
+  ConfigureVectorUnit(vtype, /*avl=*/1);
+  ASSERT_EQ(rv_vector_->vector_length(), 1);
+
+  // Set memory at wrapped address 0x00000100.
+  auto* mem_db = state_->db_factory()->Allocate<uint32_t>(1);
+  mem_db->Set<uint32_t>(0, 0x12345678);
+  memory_->Store(0x00000100, mem_db);
+  mem_db->DecRef();
+
+  AppendRegisterOperands({kRs1Name}, {});
+  AppendVectorRegisterOperands({kVs2, kVmask}, {});
+  SetSemanticFunction(absl::bind_front(&VlIndexed, sizeof(uint32_t)));
+  SetChildInstruction();
+  SetChildSemanticFunction(&VlChild);
+  AppendVectorRegisterOperands(child_instruction_, {}, {kVd});
+
+  // Base = 0xFFFFFF00, Offset = 0x200 -> Sum wraps to 0x00000100 in 32-bit.
+  SetRegisterValues<uint32_t>({{kRs1Name, 0xFFFFFF00}});
+  uint8_t all_ones_mask[kVectorLengthInBytes];
+  std::memset(all_ones_mask, 0xff, sizeof(all_ones_mask));
+  SetVectorRegisterValues<uint8_t>(
+      {{kVmaskName, Span<const uint8_t>(all_ones_mask)}});
+  vreg_[kVs2]->data_buffer()->Set<uint32_t>(0, 0x200);
+  vreg_[kVd]->data_buffer()->Set<uint32_t>(0, 0);
+
+  instruction_->Execute(nullptr);
+  EXPECT_FALSE(rv_vector_->vector_exception());
+
+  auto span = vreg_[kVd]->data_buffer()->Get<uint32_t>();
+  EXPECT_EQ(span[0], 0x12345678);
+}
+
+TEST_F(RV32VInstructionsTest, VsIndexed_RespectsVstart) {
+  uint32_t vtype =
+      (kSewSettingsByByteSize[sizeof(uint32_t)] << 3) | kLmulSettings[3];
+  ConfigureVectorUnit(vtype, /*avl=*/16);
+  ASSERT_EQ(rv_vector_->vector_length(), 16);
+  rv_vector_->set_vstart(4);
+
+  AppendVectorRegisterOperands({kVs1}, {});
+  AppendRegisterOperands({kRs1Name}, {});
+  AppendVectorRegisterOperands({kVs2, kVmask}, {});
+  SetSemanticFunction(absl::bind_front(&VsIndexed, sizeof(uint32_t)));
+
+  SetRegisterValues<uint32_t>({{kRs1Name, kDataStoreAddress}});
+  uint8_t all_ones_mask[kVectorLengthInBytes];
+  std::memset(all_ones_mask, 0xff, sizeof(all_ones_mask));
+  SetVectorRegisterValues<uint8_t>(
+      {{kVmaskName, Span<const uint8_t>(all_ones_mask)}});
+
+  for (int i = 0; i < 16; i++) {
+    vreg_[kVs1]->data_buffer()->Set<uint32_t>(i, 0x100 + i);
+    vreg_[kVs2]->data_buffer()->Set<uint32_t>(i, i * sizeof(uint32_t));
+  }
+
+  // Clear memory.
+  auto* zero_db = state_->db_factory()->Allocate<uint32_t>(16);
+  std::memset(zero_db->raw_ptr(), 0, 16 * sizeof(uint32_t));
+  state_->StoreMemory(instruction_, kDataStoreAddress, zero_db);
+  zero_db->DecRef();
+
+  instruction_->Execute(nullptr);
+  EXPECT_FALSE(rv_vector_->vector_exception());
+  EXPECT_EQ(rv_vector_->vstart(), 0);
+
+  auto* load_db = state_->db_factory()->Allocate<uint32_t>(16);
+  state_->LoadMemory(instruction_, kDataStoreAddress, load_db, nullptr,
+                     nullptr);
+  auto span = load_db->Get<uint32_t>();
+  for (int i = 0; i < 4; i++) {
+    EXPECT_EQ(span[i], 0) << "element: " << i;
+  }
+  for (int i = 4; i < 16; i++) {
+    EXPECT_EQ(span[i], 0x100 + i) << "element: " << i;
+  }
+  load_db->DecRef();
+}
+
+TEST_F(RV32VInstructionsTest, VsIndexed_VstartGteVl) {
+  uint32_t vtype =
+      (kSewSettingsByByteSize[sizeof(uint32_t)] << 3) | kLmulSettings[3];
+  ConfigureVectorUnit(vtype, /*avl=*/16);
+  ASSERT_EQ(rv_vector_->vector_length(), 16);
+  rv_vector_->set_vstart(16);
+
+  AppendVectorRegisterOperands({kVs1}, {});
+  AppendRegisterOperands({kRs1Name}, {});
+  AppendVectorRegisterOperands({kVs2, kVmask}, {});
+  SetSemanticFunction(absl::bind_front(&VsIndexed, sizeof(uint32_t)));
+
+  SetRegisterValues<uint32_t>({{kRs1Name, kDataStoreAddress}});
+  uint8_t all_ones_mask[kVectorLengthInBytes];
+  std::memset(all_ones_mask, 0xff, sizeof(all_ones_mask));
+  SetVectorRegisterValues<uint8_t>(
+      {{kVmaskName, Span<const uint8_t>(all_ones_mask)}});
+
+  for (int i = 0; i < 16; i++) {
+    vreg_[kVs1]->data_buffer()->Set<uint32_t>(i, 0x100 + i);
+    vreg_[kVs2]->data_buffer()->Set<uint32_t>(i, i * sizeof(uint32_t));
+  }
+
+  // Clear memory.
+  auto* zero_db = state_->db_factory()->Allocate<uint32_t>(16);
+  std::memset(zero_db->raw_ptr(), 0, 16 * sizeof(uint32_t));
+  state_->StoreMemory(instruction_, kDataStoreAddress, zero_db);
+  zero_db->DecRef();
+
+  instruction_->Execute(nullptr);
+  EXPECT_FALSE(rv_vector_->vector_exception());
+  EXPECT_EQ(rv_vector_->vstart(), 0);
+
+  auto* load_db = state_->db_factory()->Allocate<uint32_t>(16);
+  state_->LoadMemory(instruction_, kDataStoreAddress, load_db, nullptr,
+                     nullptr);
+  auto span = load_db->Get<uint32_t>();
+  for (int i = 0; i < 16; i++) {
+    EXPECT_EQ(span[i], 0) << "element: " << i;
+  }
+  load_db->DecRef();
+}
+
+TEST_F(RV32VInstructionsTest, VsIndexed_Rv32AddressWrap) {
+  uint32_t vtype =
+      (kSewSettingsByByteSize[sizeof(uint32_t)] << 3) | kLmulSettings[3];
+  ConfigureVectorUnit(vtype, /*avl=*/1);
+  ASSERT_EQ(rv_vector_->vector_length(), 1);
+
+  AppendVectorRegisterOperands({kVs1}, {});
+  AppendRegisterOperands({kRs1Name}, {});
+  AppendVectorRegisterOperands({kVs2, kVmask}, {});
+  SetSemanticFunction(absl::bind_front(&VsIndexed, sizeof(uint32_t)));
+
+  SetRegisterValues<uint32_t>({{kRs1Name, 0xFFFFFF00}});
+  uint8_t all_ones_mask[kVectorLengthInBytes];
+  std::memset(all_ones_mask, 0xff, sizeof(all_ones_mask));
+  SetVectorRegisterValues<uint8_t>(
+      {{kVmaskName, Span<const uint8_t>(all_ones_mask)}});
+
+  vreg_[kVs1]->data_buffer()->Set<uint32_t>(0, 0xCAFEBABE);
+  vreg_[kVs2]->data_buffer()->Set<uint32_t>(0, 0x200);
+
+  // Clear memory at 0x00000100.
+  auto* zero_db = state_->db_factory()->Allocate<uint32_t>(1);
+  zero_db->Set<uint32_t>(0, 0);
+  memory_->Store(0x00000100, zero_db);
+  zero_db->DecRef();
+
+  instruction_->Execute(nullptr);
+  EXPECT_FALSE(rv_vector_->vector_exception());
+
+  auto* load_db = state_->db_factory()->Allocate<uint32_t>(1);
+  state_->LoadMemory(instruction_, 0x00000100, load_db, nullptr, nullptr);
+  EXPECT_EQ(load_db->Get<uint32_t>(0), 0xCAFEBABE);
+  load_db->DecRef();
+}
+
+TEST_F(RV32VInstructionsTest, VlRegister_RespectsVstart) {
+  rv_vector_->set_vstart(8);
+
+  AppendRegisterOperands({kRs1Name}, {});
+  SetChildInstruction();
+  AppendVectorRegisterOperands(child_instruction_, {}, {kVd});
+  SetChildSemanticFunction(&VlChild);
+  SetRegisterValues<uint32_t>({{kRs1Name, kDataLoadAddress}});
+  SetSemanticFunction(
+      absl::bind_front(&VlRegister, /*num_regs=*/1, /*element_width=*/1));
+
+  // Initialize destination register with sentinel 0xEE.
+  for (int i = 0; i < kVectorLengthInBytes; i++) {
+    vreg_[kVd]->data_buffer()->Set<uint8_t>(i, 0xEE);
+  }
+
+  instruction_->Execute();
+  EXPECT_FALSE(rv_vector_->vector_exception());
+  EXPECT_EQ(rv_vector_->vstart(), 0);
+
+  auto span = vreg_[kVd]->data_buffer()->Get<uint8_t>();
+  for (int i = 0; i < 8; i++) {
+    EXPECT_EQ(span[i], 0xEE) << "element: " << i;
+  }
+  for (int i = 8; i < kVectorLengthInBytes; i++) {
+    EXPECT_EQ(span[i], i & 0xff) << "element: " << i;
+  }
+}
+
+TEST_F(RV32VInstructionsTest, VlRegister_VstartGteNumElements) {
+  rv_vector_->set_vstart(kVectorLengthInBytes);
+
+  AppendRegisterOperands({kRs1Name}, {});
+  SetChildInstruction();
+  AppendVectorRegisterOperands(child_instruction_, {}, {kVd});
+  SetChildSemanticFunction(&VlChild);
+  SetRegisterValues<uint32_t>({{kRs1Name, kDataLoadAddress}});
+  SetSemanticFunction(
+      absl::bind_front(&VlRegister, /*num_regs=*/1, /*element_width=*/1));
+
+  for (int i = 0; i < kVectorLengthInBytes; i++) {
+    vreg_[kVd]->data_buffer()->Set<uint8_t>(i, 0xEE);
+  }
+
+  instruction_->Execute();
+  EXPECT_FALSE(rv_vector_->vector_exception());
+  EXPECT_EQ(rv_vector_->vstart(), 0);
+
+  auto span = vreg_[kVd]->data_buffer()->Get<uint8_t>();
+  for (int i = 0; i < kVectorLengthInBytes; i++) {
+    EXPECT_EQ(span[i], 0xEE) << "element: " << i;
+  }
+}
+
+TEST_F(RV32VInstructionsTest, VsRegister_RespectsVstart) {
+  rv_vector_->set_vstart(8);
+
+  AppendVectorRegisterOperands({kVs1}, {});
+  AppendRegisterOperands({kRs1Name}, {});
+  SetRegisterValues<uint32_t>({{kRs1Name, kDataStoreAddress}});
+  SetSemanticFunction(absl::bind_front(&VsRegister, /*num_regs=*/1));
+
+  for (int i = 0; i < kVectorLengthInBytes; i++) {
+    vreg_[kVs1]->data_buffer()->Set<uint8_t>(i, 0x80 + i);
+  }
+
+  // Clear memory.
+  auto* zero_db = state_->db_factory()->Allocate<uint8_t>(kVectorLengthInBytes);
+  std::memset(zero_db->raw_ptr(), 0, kVectorLengthInBytes);
+  state_->StoreMemory(instruction_, kDataStoreAddress, zero_db);
+  zero_db->DecRef();
+
+  instruction_->Execute();
+  EXPECT_FALSE(rv_vector_->vector_exception());
+  EXPECT_EQ(rv_vector_->vstart(), 0);
+
+  auto* load_db = state_->db_factory()->Allocate<uint8_t>(kVectorLengthInBytes);
+  state_->LoadMemory(instruction_, kDataStoreAddress, load_db, nullptr,
+                     nullptr);
+  auto span = load_db->Get<uint8_t>();
+  for (int i = 0; i < 8; i++) {
+    EXPECT_EQ(span[i], 0) << "byte: " << i;
+  }
+  for (int i = 8; i < kVectorLengthInBytes; i++) {
+    EXPECT_EQ(span[i], static_cast<uint8_t>(0x80 + i)) << "byte: " << i;
+  }
+  load_db->DecRef();
+}
+
+TEST_F(RV32VInstructionsTest, VsRegister_VstartGteNumElements) {
+  rv_vector_->set_vstart(kVectorLengthInBytes);
+
+  AppendVectorRegisterOperands({kVs1}, {});
+  AppendRegisterOperands({kRs1Name}, {});
+  SetRegisterValues<uint32_t>({{kRs1Name, kDataStoreAddress}});
+  SetSemanticFunction(absl::bind_front(&VsRegister, /*num_regs=*/1));
+
+  for (int i = 0; i < kVectorLengthInBytes; i++) {
+    vreg_[kVs1]->data_buffer()->Set<uint8_t>(i, 0x80 + i);
+  }
+
+  // Clear memory.
+  auto* zero_db = state_->db_factory()->Allocate<uint8_t>(kVectorLengthInBytes);
+  std::memset(zero_db->raw_ptr(), 0, kVectorLengthInBytes);
+  state_->StoreMemory(instruction_, kDataStoreAddress, zero_db);
+  zero_db->DecRef();
+
+  instruction_->Execute();
+  EXPECT_FALSE(rv_vector_->vector_exception());
+  EXPECT_EQ(rv_vector_->vstart(), 0);
+
+  auto* load_db = state_->db_factory()->Allocate<uint8_t>(kVectorLengthInBytes);
+  state_->LoadMemory(instruction_, kDataStoreAddress, load_db, nullptr,
+                     nullptr);
+  auto span = load_db->Get<uint8_t>();
+  for (int i = 0; i < kVectorLengthInBytes; i++) {
+    EXPECT_EQ(span[i], 0) << "byte: " << i;
+  }
+  load_db->DecRef();
+}
+
 }  // namespace
