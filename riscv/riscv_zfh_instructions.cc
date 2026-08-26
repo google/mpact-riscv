@@ -890,7 +890,7 @@ void RiscVZfhFsgnjx(const Instruction* instruction) {
 void RiscVZfhFmadd(const Instruction* instruction) {
   RiscVZfhTernaryHelper<HalfFP, float>(
       instruction,
-      [](float a, float b, float c) -> float { return fma(a, b, c); });
+      [](float a, float b, float c) -> float { return std::fma(a, b, c); });
 }
 
 // Fused multiply add in half precision. Do the operation in single precision.
@@ -898,7 +898,7 @@ void RiscVZfhFmadd(const Instruction* instruction) {
 void RiscVZfhFmsub(const Instruction* instruction) {
   RiscVZfhTernaryHelper<HalfFP, float>(
       instruction,
-      [](float a, float b, float c) -> float { return fma(a, b, -c); });
+      [](float a, float b, float c) -> float { return std::fma(a, b, -c); });
 }
 
 // Fused multiply add in half precision. Do the operation in single precision.
@@ -906,7 +906,7 @@ void RiscVZfhFmsub(const Instruction* instruction) {
 void RiscVZfhFnmadd(const Instruction* instruction) {
   RiscVZfhTernaryHelper<HalfFP, float>(
       instruction,
-      [](float a, float b, float c) -> float { return fma(-a, b, -c); });
+      [](float a, float b, float c) -> float { return std::fma(-a, b, -c); });
 }
 
 // Fused multiply add in half precision. Do the operation in single precision.
@@ -914,7 +914,7 @@ void RiscVZfhFnmadd(const Instruction* instruction) {
 void RiscVZfhFnmsub(const Instruction* instruction) {
   RiscVZfhTernaryHelper<HalfFP, float>(
       instruction,
-      [](float a, float b, float c) -> float { return fma(-a, b, c); });
+      [](float a, float b, float c) -> float { return std::fma(-a, b, c); });
 }
 
 // Convert from signed 32 bit integer to half precision.

@@ -54,6 +54,7 @@ using ::mpact::sim::riscv::RV32::RiscVFCmple;
 using ::mpact::sim::riscv::RV32::RiscVFCmplt;
 using ::mpact::sim::riscv::RV32::RiscVFCvtWs;
 using ::mpact::sim::riscv::RV32::RiscVFCvtWus;
+
 class RV32FInstructionTest
     : public RiscVFPInstructionTestBase<mpact::sim::riscv::RV32Register> {};
 
@@ -170,7 +171,7 @@ TEST_F(RV32FInstructionTest, RiscVFMadd) {
   TernaryOpWithFflagsFPTestHelper<float, float, float, float>(
       "fmadd", instruction_, {"f", "f", "f", "f"}, 32,
       [](float lhs, float mhs, float rhs) -> float {
-        return fma(lhs, mhs, rhs);
+        return std::fma(lhs, mhs, rhs);
       });
 }
 TEST_F(RV32FInstructionTest, RiscVFMsub) {
@@ -178,7 +179,7 @@ TEST_F(RV32FInstructionTest, RiscVFMsub) {
   TernaryOpWithFflagsFPTestHelper<float, float, float, float>(
       "fmsub", instruction_, {"f", "f", "f", "f"}, 32,
       [](float lhs, float mhs, float rhs) -> float {
-        return fma(lhs, mhs, -rhs);
+        return std::fma(lhs, mhs, -rhs);
       });
 }
 TEST_F(RV32FInstructionTest, RiscVFNmadd) {
@@ -186,7 +187,7 @@ TEST_F(RV32FInstructionTest, RiscVFNmadd) {
   TernaryOpWithFflagsFPTestHelper<float, float, float, float>(
       "fnmadd", instruction_, {"f", "f", "f", "f"}, 32,
       [](float lhs, float mhs, float rhs) -> float {
-        return fma(-lhs, mhs, -rhs);
+        return std::fma(-lhs, mhs, -rhs);
       });
 }
 TEST_F(RV32FInstructionTest, RiscVFNmsub) {
@@ -194,7 +195,7 @@ TEST_F(RV32FInstructionTest, RiscVFNmsub) {
   TernaryOpWithFflagsFPTestHelper<float, float, float, float>(
       "fnmsub", instruction_, {"f", "f", "f", "f"}, 32,
       [](float lhs, float mhs, float rhs) -> float {
-        return fma(-lhs, mhs, rhs);
+        return std::fma(-lhs, mhs, rhs);
       });
 }
 
