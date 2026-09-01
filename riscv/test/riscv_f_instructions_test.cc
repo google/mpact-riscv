@@ -17,6 +17,7 @@
 #include <cmath>
 #include <cstdint>
 #include <tuple>
+#include <vector>
 
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/instruction.h"
@@ -27,7 +28,10 @@
 
 namespace {
 
+using ::mpact::sim::generic::Instruction;
 using ::mpact::sim::riscv::FPExceptions;
+using ::mpact::sim::riscv::RV32Register;
+using ::mpact::sim::riscv::RVFpRegister;
 using ::mpact::sim::riscv::test::FPTypeInfo;
 using ::mpact::sim::riscv::test::RiscVFPInstructionTestBase;
 using ::mpact::sim::generic::operator*;  // NOLINT: is used below.
@@ -333,6 +337,117 @@ TEST_F(RV32FInstructionTest, RiscVFClass) {
         }
         return 0;
       });
+}
+
+TEST_F(RV32FInstructionTest, RiscVFRMMTiesToMaxMagnitude) {
+  // Test fadd with exact tie: 1.0f + 2^-24f
+  // 1.0f (0x3f800000) has an even mantissa.
+  // In RNE (mode 0), tie rounds to even (0x3f800000).
+  // In RMM (mode 4), tie rounds away from zero to max magnitude (0x3f800001).
+  SetSemanticFunction(&RiscVFAdd);
+  AppendRegisterOperands<RVFpRegister>({"f1"}, {});
+  AppendRegisterOperands<RVFpRegister>({"f2"}, {});
+  AppendRegisterOperands<RV32Register>({"x10"}, {});
+  AppendRegisterOperands<RVFpRegister>({}, {"f5"});
+
+  float a = 1.0f;
+  float b = std::ldexp(1.0f, -24);  // 2^-24
+  SetNaNBoxedRegisterValues<float, RVFpRegister>({{"f1", a}, {"f2", b}});
+  SetRegisterValues<int, RV32Register>({{"x10", 4}});  // RMM mode
+  SetRegisterValues<uint32_t, RVFpRegister>({{"f5", 0}});
+
+  instruction_->Execute(nullptr);
+
+  uint32_t result_bits = state_->GetRegister<RVFpRegister>("f5")
+                             .first->data_buffer()
+                             ->template Get<uint32_t>(0);
+  EXPECT_EQ(result_bits, 0x3f800001);
+}
+
+TEST_F(RV32FInstructionTest, RiscVFRMMFSubTie) {
+  SetSemanticFunction(&RiscVFSub);
+  AppendRegisterOperands<RVFpRegister>({"f1"}, {});
+  AppendRegisterOperands<RVFpRegister>({"f2"}, {});
+  AppendRegisterOperands<RV32Register>({"x10"}, {});
+  AppendRegisterOperands<RVFpRegister>({}, {"f5"});
+
+  float a = 1.0f;
+  float b = -std::ldexp(1.0f, -24);  // -2^-24
+  SetNaNBoxedRegisterValues<float, RVFpRegister>({{"f1", a}, {"f2", b}});
+  SetRegisterValues<int, RV32Register>({{"x10", 4}});  // RMM mode
+  SetRegisterValues<uint32_t, RVFpRegister>({{"f5", 0}});
+
+  instruction_->Execute(nullptr);
+
+  uint32_t result_bits = state_->GetRegister<RVFpRegister>("f5")
+                             .first->data_buffer()
+                             ->template Get<uint32_t>(0);
+  EXPECT_EQ(result_bits, 0x3f800001);
+}
+
+TEST_F(RV32FInstructionTest, RiscVFRMMFMulTie) {
+  SetSemanticFunction(&RiscVFMul);
+  AppendRegisterOperands<RVFpRegister>({"f1"}, {});
+  AppendRegisterOperands<RVFpRegister>({"f2"}, {});
+  AppendRegisterOperands<RV32Register>({"x10"}, {});
+  AppendRegisterOperands<RVFpRegister>({}, {"f5"});
+
+  // (1.0 + 2^-12) * (1.0 + 2^-12) = 1.0 + 2^-11 + 2^-24 (exact 0.5 ULP tie)
+  float a = 1.0f + std::ldexp(1.0f, -12);
+  float b = a;
+  SetNaNBoxedRegisterValues<float, RVFpRegister>({{"f1", a}, {"f2", b}});
+  SetRegisterValues<int, RV32Register>({{"x10", 4}});  // RMM mode
+  SetRegisterValues<uint32_t, RVFpRegister>({{"f5", 0}});
+
+  instruction_->Execute(nullptr);
+
+  uint32_t result_bits = state_->GetRegister<RVFpRegister>("f5")
+                             .first->data_buffer()
+                             ->template Get<uint32_t>(0);
+  EXPECT_EQ(result_bits, 0x3f801001);
+}
+
+TEST_F(RV32FInstructionTest, RiscVFRMMFmaTies) {
+  float one = 1.0f;
+  float tie = std::ldexp(1.0f, -24);
+  float neg_tie = -tie;
+
+  struct FmaTestCase {
+    Instruction::SemanticFunction fcn;
+    float rs1;
+    float rs2;
+    float rs3;
+    uint32_t expected_bits;
+  };
+
+  const std::vector<FmaTestCase> test_cases = {
+      {&RiscVFMadd, one, one, tie, 0x3f800001},
+      {&RiscVFMsub, one, one, neg_tie, 0x3f800001},
+      {&RiscVFNmadd, one, one, tie, 0xbf800001},
+      {&RiscVFNmsub, one, one, neg_tie, 0xbf800001},
+  };
+
+  for (const auto& tc : test_cases) {
+    ResetInstruction();
+    SetSemanticFunction(tc.fcn);
+    AppendRegisterOperands<RVFpRegister>({"f1"}, {});
+    AppendRegisterOperands<RVFpRegister>({"f2"}, {});
+    AppendRegisterOperands<RVFpRegister>({"f3"}, {});
+    AppendRegisterOperands<RV32Register>({"x10"}, {});
+    AppendRegisterOperands<RVFpRegister>({}, {"f5"});
+
+    SetNaNBoxedRegisterValues<float, RVFpRegister>(
+        {{"f1", tc.rs1}, {"f2", tc.rs2}, {"f3", tc.rs3}});
+    SetRegisterValues<int, RV32Register>({{"x10", 4}});  // RMM mode
+    SetRegisterValues<uint32_t, RVFpRegister>({{"f5", 0}});
+
+    instruction_->Execute(nullptr);
+
+    uint32_t result_bits = state_->GetRegister<RVFpRegister>("f5")
+                               .first->data_buffer()
+                               ->template Get<uint32_t>(0);
+    EXPECT_EQ(result_bits, tc.expected_bits);
+  }
 }
 
 }  // namespace
