@@ -571,6 +571,26 @@ cc_test(
 )
 
 cc_test(
+    name = "riscv_vector_shift_imm_test",
+    size = "small",
+    srcs = [
+        "riscv_vector_shift_imm_test.cc",
+    ],
+    deps = [
+        "//riscv:riscv32g_vec_decoder",
+        "//riscv:riscv64g_vec_decoder",
+        "//riscv:riscv_fp_state",
+        "//riscv:riscv_state",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/types:span",
+        "@com_google_googletest//:gtest_main",
+        "@mpact-sim//mpact/sim/generic:core",
+        "@mpact-sim//mpact/sim/generic:instruction",
+        "@mpact-sim//mpact/sim/util/memory",
+    ],
+)
+
+cc_test(
     name = "riscv_vector_opm_instructions_test",
     size = "small",
     srcs = [

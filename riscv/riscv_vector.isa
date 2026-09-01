@@ -698,8 +698,8 @@ slot riscv_vector {
     vsll_vx{: vs2, rs1, vmask : vd},
       disasm: "vsll.vx", "%vd, %vs2, %rs1, %vmask",
       semfunc: "&Vsll";
-    vsll_vi{: vs2, simm5, vmask: vd},
-      disasm: "vsll.vi", "%vd, %simm5, %vmask",
+    vsll_vi{: vs2, uimm5, vmask: vd},
+      disasm: "vsll.vi", "%vd, %uimm5, %vmask",
       semfunc: "&Vsll";
     vsmul_vv{: vs2, vs1, vmask : vd},
       disasm: "vsmul.vv", "%vd, %vs2, %vs1, %vmask",
@@ -725,8 +725,8 @@ slot riscv_vector {
     vsrl_vx{: vs2, rs1, vmask : vd},
       disasm: "vsrl.vx", "%vd, %vs2, %rs1, %vmask",
       semfunc: "&Vsrl";
-    vsrl_vi{: vs2, simm5, vmask: vd},
-      disasm: "vsrl.vi", "%vd, %simm5, %vmask",
+    vsrl_vi{: vs2, uimm5, vmask: vd},
+      disasm: "vsrl.vi", "%vd, %uimm5, %vmask",
       semfunc: "&Vsrl";
     vsra_vv{: vs2, vs1, vmask : vd},
       disasm: "vsra.vv", "%vd, %vs2, %vs1, %vmask",
@@ -734,8 +734,8 @@ slot riscv_vector {
     vsra_vx{: vs2, rs1, vmask : vd},
       disasm: "vsra.vx", "%vd, %vs2, %rs1, %vmask",
       semfunc: "&Vsra";
-    vsra_vi{: vs2, simm5, vmask: vd},
-      disasm: "vsra.vi", "%vd, %simm5, %vmask",
+    vsra_vi{: vs2, uimm5, vmask: vd},
+      disasm: "vsra.vi", "%vd, %uimm5, %vmask",
       semfunc: "&Vsra";
     vssrl_vv{: vs2, vs1, vmask: vd},
       disasm: "vssrl.vv", "%vd, %vs2, %vs1, %vmask",
@@ -2024,8 +2024,8 @@ slot riscv_zve32x {
     vsll_vx{: vs2, rs1, vmask : vd},
       disasm: "vsll.vx", "%vd, %vs2, %rs1, %vmask",
       semfunc: "&::mpact::sim::riscv::Vsll";
-    vsll_vi{: vs2, simm5, vmask: vd},
-      disasm: "vsll.vi", "%vd, %simm5, %vmask",
+    vsll_vi{: vs2, uimm5, vmask: vd},
+      disasm: "vsll.vi", "%vd, %uimm5, %vmask",
       semfunc: "&::mpact::sim::riscv::Vsll";
     vsmul_vv{: vs2, vs1, vmask : vd},
       disasm: "vsmul.vv", "%vd, %vs2, %vs1, %vmask",
@@ -2051,8 +2051,8 @@ slot riscv_zve32x {
     vsrl_vx{: vs2, rs1, vmask : vd},
       disasm: "vsrl.vx", "%vd, %vs2, %rs1, %vmask",
       semfunc: "&::mpact::sim::riscv::Vsrl";
-    vsrl_vi{: vs2, simm5, vmask: vd},
-      disasm: "vsrl.vi", "%vd, %simm5, %vmask",
+    vsrl_vi{: vs2, uimm5, vmask: vd},
+      disasm: "vsrl.vi", "%vd, %uimm5, %vmask",
       semfunc: "&::mpact::sim::riscv::Vsrl";
     vsra_vv{: vs2, vs1, vmask : vd},
       disasm: "vsra.vv", "%vd, %vs2, %vs1, %vmask",
@@ -2060,8 +2060,8 @@ slot riscv_zve32x {
     vsra_vx{: vs2, rs1, vmask : vd},
       disasm: "vsra.vx", "%vd, %vs2, %rs1, %vmask",
       semfunc: "&::mpact::sim::riscv::Vsra";
-    vsra_vi{: vs2, simm5, vmask: vd},
-      disasm: "vsra.vi", "%vd, %simm5, %vmask",
+    vsra_vi{: vs2, uimm5, vmask: vd},
+      disasm: "vsra.vi", "%vd, %uimm5, %vmask",
       semfunc: "&::mpact::sim::riscv::Vsra";
     vssrl_vv{: vs2, vs1, vmask: vd},
       disasm: "vssrl.vv", "%vd, %vs2, %vs1, %vmask",
