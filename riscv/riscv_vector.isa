@@ -258,19 +258,19 @@ slot riscv_vector {
     // Vector indexed segment load ordered.
 
     vloxsegei8{(: rs1, vs2, vmask, nf :), (: nf : vd_nf)},
-      disasm: "vluxseg%nf\\ei1.v", "%vd_nf, (%rs1), %vs2, %vmask",
+      disasm: "vloxseg%nf\\ei1.v", "%vd_nf, (%rs1), %vs2, %vmask",
       semfunc: "absl::bind_front(&VlSegmentIndexed, /*index_width*/ 1)",
                "absl::bind_front(&VlSegmentChild, /*element_width*/ 1)";
     vloxsegei16{(: rs1, vs2, vmask, nf :), (: nf : vd_nf)},
-      disasm: "vluxseg%nf\\ei2.v", "%vd_nf, (%rs1), %vs2, %vmask",
+      disasm: "vloxseg%nf\\ei2.v", "%vd_nf, (%rs1), %vs2, %vmask",
       semfunc: "absl::bind_front(&VlSegmentIndexed, /*index_width*/ 2)",
                "absl::bind_front(&VlSegmentChild, /*element_width*/ 2)";
     vloxsegei32{(: rs1, vs2, vmask, nf :), (: nf : vd_nf)},
-      disasm: "vluxseg%nf\\ei4.v", "%vd_nf, (%rs1), %vs2, %vmask",
+      disasm: "vloxseg%nf\\ei4.v", "%vd_nf, (%rs1), %vs2, %vmask",
       semfunc: "absl::bind_front(&VlSegmentIndexed, /*index_width*/ 4)",
                "absl::bind_front(&VlSegmentChild, /*element_width*/ 4)";
     vloxsegei64{(: rs1, vs2, vmask, nf :), (: nf : vd_nf)},
-      disasm: "vluxseg%nf\\ei8.v", "%vd_nf, (%rs1), %vs2, %vmask",
+      disasm: "vloxseg%nf\\ei8.v", "%vd_nf, (%rs1), %vs2, %vmask",
       semfunc: "absl::bind_front(&VlSegmentIndexed, /*index_width*/ 8)",
                "absl::bind_front(&VlSegmentChild, /*element_width*/ 8)";
 
@@ -432,29 +432,29 @@ slot riscv_vector {
     // Vector indexed segment store unordered.
     vsuxsegei8{(: vs3_nf, rs1, vs2, vmask, nf :)},
       disasm: "vsuxseg%nf\\ei1.v", "%vs3_nf, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&VsSegmentStrided, /*element_width*/ 1)";
+      semfunc: "absl::bind_front(&VsSegmentIndexed, /*index_width*/ 1)";
     vsuxsegei16{(: vs3_nf, rs1, vs2, vmask, nf :)},
       disasm: "vsuxseg%nf\\ei2.v", "%vs3_nf, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&VsSegmentStrided, /*element_width*/ 2)";
+      semfunc: "absl::bind_front(&VsSegmentIndexed, /*index_width*/ 2)";
     vsuxsegei32{(: vs3_nf, rs1, vs2, vmask, nf :)},
       disasm: "vsuxseg%nf\\ei4.v", "%vs3_nf, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&VsSegmentStrided, /*element_width*/ 4)";
+      semfunc: "absl::bind_front(&VsSegmentIndexed, /*index_width*/ 4)";
     vsuxsegei64{(: vs3_nf, rs1, vs2, vmask, nf :)},
       disasm: "vsuxseg%nf\\ei8.v", "%vs3_nf, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&VsSegmentStrided, /*element_width*/ 8)";
+      semfunc: "absl::bind_front(&VsSegmentIndexed, /*index_width*/ 8)";
 
     // Vector indexed segment store ordered.
     vsoxsegei8{(: vs3_nf, rs1, vs2, vmask, nf :)},
       disasm: "vsoxseg%nf\\ei1.v", "%vs3_nf, (%rs1), %vs2, %vmask",
       semfunc: "absl::bind_front(&VsSegmentIndexed, /*index_width*/ 1)";
     vsoxsegei16{(: vs3_nf, rs1, vs2, vmask, nf :)},
-      disasm: "vsuxseg%nf\\ei2.v", "%vs3_nf, (%rs1), %vs2, %vmask",
+      disasm: "vsoxseg%nf\\ei2.v", "%vs3_nf, (%rs1), %vs2, %vmask",
       semfunc: "absl::bind_front(&VsSegmentIndexed, /*index_width*/ 2)";
     vsoxsegei32{(: vs3_nf, rs1, vs2, vmask, nf :)},
-      disasm: "vsuxseg%nf\\ei4.v", "%vs3_nf, (%rs1), %vs2, %vmask",
+      disasm: "vsoxseg%nf\\ei4.v", "%vs3_nf, (%rs1), %vs2, %vmask",
       semfunc: "absl::bind_front(&VsSegmentIndexed, /*index_width*/ 4)";
     vsoxsegei64{(: vs3_nf, rs1, vs2, vmask, nf :)},
-      disasm: "vsuxseg%nf\\ei8.v", "%vs3_nf, (%rs1), %vs2, %vmask",
+      disasm: "vsoxseg%nf\\ei8.v", "%vs3_nf, (%rs1), %vs2, %vmask",
       semfunc: "absl::bind_front(&VsSegmentIndexed, /*index_width*/ 8)";
 
     // Integer OPIVV, OPIVX, OPIVI.
@@ -1627,15 +1627,15 @@ slot riscv_zve32x {
     // Vector indexed segment load ordered.
 
     vloxsegei8{(: rs1, vs2, vmask, nf :), (: nf : vd)},
-      disasm: "vluxseg%nf\\ei1.v", "%vd, (%rs1), %vs2, %vmask",
+      disasm: "vloxseg%nf\\ei1.v", "%vd, (%rs1), %vs2, %vmask",
       semfunc: "absl::bind_front(&::mpact::sim::riscv::VlSegmentIndexed, /*index_width*/ 1)",
                "absl::bind_front(&::mpact::sim::riscv::VlSegmentChild, /*element_width*/ 1)";
     vloxsegei16{(: rs1, vs2, vmask, nf :), (: nf : vd)},
-      disasm: "vluxseg%nf\\ei2.v", "%vd, (%rs1), %vs2, %vmask",
+      disasm: "vloxseg%nf\\ei2.v", "%vd, (%rs1), %vs2, %vmask",
       semfunc: "absl::bind_front(&::mpact::sim::riscv::VlSegmentIndexed, /*index_width*/ 2)",
                "absl::bind_front(&::mpact::sim::riscv::VlSegmentChild, /*element_width*/ 2)";
     vloxsegei32{(: rs1, vs2, vmask, nf :), (: nf : vd)},
-      disasm: "vluxseg%nf\\ei4.v", "%vd, (%rs1), %vs2, %vmask",
+      disasm: "vloxseg%nf\\ei4.v", "%vd, (%rs1), %vs2, %vmask",
       semfunc: "absl::bind_front(&::mpact::sim::riscv::VlSegmentIndexed, /*index_width*/ 4)",
                "absl::bind_front(&::mpact::sim::riscv::VlSegmentChild, /*element_width*/ 4)";
 
@@ -1764,23 +1764,23 @@ slot riscv_zve32x {
     // Vector indexed segment store unordered.
     vsuxsegei8{(: vs3, rs1, vs2, vmask, nf :)},
       disasm: "vsuxseg%nf\\ei1.v", "%vs3, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsSegmentStrided, /*element_width*/ 1)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsSegmentIndexed, /*index_width*/ 1)";
     vsuxsegei16{(: vs3, rs1, vs2, vmask, nf :)},
       disasm: "vsuxseg%nf\\ei2.v", "%vs3, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsSegmentStrided, /*element_width*/ 2)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsSegmentIndexed, /*index_width*/ 2)";
     vsuxsegei32{(: vs3, rs1, vs2, vmask, nf :)},
       disasm: "vsuxseg%nf\\ei4.v", "%vs3, (%rs1), %vs2, %vmask",
-      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsSegmentStrided, /*element_width*/ 4)";
+      semfunc: "absl::bind_front(&::mpact::sim::riscv::VsSegmentIndexed, /*index_width*/ 4)";
 
     // Vector indexed segment store ordered.
     vsoxsegei8{(: vs3, rs1, vs2, vmask, nf :)},
-      disasm: "vsuxseg%nf\\ei1.v", "%vs3, (%rs1), %vs2, %vmask",
+      disasm: "vsoxseg%nf\\ei1.v", "%vs3, (%rs1), %vs2, %vmask",
       semfunc: "absl::bind_front(&::mpact::sim::riscv::VsSegmentIndexed, /*index_width*/ 1)";
     vsoxsegei16{(: vs3, rs1, vs2, vmask, nf :)},
-      disasm: "vsuxseg%nf\\ei2.v", "%vs3, (%rs1), %vs2, %vmask",
+      disasm: "vsoxseg%nf\\ei2.v", "%vs3, (%rs1), %vs2, %vmask",
       semfunc: "absl::bind_front(&::mpact::sim::riscv::VsSegmentIndexed, /*index_width*/ 2)";
     vsoxsegei32{(: vs3, rs1, vs2, vmask, nf :)},
-      disasm: "vsuxseg%nf\\ei4.v", "%vs3, (%rs1), %vs2, %vmask",
+      disasm: "vsoxseg%nf\\ei4.v", "%vs3, (%rs1), %vs2, %vmask",
       semfunc: "absl::bind_front(&::mpact::sim::riscv::VsSegmentIndexed, /*index_width*/ 4)";
 
     // Integer OPIVV, OPIVX, OPIVI.
