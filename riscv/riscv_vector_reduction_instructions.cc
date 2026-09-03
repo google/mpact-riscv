@@ -293,18 +293,18 @@ void Vwredsumu(Instruction* inst) {
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
-      return RiscVBinaryReductionVectorOp<uint16_t, uint8_t, uint8_t>(
+      return RiscVBinaryReductionVectorOp<uint16_t, uint8_t, uint16_t>(
           rv_vector, inst, [](uint16_t acc, uint8_t vs2) -> uint16_t {
             return acc + static_cast<uint16_t>(vs2);
           });
     case 2:
-      return RiscVBinaryReductionVectorOp<uint32_t, uint16_t, uint16_t>(
+      return RiscVBinaryReductionVectorOp<uint32_t, uint16_t, uint32_t>(
           rv_vector, inst, [](uint32_t acc, uint16_t vs2) -> uint32_t {
             return acc + static_cast<uint32_t>(vs2);
           });
       return;
     case 4:
-      return RiscVBinaryReductionVectorOp<uint64_t, uint32_t, uint32_t>(
+      return RiscVBinaryReductionVectorOp<uint64_t, uint32_t, uint64_t>(
           rv_vector, inst, [](uint64_t acc, uint32_t vs2) -> uint64_t {
             return acc + static_cast<uint64_t>(vs2);
           });
@@ -323,18 +323,18 @@ void Vwredsum(Instruction* inst) {
   int sew = rv_vector->selected_element_width();
   switch (sew) {
     case 1:
-      return RiscVBinaryReductionVectorOp<int16_t, int8_t, int8_t>(
+      return RiscVBinaryReductionVectorOp<int16_t, int8_t, int16_t>(
           rv_vector, inst, [](int16_t acc, int8_t vs2) -> int16_t {
             return acc + static_cast<int16_t>(vs2);
           });
     case 2:
-      return RiscVBinaryReductionVectorOp<int32_t, int16_t, int16_t>(
+      return RiscVBinaryReductionVectorOp<int32_t, int16_t, int32_t>(
           rv_vector, inst, [](int32_t acc, int16_t vs2) -> int32_t {
             return acc + static_cast<int32_t>(vs2);
           });
       return;
     case 4:
-      return RiscVBinaryReductionVectorOp<int64_t, int32_t, int32_t>(
+      return RiscVBinaryReductionVectorOp<int64_t, int32_t, int64_t>(
           rv_vector, inst, [](int64_t acc, int32_t vs2) -> int64_t {
             return acc + static_cast<int64_t>(vs2);
           });

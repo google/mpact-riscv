@@ -120,7 +120,7 @@ class RiscVVectorOpmInstructionsTest : public RiscVVectorInstructionsTestBase {
           int mask_index = i >> 3;
           int mask_offset = i & 0b111;
           bool result = (dst_span[mask_index] >> mask_offset) & 0b1;
-          if ((i < vstart) || (i >= vlen)) {
+          if (i < vstart) {
             bool vd = (vd_value[mask_index] >> mask_offset) & 0b1;
             EXPECT_EQ(result, vd) << "[" << i << "] " << std::hex
                                   << "vd: " << (int)vd_value[mask_index]

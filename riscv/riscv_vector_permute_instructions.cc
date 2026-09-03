@@ -172,7 +172,8 @@ void Vrgatherei16(Instruction* inst) {
 
 // This helper function handles the vector slide up/down instructions.
 template <typename Vd>
-void VSlideHelper(RiscVVectorState* rv_vector, Instruction* inst, int offset) {
+void VSlideHelper(RiscVVectorState* rv_vector, Instruction* inst, int offset,
+                  bool is_down) {
   if (rv_vector->vector_exception()) return;
   int num_elements = rv_vector->vector_length();
   int elements_per_vector =
@@ -208,17 +209,25 @@ void VSlideHelper(RiscVVectorState* rv_vector, Instruction* inst, int offset) {
     for (int i = item_index;
          (i < element_count) && (vector_index < num_elements); i++) {
       // Get the mask value.
-      int mask_index = i >> 3;
-      int mask_offset = i & 0b111;
+      int mask_index = vector_index >> 3;
+      int mask_offset = vector_index & 0b111;
       bool mask_value = ((mask_span[mask_index] >> mask_offset) & 0b1);
-      int src_index = vector_index - offset;
-      if ((src_index >= 0) && (mask_value)) {
-        // Compute result.
-        Vd src_value = 0;
-        if (src_index < rv_vector->max_vector_length()) {
-          src_value = generic::GetInstructionSource<Vd>(inst, 0, src_index);
+      if (mask_value) {
+        if (is_down) {
+          uint64_t src_idx = (uint64_t)vector_index + offset;
+          if (src_idx < rv_vector->max_vector_length()) {
+            dest_span[i] =
+                generic::GetInstructionSource<Vd>(inst, 0, (int)src_idx);
+          } else {
+            dest_span[i] = 0;
+          }
+        } else {
+          if ((uint64_t)vector_index >= offset) {
+            uint64_t src_idx = (uint64_t)vector_index - offset;
+            dest_span[i] =
+                generic::GetInstructionSource<Vd>(inst, 0, (int)src_idx);
+          }
         }
-        dest_span[i] = src_value;
       }
       vector_index++;
     }
@@ -239,13 +248,13 @@ void Vslideup(Instruction* inst) {
   // Slide up amount is positive.
   switch (sew) {
     case 1:
-      return VSlideHelper<uint8_t>(rv_vector, inst, int_offset);
+      return VSlideHelper<uint8_t>(rv_vector, inst, int_offset, false);
     case 2:
-      return VSlideHelper<uint16_t>(rv_vector, inst, int_offset);
+      return VSlideHelper<uint16_t>(rv_vector, inst, int_offset, false);
     case 4:
-      return VSlideHelper<uint32_t>(rv_vector, inst, int_offset);
+      return VSlideHelper<uint32_t>(rv_vector, inst, int_offset, false);
     case 8:
-      return VSlideHelper<uint64_t>(rv_vector, inst, int_offset);
+      return VSlideHelper<uint64_t>(rv_vector, inst, int_offset, false);
     default:
       rv_vector->set_vector_exception();
       LOG(ERROR) << "Illegal SEW value";
@@ -257,18 +266,17 @@ void Vslidedown(Instruction* inst) {
   using ValueType = RV32Register::ValueType;
   auto* rv_vector = static_cast<RiscVState*>(inst->state())->rv_vector();
   int sew = rv_vector->selected_element_width();
-  auto offset = generic::GetInstructionSource<ValueType>(inst, 1, 0);
   // Slide down amount is negative.
-  int int_offset = -static_cast<int>(offset);
+  auto offset = generic::GetInstructionSource<ValueType>(inst, 1, 0);
   switch (sew) {
     case 1:
-      return VSlideHelper<uint8_t>(rv_vector, inst, int_offset);
+      return VSlideHelper<uint8_t>(rv_vector, inst, offset, true);
     case 2:
-      return VSlideHelper<uint16_t>(rv_vector, inst, int_offset);
+      return VSlideHelper<uint16_t>(rv_vector, inst, offset, true);
     case 4:
-      return VSlideHelper<uint32_t>(rv_vector, inst, int_offset);
+      return VSlideHelper<uint32_t>(rv_vector, inst, offset, true);
     case 8:
-      return VSlideHelper<uint64_t>(rv_vector, inst, int_offset);
+      return VSlideHelper<uint64_t>(rv_vector, inst, offset, true);
     default:
       rv_vector->set_vector_exception();
       LOG(ERROR) << "Illegal SEW value";
@@ -311,28 +319,31 @@ void VSlide1Helper(RiscVVectorState* rv_vector, Instruction* inst, int offset) {
     auto* dest_db = dest_op->CopyDataBuffer(reg);
     auto dest_span = dest_db->Get<Vd>();
     // Write data into register subject to masking.
-    int element_count = std::min(elements_per_vector, num_elements);
+    int element_count = elements_per_vector;
     for (int i = item_index;
          (i < element_count) && (vector_index < num_elements); i++) {
       // Get the mask value.
-      int mask_index = i >> 3;
-      int mask_offset = i & 0b111;
+      int mask_index = vector_index >> 3;
+      int mask_offset = vector_index & 0b111;
       bool mask_value = ((mask_span[mask_index] >> mask_offset) & 0b1) != 0;
+
       if (mask_value) {
         // Compute result.
-        Vd src_value = slide_value;
-        int src_index = vector_index - offset;
-        // Fix for slide1 instructions:
-        // 1. For vslide1up (offset=1), src_index=0 is valid (vs2[0]), so check
-        // src_index >= 0.
-        // 2. For vslide1down (offset=-1), when vector_index=vl-1, src_index=vl.
-        // We must use
-        //    slide_value if src_index >= vl (num_elements), not
-        //    max_vector_length (VLMAX).
-        if ((src_index >= 0) && (src_index < num_elements)) {
-          src_value = generic::GetInstructionSource<Vd>(inst, 0, src_index);
+        Vd result;
+        if (offset == 1) {  // slide1up
+          if (vector_index == 0)
+            result = slide_value;
+          else
+            result =
+                generic::GetInstructionSource<Vd>(inst, 0, vector_index - 1);
+        } else {  // slide1down
+          if (vector_index == num_elements - 1)
+            result = slide_value;
+          else
+            result =
+                generic::GetInstructionSource<Vd>(inst, 0, vector_index + 1);
         }
-        dest_span[i] = src_value;
+        dest_span[i] = result;
       }
       vector_index++;
     }

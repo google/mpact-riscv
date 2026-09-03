@@ -78,15 +78,15 @@ class RiscVVectorReductionInstructionsTest
     // Input values for 8 registers.
     Vs2 vs2_value[vs2_size * 8];
     auto vs2_span = Span<Vs2>(vs2_value);
-    Vs2 vs1_value[vs2_size];
-    auto vs1_span = Span<Vs2>(vs1_value);
+    Vd vs1_value[kVectorLengthInBytes / sizeof(Vd)];
+    auto vs1_span = Span<Vd>(vs1_value);
     AppendVectorRegisterOperands({kVs2, kVs1, kVmask}, {kVd});
     // Initialize input values.
     FillArrayWithRandomValues<Vs2>(vs2_span);
-    vs1_span[0] = RandomValue<Vs2>();
+    vs1_span[0] = RandomValue<Vd>();
     auto mask_span = Span<const uint8_t>(kA5Mask);
     SetVectorRegisterValues<uint8_t>({{kVmaskName, mask_span}});
-    SetVectorRegisterValues<Vs2>({{kVs1Name, Span<const Vs2>(vs1_span)}});
+    SetVectorRegisterValues<Vd>({{kVs1Name, Span<const Vd>(vs1_span)}});
     // Initialize the accumulator with the value from vs1[0].
     for (int i = 0; i < 8; i++) {
       auto vs2_name = absl::StrCat("v", kVs2 + i);

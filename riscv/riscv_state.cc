@@ -739,7 +739,7 @@ void RiscVState::Trap(bool is_interrupt, uint64_t trap_value,
   // Get trap destination.
   int trap_vector_mode = tvec_csr->AsUint64() & 0x3ULL;
   uint64_t trap_target = tvec_csr->AsUint64() & ~0x3ULL;
-  if (trap_vector_mode == 1) {
+  if (trap_vector_mode == 1 && is_interrupt) {
     trap_target += 4 * exception_code;
   }
 

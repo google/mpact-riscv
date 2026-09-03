@@ -190,8 +190,6 @@ static inline void BitwiseMaskBinaryOp(
     RiscVVectorState* rv_vector, const Instruction* inst,
     std::function<uint8_t(uint8_t, uint8_t)> op) {
   if (rv_vector->vector_exception()) return;
-  int vstart = rv_vector->vstart();
-  int vlen = rv_vector->vector_length();
   // Get spans for vector source and destination registers.
   auto* vs2_op = static_cast<RV32VectorSourceOperand*>(inst->Source(0));
   auto vs2_span = vs2_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
@@ -202,24 +200,21 @@ static inline void BitwiseMaskBinaryOp(
   auto* vd_db = vd_op->CopyDataBuffer();
   auto vd_span = vd_db->Get<uint8_t>();
   // Compute start and end locations.
+
+  int vstart = rv_vector->vstart();
   int start_byte = vstart / 8;
   int start_offset = vstart % 8;
-  uint8_t start_mask = 0b1111'1111 << start_offset;
-  int end_byte = (vlen - 1) / 8;
-  int end_offset = (vlen - 1) % 8;
-  uint8_t end_mask = 0b1111'1111 >> (7 - end_offset);
-  // The start byte is computed first, applying a mask to mask out any preceding
-  // bits.
-  vd_span[start_byte] =
-      (op(vs2_span[start_byte], vs1_span[start_byte]) & start_mask) |
-      (vd_span[start_byte] & ~start_mask);
-  // Perform the bitwise operation on each byte between start and end.
-  for (int i = start_byte + 1; i < end_byte; i++) {
+
+  if (start_byte < vd_span.size()) {
+    uint8_t start_mask = 0b1111'1111 << start_offset;
+    vd_span[start_byte] =
+        (op(vs2_span[start_byte], vs1_span[start_byte]) & start_mask) |
+        (vd_span[start_byte] & ~start_mask);
+  }
+
+  for (int i = start_byte + 1; i < vd_span.size(); i++) {
     vd_span[i] = op(vs2_span[i], vs1_span[i]);
   }
-  // Perform the bitwise operation with a mask on the end byte.
-  vd_span[end_byte] = (op(vs2_span[end_byte], vs1_span[end_byte]) & end_mask) |
-                      (vd_span[end_byte] & ~end_mask);
   vd_db->Submit();
   rv_vector->clear_vstart();
 }
