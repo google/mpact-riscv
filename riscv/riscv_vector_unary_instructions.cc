@@ -297,6 +297,7 @@ void Vmsbf(Instruction* inst) {
     rv_vector->set_vector_exception();
     return;
   }
+  int vlen = rv_vector->vector_length();
   auto src_op = static_cast<RV32VectorSourceOperand*>(inst->Source(0));
   auto src_span = src_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
   auto mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(1));
@@ -305,11 +306,10 @@ void Vmsbf(Instruction* inst) {
       static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
   auto* dest_db = dest_op->CopyDataBuffer(0);
   auto dest_span = dest_db->Get<uint8_t>();
-  int physical_bits = dest_span.size() * 8;
   bool before_first = true;
   int last = 0;
   // Set the bits before the first active 1.
-  for (int i = 0; i < physical_bits; i++) {
+  for (int i = 0; i < vlen; i++) {
     last = i;
     int index = i >> 3;
     int offset = i & 0b111;
@@ -322,13 +322,11 @@ void Vmsbf(Instruction* inst) {
       dest_span[index] |= 1 << offset;
     }
   }
-  for (int i = last; !before_first && (i < physical_bits); i++) {
+  // Clear the remaining bits.
+  for (int i = last; !before_first && (i < vlen); i++) {
     int index = i >> 3;
     int offset = i & 0b111;
-    int mask_value = (mask_span[index] >> offset) & 0b1;
-    if (mask_value) {
-      dest_span[index] &= ~(1 << offset);
-    }
+    dest_span[index] &= ~(1 << offset);
   }
   dest_db->Submit();
   rv_vector->clear_vstart();
@@ -341,6 +339,7 @@ void Vmsif(Instruction* inst) {
     rv_vector->set_vector_exception();
     return;
   }
+  int vlen = rv_vector->vector_length();
   auto src_op = static_cast<RV32VectorSourceOperand*>(inst->Source(0));
   auto src_span = src_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
   auto mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(1));
@@ -349,9 +348,8 @@ void Vmsif(Instruction* inst) {
       static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
   auto* dest_db = dest_op->CopyDataBuffer(0);
   auto dest_span = dest_db->Get<uint8_t>();
-  int physical_bits = dest_span.size() * 8;
   uint8_t value = 1;
-  for (int i = 0; i < physical_bits; i++) {
+  for (int i = 0; i < vlen; i++) {
     int index = i >> 3;
     int offset = i & 0b111;
     int mask_value = (mask_span[index] >> offset) & 0b1;
@@ -378,6 +376,7 @@ void Vmsof(Instruction* inst) {
     rv_vector->set_vector_exception();
     return;
   }
+  int vlen = rv_vector->vector_length();
   auto src_op = static_cast<RV32VectorSourceOperand*>(inst->Source(0));
   auto src_span = src_op->GetRegister(0)->data_buffer()->Get<uint8_t>();
   auto mask_op = static_cast<RV32VectorSourceOperand*>(inst->Source(1));
@@ -387,9 +386,8 @@ void Vmsof(Instruction* inst) {
 
   auto* dest_db = dest_op->CopyDataBuffer(0);
   auto dest_span = dest_db->Get<uint8_t>();
-  int physical_bits = dest_span.size() * 8;
   bool first = true;
-  for (int i = 0; i < physical_bits; i++) {
+  for (int i = 0; i < vlen; i++) {
     int index = i >> 3;
     int offset = i & 0b111;
     int mask_value = (mask_span[index] >> offset) & 0b1;

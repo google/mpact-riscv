@@ -102,10 +102,19 @@ class RiscVVectorOpmInstructionsTest : public RiscVVectorInstructionsTestBase {
     FillArrayWithRandomValues<uint8_t>(vd_value);
     AppendVectorRegisterOperands({kVs2, kVs1}, {kVd});
     for (int vstart : {0, 7, 32, 100, 250, 384}) {
-      for (int vlen_pct : {10, 20, 50, 100}) {
-        int vlen =
-            (kVectorLengthInBytes * 8 - vstart) * vlen_pct / 100 + vstart;
-        CHECK_LE(vlen, kVectorLengthInBytes * 8);
+      std::vector<int> test_vlens = {
+          0,
+          vstart,
+          vstart + 1,
+          vstart + 3,
+          vstart + 7,
+          (kVectorLengthInBytes * 8 - vstart) * 10 / 100 + vstart,
+          (kVectorLengthInBytes * 8 - vstart) * 20 / 100 + vstart,
+          (kVectorLengthInBytes * 8 - vstart) * 50 / 100 + vstart,
+          (kVectorLengthInBytes * 8 - vstart) * 100 / 100 + vstart,
+      };
+      for (int vlen : test_vlens) {
+        if (vlen > kVectorLengthInBytes * 8) continue;
         // Configure vector unit for different lmul settings.
         uint32_t vtype = (kSewSettingsByByteSize[1] << 3) | kLmulSettings[6];
         ConfigureVectorUnit(vtype, vlen);
@@ -120,7 +129,7 @@ class RiscVVectorOpmInstructionsTest : public RiscVVectorInstructionsTestBase {
           int mask_index = i >> 3;
           int mask_offset = i & 0b111;
           bool result = (dst_span[mask_index] >> mask_offset) & 0b1;
-          if (i < vstart) {
+          if ((i < vstart) || (i >= vlen)) {
             bool vd = (vd_value[mask_index] >> mask_offset) & 0b1;
             EXPECT_EQ(result, vd) << "[" << i << "] " << std::hex
                                   << "vd: " << (int)vd_value[mask_index]
