@@ -26,6 +26,7 @@
 
 #include "absl/strings/str_cat.h"
 #include "absl/types/span.h"
+#include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/decoder_interface.h"
 #include "mpact/sim/generic/instruction.h"
@@ -36,8 +37,6 @@
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
 #include "riscv/riscv_vector_state.h"
-#include "testing/base/public/gmock.h"
-#include "testing/base/public/gunit.h"
 
 namespace mpact::sim::riscv::test {
 namespace {
