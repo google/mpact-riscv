@@ -71,6 +71,8 @@ struct CsrInfo<uint32_t> {
   static constexpr T kMEdelegWMask = 0x0000'b3ff;
   static constexpr T kMIdelegRMask = 0x0bbb;
   static constexpr T kMIdelegWMask = 0x0bbb;
+  static constexpr T kSatpRMask = std::numeric_limits<T>::max();
+  static constexpr T kSatpWMask = 0;
 };
 
 template <>
@@ -97,6 +99,8 @@ struct CsrInfo<uint64_t> {
   static constexpr T kMEdelegWMask = 0x0000'0000'0000'b3ffULL;
   static constexpr T kMIdelegRMask = 0x0bbb;
   static constexpr T kMIdelegWMask = 0x0bbb;
+  static constexpr T kSatpRMask = std::numeric_limits<T>::max();
+  static constexpr T kSatpWMask = 0;
 };
 
 // Three templated helper functions used to create individual CSRs.
@@ -403,6 +407,12 @@ void CreateCsrs(RiscVState* state, std::vector<RiscVCsrInterface*>& csr_vec) {
                                         "sideleg", RiscVCsrEnum::kSIDeleg, 0,
                                         CsrInfo<T>::kMIdelegRMask,
                                         CsrInfo<T>::kMIdelegWMask, state),
+           nullptr);
+
+  // satp - supervisor address translation and protection register.
+  CHECK_NE(CreateCsr<RiscVSimpleCsr<T>>(
+               state, csr_vec, "satp", RiscVCsrEnum::kSAtp, 0,
+               CsrInfo<T>::kSatpRMask, CsrInfo<T>::kSatpWMask, state),
            nullptr);
 
   // User level CSRs
