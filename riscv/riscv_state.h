@@ -413,6 +413,9 @@ class RiscVState : public ArchState {
   RiscVCsrInterface* scause() const { return scause_; }
   RiscVCsrInterface* sideleg() const { return sideleg_; }
 
+ protected:
+  RiscVMStatus* mstatus_ = nullptr;
+
  private:
   InterruptCode PickInterrupt(uint32_t interrupts);
   RiscVXlen xlen_;
@@ -448,7 +451,6 @@ class RiscVState : public ArchState {
   bool branch_ = false;
 
   // Handles to frequently used CSRs.
-  RiscVMStatus* mstatus_ = nullptr;
   RiscVMIsa* misa_ = nullptr;
   RiscVMIp* mip_ = nullptr;
   RiscVMIe* mie_ = nullptr;
