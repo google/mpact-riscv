@@ -21,6 +21,7 @@
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "riscv/riscv_state.h"
+#include "riscv/riscv_xstatus.h"
 
 namespace {
 
@@ -30,8 +31,11 @@ namespace {
 
 using ::mpact::sim::riscv::RiscV32SimpleCsr;
 using ::mpact::sim::riscv::RiscVCsrEnum;
+using ::mpact::sim::riscv::RiscVMStatus;
 using ::mpact::sim::riscv::RiscVShadowCsr;
+using ::mpact::sim::riscv::RiscVSStatus;
 using ::mpact::sim::riscv::RiscVState;
+using ::mpact::sim::riscv::RiscVUStatus;
 using ::mpact::sim::riscv::RiscVXlen;
 using ::mpact::sim::util::FlatDemandMemory;
 
@@ -144,6 +148,46 @@ TEST_F(RiscV32CsrTest, ShadowCsrConstruction) {
   EXPECT_EQ(csr0->AsUint32(), kDeadBeef | (kAllOnes & kWriteMask));
   delete csr0;
   delete csr1;
+}
+
+TEST_F(RiscV32CsrTest, XStatusCsrs) {
+  constexpr uint64_t kCustomMask =
+      RiscVMStatus::kDefaultReadMask | 0x6000'0600ULL;
+  RiscVMStatus mstatus32_default(uint32_t{0}, state_, state_->misa());
+  EXPECT_EQ(mstatus32_default.kReadMask, RiscVMStatus::kDefaultReadMask);
+  EXPECT_EQ(mstatus32_default.kWriteMask, RiscVMStatus::kDefaultWriteMask);
+
+  RiscVMStatus mstatus32_custom(uint32_t{0}, state_, state_->misa(),
+                                kCustomMask, kCustomMask);
+  EXPECT_EQ(mstatus32_custom.kReadMask, kCustomMask);
+  EXPECT_EQ(mstatus32_custom.kWriteMask, kCustomMask);
+  mstatus32_custom.Write(uint32_t{0x6000'0600});
+  EXPECT_EQ(mstatus32_custom.AsUint32() & 0x6000'0600U, 0x6000'0600U);
+
+  RiscVMStatus mstatus64_custom(uint64_t{0}, state_, state_->misa(),
+                                kCustomMask, kCustomMask);
+  EXPECT_EQ(mstatus64_custom.kReadMask, kCustomMask);
+
+  RiscVSStatus sstatus(&mstatus32_custom, state_);
+  sstatus.Write(uint32_t{0x1});
+  EXPECT_EQ(sstatus.AsUint32() & 0x1U, 0x1U);
+
+  RiscVUStatus ustatus(&mstatus32_custom, state_);
+  ustatus.Write(uint32_t{0x11});
+  EXPECT_EQ(ustatus.AsUint32() & 0x11U, 0x11U);
+  EXPECT_EQ(ustatus.AsUint64() & 0x11ULL, 0x11ULL);
+  EXPECT_TRUE(ustatus.uie());
+  ustatus.ClearBits(uint32_t{0x1});
+  EXPECT_FALSE(ustatus.uie());
+  ustatus.SetBits(uint32_t{0x1});
+  EXPECT_TRUE(ustatus.uie());
+  ustatus.Set(uint32_t{0});
+  EXPECT_EQ(ustatus.GetUint32() & 0x11U, 0U);
+  ustatus.Set(uint64_t{0x11});
+  EXPECT_EQ(ustatus.GetUint64() & 0x11ULL, 0x11ULL);
+  ustatus.set_uie(0);
+  mstatus32_custom.Submit();
+  EXPECT_FALSE(ustatus.uie());
 }
 
 }  // namespace

@@ -27,37 +27,46 @@ namespace riscv {
 
 using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 
+constexpr uint64_t kSetMaskFrom32 = 0xffff'fff0'ffff'ffffULL;
+
 // Helper functions to convert between 32 and 64 bit views of mstatus.
 static inline uint64_t StretchMStatus32(uint32_t value) {
   uint64_t value64 = static_cast<uint64_t>(value);
-  value64 = ((value64 & 0xc000'0000) << 32) | (value64 & 0x03ff'ffff);
+  value64 = ((value64 & 0x8000'0000ULL) << 32) | (value64 & 0x7fff'ffffULL);
   return value64;
 }
 
 static inline uint32_t CompressMStatus64(uint64_t value) {
-  uint32_t value32 = ((value >> 32) & 0xc000'0000) | (value & 0x3fff'ffff);
+  uint32_t value32 =
+      ((value >> 32) & 0x8000'0000ULL) | (value & 0x7fff'ffffULL);
   return value32;
 }
 
 // Constructors.
 
 RiscVMStatus::RiscVMStatus(uint32_t initial_value, ArchState* state,
-                           RiscVMIsa* misa)
+                           RiscVMIsa* misa, uint64_t read_mask,
+                           uint64_t write_mask)
     : RiscVMStatus(StretchMStatus32(initial_value), state, RiscVXlen::RV32,
-                   misa) {}
+                   misa, read_mask, write_mask) {}
 
 RiscVMStatus::RiscVMStatus(uint64_t initial_value, ArchState* state,
-                           RiscVMIsa* misa)
-    : RiscVMStatus(initial_value, state, RiscVXlen::RV64, misa) {}
+                           RiscVMIsa* misa, uint64_t read_mask,
+                           uint64_t write_mask)
+    : RiscVMStatus(initial_value, state, RiscVXlen::RV64, misa, read_mask,
+                   write_mask) {}
 
 RiscVMStatus::RiscVMStatus(uint64_t initial_value, ArchState* state,
-                           RiscVXlen xlen, RiscVMIsa* misa)
+                           RiscVXlen xlen, RiscVMIsa* misa, uint64_t read_mask,
+                           uint64_t write_mask)
     : RiscVSimpleCsr<uint64_t>("mstatus", RiscVCsrEnum::kMStatus, initial_value,
-                               kReadMask, kWriteMask, state),
-      misa_(misa) {
-  // All bits except for uxl and sxl, since that doesn't appear in the 32 bit
-  // view.
-  set_mask_from_32_ = 0xffff'fff0'ffff'ffffULL;
+                               read_mask, write_mask, state),
+      kReadMask(read_mask),
+      kWriteMask(write_mask),
+      misa_(misa),
+      read_mask_32_(CompressMStatus64(read_mask)),
+      write_mask_32_(CompressMStatus64(write_mask)),
+      set_mask_from_32_(kSetMaskFrom32) {
   // Set UXL and SXL be the current xlen.
   uint64_t xlen_val = xlen == RiscVXlen::RV64 ? 0b10 : 0b01;
   // If misa doesn't show support for user or supervisor, clear corresponding
@@ -70,8 +79,6 @@ RiscVMStatus::RiscVMStatus(uint64_t initial_value, ArchState* state,
   }
   xlen_val <<= 32;
   Set(GetUint64() | xlen_val);
-  read_mask_32_ = CompressMStatus64(read_mask());
-  write_mask_32_ = CompressMStatus64(write_mask());
 }
 
 // Override implementations.
@@ -126,7 +133,7 @@ RiscVSStatus::RiscVSStatus(RiscVMStatus* mstatus, RiscVState* state)
     : RiscVSimpleCsr<uint64_t>("sstatus", RiscVCsrEnum::kSStatus, kReadMask,
                                kWriteMask, state),
       mstatus_(mstatus) {
-  set_mask_from_32_ = 0xffff'fff0'ffff'ffffULL;
+  set_mask_from_32_ = kSetMaskFrom32;
   read_mask_32_ = CompressMStatus64(read_mask());
   write_mask_32_ = CompressMStatus64(write_mask());
 }
@@ -168,7 +175,7 @@ RiscVUStatus::RiscVUStatus(RiscVMStatus* mstatus, RiscVState* state)
     : RiscVSimpleCsr<uint64_t>("ustatus", RiscVCsrEnum::kUStatus, kReadMask,
                                kWriteMask, state),
       mstatus_(mstatus) {
-  set_mask_from_32_ = 0xffff'fff0'ffff'ffffULL;
+  set_mask_from_32_ = kSetMaskFrom32;
   read_mask_32_ = CompressMStatus64(read_mask());
   write_mask_32_ = CompressMStatus64(write_mask());
 }

@@ -34,12 +34,22 @@ using ::mpact::sim::generic::ArchState;
 class RiscVMStatus : public RiscVSimpleCsr<uint64_t> {
  public:
   // Read/Write masks.
-  static constexpr uint64_t kReadMask = 0x8000'000f'007f'f9bbULL;
-  static constexpr uint64_t kWriteMask = 0x0000'0000'007f'f9bbULL;
+  static constexpr uint64_t kDefaultReadMask = 0x8000'000f'007f'f9bbULL;
+  static constexpr uint64_t kDefaultWriteMask = 0x0000'0000'007f'f9bbULL;
+  const uint64_t kReadMask;
+  const uint64_t kWriteMask;
   // Disable default constructor.
   RiscVMStatus() = delete;
-  RiscVMStatus(uint32_t initial_value, ArchState* state, RiscVMIsa* misa);
-  RiscVMStatus(uint64_t initial_value, ArchState* state, RiscVMIsa* misa);
+  RiscVMStatus(uint32_t initial_value, ArchState* state, RiscVMIsa* misa,
+               uint64_t read_mask, uint64_t write_mask);
+  RiscVMStatus(uint64_t initial_value, ArchState* state, RiscVMIsa* misa,
+               uint64_t read_mask, uint64_t write_mask);
+  RiscVMStatus(uint32_t initial_value, ArchState* state, RiscVMIsa* misa)
+      : RiscVMStatus(initial_value, state, misa, kDefaultReadMask,
+                     kDefaultWriteMask) {}
+  RiscVMStatus(uint64_t initial_value, ArchState* state, RiscVMIsa* misa)
+      : RiscVMStatus(initial_value, state, misa, kDefaultReadMask,
+                     kDefaultWriteMask) {}
 
   ~RiscVMStatus() override = default;
 
@@ -114,10 +124,7 @@ class RiscVMStatus : public RiscVSimpleCsr<uint64_t> {
     buffer_mask_ = 0;
   }
 
- private:
-  // Private constructor.
-  RiscVMStatus(uint64_t initial_value, ArchState* state, RiscVXlen xlen,
-               RiscVMIsa* misa);
+ protected:
   // Template function to help implement the getters.
   template <int Shift, uint64_t BitMask>
   inline int GetterHelper() {
@@ -130,12 +137,17 @@ class RiscVMStatus : public RiscVSimpleCsr<uint64_t> {
     buffer_mask_ |= BitMask << Shift;
   }
 
+ private:
+  // Private constructor.
+  RiscVMStatus(uint64_t initial_value, ArchState* state, RiscVXlen xlen,
+               RiscVMIsa* misa, uint64_t read_mask, uint64_t write_mask);
+
   RiscVMIsa* misa_;
   uint64_t buffer_ = 0;
   uint64_t buffer_mask_ = 0;
-  uint32_t read_mask_32_;
-  uint32_t write_mask_32_;
-  uint64_t set_mask_from_32_;
+  const uint32_t read_mask_32_;
+  const uint32_t write_mask_32_;
+  const uint64_t set_mask_from_32_;
 };
 
 // The sstatus register is just a restricted subset of mstatus, so the real
