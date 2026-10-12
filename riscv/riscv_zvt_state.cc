@@ -21,21 +21,73 @@
 #include "absl/log/check.h"
 #include "absl/log/log.h"
 #include "absl/memory/memory.h"
+#include "absl/status/status.h"
+#include "absl/strings/str_cat.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/instruction.h"
 #include "riscv/riscv_csr.h"
 #include "riscv/riscv_state.h"
 #include "riscv/riscv_vector_state.h"
+#include "riscv/riscv_xstatus.h"
 
 namespace mpact::sim::riscv {
 
-uint32_t RiscVMtypeCsr::AsUint32() { return matrix_state_->mtype(); }
-uint64_t RiscVMtypeCsr::AsUint64() { return matrix_state_->mtype(); }
+namespace {
+constexpr uint32_t kMstatusVsMask = 0x0600U;
+}  // namespace
+
+uint32_t RiscVMtypeCsr::AsUint32() {
+  auto* state = matrix_state_->riscv_state();
+  if ((state->mstatus()->GetUint32() & kMstatusVsMask) == 0) {
+    state->Trap(
+        /*is_interrupt=*/false, 0,
+        static_cast<uint64_t>(
+            ::mpact::sim::riscv::ExceptionCode::kIllegalInstruction),
+        0, nullptr);
+    return 0;
+  }
+  return matrix_state_->mtype();
+}
+uint64_t RiscVMtypeCsr::AsUint64() {
+  auto* state = matrix_state_->riscv_state();
+  if ((state->mstatus()->GetUint32() & kMstatusVsMask) == 0) {
+    state->Trap(
+        /*is_interrupt=*/false, 0,
+        static_cast<uint64_t>(
+            ::mpact::sim::riscv::ExceptionCode::kIllegalInstruction),
+        0, nullptr);
+    return 0;
+  }
+  return matrix_state_->mtype();
+}
+
+void RiscVMtypeCsr::Write(uint32_t /*value*/) {
+  matrix_state_->riscv_state()->Trap(
+      /*is_interrupt=*/false, 0,
+      static_cast<uint64_t>(
+          ::mpact::sim::riscv::ExceptionCode::kIllegalInstruction),
+      0, nullptr);
+}
+
+void RiscVMtypeCsr::Write(uint64_t /*value*/) {
+  matrix_state_->riscv_state()->Trap(
+      /*is_interrupt=*/false, 0,
+      static_cast<uint64_t>(
+          ::mpact::sim::riscv::ExceptionCode::kIllegalInstruction),
+      0, nullptr);
+}
 
 absl::StatusOr<std::unique_ptr<RiscVZvtMatrixState>>
 RiscVZvtMatrixState::Create(
     ::mpact::sim::riscv::RiscVState* /* absl_nonnull */ state,
     int tile_elements) {
+  if (tile_elements < 4) {
+    return absl::InvalidArgumentError("Tile element width must be >= 4");
+  }
+  if ((tile_elements & (tile_elements - 1)) != 0) {
+    return absl::InvalidArgumentError(
+        absl::StrCat("TE must be a power of two: ", tile_elements));
+  }
   auto matrix = absl::WrapUnique(new RiscVZvtMatrixState(state, tile_elements));
   auto status = state->csr_set()->AddCsr(&matrix->mtype_csr_);
   if (!status.ok()) return status;
@@ -47,29 +99,21 @@ RiscVZvtMatrixState::RiscVZvtMatrixState(
     int tile_elements)
     : state_(state), tile_elements_(tile_elements), mtype_csr_(this, state) {
   // TE must be a power of two in [4, VLEN/4]. VLEN/4 = 32 for VLEN=128b.
-  CHECK_GE(tile_elements_, 4) << "Tile element width must be >= 4";
-  CHECK_EQ(tile_elements_ & (tile_elements_ - 1), 0)
-      << "TE must be a power of two: " << tile_elements_;
-  tile_buffer_ = state_->db_factory()->Allocate<uint8_t>(16 * tile_elements *
-                                                         tile_elements);
+  tile_buffer_.reset(state_->db_factory()->Allocate<uint8_t>(
+      16 * tile_elements * tile_elements));
   for (auto& byte : tile_buffer_->Get<uint8_t>()) {
     byte = 0;
   }
 }
 
-RiscVZvtMatrixState::~RiscVZvtMatrixState() {
-  if (tile_buffer_ != nullptr) tile_buffer_->DecRef();
-  for (auto* db : scratch_dbs_) {
-    if (db != nullptr) db->DecRef();
-  }
-}
+RiscVZvtMatrixState::~RiscVZvtMatrixState() = default;
 
 ::mpact::sim::generic::DataBuffer* RiscVZvtMatrixState::GetScratchDb(int size) {
-  if (size >= scratch_dbs_.size()) scratch_dbs_.resize(size + 1, nullptr);
+  if (size >= scratch_dbs_.size()) scratch_dbs_.resize(size + 1);
   if (!scratch_dbs_[size]) {
-    scratch_dbs_[size] = state_->db_factory()->Allocate<uint8_t>(size);
+    scratch_dbs_[size].reset(state_->db_factory()->Allocate<uint8_t>(size));
   }
-  return scratch_dbs_[size];
+  return scratch_dbs_[size].get();
 }
 
 int RiscVZvtMatrixState::sew_bytes() const {
@@ -79,9 +123,9 @@ int RiscVZvtMatrixState::sew_bytes() const {
   return rv_vector == nullptr ? 1 : rv_vector->selected_element_width();
 }
 
-// Transcribed verbatim from the Zvt v0.3 spec (15.1.1.1, "Tile Punning").
-int RiscVZvtMatrixState::Punning(int tile, int row, int col,
-                                 int tile_element_width) const {
+// Transcribed verbatim from the Zvt v0.4 spec ("Tile Punning").
+absl::StatusOr<int> RiscVZvtMatrixState::GetPunningOffset(
+    int tile, int row, int col, int tile_element_width) const {
   const int kTileElements = tile_elements_;
   int ptile, minor_offset, major_offset;
   switch (tile_element_width) {
@@ -112,10 +156,33 @@ int RiscVZvtMatrixState::Punning(int tile, int row, int col,
       break;
     }
     default:
-      LOG(FATAL) << "Invalid tile element width: " << tile_element_width;
+      return absl::InvalidArgumentError(
+          absl::StrCat("Invalid tile element width: ", tile_element_width));
   }
   return (ptile * kTileElements * kTileElements) + (major_offset * 16) +
          minor_offset;
+}
+
+namespace {
+int GetTileAlignment(int tile_element_width_bits) {
+  int ntiles = 16;
+  if (tile_element_width_bits == 16) {
+    ntiles = 8;
+  } else if (tile_element_width_bits == 32) {
+    ntiles = 4;
+  } else if (tile_element_width_bits == 64) {
+    ntiles = 8;
+  }
+  return 16 / ntiles;
+}
+}  // namespace
+
+bool RiscVZvtMatrixState::IsValidTile(int tile) const {
+  return (tile % GetTileAlignment(tile_element_width_bits())) == 0;
+}
+
+int RiscVZvtMatrixState::MaskTssTile(int tile, int tile_element_width) const {
+  return tile & ~(GetTileAlignment(tile_element_width) - 1);
 }
 
 absl::StatusOr<RiscVZvtMatrixState*> GetMatrixState(

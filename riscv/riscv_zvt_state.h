@@ -13,13 +13,13 @@
 // limitations under the License.
 
 // Architectural state for the RISC-V Vector Matrix Extension (Zvt / "VME",
-// spec v0.3, chapter 15.1). This is layered on top of the existing RISC-V
+// spec v0.4). This is layered on top of the existing RISC-V
 // vector state: the matrix unit sources its A/B operands from vector registers
 // and accumulates results into the new square matrix "tile" state modeled here.
 //
-// NOTE: Zvt is a draft (v0.3) extension. The mtype CSR field positions below
-// follow the v0.3 manual (15.1.1.2). They are isolated as named constants so
-// they can be adjusted if the encoding firms up.
+// NOTE: mtype CSR field positions below follow the v0.4 manual.
+// They are isolated as named constants so they can be adjusted if the
+// encoding firms up.
 
 #ifndef THIRD_PARTY_MPACT_RISCV_RISCV_ZVT_STATE_H_
 #define THIRD_PARTY_MPACT_RISCV_RISCV_ZVT_STATE_H_
@@ -30,6 +30,7 @@
 #include <vector>
 
 #include "absl/base/nullability.h"
+#include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/instruction.h"
@@ -81,6 +82,10 @@ class RiscVMtypeCsr : public ::mpact::sim::riscv::RiscVSimpleCsr<uint32_t> {
   uint32_t AsUint32() override;
   uint64_t AsUint64() override;
 
+  // Software writes to mtype are illegal; they must trap.
+  void Write(uint32_t value) override;
+  void Write(uint64_t value) override;
+
   [[nodiscard]] RiscVZvtMatrixState* matrix_state() const {
     return matrix_state_;
   }
@@ -90,8 +95,17 @@ class RiscVMtypeCsr : public ::mpact::sim::riscv::RiscVSimpleCsr<uint32_t> {
 };
 
 // Matrix tile state. Owns the flat tile buffer (16 * TE * TE bytes) and the
-// mtype CSR. All element access goes through Punning()/GetElem()/SetElem() so
-// the tile-aliasing ("punning") layout is implemented exactly once.
+// mtype CSR. All element access goes through GetPunningOffset()/GetElem()/
+// SetElem() so the tile-aliasing ("punning") layout is implemented exactly
+// once.
+struct DataBufferDeleter {
+  void operator()(::mpact::sim::generic::DataBuffer* db) const {
+    if (db) db->DecRef();
+  }
+};
+using SafeDataBuffer =
+    std::unique_ptr<::mpact::sim::generic::DataBuffer, DataBufferDeleter>;
+
 class RiscVZvtMatrixState {
  public:
   static absl::StatusOr<std::unique_ptr<RiscVZvtMatrixState>> Create(
@@ -112,29 +126,43 @@ class RiscVZvtMatrixState {
 
   // Byte offset into tile_buffer_ for element (tile,row,col) at the given tile
   // element width `tile_element_width` (in bits: 8/16/32/64). Transcribed
-  // verbatim from the Zvt v0.3 spec (15.1.1.1, "Tile Punning"). `tile` is the
+  // verbatim from the Zvt v0.4 spec ("Tile Punning"). `tile` is the
   // named tile index (0..15); `tile_element_width` selects the aliasing scheme.
-  int Punning(int tile, int row, int col, int tile_element_width) const;
+  absl::StatusOr<int> GetPunningOffset(int tile, int row, int col,
+                                       int tile_element_width) const;
 
   template <typename T>
-  T GetElem(int tile, int row, int col, int tile_element_width) const {
+  absl::StatusOr<T> GetElem(int tile, int row, int col,
+                            int tile_element_width) const {
     T value;
     auto span = tile_buffer_->Get<uint8_t>();
-    std::memcpy(&value, &span[Punning(tile, row, col, tile_element_width)],
-                sizeof(T));
+    absl::StatusOr<int> offset =
+        GetPunningOffset(tile, row, col, tile_element_width);
+    if (!offset.ok()) return offset.status();
+    std::memcpy(&value, &span[*offset], sizeof(T));
     return value;
   }
 
   template <typename T>
-  void SetElem(int tile, int row, int col, int tile_element_width, T value) {
+  absl::Status SetElem(int tile, int row, int col, int tile_element_width,
+                       T value) {
     auto span = tile_buffer_->Get<uint8_t>();
-    std::memcpy(&span[Punning(tile, row, col, tile_element_width)], &value,
-                sizeof(T));
+    absl::StatusOr<int> offset =
+        GetPunningOffset(tile, row, col, tile_element_width);
+    if (!offset.ok()) return offset.status();
+    std::memcpy(&span[*offset], &value, sizeof(T));
+    return absl::OkStatus();
   }
 
   // mtype accessors. The mtype value is held here; the CSR is a read-only view.
   [[nodiscard]] uint32_t mtype() const { return mtype_; }
   void set_mtype(uint32_t value) { mtype_ = value; }
+
+  void ResetMtype() { set_mtype(0); }
+
+  // Tile index validation and masking (Zvt v0.4).
+  [[nodiscard]] bool IsValidTile(int tile) const;
+  [[nodiscard]] int MaskTssTile(int tile, int tile_element_width) const;
 
   // Decoded mtype fields.
   [[nodiscard]] int mtwiden() const {
@@ -188,8 +216,8 @@ class RiscVZvtMatrixState {
 
   ::mpact::sim::riscv::RiscVState* state_;
   int tile_elements_;
-  ::mpact::sim::generic::DataBuffer* tile_buffer_;  // 16 * TE * TE bytes.
-  std::vector<::mpact::sim::generic::DataBuffer*> scratch_dbs_;
+  SafeDataBuffer tile_buffer_;  // 16 * TE * TE bytes.
+  std::vector<SafeDataBuffer> scratch_dbs_;
   uint32_t mtype_ = 0;
   RiscVMtypeCsr mtype_csr_;
 };

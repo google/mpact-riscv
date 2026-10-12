@@ -1026,6 +1026,22 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "riscv_zvt_state_test",
+    size = "small",
+    srcs = ["riscv_zvt_state_test.cc"],
+    deps = [
+        "//riscv:riscv_state",
+        "//riscv:riscv_v",
+        "//riscv:riscv_zvt_state",
+        "@abseil-cpp//absl/status",
+        "@com_google_googletest//:gtest_main",
+        "@mpact-sim//mpact/sim/generic:core",
+        "@mpact-sim//mpact/sim/generic:instruction",
+        "@mpact-sim//mpact/sim/util/memory",
+    ],
+)
+
 config_setting(
     name = "arm_cpu",
     values = {"cpu": "arm"},

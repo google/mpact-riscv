@@ -25,6 +25,7 @@
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
 #include "riscv/riscv_vector_state.h"
+#include "riscv/riscv_zvt_state.h"
 
 namespace mpact {
 namespace sim {
@@ -160,6 +161,10 @@ absl::Status WriteBackSegmentLoadData(int vector_register_byte_length,
 void Vsetvl(bool rd_zero, bool rs1_zero, const Instruction* inst) {
   auto* rv_state = static_cast<RiscVState*>(inst->state());
   auto* rv_vector = rv_state->rv_vector();
+  auto m_result = GetMatrixState(inst);
+  if (m_result.ok()) {
+    (*m_result)->ResetMtype();
+  }
   uint32_t vtype = GetInstructionSource<uint32_t>(inst, 1) & 0b1'1'111'111;
   // Get previous vtype.
   uint32_t prev_vtype = rv_vector->vtype();

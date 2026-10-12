@@ -19,7 +19,10 @@
 #include <cstring>
 
 #include "absl/base/casts.h"
-#include "absl/log/check.h"
+#include "absl/log/log.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
+#include "absl/strings/str_cat.h"
 #include "absl/types/span.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/instruction.h"
@@ -73,18 +76,28 @@ uint64_t LoadTileBits(RiscVZvtMatrixState* matrix_state, int kTile, int row,
   const int kEffectiveTileEdge = tile_element_width < 64
                                      ? matrix_state->tile_elements()
                                      : matrix_state->tile_elements() / 2;
-  CHECK(row >= 0 && row < kEffectiveTileEdge) << "row out of bounds";
-  CHECK(col >= 0 && col < kEffectiveTileEdge) << "col out of bounds";
+  if (row < 0 || row >= kEffectiveTileEdge || col < 0 ||
+      col >= kEffectiveTileEdge) {
+    return 0;
+  }
+  auto load_elem = [](auto status_or_val) -> uint64_t {
+    if (!status_or_val.ok()) {
+      LOG(ERROR) << status_or_val.status();
+      return 0;
+    }
+    return static_cast<uint64_t>(*status_or_val);
+  };
   switch (tile_element_width) {
     case 8:
-      return matrix_state->GetElem<uint8_t>(kTile, row, col, 8);
+      return load_elem(matrix_state->GetElem<uint8_t>(kTile, row, col, 8));
     case 16:
-      return matrix_state->GetElem<uint16_t>(kTile, row, col, 16);
+      return load_elem(matrix_state->GetElem<uint16_t>(kTile, row, col, 16));
     case 32:
-      return matrix_state->GetElem<uint32_t>(kTile, row, col, 32);
+      return load_elem(matrix_state->GetElem<uint32_t>(kTile, row, col, 32));
     case 64:
-      return matrix_state->GetElem<uint64_t>(kTile, row, col, 64);
+      return load_elem(matrix_state->GetElem<uint64_t>(kTile, row, col, 64));
     default:
+      LOG(ERROR) << "Invalid tile element width: " << tile_element_width;
       return 0;
   }
 }
@@ -94,24 +107,34 @@ void StoreTileBits(RiscVZvtMatrixState* matrix_state, int kTile, int row,
   const int kEffectiveTileEdge = tile_element_width < 64
                                      ? matrix_state->tile_elements()
                                      : matrix_state->tile_elements() / 2;
-  CHECK(row >= 0 && row < kEffectiveTileEdge) << "row out of bounds";
-  CHECK(col >= 0 && col < kEffectiveTileEdge) << "col out of bounds";
+  if (row < 0 || row >= kEffectiveTileEdge || col < 0 ||
+      col >= kEffectiveTileEdge) {
+    return;
+  }
+  absl::Status status;
   switch (tile_element_width) {
     case 8:
-      matrix_state->SetElem<uint8_t>(kTile, row, col, 8,
-                                     static_cast<uint8_t>(value));
+      status = matrix_state->SetElem<uint8_t>(kTile, row, col, 8,
+                                              static_cast<uint8_t>(value));
       break;
     case 16:
-      matrix_state->SetElem<uint16_t>(kTile, row, col, 16,
-                                      static_cast<uint16_t>(value));
+      status = matrix_state->SetElem<uint16_t>(kTile, row, col, 16,
+                                               static_cast<uint16_t>(value));
       break;
     case 32:
-      matrix_state->SetElem<uint32_t>(kTile, row, col, 32,
-                                      static_cast<uint32_t>(value));
+      status = matrix_state->SetElem<uint32_t>(kTile, row, col, 32,
+                                               static_cast<uint32_t>(value));
       break;
     case 64:
-      matrix_state->SetElem<uint64_t>(kTile, row, col, 64, value);
+      status = matrix_state->SetElem<uint64_t>(kTile, row, col, 64, value);
       break;
+    default:
+      status = absl::InvalidArgumentError(
+          absl::StrCat("Invalid tile element width: ", tile_element_width));
+      break;
+  }
+  if (!status.ok()) {
+    LOG(ERROR) << status;
   }
 }
 
@@ -449,20 +472,36 @@ void RiscVZvtMatmul(RiscVZvtMatmulKind kind, const Instruction* inst) {
   for (int mm = 0; mm < kTileM; mm++) {
     for (int nn = 0; nn < kTileN; nn++) {
       if (kIsFp) {
-        float acc =
+        absl::StatusOr<float> acc_res =
             matrix_state->GetElem<float>(kDestTile, mm, nn, kTileElementWidth);
+        if (!acc_res.ok()) {
+          LOG(ERROR) << acc_res.status();
+          return;
+        }
+        float acc = *acc_res;
         for (int kk = 0; kk < kTileK; kk++) {
           acc += read_fp(a, a_spans, kk, mm) * read_fp(b, b_spans, kk, nn);
         }
-        matrix_state->SetElem<float>(kDestTile, mm, nn, kTileElementWidth, acc);
+        // SetElem cannot fail because GetElem with the same parameters
+        // succeeded above.
+        matrix_state->SetElem<float>(kDestTile, mm, nn, kTileElementWidth, acc)
+            .IgnoreError();
       } else {
-        int32_t acc = matrix_state->GetElem<int32_t>(kDestTile, mm, nn,
-                                                     kTileElementWidth);
+        absl::StatusOr<int32_t> acc_res = matrix_state->GetElem<int32_t>(
+            kDestTile, mm, nn, kTileElementWidth);
+        if (!acc_res.ok()) {
+          LOG(ERROR) << acc_res.status();
+          return;
+        }
+        int32_t acc = *acc_res;
         for (int kk = 0; kk < kTileK; kk++) {
           acc += read_int(a, a_spans, kk, mm) * read_int(b, b_spans, kk, nn);
         }
-        matrix_state->SetElem<int32_t>(kDestTile, mm, nn, kTileElementWidth,
-                                       acc);
+        // SetElem cannot fail because GetElem with the same parameters
+        // succeeded above.
+        matrix_state
+            ->SetElem<int32_t>(kDestTile, mm, nn, kTileElementWidth, acc)
+            .IgnoreError();
       }
     }
   }
