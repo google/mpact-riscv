@@ -191,12 +191,11 @@ void MRemu(Instruction* instruction) {
 }
 
 void MMulw(Instruction* instruction) {
-  BinaryOp<IntReg, NarrowIntReg>(instruction,
-                                 [](NarrowIntReg a, NarrowIntReg b) -> IntReg {
-                                   NarrowIntReg c = a * b;
-                                   IntReg c_wide = static_cast<IntReg>(c);
-                                   return c_wide;
-                                 });
+  BinaryOp<IntReg, NarrowUintReg>(
+      instruction, [](NarrowUintReg a, NarrowUintReg b) -> IntReg {
+        NarrowUintReg c = a * b;
+        return static_cast<IntReg>(static_cast<NarrowIntReg>(c));
+      });
 }
 
 void MDivw(Instruction* instruction) {

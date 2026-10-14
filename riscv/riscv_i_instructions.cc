@@ -199,10 +199,9 @@ void RiscVIAdd(const Instruction* instruction) {
 }
 
 void RiscVIAddw(const Instruction* instruction) {
-  RiscVBinaryOp<RegisterType, IntReg, NarrowIntReg>(
-      instruction, [](NarrowIntReg a, NarrowIntReg b) {
-        IntReg c = static_cast<IntReg>(a + b);
-        return c;
+  RiscVBinaryOp<RegisterType, IntReg, NarrowUIntReg>(
+      instruction, [](NarrowUIntReg a, NarrowUIntReg b) {
+        return static_cast<IntReg>(static_cast<NarrowIntReg>(a + b));
       });
 }
 
@@ -212,10 +211,9 @@ void RiscVISub(const Instruction* instruction) {
 }
 
 void RiscVISubw(const Instruction* instruction) {
-  RiscVBinaryOp<RegisterType, IntReg, NarrowIntReg>(
-      instruction, [](NarrowIntReg a, NarrowIntReg b) {
-        IntReg c = static_cast<IntReg>(a - b);
-        return c;
+  RiscVBinaryOp<RegisterType, IntReg, NarrowUIntReg>(
+      instruction, [](NarrowUIntReg a, NarrowUIntReg b) {
+        return static_cast<IntReg>(static_cast<NarrowIntReg>(a - b));
       });
 }
 
@@ -260,9 +258,10 @@ void RiscVISra(const Instruction* instruction) {
 }
 
 void RiscVISllw(const Instruction* instruction) {
-  RiscVBinaryOp<RegisterType, IntReg, NarrowIntReg>(
-      instruction, [](NarrowIntReg a, NarrowIntReg b) -> IntReg {
-        return static_cast<IntReg>(a << (b & 0x1f));
+  RiscVBinaryOp<RegisterType, IntReg, NarrowUIntReg>(
+      instruction, [](NarrowUIntReg a, NarrowUIntReg b) -> IntReg {
+        auto c = a << (b & 0x1f);
+        return static_cast<IntReg>(static_cast<NarrowIntReg>(c));
       });
 }
 

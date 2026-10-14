@@ -25,6 +25,7 @@
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "riscv/riscv_csr.h"
 #include "riscv/riscv_i_instructions.h"
+#include "riscv/riscv_m_instructions.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
 
@@ -40,6 +41,7 @@ using ::mpact::sim::riscv::RV64Register;
 using ::mpact::sim::util::FlatDemandMemory;
 
 constexpr char kX1[] = "x1";
+constexpr char kX2[] = "x2";
 constexpr char kX3[] = "x3";
 
 constexpr uint32_t kInstAddress = 0x2468;
@@ -202,6 +204,74 @@ TEST_F(RV64IInstructionTest, RV64IJalrMisaligned) {
       static_cast<uint64_t>(
           ::mpact::sim::riscv::ExceptionCode::kInstructionAddressMisaligned));
   EXPECT_EQ(trap_epc_, instruction_->address());
+}
+
+TEST_F(RV64IInstructionTest, RV64IAddwOverflow) {
+  AppendRegisterOperands({kX1, kX2}, {kX3});
+  SetSemanticFunction(&::mpact::sim::riscv::RV64::RiscVIAddw);
+
+  // 0x7fffffff + 1 = 0x80000000 -> sign-extended to 64-bit: 0xffffffff80000000
+  SetRegisterValues<uint64_t>({{kX1, 0x7fffffffULL}, {kX2, 1ULL}});
+  instruction_->Execute(nullptr);
+  EXPECT_EQ(GetRegisterValue<uint64_t>(kX3), 0xffffffff80000000ULL);
+
+  // 0x80000000 + (-1) = 0x7fffffff -> sign-extended: 0x000000007fffffff
+  SetRegisterValues<uint64_t>(
+      {{kX1, 0xffffffff80000000ULL}, {kX2, 0xffffffffffffffffULL}});
+  instruction_->Execute(nullptr);
+  EXPECT_EQ(GetRegisterValue<uint64_t>(kX3), 0x000000007fffffffULL);
+}
+
+TEST_F(RV64IInstructionTest, RV64ISubwOverflow) {
+  AppendRegisterOperands({kX1, kX2}, {kX3});
+  SetSemanticFunction(&::mpact::sim::riscv::RV64::RiscVISubw);
+
+  // 0x80000000 - 1 = 0x7fffffff -> sign-extended to 64-bit: 0x000000007fffffff
+  SetRegisterValues<uint64_t>({{kX1, 0xffffffff80000000ULL}, {kX2, 1ULL}});
+  instruction_->Execute(nullptr);
+  EXPECT_EQ(GetRegisterValue<uint64_t>(kX3), 0x000000007fffffffULL);
+
+  // 0x7fffffff - (-1) = 0x80000000 -> sign-extended: 0xffffffff80000000
+  SetRegisterValues<uint64_t>(
+      {{kX1, 0x7fffffffULL}, {kX2, 0xffffffffffffffffULL}});
+  instruction_->Execute(nullptr);
+  EXPECT_EQ(GetRegisterValue<uint64_t>(kX3), 0xffffffff80000000ULL);
+}
+
+TEST_F(RV64IInstructionTest, RV64ISllwOverflow) {
+  AppendRegisterOperands({kX1, kX2}, {kX3});
+  SetSemanticFunction(&::mpact::sim::riscv::RV64::RiscVISllw);
+
+  // 1 << 31 = 0x80000000 -> sign-extended to 64-bit: 0xffffffff80000000
+  SetRegisterValues<uint64_t>({{kX1, 1ULL}, {kX2, 31ULL}});
+  instruction_->Execute(nullptr);
+  EXPECT_EQ(GetRegisterValue<uint64_t>(kX3), 0xffffffff80000000ULL);
+
+  // (-1) << 1 = 0xfffffffe -> sign-extended to 64-bit: 0xfffffffffffffffe
+  SetRegisterValues<uint64_t>({{kX1, 0xffffffffffffffffULL}, {kX2, 1ULL}});
+  instruction_->Execute(nullptr);
+  EXPECT_EQ(GetRegisterValue<uint64_t>(kX3), 0xfffffffffffffffeULL);
+}
+
+TEST_F(RV64IInstructionTest, RV64MMulwOverflow) {
+  AppendRegisterOperands({kX1, kX2}, {kX3});
+  SetSemanticFunction(&::mpact::sim::riscv::RV64::MMulw);
+
+  // 0x40000000 * 2 = 0x80000000 -> sign-extended to 64-bit: 0xffffffff80000000
+  SetRegisterValues<uint64_t>({{kX1, 0x40000000ULL}, {kX2, 2ULL}});
+  instruction_->Execute(nullptr);
+  EXPECT_EQ(GetRegisterValue<uint64_t>(kX3), 0xffffffff80000000ULL);
+
+  // 0x7fffffff * 2 = 0xfffffffe -> sign-extended to 64-bit: 0xfffffffffffffffe
+  SetRegisterValues<uint64_t>({{kX1, 0x7fffffffULL}, {kX2, 2ULL}});
+  instruction_->Execute(nullptr);
+  EXPECT_EQ(GetRegisterValue<uint64_t>(kX3), 0xfffffffffffffffeULL);
+
+  // (-0x80000000) * (-1) = 0x80000000 -> sign-extended: 0xffffffff80000000
+  SetRegisterValues<uint64_t>(
+      {{kX1, 0xffffffff80000000ULL}, {kX2, 0xffffffffffffffffULL}});
+  instruction_->Execute(nullptr);
+  EXPECT_EQ(GetRegisterValue<uint64_t>(kX3), 0xffffffff80000000ULL);
 }
 
 }  // namespace
