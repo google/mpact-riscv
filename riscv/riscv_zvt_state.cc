@@ -18,13 +18,13 @@
 #include <memory>
 
 #include "absl/base/nullability.h"
-#include "absl/log/check.h"
-#include "absl/log/log.h"
 #include "absl/memory/memory.h"
 #include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/instruction.h"
+#include "mpact/sim/generic/type_helpers.h"
 #include "riscv/riscv_csr.h"
 #include "riscv/riscv_state.h"
 #include "riscv/riscv_vector_state.h"
@@ -36,14 +36,14 @@ namespace {
 constexpr uint32_t kMstatusVsMask = 0x0600U;
 }  // namespace
 
+using ::mpact::sim::generic::operator*;  // NOLINT(misc-unused-using-decls)
+
 uint32_t RiscVMtypeCsr::AsUint32() {
   auto* state = matrix_state_->riscv_state();
   if ((state->mstatus()->GetUint32() & kMstatusVsMask) == 0) {
     state->Trap(
         /*is_interrupt=*/false, 0,
-        static_cast<uint64_t>(
-            ::mpact::sim::riscv::ExceptionCode::kIllegalInstruction),
-        0, nullptr);
+        *::mpact::sim::riscv::ExceptionCode::kIllegalInstruction, 0, nullptr);
     return 0;
   }
   return matrix_state_->mtype();
@@ -53,9 +53,7 @@ uint64_t RiscVMtypeCsr::AsUint64() {
   if ((state->mstatus()->GetUint32() & kMstatusVsMask) == 0) {
     state->Trap(
         /*is_interrupt=*/false, 0,
-        static_cast<uint64_t>(
-            ::mpact::sim::riscv::ExceptionCode::kIllegalInstruction),
-        0, nullptr);
+        *::mpact::sim::riscv::ExceptionCode::kIllegalInstruction, 0, nullptr);
     return 0;
   }
   return matrix_state_->mtype();
@@ -64,17 +62,13 @@ uint64_t RiscVMtypeCsr::AsUint64() {
 void RiscVMtypeCsr::Write(uint32_t /*value*/) {
   matrix_state_->riscv_state()->Trap(
       /*is_interrupt=*/false, 0,
-      static_cast<uint64_t>(
-          ::mpact::sim::riscv::ExceptionCode::kIllegalInstruction),
-      0, nullptr);
+      *::mpact::sim::riscv::ExceptionCode::kIllegalInstruction, 0, nullptr);
 }
 
 void RiscVMtypeCsr::Write(uint64_t /*value*/) {
   matrix_state_->riscv_state()->Trap(
       /*is_interrupt=*/false, 0,
-      static_cast<uint64_t>(
-          ::mpact::sim::riscv::ExceptionCode::kIllegalInstruction),
-      0, nullptr);
+      *::mpact::sim::riscv::ExceptionCode::kIllegalInstruction, 0, nullptr);
 }
 
 absl::StatusOr<std::unique_ptr<RiscVZvtMatrixState>>
@@ -177,8 +171,8 @@ int GetTileAlignment(int tile_element_width_bits) {
 }
 }  // namespace
 
-bool RiscVZvtMatrixState::IsValidTile(int tile) const {
-  return (tile % GetTileAlignment(tile_element_width_bits())) == 0;
+bool RiscVZvtMatrixState::IsValidTile(int tile, int tew_bits) const {
+  return (tile % GetTileAlignment(tew_bits)) == 0;
 }
 
 int RiscVZvtMatrixState::MaskTssTile(int tile, int tile_element_width) const {

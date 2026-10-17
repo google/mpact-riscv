@@ -448,15 +448,19 @@ TEST(RiscVZvtStateTest, TileSpecifierAlignmentAndMasking) {
 
   // TEW=8 (mtwiden=1 => twiden=1). NTiles = 16. align = 1.
   matrix_state->set_mtype(1 << mpact::sim::riscv::kMtypeMtwidenShift);
-  EXPECT_TRUE(matrix_state->IsValidTile(15));
+  EXPECT_TRUE(
+      matrix_state->IsValidTile(15, matrix_state->tile_element_width_bits()));
   EXPECT_EQ(matrix_state->MaskTssTile(/*tile=*/15, /*tile_element_width=*/8),
             15);
 
   // TEW=16 (mtwiden=2 => twiden=2). NTiles = 8. align = 2.
   matrix_state->set_mtype(2 << mpact::sim::riscv::kMtypeMtwidenShift);
-  EXPECT_TRUE(matrix_state->IsValidTile(0));
-  EXPECT_TRUE(matrix_state->IsValidTile(2));
-  EXPECT_FALSE(matrix_state->IsValidTile(3));
+  EXPECT_TRUE(
+      matrix_state->IsValidTile(0, matrix_state->tile_element_width_bits()));
+  EXPECT_TRUE(
+      matrix_state->IsValidTile(2, matrix_state->tile_element_width_bits()));
+  EXPECT_FALSE(
+      matrix_state->IsValidTile(3, matrix_state->tile_element_width_bits()));
   EXPECT_EQ(matrix_state->MaskTssTile(/*tile=*/3, /*tile_element_width=*/16),
             2);
   EXPECT_EQ(matrix_state->MaskTssTile(/*tile=*/15, /*tile_element_width=*/16),
@@ -464,8 +468,10 @@ TEST(RiscVZvtStateTest, TileSpecifierAlignmentAndMasking) {
 
   // TEW=32 (mtwiden=3 => twiden=4). NTiles = 4. align = 4.
   matrix_state->set_mtype(3 << mpact::sim::riscv::kMtypeMtwidenShift);
-  EXPECT_TRUE(matrix_state->IsValidTile(4));
-  EXPECT_FALSE(matrix_state->IsValidTile(5));
+  EXPECT_TRUE(
+      matrix_state->IsValidTile(4, matrix_state->tile_element_width_bits()));
+  EXPECT_FALSE(
+      matrix_state->IsValidTile(5, matrix_state->tile_element_width_bits()));
   EXPECT_EQ(matrix_state->MaskTssTile(/*tile=*/7, /*tile_element_width=*/32),
             4);
   EXPECT_EQ(matrix_state->MaskTssTile(/*tile=*/15, /*tile_element_width=*/32),
@@ -484,11 +490,16 @@ TEST(RiscVZvtStateTest, TileSpecifierAlignmentAndMasking64) {
 
   // TEW=64 (sew=16, mtwiden=3 => twiden=4). NTiles = 8. align = 2.
   matrix_state->set_mtype(3 << mpact::sim::riscv::kMtypeMtwidenShift);
-  EXPECT_TRUE(matrix_state->IsValidTile(0));
-  EXPECT_TRUE(matrix_state->IsValidTile(2));
-  EXPECT_TRUE(matrix_state->IsValidTile(8));
-  EXPECT_FALSE(matrix_state->IsValidTile(9));
-  EXPECT_FALSE(matrix_state->IsValidTile(3));
+  EXPECT_TRUE(
+      matrix_state->IsValidTile(0, matrix_state->tile_element_width_bits()));
+  EXPECT_TRUE(
+      matrix_state->IsValidTile(2, matrix_state->tile_element_width_bits()));
+  EXPECT_TRUE(
+      matrix_state->IsValidTile(8, matrix_state->tile_element_width_bits()));
+  EXPECT_FALSE(
+      matrix_state->IsValidTile(9, matrix_state->tile_element_width_bits()));
+  EXPECT_FALSE(
+      matrix_state->IsValidTile(3, matrix_state->tile_element_width_bits()));
   EXPECT_EQ(matrix_state->MaskTssTile(/*tile=*/15, /*tile_element_width=*/64),
             14);
   EXPECT_EQ(matrix_state->MaskTssTile(/*tile=*/7, /*tile_element_width=*/64),

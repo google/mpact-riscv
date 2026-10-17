@@ -161,7 +161,7 @@ class RiscVZvtMatrixState {
   void ResetMtype() { set_mtype(0); }
 
   // Tile index validation and masking (Zvt v0.4).
-  [[nodiscard]] bool IsValidTile(int tile) const;
+  [[nodiscard]] bool IsValidTile(int tile, int tew_bits) const;
   [[nodiscard]] int MaskTssTile(int tile, int tile_element_width) const;
 
   // Decoded mtype fields.
@@ -196,10 +196,10 @@ class RiscVZvtMatrixState {
   [[nodiscard]] int tile_element_width_bits() const {
     return sew_bits() * twiden();
   }
-  // EFFECTIVE_TILE_EDGE: effective tile edge for the current
-  // TILE_ELEMENT_WIDTH. = TE for TILE_ELEMENT_WIDTH<64, TE/2 else.
-  [[nodiscard]] int effective_tile_edge() const {
-    return tile_element_width_bits() < 64 ? tile_elements_ : tile_elements_ / 2;
+  // EFFECTIVE_TILE_EDGE: effective tile edge for a given TILE_ELEMENT_WIDTH
+  // (tew_bits). = TE for tew_bits < 64, TE/2 else.
+  [[nodiscard]] int effective_tile_edge(int tew_bits) const {
+    return tew_bits < 64 ? tile_elements_ : tile_elements_ / 2;
   }
 
  private:

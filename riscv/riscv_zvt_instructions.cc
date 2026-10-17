@@ -208,7 +208,8 @@ void RiscVZvtMsetTn(const Instruction* inst) {
     kTileN = std::min<uint32_t>(kRs1, vector_state->max_vector_length());
   } else {
     const int kBound = std::min(vector_state->max_vector_length(),
-                                matrix_state->effective_tile_edge());
+                                matrix_state->effective_tile_edge(
+                                    matrix_state->tile_element_width_bits()));
     kTileN = std::min<uint32_t>(kRs1, kBound);
   }
   vector_state->set_vector_length(kTileN);
@@ -226,7 +227,8 @@ void RiscVZvtMsetTm(const Instruction* inst) {
     kTileM = 0;
   } else {
     const int kBound = std::min(vector_state->max_vector_length(),
-                                matrix_state->effective_tile_edge());
+                                matrix_state->effective_tile_edge(
+                                    matrix_state->tile_element_width_bits()));
     kTileM = std::min<uint32_t>(kRs1, kBound);
   }
   matrix_state->set_tile_m(kTileM);

@@ -1747,6 +1747,7 @@ cc_library(
         "@abseil-cpp//absl/strings",
         "@mpact-sim//mpact/sim/generic:core",
         "@mpact-sim//mpact/sim/generic:instruction",
+        "@mpact-sim//mpact/sim/generic:type_helpers",
     ],
 )
 
