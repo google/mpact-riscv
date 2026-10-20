@@ -24,6 +24,7 @@ instruction group RiscVZbbInst64[32] : Inst32Format {
   clzw  : RType  : func7 == 0b011'0000, rs2 == 0b0'0000, func3 == 0b001, opcode == 0b001'1011;
   cpopw : RType  : func7 == 0b011'0000, rs2 == 0b0'0010, func3 == 0b001, opcode == 0b001'1011;
   ctzw  : RType  : func7 == 0b011'0000, rs2 == 0b0'0001, func3 == 0b001, opcode == 0b001'1011;
+  rev8  : RType  : func7 == 0b011'0101, rs2 == 0b1'1000, func3 == 0b101, opcode == 0b001'0011;
   rolw  : RType  : func7 == 0b011'0000, func3 == 0b001, opcode == 0b011'1011;
   rori  : RSType : func6 == 0b011'000, func3 == 0b101, opcode == 0b001'0011;
   roriw : RType  : func7 == 0b011'0000, func3 == 0b101, opcode == 0b001'1011;

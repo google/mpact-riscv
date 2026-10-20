@@ -34,10 +34,10 @@ instruction group RiscVZbbInst32[32] : Inst32Format {
   rol:    RType : func7 == 0b011'0000, func3 == 0b001, opcode == 0b011'0011;
   ror:    RType : func7 == 0b011'0000, func3 == 0b101, opcode == 0b011'0011;
   orcb:   RType : func7 == 0b001'0100, rs2 == 0b0'0111, func3 == 0b101, opcode == 0b001'0011;
-  rev8:   RType : func7 == 0b011'0100, rs2 == 0b1'1000, func3 == 0b101, opcode == 0b001'0011;
 };
 
 instruction group RiscVZbbInst32Only[32] : Inst32Format {
+  rev8:   RType : func7 == 0b011'0100, rs2 == 0b1'1000, func3 == 0b101, opcode == 0b001'0011;
   zext_h: RType : func7 == 0b000'0100, rs2 == 0b0'0000, func3 == 0b100, opcode == 0b011'0011;
 }
 

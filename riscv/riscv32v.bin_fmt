@@ -33,7 +33,7 @@ decoder RiscV32GVZB {
   }
   // Group these instruction groups in the same decoder function.
   RiscV32GVZB = {RiscVGInst32, RiscVVInst32, RiscVZbaInst32, RiscVZbbInst32,
-                 RiscVZbcInst32, RiscVZbsInst32};
+                 RiscVZbbInst32Only, RiscVZbcInst32, RiscVZbsInst32};
   // Keep this separate (different base format).
   RiscVCInst16;
 }

@@ -25,6 +25,7 @@ decoder RVM23 {
     // Bitmanipulation instructions.
     RiscVZbaInst32,
     RiscVZbbInst32,
+    RiscVZbbInst32Only,
     RiscVZbcInst32,
     RiscVZbsInst32,
     // Conditional zero.

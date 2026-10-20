@@ -14,6 +14,8 @@
 
 #include "riscv/riscv32gzb_vec_encoding.h"
 
+#include <cstdint>
+
 #include "googlemock/include/gmock/gmock.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
@@ -90,6 +92,18 @@ TEST_F(RiscV32GZBVecEncodingTest, ComplexResources) {
     EXPECT_TRUE(getters.contains(i)) << "No source operand for enum value " << i
                                      << " (" << kComplexResourceNames[i] << ")";
   }
+}
+
+TEST_F(RiscV32GZBVecEncodingTest, Rev8AndZextHOpcodes) {
+  constexpr uint32_t kRv32Rev8 = 0b011'0100'11000'00000'101'00000'0010011;
+  constexpr uint32_t kRv64Rev8 = 0b011'0101'11000'00000'101'00000'0010011;
+  constexpr uint32_t kRv32Zexth = 0b000'0100'00000'00000'100'00000'0110011;
+  enc_->ParseInstruction(kRv32Rev8);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32gvzb, 0), OpcodeEnum::kRev8);
+  enc_->ParseInstruction(kRv64Rev8);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32gvzb, 0), OpcodeEnum::kNone);
+  enc_->ParseInstruction(kRv32Zexth);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32gvzb, 0), OpcodeEnum::kZextH);
 }
 
 }  // namespace

@@ -182,6 +182,9 @@ TEST_F(RiscV32GZBEncodingTest, Zbb) {
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32gzb, 0), OpcodeEnum::kOrcb);
   enc_->ParseInstruction(kRev8);
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32gzb, 0), OpcodeEnum::kRev8);
+  constexpr uint32_t kRv64Rev8 = 0b011'0101'11000'00000'101'00000'0010011;
+  enc_->ParseInstruction(kRv64Rev8);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv32gzb, 0), OpcodeEnum::kNone);
 }
 
 TEST_F(RiscV32GZBEncodingTest, Zbc) {
