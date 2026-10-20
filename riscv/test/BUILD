@@ -1042,6 +1042,23 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "riscv_zicboz_instructions_test",
+    size = "small",
+    srcs = ["riscv_zicboz_instructions_test.cc"],
+    deps = [
+        "//riscv:riscv_state",
+        "//riscv:rvm23_instructions",
+        "@abseil-cpp//absl/functional:bind_front",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:span",
+        "@com_google_googletest//:gtest_main",
+        "@mpact-sim//mpact/sim/generic:core",
+        "@mpact-sim//mpact/sim/generic:instruction",
+        "@mpact-sim//mpact/sim/util/memory",
+    ],
+)
+
 config_setting(
     name = "arm_cpu",
     values = {"cpu": "arm"},
