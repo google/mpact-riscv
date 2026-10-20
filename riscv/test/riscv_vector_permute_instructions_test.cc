@@ -18,7 +18,8 @@
 #include <cstring>
 
 #include "absl/random/random.h"
-#include "googlemock/include/gmock/gmock.h"
+#include "googlemock/include/gmock/gmock.h"  // IWYU pragma: keep
+#include "googletest/include/gtest/gtest.h"
 #include "mpact/sim/generic/instruction.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_vector_state.h"

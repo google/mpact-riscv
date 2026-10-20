@@ -164,6 +164,15 @@ RiscVVectorState::RiscVVectorState(RiscVState* state, int byte_length)
 void RiscVVectorState::SetVectorType(uint32_t vtype) {
   static const int lmul8_values[8] = {8, 16, 32, 64, 0, 1, 2, 4};
   static const int sew_values[8] = {8, 16, 32, 64, 0, 0, 0, 0};
+  if (vtype & kIllegalVectorType) {
+    set_vtype(kIllegalVectorType);
+    set_vector_length_multiplier(0);
+    set_selected_element_width(0);
+    set_vector_tail_agnostic(false);
+    set_vector_mask_agnostic(false);
+    max_vector_length_ = 0;
+    return;
+  }
   set_vtype(vtype);
   // The vtype field is divided into the following fields:
   // [2..0]: vector length multiplier.

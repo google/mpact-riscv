@@ -15,7 +15,8 @@
 #include <cstdint>
 
 #include "absl/functional/bind_front.h"
-#include "googlemock/include/gmock/gmock.h"
+#include "googlemock/include/gmock/gmock.h"  // IWYU pragma: keep
+#include "googletest/include/gtest/gtest.h"
 #include "mpact/sim/generic/action_point_manager_base.h"
 #include "mpact/sim/generic/breakpoint_manager.h"
 #include "mpact/sim/generic/component.h"

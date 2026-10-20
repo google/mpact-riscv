@@ -22,7 +22,8 @@
 
 #include "absl/log/check.h"
 #include "absl/strings/str_cat.h"
-#include "googlemock/include/gmock/gmock.h"
+#include "googlemock/include/gmock/gmock.h"  // IWYU pragma: keep
+#include "googletest/include/gtest/gtest.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "riscv/riscv_csr.h"
 #include "riscv/riscv_register.h"

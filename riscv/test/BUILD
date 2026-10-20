@@ -1043,6 +1043,20 @@ cc_test(
 )
 
 cc_test(
+    name = "riscv_vector_state_test",
+    size = "small",
+    srcs = [
+        "riscv_vector_state_test.cc",
+    ],
+    deps = [
+        "//riscv:riscv_state",
+        "//riscv:riscv_v",
+        "@com_google_googletest//:gtest_main",
+        "@mpact-sim//mpact/sim/util/memory",
+    ],
+)
+
+cc_test(
     name = "riscv_zicboz_instructions_test",
     size = "small",
     srcs = ["riscv_zicboz_instructions_test.cc"],

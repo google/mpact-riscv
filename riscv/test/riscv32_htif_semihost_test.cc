@@ -19,7 +19,8 @@
 #include <cstring>
 #include <string>
 
-#include "googlemock/include/gmock/gmock.h"
+#include "googlemock/include/gmock/gmock.h"  // IWYU pragma: keep
+#include "googletest/include/gtest/gtest.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 

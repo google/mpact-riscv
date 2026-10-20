@@ -24,7 +24,8 @@
 #include "elfio/elfio.hpp"
 #include "elfio/elfio_section.hpp"
 #include "elfio/elfio_symbols.hpp"
-#include "googlemock/include/gmock/gmock.h"
+#include "googlemock/include/gmock/gmock.h"  // IWYU pragma: keep
+#include "googletest/include/gtest/gtest.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/type_helpers.h"

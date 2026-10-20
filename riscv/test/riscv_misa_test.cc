@@ -16,7 +16,8 @@
 
 #include <cstdint>
 
-#include "googlemock/include/gmock/gmock.h"
+#include "googlemock/include/gmock/gmock.h"  // IWYU pragma: keep
+#include "googletest/include/gtest/gtest.h"
 
 namespace {
 

@@ -123,6 +123,9 @@ class RiscVVcsr : public RiscVSimpleCsr<uint32_t> {
 
 class RiscVVectorState {
  public:
+  // Bit 31 of vtype is the vill (vector illegal) bit.
+  static constexpr uint32_t kIllegalVectorType = 1U << 31;
+
   RiscVVectorState(RiscVState* state, int byte_length);
 
   void SetVectorType(uint32_t vtype);

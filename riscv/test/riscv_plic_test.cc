@@ -18,7 +18,8 @@
 #include <cstdint>
 
 #include "absl/log/check.h"
-#include "googlemock/include/gmock/gmock.h"
+#include "googlemock/include/gmock/gmock.h"  // IWYU pragma: keep
+#include "googletest/include/gtest/gtest.h"
 #include "mpact/sim/generic/data_buffer.h"
 
 // This file contains unit tests for the RiscV PLIC model.

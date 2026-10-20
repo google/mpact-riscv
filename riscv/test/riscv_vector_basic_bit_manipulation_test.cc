@@ -17,7 +17,8 @@
 #include <cstdint>
 
 #include "absl/strings/str_cat.h"
-#include "googlemock/include/gmock/gmock.h"
+#include "googlemock/include/gmock/gmock.h"  // IWYU pragma: keep
+#include "googletest/include/gtest/gtest.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "riscv/riscv_register.h"

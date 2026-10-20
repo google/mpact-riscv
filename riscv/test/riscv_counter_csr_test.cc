@@ -3,7 +3,8 @@
 #include <cstdint>
 #include <limits>
 
-#include "googlemock/include/gmock/gmock.h"
+#include "googlemock/include/gmock/gmock.h"  // IWYU pragma: keep
+#include "googletest/include/gtest/gtest.h"
 #include "mpact/sim/generic/counters.h"
 #include "riscv/riscv_csr.h"
 #include "riscv/riscv_state.h"

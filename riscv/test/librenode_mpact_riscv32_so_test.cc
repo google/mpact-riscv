@@ -7,7 +7,8 @@
 #include "absl/debugging/leak_check.h"
 #include "absl/log/check.h"
 #include "absl/strings/str_cat.h"
-#include "googlemock/include/gmock/gmock.h"
+#include "googlemock/include/gmock/gmock.h"  // IWYU pragma: keep
+#include "googletest/include/gtest/gtest.h"
 #include "mpact/sim/util/renode/renode_debug_interface.h"
 
 namespace {

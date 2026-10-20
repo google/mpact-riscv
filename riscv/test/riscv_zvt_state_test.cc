@@ -19,7 +19,8 @@
 #include <utility>
 
 #include "absl/status/status.h"
-#include "googlemock/include/gmock/gmock.h"
+#include "googlemock/include/gmock/gmock.h"  // IWYU pragma: keep
+#include "googletest/include/gtest/gtest.h"
 #include "mpact/sim/generic/immediate_operand.h"  // NOLINT(misc-include-cleaner)
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
