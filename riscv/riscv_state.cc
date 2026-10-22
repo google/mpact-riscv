@@ -598,10 +598,6 @@ void RiscVState::ECall(const Instruction* inst) {
     if (res) return;
   }
 
-  std::string where = (inst != nullptr)
-                          ? absl::StrCat(absl::Hex(inst->address()))
-                          : "unknown location";
-
   ExceptionCode code;
   switch (privilege_mode()) {
     case PrivilegeMode::kUser:
