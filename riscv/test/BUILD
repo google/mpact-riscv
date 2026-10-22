@@ -339,6 +339,19 @@ cc_test(
 )
 
 cc_test(
+    name = "rvm23_encoding_test",
+    size = "small",
+    srcs = [
+        "rvm23_encoding_test.cc",
+    ],
+    deps = [
+        "//riscv:rvm23_bin_fmt",
+        "//riscv:rvm23_isa",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "riscv64gzb_encoding_test",
     size = "small",
     srcs = [
