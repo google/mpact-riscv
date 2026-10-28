@@ -20,7 +20,7 @@ module(
 # Core Dependencies
 bazel_dep(
     name = "mpact-sim",
-    version = "1.0.2",
+    version = "1.0.3",
 )
 bazel_dep(
     name = "abseil-cpp",

@@ -526,15 +526,15 @@ static uint32_t SetNf(uint32_t iword, uint32_t nf) {
 // instead of deleting them and then having to put them back later as more
 // encodings are added.
 TEST(RiscV32GVBinDecoderTest, None) {
-  (void)kRdValue;
-  (void)kSuccValue;
-  (void)kPredValue;
-  (void)SetRd(0, 0);
-  (void)SetRs1(0, 0);
-  (void)SetPred(0, 0);
-  (void)SetSucc(0, 0);
-  (void)Set16Rd(0, 0);
-  (void)Set16Rs2(0, 0);
+  EXPECT_NE(kRdValue, 0);
+  EXPECT_NE(kSuccValue, 0);
+  EXPECT_NE(kPredValue, 0);
+  EXPECT_NE(SetRd(0, 0), -1);
+  EXPECT_NE(SetRs1(0, 0), -1);
+  EXPECT_NE(SetPred(0, 0), -1);
+  EXPECT_NE(SetSucc(0, 0), -1);
+  EXPECT_NE(Set16Rd(0, 0), -1);
+  EXPECT_NE(Set16Rs2(0, 0), -1);
 }
 
 TEST(RiscV32GVBinDecoderTest, VectorConfig) {

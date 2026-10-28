@@ -12,16 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+isa RiscVZvt {
+  namespace mpact::sim::riscv::zvt;
+  slots {
+    riscv_zvt;
+  }
+}
+
 // Zvtbase matrix configuration instructions (spec 15.1.1.4).
 slot riscv_zvt {
   includes {
+    #include "absl/functional/bind_front.h"
+    #include "riscv/riscv_i_instructions.h"
     #include "riscv/riscv_zvt_instructions.h"
   }
   default size = 4;
+  default opcode =
+    disasm: "Illegal instruction at 0x%(@:08x)",
+    semfunc: "&::mpact::sim::riscv::RiscVIllegalInstruction";
   opcodes {
     msetmtype{: rs1, rs2 : },
       disasm: "msetmtype", "%rs1, %rs2",
       semfunc: "&::mpact::sim::riscv::RiscVZvtMsetMtype";
+    msetmtypei{: mtwiden, vsew, altfmt : },
+      disasm: "msetmtypei", "%mtwiden, %vsew, %altfmt",
+      semfunc: "&::mpact::sim::riscv::RiscVZvtMsetMtypei";
     msettn{: rs1 : rd},
       disasm: "msettn", "%rd, %rs1",
       semfunc: "&::mpact::sim::riscv::RiscVZvtMsetTn";
@@ -33,8 +48,8 @@ slot riscv_zvt {
       semfunc: "&::mpact::sim::riscv::RiscVZvtMsetTk";
 
     // Tile manipulation.
-    vtzero{: mtd : },
-      disasm: "vtzero", "%mtd",
+    vtzero{: mtile : },
+      disasm: "vtzero", "%mtile",
       semfunc: "&::mpact::sim::riscv::RiscVZvtVtZero";
     vtdiscard{: : },
       disasm: "vtdiscard",
@@ -73,17 +88,17 @@ slot riscv_zvt {
       semfunc: "absl::bind_front(&::mpact::sim::riscv::RiscVZvtVtse, 64)";
 
     // Matrix multiply: C += A^T * B.
-    vtmms_tvv{: matA, matB, mtd : },
-      disasm: "vtmms.tvv", "%mtd, %matA, %matB",
-      semfunc: "absl::bind_front(&::mpact::sim::riscv::RiscVZvtMatmul, ::mpact::sim::riscv::RiscVZvtMatmulKind::kInt8Signed)";
-    vtmmu_tvv{: matA, matB, mtd : },
-      disasm: "vtmmu.tvv", "%mtd, %matA, %matB",
-      semfunc: "absl::bind_front(&::mpact::sim::riscv::RiscVZvtMatmul, ::mpact::sim::riscv::RiscVZvtMatmulKind::kInt8Unsigned)";
-    vtfmm_tvv{: matA, matB, mtd : fflags},
-      disasm: "vtfmm.tvv", "%mtd, %matA, %matB",
-      semfunc: "absl::bind_front(&::mpact::sim::riscv::RiscVZvtMatmul, ::mpact::sim::riscv::RiscVZvtMatmulKind::kFp32)";
-    vtfmm_alt_tvv{: matA, matB, mtd : fflags},
-      disasm: "vtfmm.alt.tvv", "%mtd, %matA, %matB",
-      semfunc: "absl::bind_front(&::mpact::sim::riscv::RiscVZvtMatmul, ::mpact::sim::riscv::RiscVZvtMatmulKind::kBf16)";
+    vtmms_tvv{: matA, matB, mtile, vs2_idx, vs1_idx : },
+      disasm: "vtmms.tvv", "%mtile, %matA, %matB",
+      semfunc: "&::mpact::sim::riscv::RiscVZvtVtmms";
+    vtmmu_tvv{: matA, matB, mtile, vs2_idx, vs1_idx : },
+      disasm: "vtmmu.tvv", "%mtile, %matA, %matB",
+      semfunc: "&::mpact::sim::riscv::RiscVZvtVtmmu";
+    vtfmm_tvv{: matA, matB, mtile, vs2_idx, vs1_idx : fflags},
+      disasm: "vtfmm.tvv", "%mtile, %matA, %matB",
+      semfunc: "&::mpact::sim::riscv::RiscVZvtVtfmm";
+    vtfmm_alt_tvv{: matA, matB, mtile, vs2_idx, vs1_idx : fflags},
+      disasm: "vtfmm.alt.tvv", "%mtile, %matA, %matB",
+      semfunc: "&::mpact::sim::riscv::RiscVZvtVtfmmAlt";
   }
 }

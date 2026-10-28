@@ -18,6 +18,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <functional>
 #include <limits>
 #include <tuple>
@@ -763,6 +764,24 @@ typename FPTypeInfo<T>::UIntType ClassifyFP(T val) {
     }
   }
   return sign ? 1 << 1 : 1 << 6;
+}
+
+// Converts a double-precision floating-point value to single-precision float
+// using Round to Odd (ROD) / jamming rounding mode.
+// If 'fp_state' is null, falls back to standard static_cast conversion.
+inline float DoubleToFloatROD(double d, RiscVFPState* fp_state) {
+  if (!fp_state) return static_cast<float>(d);
+
+  ScopedFPRoundingMode scoped_rm(fp_state->host_fp_interface(),
+                                 FPRoundingMode::kRoundTowardsZero);
+  float f = static_cast<float>(d);
+  if (std::isfinite(d) && static_cast<double>(f) != d) {
+    uint32_t f_bits = 0;
+    std::memcpy(&f_bits, &f, sizeof(f));
+    f_bits |= 1;
+    std::memcpy(&f, &f_bits, sizeof(f));
+  }
+  return f;
 }
 
 }  // namespace riscv

@@ -258,3 +258,17 @@ format VMatrix[32] : Inst32Format {
     // Named tile index (mt0..mt15): rd[11:8], i.e. mtd[4..1].
     unsigned mtile[4] = mtd[4..1];
 };
+
+format MsetmtypeiFormat[32] : Inst32Format {
+  fields:
+    unsigned opc1[3];
+    unsigned altfmt[1];
+    unsigned opc2[3];
+    unsigned vsew[2];
+    unsigned opc3[3];
+    unsigned opc4[3];
+    unsigned mtwiden[2];
+    unsigned func3[3];
+    unsigned rd[5];
+    unsigned opcode[7];
+};

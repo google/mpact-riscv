@@ -189,17 +189,22 @@ class RiscVZvtMatrixState {
   // size.
   ::mpact::sim::generic::DataBuffer* GetScratchDb(int size);
 
-  // SEW (bytes/bits) from the current vector configuration.
+  // Returns the vector selected element width (SEW) in bytes.
   [[nodiscard]] int sew_bytes() const;
+  // Returns the vector selected element width (SEW) in bits.
   [[nodiscard]] int sew_bits() const { return sew_bytes() * 8; }
-  // TILE_ELEMENT_WIDTH (tile element width) in bits = SEW * TWIDEN.
+  // Returns the tile element width (TEW) in bits (SEW * TWIDEN).
   [[nodiscard]] int tile_element_width_bits() const {
     return sew_bits() * twiden();
   }
-  // EFFECTIVE_TILE_EDGE: effective tile edge for a given TILE_ELEMENT_WIDTH
-  // (tew_bits). = TE for tew_bits < 64, TE/2 else.
+  // Returns the effective tile edge for a given tile element width (tew_bits):
+  // equals TE for tew_bits < 64, and TE/2 otherwise.
   [[nodiscard]] int effective_tile_edge(int tew_bits) const {
     return tew_bits < 64 ? tile_elements_ : tile_elements_ / 2;
+  }
+  // Returns the effective tile edge for the current matrix configuration.
+  [[nodiscard]] int effective_tile_edge() const {
+    return effective_tile_edge(tile_element_width_bits());
   }
 
  private:

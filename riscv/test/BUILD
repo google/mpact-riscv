@@ -29,6 +29,7 @@ cc_library(
         "@abseil-cpp//absl/functional:bind_front",
         "@abseil-cpp//absl/random",
         "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/time",
         "@abseil-cpp//absl/types:span",
         "@mpact-sim//mpact/sim/generic:arch_state",
         "@mpact-sim//mpact/sim/generic:core",
@@ -109,6 +110,7 @@ cc_test(
         "@abseil-cpp//absl/log:check",
         "@abseil-cpp//absl/strings",
         "@com_google_googletest//:gtest_main",
+        "@mpact-sim//mpact/sim/generic:type_helpers",
         "@mpact-sim//mpact/sim/util/memory",
     ],
 )
@@ -352,6 +354,19 @@ cc_test(
 )
 
 cc_test(
+    name = "riscv_zvt_encoding_test",
+    size = "small",
+    srcs = [
+        "riscv_zvt_encoding_test.cc",
+    ],
+    deps = [
+        "//riscv:riscv_zvt_bin_fmt",
+        "//riscv:riscv_zvt_isa",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "riscv64gzb_encoding_test",
     size = "small",
     srcs = [
@@ -541,6 +556,7 @@ cc_test(
     deps = [
         "//riscv:riscv32gv_bin_fmt",
         "//riscv:riscv32gv_isa",
+        "@abseil-cpp//absl/functional:function_ref",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -1049,6 +1065,28 @@ cc_test(
         "//riscv:riscv_zvt_state",
         "@abseil-cpp//absl/status",
         "@com_google_googletest//:gtest_main",
+        "@mpact-sim//mpact/sim/generic:core",
+        "@mpact-sim//mpact/sim/generic:instruction",
+        "@mpact-sim//mpact/sim/util/memory",
+    ],
+)
+
+cc_test(
+    name = "riscv_zvt_instructions_test",
+    size = "small",
+    srcs = ["riscv_zvt_instructions_test.cc"],
+    deps = [
+        "//riscv:riscv_fp_state",
+        "//riscv:riscv_state",
+        "//riscv:riscv_v",
+        "//riscv:riscv_zvt_instructions",
+        "//riscv:riscv_zvt_state",
+        "@abseil-cpp//absl/base",
+        "@abseil-cpp//absl/log:check",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/types:span",
+        "@com_google_googletest//:gtest_main",
+        "@mpact-sim//mpact/sim/generic:arch_state",
         "@mpact-sim//mpact/sim/generic:core",
         "@mpact-sim//mpact/sim/generic:instruction",
         "@mpact-sim//mpact/sim/util/memory",

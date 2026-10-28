@@ -21,10 +21,10 @@ simulators are instantiated from main in `rv{32,64}g_sim.cc`.
 MPACT-Sim utilizes the [Bazel](https://bazel.build/) build system. The easiest
 way to install bazel is to use
 [Bazelisk](https://github.com/bazelbuild/bazelisk), a wrapper for Bazel that
-automates selecting and downloading the right version of bazel. Use `brew
-install bazelisk` on macOS, `choco install bazelisk` on Windows, and on linux,
-download the Bazelisk binary, add it to your `PATH`, then alias bazel to the
-bazelisk binary.
+automates selecting and downloading the right version of bazel. Use
+`brew install bazelisk` on macOS, `choco install bazelisk` on Windows, and on
+linux, download the Bazelisk binary, add it to your `PATH`, then alias bazel to
+the bazelisk binary.
 
 ### Java
 
@@ -38,8 +38,9 @@ To build the mpact-sim libraries for x86 based processors, use the command
 `bazel build ...:all` from the top level directory. To run the tests, use the
 command `bazel test ...:all`.
 
-For Apple computers with Arm64 M series chips, use `bazel build
---cpu=darwin_arm64 ...:all` and `bazel test --cpu=darwin_arm64 ...:all`.
+For Apple computers with Arm64 M series chips, use
+`bazel build --cpu=darwin_arm64 ...:all` and
+`bazel test --cpu=darwin_arm64 ...:all`.
 
 The build targets `rv32g_sim` and `rv64g_sim` provide RiscV simulators for the
 32 bit and 64 bit variants of RiscV scalar architectures respectively. Decoding

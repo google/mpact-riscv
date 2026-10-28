@@ -14,6 +14,8 @@
 
 #include "riscv/riscv64g_vec_encoding.h"
 
+#include <cstdint>
+
 #include "googlemock/include/gmock/gmock.h"  // IWYU pragma: keep
 #include "googletest/include/gtest/gtest.h"
 #include "mpact/sim/generic/type_helpers.h"
@@ -26,7 +28,7 @@
 
 namespace {
 
-using ::mpact::sim::generic::operator*;  // NOLINT: clang-tidy false positive.
+using ::mpact::sim::generic::operator*;  // NOLINT(misc-unused-using-decls)
 
 using mpact::sim::riscv::RiscVState;
 using mpact::sim::riscv::RiscVXlen;
@@ -91,6 +93,25 @@ TEST_F(RiscV64GVecEncodingTest, ComplexResources) {
     EXPECT_TRUE(getters.contains(i)) << "No source operand for enum value " << i
                                      << " (" << kComplexResourceNames[i] << ")";
   }
+}
+
+TEST_F(RiscV64GVecEncodingTest, Decode32BitBaseAndVector) {
+  // RV64G instruction: add x1, x2, x3
+  constexpr uint32_t kAdd = 0b0000000'00011'00010'000'00001'0110011;
+  enc_->ParseInstruction(kAdd);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv64gv, 0), OpcodeEnum::kAdd);
+
+  // RV64V instruction: vadd.vv v1, v2, v3
+  constexpr uint32_t kVaddVv = 0b000000'0'00011'00010'000'00001'1010111;
+  enc_->ParseInstruction(kVaddVv);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv64gv, 0), OpcodeEnum::kVaddVv);
+}
+
+TEST_F(RiscV64GVecEncodingTest, Decode16BitCompressed) {
+  // 16-bit compressed instruction: c.nop (0x0001)
+  constexpr uint16_t kCnop = 0x0001;
+  enc_->ParseInstruction(kCnop);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kRiscv64gv, 0), OpcodeEnum::kCnop);
 }
 
 }  // namespace

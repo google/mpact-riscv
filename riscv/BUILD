@@ -28,6 +28,7 @@ package(
 exports_files([
     "riscv_zvt.isa",
     "riscv_zvt.bin_fmt",
+    "riscv_zvt_decoder.bin_fmt",
     "riscv_zicbom.isa",
     "riscv_zicbom.bin_fmt",
     "riscv_zicboz.isa",
@@ -104,6 +105,7 @@ cc_library(
         "@abseil-cpp//absl/functional:any_invocable",
         "@abseil-cpp//absl/log",
         "@abseil-cpp//absl/log:check",
+        "@abseil-cpp//absl/numeric:int128",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/strings",
@@ -1761,19 +1763,23 @@ cc_library(
 cc_library(
     name = "riscv_zvt_instructions",
     srcs = ["riscv_zvt_instructions.cc"],
-    hdrs = ["riscv_zvt_instructions.h"],
+    hdrs = [
+        "riscv_instruction_helpers.h",
+        "riscv_zvt_instructions.h",
+    ],
     copts = ["-O3"],
     deps = [
+        ":riscv_fp_state",
         ":riscv_state",
         ":riscv_zvt_state",
         "@abseil-cpp//absl/base",
         "@abseil-cpp//absl/log",
-        "@abseil-cpp//absl/status",
-        "@abseil-cpp//absl/status:statusor",
-        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/types:span",
+        "@mpact-sim//mpact/sim/generic:arch_state",
         "@mpact-sim//mpact/sim/generic:core",
         "@mpact-sim//mpact/sim/generic:instruction",
+        "@mpact-sim//mpact/sim/generic:type_helpers",
     ],
 )
 
@@ -1790,5 +1796,35 @@ cc_library(
         "@mpact-sim//mpact/sim/generic:arch_state",
         "@mpact-sim//mpact/sim/generic:core",
         "@mpact-sim//mpact/sim/generic:type_helpers",
+    ],
+)
+
+mpact_isa_decoder(
+    name = "riscv_zvt_isa",
+    src = "riscv_zvt.isa",
+    includes = [],
+    isa_name = "RiscVZvt",
+    prefix = "riscv_zvt",
+    deps = [
+        ":riscv_g",
+        ":riscv_zvt_instructions",
+        "@abseil-cpp//absl/functional:bind_front",
+    ],
+)
+
+mpact_bin_fmt_decoder(
+    name = "riscv_zvt_bin_fmt",
+    src = "riscv_zvt_decoder.bin_fmt",
+    decoder_name = "RiscVZvt",
+    includes = [
+        "riscv32g.bin_fmt",
+        "riscv_format16.bin_fmt",
+        "riscv_format32.bin_fmt",
+        "riscv_vector.bin_fmt",
+        "riscv_zvt.bin_fmt",
+    ],
+    prefix = "riscv_zvt",
+    deps = [
+        ":riscv_zvt_isa",
     ],
 )

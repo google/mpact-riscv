@@ -35,7 +35,7 @@
 
 namespace mpact::sim::riscv::isa32gvzb {
 
-using ::mpact::sim::generic::operator*;  // NOLINT: clang-tidy false positive.
+using ::mpact::sim::generic::operator*;  // NOLINT(misc-unused-using-decls)
 
 RiscV32GZBVecEncoding::RiscV32GZBVecEncoding(RiscVState* state)
     : state_(state),
@@ -79,6 +79,7 @@ RiscV32GZBVecEncoding::RiscV32GZBVecEncoding(RiscVState* state)
       source_op_getters_, this);
   AddRiscVVectorDestGetters<DestOpEnum, Extractors, RVVectorRegister>(
       dest_op_getters_, this);
+
   // Verify that there are getters for each enum value.
   for (int i = *SourceOpEnum::kNone; i < *SourceOpEnum::kPastMaxValue; ++i) {
     if (source_op_getters_.find(i) == source_op_getters_.end()) {

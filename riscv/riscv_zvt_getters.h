@@ -29,7 +29,6 @@
 #include "mpact/sim/generic/immediate_operand.h"
 #include "mpact/sim/generic/operand_interface.h"
 #include "mpact/sim/generic/register.h"
-#include "mpact/sim/generic/type_helpers.h"
 #include "riscv/riscv_encoding_common.h"
 #include "riscv/riscv_getter_helpers.h"
 #include "riscv/riscv_register.h"
@@ -78,13 +77,14 @@ template <typename RegType>
 // eight-register group, per spec 15.1.1.3).
 inline constexpr int kRiscVZvtMatrixGroupRegs = 8;
 
+// Registers operand getters for Zvt source operands into 'getter_map'.
 template <typename SourceOpEnum, typename Extractors>
 void AddRiscVZvtSourceGetters(
     ::mpact::sim::riscv::SourceOpGetterMap& getter_map,
     ::mpact::sim::riscv::RiscVEncodingCommon* common) {
   using ::mpact::sim::generic::ImmediateOperand;
+  using ::mpact::sim::generic::operator*;  // NOLINT(misc-unused-using-decls)
   using ::mpact::sim::generic::SourceOperandInterface;
-  using ::mpact::sim::generic::operator*;  // NOLINT
   using ::mpact::sim::riscv::Insert;
   using ::mpact::sim::riscv::RVVectorRegister;
 
@@ -103,18 +103,48 @@ void AddRiscVZvtSourceGetters(
                common->state(), num, kRiscVZvtMatrixGroupRegs);
          });
   // Destination tile specifier (named tile index, 0..15) from the rd MSBs.
-  Insert(getter_map, *SourceOpEnum::kMtd,
+  Insert(getter_map, *SourceOpEnum::kMtile,
          [common]() -> SourceOperandInterface* {
            int tile = Extractors::VMatrix::ExtractMtile(common->inst_word());
            return new ImmediateOperand<uint32_t>(tile);
          });
+  // Register indices for matrix operands vs2 and vs1 extracted at decode time.
+  Insert(getter_map, *SourceOpEnum::kVs2Idx,
+         [common]() -> SourceOperandInterface* {
+           int num = Extractors::VMatrix::ExtractVs2(common->inst_word());
+           return new ImmediateOperand<uint32_t>(num);
+         });
+  Insert(getter_map, *SourceOpEnum::kVs1Idx,
+         [common]() -> SourceOperandInterface* {
+           int num = Extractors::VMatrix::ExtractVs1(common->inst_word());
+           return new ImmediateOperand<uint32_t>(num);
+         });
+  Insert(getter_map, *SourceOpEnum::kMtwiden,
+         [common]() -> SourceOperandInterface* {
+           int mtwiden = Extractors::MsetmtypeiFormat::ExtractMtwiden(
+               common->inst_word());
+           return new ImmediateOperand<uint32_t>(mtwiden);
+         });
+  Insert(getter_map, *SourceOpEnum::kVsew,
+         [common]() -> SourceOperandInterface* {
+           int vsew =
+               Extractors::MsetmtypeiFormat::ExtractVsew(common->inst_word());
+           return new ImmediateOperand<uint32_t>(vsew);
+         });
+  Insert(getter_map, *SourceOpEnum::kAltfmt,
+         [common]() -> SourceOperandInterface* {
+           int altfmt =
+               Extractors::MsetmtypeiFormat::ExtractAltfmt(common->inst_word());
+           return new ImmediateOperand<uint32_t>(altfmt);
+         });
 }
 
+// Registers operand getters for Zvt destination operands into 'getter_map'.
 template <typename DestOpEnum, typename Extractors>
 void AddRiscVZvtDestGetters(::mpact::sim::riscv::DestOpGetterMap& getter_map,
                             ::mpact::sim::riscv::RiscVEncodingCommon* common) {
   using ::mpact::sim::generic::DestinationOperandInterface;
-  using ::mpact::sim::generic::operator*;  // NOLINT
+  using ::mpact::sim::generic::operator*;  // NOLINT(misc-unused-using-decls)
   using ::mpact::sim::riscv::Insert;
   using ::mpact::sim::riscv::RVVectorRegister;
 
