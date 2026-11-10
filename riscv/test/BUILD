@@ -208,6 +208,7 @@ cc_test(
         "//riscv:riscv_fp_state",
         "//riscv:riscv_g",
         "//riscv:riscv_state",
+        "@abseil-cpp//absl/base",
         "@com_google_googletest//:gtest_main",
         "@mpact-sim//mpact/sim/generic:instruction",
         "@mpact-sim//mpact/sim/generic:type_helpers",
@@ -1072,6 +1073,20 @@ cc_test(
 )
 
 cc_test(
+    name = "riscv_vector_state_test",
+    size = "small",
+    srcs = [
+        "riscv_vector_state_test.cc",
+    ],
+    deps = [
+        "//riscv:riscv_state",
+        "//riscv:riscv_v",
+        "@com_google_googletest//:gtest_main",
+        "@mpact-sim//mpact/sim/util/memory",
+    ],
+)
+
+cc_test(
     name = "riscv_zvt_instructions_test",
     size = "small",
     srcs = ["riscv_zvt_instructions_test.cc"],
@@ -1082,27 +1097,15 @@ cc_test(
         "//riscv:riscv_zvt_instructions",
         "//riscv:riscv_zvt_state",
         "@abseil-cpp//absl/base",
-        "@abseil-cpp//absl/log:check",
+        "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/types:span",
         "@com_google_googletest//:gtest_main",
         "@mpact-sim//mpact/sim/generic:arch_state",
         "@mpact-sim//mpact/sim/generic:core",
         "@mpact-sim//mpact/sim/generic:instruction",
-        "@mpact-sim//mpact/sim/util/memory",
-    ],
-)
-
-cc_test(
-    name = "riscv_vector_state_test",
-    size = "small",
-    srcs = [
-        "riscv_vector_state_test.cc",
-    ],
-    deps = [
-        "//riscv:riscv_state",
-        "//riscv:riscv_v",
-        "@com_google_googletest//:gtest_main",
+        "@mpact-sim//mpact/sim/generic:type_helpers",
         "@mpact-sim//mpact/sim/util/memory",
     ],
 )

@@ -1107,8 +1107,8 @@ slot riscv_vector {
     vfmv_vf{: fs1, vmask : vd},
       disasm: "vfmv.vf", "%vd, %fs1, %vmask",
       semfunc: "&Vfmvvf";
-    vfmerge_vf{: vs2, vs1, vmask : vd},
-      disasm: "vfmerge.vf", "%vd, %vs2, %vs1, %vmask",
+    vfmerge_vf{: vs2, fs1, vmask : vd},
+      disasm: "vfmerge.vf", "%vd, %vs2, %fs1, %vmask",
       semfunc: "&Vfmerge";
     vmfeq_vv{: vs2, vs1, vmask : vd},
       disasm: "vmfeq.vv", "%vd, %vs2, %vs1, %vmask",

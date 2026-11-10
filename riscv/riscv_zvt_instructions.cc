@@ -34,8 +34,16 @@
 
 namespace mpact::sim::riscv {
 
+using ::mpact::sim::generic::Bfloat16;
+using ::mpact::sim::generic::ConvertBf16ToSingle;
+using ::mpact::sim::generic::ConvertFp8E4m3ToSingle;
+using ::mpact::sim::generic::ConvertFp8E5m2ToSingle;
+using ::mpact::sim::generic::ConvertHalfToSingle;
 using ::mpact::sim::generic::DataBuffer;
+using ::mpact::sim::generic::Fp8E4m3;
+using ::mpact::sim::generic::Fp8E5m2;
 using ::mpact::sim::generic::GetInstructionSource;
+using ::mpact::sim::generic::HalfFP;
 using ::mpact::sim::generic::operator*;  // NOLINT(misc-unused-using-decls)
 
 using ::mpact::sim::riscv::RiscVVectorState;
@@ -49,15 +57,14 @@ namespace {
 // is held at bit XLEN-1 (bit 31 for RV32, bit 63 for RV64). In
 // RiscVVectorState, vtype is currently stored as a 32-bit integer with
 // kVillBitMask = 1U << 31.
-inline bool GetVtypeVill(
-    const ::mpact::sim::riscv::RiscVVectorState* vector_state) {
-  constexpr uint32_t kVillBitMask = 1U << 31;
+constexpr uint32_t kVillBitMask = 1U << 31;
+
+inline bool GetVtypeVill(const RiscVVectorState* vector_state) {
   return (vector_state->vtype() & kVillBitMask) != 0;
 }
 
 // Returns the vector selected element width (SEW) in bits.
-inline int GetSewBits(
-    const ::mpact::sim::riscv::RiscVVectorState* vector_state) {
+inline int GetSewBits(const RiscVVectorState* vector_state) {
   switch (vector_state->selected_element_width()) {
     case 1:
       return 8;
@@ -70,6 +77,12 @@ inline int GetSewBits(
     default:
       return 0;
   }
+}
+
+// Returns the alternate format (altfmt) bit from vtype.
+inline uint32_t GetVtypeAltfmt(const RiscVVectorState* vector_state) {
+  constexpr uint32_t kVtypeAltfmtShift = 8;
+  return ((vector_state->vtype() >> kVtypeAltfmtShift) & 1U);
 }
 
 // Calculates the tile element width (TEW) in bits from 'sew_bits' and 'twiden'.
@@ -96,37 +109,34 @@ struct Tss {
   uint32_t index;  // bits[23:0].
 };
 
+// TSS bitfield shifts and masks per Zvt spec 15.1.1.5.
+constexpr uint32_t kTssIndexMask = 0xFFFFFF;
+constexpr uint32_t kTssPatternShift = 24;
+constexpr uint32_t kTssPatternMask = 0x7;
+constexpr uint32_t kTssTileShift = 27;
+constexpr uint32_t kTssTileMask = 0xF;
+constexpr int kTssPatternCol = 1;
+
 // Decodes a 32-bit Tile Subset Specifier ('tss') for element width 'tew'.
 Tss DecodeTss(const RiscVZvtMatrixState* matrix_state, uint32_t tss, int tew) {
   return Tss{
-      .tile =
-          matrix_state->MaskTssTile(static_cast<int>((tss >> 27) & 0xF), tew),
-      .pattern = static_cast<int>((tss >> 24) & 0x7),
-      .index = tss & 0xFFFFFF,
+      .tile = matrix_state->MaskTssTile(
+          static_cast<int>((tss >> kTssTileShift) & kTssTileMask), tew),
+      .pattern = static_cast<int>((tss >> kTssPatternShift) & kTssPatternMask),
+      .index = tss & kTssIndexMask,
   };
 }
 
-constexpr int kTssPatternCol = 1;
-
 // Updates vector and matrix geometry (vtype, vl, mtype) based on the
 // current configuration.
-void UpdateVectorMatrixGeometry(
-    ::mpact::sim::riscv::RiscVVectorState* vector_state,
-    ::mpact::sim::riscv::RiscVZvtMatrixState* matrix_state) {
-  const int vill_shift = sizeof(vector_state->vtype()) * 8 - 1;
+void UpdateVectorMatrixGeometry(RiscVVectorState* vector_state,
+                                RiscVZvtMatrixState* matrix_state) {
   const int sew_bits = GetSewBits(vector_state);
-  if ((vector_state->vtype() >> vill_shift) || sew_bits == 0) {
+  if (GetVtypeVill(vector_state) || sew_bits == 0) {
     matrix_state->set_mtype(0);
     return;
   }
   const int twiden = matrix_state->twiden();
-  if (twiden == 0) {
-    vector_state->set_vector_exception();
-    vector_state->SetVectorType(1ull << vill_shift);
-    vector_state->set_vector_length(0);
-    matrix_state->set_mtype(0);
-    return;
-  }
   const int tew = CalculateTew(sew_bits, twiden);
   const int effective_tile_elements = matrix_state->effective_tile_edge(tew);
   const int max_k = RiscVZvtKmax(sew_bits);
@@ -186,7 +196,7 @@ void UpdateVectorMatrixGeometry(
   const bool vill = tew > kElen;
   if (vill) {
     vector_state->set_vector_exception();
-    vector_state->SetVectorType(1ull << vill_shift);
+    vector_state->SetVectorType(kVillBitMask);
     matrix_state->set_mtype(0);
     return;
   }
@@ -266,16 +276,10 @@ bool TrapIfMatrixStateOff(const RiscVZvtMatrixState* matrix_state,
                           const Instruction* inst) {
   auto* state = matrix_state->riscv_state();
 
-  bool trap = false;
-  if ((state->mstatus()->GetUint32() & 0x60000000U) == 0) {
-    trap = true;
-  }
-
-  if (trap) {
+  if ((state->mstatus()->GetUint32() & kMstatusMsMask) == 0) {
     state->Trap(
         /*is_interrupt=*/false, /*trap_value=*/0,
-        *::mpact::sim::riscv::ExceptionCode::kIllegalInstruction,
-        inst->address(), inst);
+        *ExceptionCode::kIllegalInstruction, inst->address(), inst);
     return true;
   }
   return false;
@@ -285,16 +289,10 @@ bool TrapIfMatrixStateOff(const RiscVZvtMatrixState* matrix_state,
 bool TrapIfFpStateOff(const Instruction* inst) {
   auto* state = static_cast<RiscVState*>(inst->state());
 
-  bool trap = false;
-  if (state->mstatus()->fs() == 0) {
-    trap = true;
-  }
-
-  if (trap) {
+  if (state->mstatus()->fs() == kMstatusStateOff) {
     state->Trap(
         /*is_interrupt=*/false, /*trap_value=*/0,
-        *::mpact::sim::riscv::ExceptionCode::kIllegalInstruction,
-        inst->address(), inst);
+        *ExceptionCode::kIllegalInstruction, inst->address(), inst);
     return true;
   }
   return false;
@@ -305,7 +303,7 @@ void SetMatrixStateInitial(const RiscVZvtMatrixState* matrix_state) {
   auto* state = matrix_state->riscv_state();
   if (auto mstatus_csr_or = state->csr_set()->GetCsr("mstatus");
       mstatus_csr_or.ok()) {
-    auto* csr = mstatus_csr_or.value();
+    auto* csr = *mstatus_csr_or;
     uint64_t val =
         (csr->GetUint64() & ~kMstatusMsMask) |
         (static_cast<uint64_t>(kMstatusStateInitial) << kMstatusMsShift);
@@ -318,7 +316,7 @@ void SetMatrixStateDirty(const RiscVZvtMatrixState* matrix_state) {
   auto* state = matrix_state->riscv_state();
   if (auto mstatus_csr_or = state->csr_set()->GetCsr("mstatus");
       mstatus_csr_or.ok()) {
-    auto* csr = mstatus_csr_or.value();
+    auto* csr = *mstatus_csr_or;
     uint64_t sd_mask = (state->xlen() == RiscVXlen::RV32) ? kMstatusSdMaskRv32
                                                           : kMstatusSdMaskRv64;
     uint64_t val =
@@ -334,7 +332,7 @@ void SetVectorStateDirty(const RiscVZvtMatrixState* matrix_state) {
   auto* state = matrix_state->riscv_state();
   if (auto mstatus_csr_or = state->csr_set()->GetCsr("mstatus");
       mstatus_csr_or.ok()) {
-    auto* csr = mstatus_csr_or.value();
+    auto* csr = *mstatus_csr_or;
     uint64_t sd_mask = (state->xlen() == RiscVXlen::RV32) ? kMstatusSdMaskRv32
                                                           : kMstatusSdMaskRv64;
     uint64_t val =
@@ -348,7 +346,7 @@ void SetVectorStateDirty(const RiscVZvtMatrixState* matrix_state) {
 // Returns true and raises an IllegalInstruction exception if 'tss' is invalid.
 bool TrapIfTssInvalid(RiscVZvtMatrixState* matrix_state, const Tss& tss,
                       int tew, const Instruction* inst) {
-  if (tss.pattern > 1) {
+  if (tss.pattern > kTssPatternCol) {
     matrix_state->riscv_state()->Trap(
         /*is_interrupt=*/false, /*trap_value=*/0,
         *ExceptionCode::kIllegalInstruction, inst->address(), inst);
@@ -491,9 +489,9 @@ void RiscVZvtMsetTm(const Instruction* inst) {
   const uint32_t rs1 = GetInstructionSource<uint32_t>(inst, 0);
 
   if (matrix_state->mtwiden() == 0) {
-    matrix_state->set_tile_m(0);
-    WriteScalar(inst, 0, 0);
-    SetVectorStateDirty(matrix_state);
+    auto* rv_state = matrix_state->riscv_state();
+    rv_state->Trap(/*is_interrupt=*/false, /*trap_value=*/0,
+                   *ExceptionCode::kIllegalInstruction, inst->address(), inst);
     return;
   }
 
@@ -522,9 +520,9 @@ void RiscVZvtMsetTk(const Instruction* inst) {
   const uint32_t rs1 = GetInstructionSource<uint32_t>(inst, 0);
 
   if (matrix_state->mtwiden() == 0) {
-    matrix_state->set_tile_k(0);
-    WriteScalar(inst, 0, 0);
-    SetVectorStateDirty(matrix_state);
+    auto* rv_state = matrix_state->riscv_state();
+    rv_state->Trap(/*is_interrupt=*/false, /*trap_value=*/0,
+                   *ExceptionCode::kIllegalInstruction, inst->address(), inst);
     return;
   }
 
@@ -950,28 +948,24 @@ void RiscVZvtMatmul(RiscVZvtMatmulKind kind, const Instruction* inst) {
     if (kind == RiscVZvtMatmulKind::kBf16) {
       uint16_t u;
       std::memcpy(&u, &span[e * sew_bytes], sizeof(u));
-      return ::mpact::sim::generic::ConvertBf16ToSingle(
-          ::mpact::sim::generic::Bfloat16{u});
+      return ConvertBf16ToSingle(Bfloat16{u});
     }
     if (kind == RiscVZvtMatmulKind::kFp16) {
       uint16_t u;
       std::memcpy(&u, &span[e * sew_bytes], sizeof(u));
-      return ::mpact::sim::generic::ConvertHalfToSingle(
-          ::mpact::sim::generic::HalfFP{u});
+      return ConvertHalfToSingle(HalfFP{u});
     }
     if (kind == RiscVZvtMatmulKind::kFp8E4M3 ||
         kind == RiscVZvtMatmulKind::kFp8E4M3E5M2) {
       uint8_t u;
       std::memcpy(&u, &span[e * sew_bytes], sizeof(u));
-      return ::mpact::sim::generic::ConvertFp8E4m3ToSingle(
-          ::mpact::sim::generic::Fp8E4m3{u});
+      return ConvertFp8E4m3ToSingle(Fp8E4m3{u});
     }
     if (kind == RiscVZvtMatmulKind::kFp8E5M2E4M3 ||
         kind == RiscVZvtMatmulKind::kFp8E5M2) {
       uint8_t u;
       std::memcpy(&u, &span[e * sew_bytes], sizeof(u));
-      return ::mpact::sim::generic::ConvertFp8E5m2ToSingle(
-          ::mpact::sim::generic::Fp8E5m2{u});
+      return ConvertFp8E5m2ToSingle(Fp8E5m2{u});
     }
     float f;
     std::memcpy(&f, &span[e * sew_bytes], sizeof(f));
@@ -988,28 +982,24 @@ void RiscVZvtMatmul(RiscVZvtMatmulKind kind, const Instruction* inst) {
     if (kind == RiscVZvtMatmulKind::kBf16) {
       uint16_t u;
       std::memcpy(&u, &span[e * sew_bytes], sizeof(u));
-      return ::mpact::sim::generic::ConvertBf16ToSingle(
-          ::mpact::sim::generic::Bfloat16{u});
+      return ConvertBf16ToSingle(Bfloat16{u});
     }
     if (kind == RiscVZvtMatmulKind::kFp16) {
       uint16_t u;
       std::memcpy(&u, &span[e * sew_bytes], sizeof(u));
-      return ::mpact::sim::generic::ConvertHalfToSingle(
-          ::mpact::sim::generic::HalfFP{u});
+      return ConvertHalfToSingle(HalfFP{u});
     }
     if (kind == RiscVZvtMatmulKind::kFp8E4M3 ||
         kind == RiscVZvtMatmulKind::kFp8E5M2E4M3) {
       uint8_t u;
       std::memcpy(&u, &span[e * sew_bytes], sizeof(u));
-      return ::mpact::sim::generic::ConvertFp8E4m3ToSingle(
-          ::mpact::sim::generic::Fp8E4m3{u});
+      return ConvertFp8E4m3ToSingle(Fp8E4m3{u});
     }
     if (kind == RiscVZvtMatmulKind::kFp8E4M3E5M2 ||
         kind == RiscVZvtMatmulKind::kFp8E5M2) {
       uint8_t u;
       std::memcpy(&u, &span[e * sew_bytes], sizeof(u));
-      return ::mpact::sim::generic::ConvertFp8E5m2ToSingle(
-          ::mpact::sim::generic::Fp8E5m2{u});
+      return ConvertFp8E5m2ToSingle(Fp8E5m2{u});
     }
     float f;
     std::memcpy(&f, &span[e * sew_bytes], sizeof(f));
@@ -1147,7 +1137,7 @@ void RiscVZvtMatmul(RiscVZvtMatmulKind kind, const Instruction* inst) {
         (tile_m > 0 && tile_n > 0 && tile_k > 0)) {
       auto* mstatus = matrix_state->riscv_state()->mstatus();
       if (mstatus != nullptr) {
-        mstatus->set_fs(3);
+        mstatus->set_fs(kMstatusStateDirty);
         mstatus->Submit();
       }
     }
@@ -1175,7 +1165,7 @@ void RiscVZvtVtmms(const Instruction* inst) {
         *ExceptionCode::kIllegalInstruction, inst->address(), inst);
     return;
   }
-  const uint32_t altfmt = (vector_state->vtype() >> 8) & 1;
+  const uint32_t altfmt = GetVtypeAltfmt(vector_state);
   RiscVZvtMatmul(altfmt ? RiscVZvtMatmulKind::kInt8Signed
                         : RiscVZvtMatmulKind::kInt8SignedUnsigned,
                  inst);
@@ -1200,7 +1190,7 @@ void RiscVZvtVtmmu(const Instruction* inst) {
         *ExceptionCode::kIllegalInstruction, inst->address(), inst);
     return;
   }
-  const uint32_t altfmt = (vector_state->vtype() >> 8) & 1;
+  const uint32_t altfmt = GetVtypeAltfmt(vector_state);
   RiscVZvtMatmul(altfmt ? RiscVZvtMatmulKind::kInt8UnsignedSigned
                         : RiscVZvtMatmulKind::kInt8Unsigned,
                  inst);
@@ -1220,7 +1210,7 @@ void RiscVZvtVtfmm(const Instruction* inst) {
   }
   auto* matrix_state = *m_result;
   auto* vector_state = matrix_state->riscv_state()->rv_vector();
-  const uint32_t altfmt = (vector_state->vtype() >> 8) & 1;
+  const uint32_t altfmt = GetVtypeAltfmt(vector_state);
   const int sew_bits = GetSewBits(vector_state);
   const uint32_t twiden = matrix_state->twiden();
 
@@ -1235,7 +1225,7 @@ void RiscVZvtVtfmm(const Instruction* inst) {
   } else if (sew_bits == 64 && twiden == 1 && altfmt == 0) {
     kind = RiscVZvtMatmulKind::kFp64;
   } else {
-    auto* rv_state = static_cast<RiscVState*>(inst->state());
+    auto* rv_state = matrix_state->riscv_state();
     rv_state->Trap(/*is_interrupt=*/false, /*trap_value=*/0,
                    *ExceptionCode::kIllegalInstruction, inst->address(), inst);
     return;
@@ -1257,7 +1247,7 @@ void RiscVZvtVtfmmAlt(const Instruction* inst) {
   }
   auto* matrix_state = *m_result;
   auto* vector_state = matrix_state->riscv_state()->rv_vector();
-  const uint32_t altfmt = (vector_state->vtype() >> 8) & 1;
+  const uint32_t altfmt = GetVtypeAltfmt(vector_state);
   const int sew_bits = GetSewBits(vector_state);
   const uint32_t twiden = matrix_state->twiden();
 
@@ -1265,10 +1255,10 @@ void RiscVZvtVtfmmAlt(const Instruction* inst) {
   if (sew_bits == 8 && twiden == 4) {
     kind = altfmt ? RiscVZvtMatmulKind::kFp8E5M2
                   : RiscVZvtMatmulKind::kFp8E5M2E4M3;
-  } else if (sew_bits == 16 && twiden == 2 && altfmt == 0) {
+  } else if (sew_bits == 16 && twiden == 2) {
     kind = RiscVZvtMatmulKind::kBf16;
   } else {
-    auto* rv_state = static_cast<RiscVState*>(inst->state());
+    auto* rv_state = matrix_state->riscv_state();
     rv_state->Trap(/*is_interrupt=*/false, /*trap_value=*/0,
                    *ExceptionCode::kIllegalInstruction, inst->address(), inst);
     return;

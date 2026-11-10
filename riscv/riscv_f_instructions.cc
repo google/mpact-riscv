@@ -458,9 +458,9 @@ void RiscVFCmple(const Instruction* instruction) {
 
 // Single precision fp class instruction.
 void RiscVFClass(const Instruction* instruction) {
-  RiscVUnaryOp<XRegister, uint32_t, float>(
-      instruction,
-      [](float a) -> uint32_t { return static_cast<uint32_t>(ClassifyFP(a)); });
+  RiscVUnaryOp<XRegister, XUint, float>(instruction, [](float a) -> XUint {
+    return static_cast<XUint>(ClassifyFP(a));
+  });
 }
 
 }  // namespace RV32
@@ -535,9 +535,9 @@ void RiscVFCmple(const Instruction* instruction) {
 
 // Single precision fp class instruction.
 void RiscVFClass(const Instruction* instruction) {
-  RiscVUnaryOp<XRegister, uint32_t, float>(
-      instruction,
-      [](float a) -> uint32_t { return static_cast<uint32_t>(ClassifyFP(a)); });
+  RiscVUnaryOp<XRegister, XUint, float>(instruction, [](float a) -> XUint {
+    return static_cast<XUint>(ClassifyFP(a));
+  });
 }
 
 }  // namespace RV64

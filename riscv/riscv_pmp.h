@@ -61,54 +61,37 @@ class RiscVPmp {
 
  private:
   ArchState* state_;
-  RiscVCsrInterface* pmp_addr_[16];
-  RiscVCsrInterface* pmp_cfg_[4];
+  RiscVCsrInterface* pmp_addr_[64] = {};
+  RiscVCsrInterface* pmp_cfg_[16] = {};
 };
 
 template <typename T, typename E>
 void RiscVPmp::CreatePmpCsrs(RiscVCsrSet* csr_set) {
   // Create the PMP configuration registers. Each configuration register
-  // contains XLEN/8 configuration entries for a total of 16 configuration
-  // entries. In the case of XLEN=64, there are only two configuration registers
-  // pmp_cfg_[0] and pmp_cfg_[2].
-  pmp_cfg_[0] = new RiscVSimpleCsr<T>("pmpcfg0", *E::kPmpCfg0, state_);
-  pmp_cfg_[1] = sizeof(T) == 8
-                    ? nullptr
-                    : new RiscVSimpleCsr<T>("pmpcfg1", *E::kPmpCfg1, state_);
-  pmp_cfg_[2] = new RiscVSimpleCsr<T>("pmpcfg2", *E::kPmpCfg2, state_);
-  pmp_cfg_[3] = sizeof(T) == 8
-                    ? nullptr
-                    : new RiscVSimpleCsr<T>("pmpcfg3", *E::kPmpCfg3, state_);
-  for (auto* pmp_cfg : pmp_cfg_) {
-    if (pmp_cfg == nullptr) continue;
-    auto status = csr_set->AddCsr(pmp_cfg);
+  // contains XLEN/8 configuration entries for a total of 64 configuration
+  // entries. In the case of XLEN=64, only even-numbered configuration registers
+  // are created.
+  for (int i = 0; i < 16; ++i) {
+    if (sizeof(T) == 8 && (i % 2 != 0)) {
+      pmp_cfg_[i] = nullptr;
+      continue;
+    }
+    pmp_cfg_[i] = new RiscVSimpleCsr<T>(absl::StrCat("pmpcfg", i),
+                                        *E::kPmpCfg0 + i, state_);
+    auto status = csr_set->AddCsr(pmp_cfg_[i]);
     if (!status.ok()) {
       LOG(ERROR) << absl::StrCat("Failed to add PMP configuration register: '",
-                                 pmp_cfg->name(), "': ", status.message());
+                                 pmp_cfg_[i]->name(), "': ", status.message());
     }
   }
-  // Create the 16 PMP address registers.
-  pmp_addr_[0] = new RiscVSimpleCsr<T>("pmpaddr0", *E::kPmpAddr0, state_);
-  pmp_addr_[1] = new RiscVSimpleCsr<T>("pmpaddr1", *E::kPmpAddr1, state_);
-  pmp_addr_[2] = new RiscVSimpleCsr<T>("pmpaddr2", *E::kPmpAddr2, state_);
-  pmp_addr_[3] = new RiscVSimpleCsr<T>("pmpaddr3", *E::kPmpAddr3, state_);
-  pmp_addr_[4] = new RiscVSimpleCsr<T>("pmpaddr4", *E::kPmpAddr4, state_);
-  pmp_addr_[5] = new RiscVSimpleCsr<T>("pmpaddr5", *E::kPmpAddr5, state_);
-  pmp_addr_[6] = new RiscVSimpleCsr<T>("pmpaddr6", *E::kPmpAddr6, state_);
-  pmp_addr_[7] = new RiscVSimpleCsr<T>("pmpaddr7", *E::kPmpAddr7, state_);
-  pmp_addr_[8] = new RiscVSimpleCsr<T>("pmpaddr8", *E::kPmpAddr8, state_);
-  pmp_addr_[9] = new RiscVSimpleCsr<T>("pmpaddr9", *E::kPmpAddr9, state_);
-  pmp_addr_[10] = new RiscVSimpleCsr<T>("pmpaddr10", *E::kPmpAddr10, state_);
-  pmp_addr_[11] = new RiscVSimpleCsr<T>("pmpaddr11", *E::kPmpAddr11, state_);
-  pmp_addr_[12] = new RiscVSimpleCsr<T>("pmpaddr12", *E::kPmpAddr12, state_);
-  pmp_addr_[13] = new RiscVSimpleCsr<T>("pmpaddr13", *E::kPmpAddr13, state_);
-  pmp_addr_[14] = new RiscVSimpleCsr<T>("pmpaddr14", *E::kPmpAddr14, state_);
-  pmp_addr_[15] = new RiscVSimpleCsr<T>("pmpaddr15", *E::kPmpAddr15, state_);
-  for (auto* pmp_addr : pmp_addr_) {
-    auto status = csr_set->AddCsr(pmp_addr);
+  // Create the 64 PMP address registers.
+  for (int i = 0; i < 64; ++i) {
+    pmp_addr_[i] = new RiscVSimpleCsr<T>(absl::StrCat("pmpaddr", i),
+                                         *E::kPmpAddr0 + i, state_);
+    auto status = csr_set->AddCsr(pmp_addr_[i]);
     if (!status.ok()) {
       LOG(ERROR) << absl::StrCat("Failed to add PMP address register: '",
-                                 pmp_addr->name(), "': ", status.message());
+                                 pmp_addr_[i]->name(), "': ", status.message());
     }
   }
 }

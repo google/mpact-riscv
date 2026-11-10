@@ -19,6 +19,7 @@
 #include <tuple>
 #include <vector>
 
+#include "absl/base/casts.h"
 #include "googlemock/include/gmock/gmock.h"  // IWYU pragma: keep
 #include "googletest/include/gtest/gtest.h"
 #include "mpact/sim/generic/instruction.h"
@@ -32,6 +33,7 @@ namespace {
 using ::mpact::sim::generic::Instruction;
 using ::mpact::sim::riscv::FPExceptions;
 using ::mpact::sim::riscv::RV32Register;
+using ::mpact::sim::riscv::RV64Register;
 using ::mpact::sim::riscv::RVFpRegister;
 using ::mpact::sim::riscv::test::FPTypeInfo;
 using ::mpact::sim::riscv::test::RiscVFPInstructionTestBase;
@@ -448,6 +450,40 @@ TEST_F(RV32FInstructionTest, RiscVFRMMFmaTies) {
                                .first->data_buffer()
                                ->template Get<uint32_t>(0);
     EXPECT_EQ(result_bits, tc.expected_bits);
+  }
+}
+
+class RV64FInstructionTest : public RiscVFPInstructionTestBase<RV64Register> {};
+
+TEST_F(RV64FInstructionTest, RiscVFClassZeroExtendsRd) {
+  SetSemanticFunction(&::mpact::sim::riscv::RV64::RiscVFClass);
+  AppendRegisterOperands<RVFpRegister>({"f1"}, {});
+  AppendRegisterOperands<RV64Register>({}, {"x5"});
+
+  struct FClassCase {
+    uint32_t fp_bits;
+    uint64_t initial_rd;
+    uint64_t expected_rd;
+  };
+  const std::vector<FClassCase> test_cases = {
+      {FPTypeInfo<float>::kNegInf, 0xdead'beef'aaaa'5555ULL, 1ULL << 0},
+      {FPTypeInfo<float>::kNegZero, 0xcafe'babe'ffff'ffffULL, 1ULL << 3},
+      {absl::bit_cast<uint32_t>(1.0f), 0x0123'4567'89ab'cdefULL, 1ULL << 6},
+      {FPTypeInfo<float>::kSNaN, 0xffff'ffff'ffff'ffffULL, 1ULL << 8},
+      {FPTypeInfo<float>::kQNaN, 0x8000'0000'ffff'ffffULL, 1ULL << 9},
+  };
+
+  for (const auto& tc : test_cases) {
+    SetNaNBoxedRegisterValues<float, RVFpRegister>(
+        {{"f1", absl::bit_cast<float>(tc.fp_bits)}});
+    SetRegisterValues<uint64_t, RV64Register>({{"x5", tc.initial_rd}});
+
+    instruction_->Execute(nullptr);
+
+    uint64_t rd = state_->GetRegister<RV64Register>("x5")
+                      .first->data_buffer()
+                      ->template Get<uint64_t>(0);
+    EXPECT_EQ(rd, tc.expected_rd);
   }
 }
 
