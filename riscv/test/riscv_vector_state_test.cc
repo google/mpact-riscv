@@ -58,4 +58,42 @@ TEST_F(RiscVVectorStateTest, SetVectorTypeVill) {
   EXPECT_EQ(rv_vector_->vtype(), RiscVVectorState::kIllegalVectorType);
 }
 
+TEST_F(RiscVVectorStateTest, VstartCsrWriteClampsOutOfRangeValues) {
+  auto csr_res = state_->csr_set()->GetCsr("vstart");
+  ASSERT_TRUE(csr_res.ok());
+  auto* vstart_csr = *csr_res;
+
+  constexpr uint32_t kVlen = kVectorLengthInBytes * 8;
+
+  vstart_csr->Write(0U);
+  EXPECT_EQ(rv_vector_->vstart(), 0);
+  EXPECT_EQ(vstart_csr->AsUint32(), 0U);
+
+  vstart_csr->Write(1U);
+  EXPECT_EQ(rv_vector_->vstart(), 1);
+  EXPECT_EQ(vstart_csr->AsUint32(), 1U);
+
+  vstart_csr->Write(kVlen - 1);
+  EXPECT_EQ(rv_vector_->vstart(), static_cast<int>(kVlen - 1));
+  EXPECT_EQ(vstart_csr->AsUint32(), kVlen - 1);
+
+  vstart_csr->Write(kVlen);
+  EXPECT_EQ(rv_vector_->vstart(), 0);
+  EXPECT_EQ(vstart_csr->AsUint32(), 0U);
+
+  vstart_csr->Write(kVlen + 1);
+  EXPECT_EQ(rv_vector_->vstart(), 0);
+  EXPECT_EQ(vstart_csr->AsUint32(), 0U);
+
+  vstart_csr->Write(0x8000'0000U);
+  EXPECT_EQ(rv_vector_->vstart(), 0);
+  EXPECT_GE(rv_vector_->vstart(), 0);
+  EXPECT_EQ(vstart_csr->AsUint32(), 0U);
+
+  vstart_csr->Write(0xffff'ffffU);
+  EXPECT_EQ(rv_vector_->vstart(), 0);
+  EXPECT_GE(rv_vector_->vstart(), 0);
+  EXPECT_EQ(vstart_csr->AsUint32(), 0U);
+}
+
 }  // namespace

@@ -91,7 +91,11 @@ RiscVVstart::RiscVVstart(RiscVVectorState* vector_state)
 
 uint32_t RiscVVstart::AsUint32() { return vector_state_->vstart(); }
 
-void RiscVVstart::Write(uint32_t value) { vector_state_->set_vstart(value); }
+void RiscVVstart::Write(uint32_t value) {
+  const uint32_t vlen =
+      static_cast<uint32_t>(vector_state_->vector_register_byte_length()) * 8;
+  vector_state_->set_vstart(value < vlen ? static_cast<int>(value) : 0);
+}
 
 RiscVVxsat::RiscVVxsat(RiscVVectorState* vector_state)
     : RiscVSimpleCsr<uint32_t>(kVxsatName, RiscVCsrEnum::kVxsat, kVxsatInitial,

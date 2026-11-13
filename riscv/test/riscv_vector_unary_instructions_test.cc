@@ -705,4 +705,34 @@ TEST_F(RiscVVectorUnaryInstructionsTest, Vid32) {
 TEST_F(RiscVVectorUnaryInstructionsTest, Vid64) {
   TestVid<uint64_t>(this, instruction_);
 }
+
+TEST_F(RiscVVectorUnaryInstructionsTest, VidWithOutOfRangeVstartCsrWrite) {
+  int byte_sew = sizeof(uint8_t);
+  uint32_t vtype =
+      (kSewSettingsByByteSize[byte_sew] << 3) | kLmulSettingByLogSize[4];
+  ConfigureVectorUnit(vtype, kVectorLengthInBytes);
+
+  SetSemanticFunction(&Vid);
+  AppendVectorRegisterOperands({kVmask}, {kVd});
+  SetVectorRegisterValues<uint8_t>({{kVmaskName, kAllOnesMask}});
+
+  auto csr_res = state_->csr_set()->GetCsr("vstart");
+  ASSERT_TRUE(csr_res.ok());
+  auto* vstart_csr = *csr_res;
+
+  for (uint32_t bad_vstart : {0x8000'0000U, 0xffff'ffffU}) {
+    ClearVectorRegisterGroup(kVd, 8);
+    vstart_csr->Write(bad_vstart);
+    EXPECT_EQ(rv_vector_->vstart(), 0);
+
+    instruction_->Execute();
+
+    EXPECT_FALSE(rv_vector_->vector_exception());
+    EXPECT_EQ(rv_vector_->vstart(), 0);
+    for (int i = 0; i < kVectorLengthInBytes; i++) {
+      EXPECT_EQ(vreg_[kVd]->data_buffer()->Get<uint8_t>(i),
+                static_cast<uint8_t>(i));
+    }
+  }
+}
 }  // namespace
