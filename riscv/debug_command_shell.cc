@@ -1386,7 +1386,6 @@ std::string DebugCommandShell::ReadMemory(int core,
         pad = absl::PadSpec::kZeroPad16;
         break;
     }
-    std::string format_string;
     if ((format_char == 'x') || (format_char == 'X')) {
       output = absl::StrCat(absl::Hex(val, pad));
     } else if (format_char == 'u') {

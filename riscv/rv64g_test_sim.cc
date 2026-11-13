@@ -75,7 +75,8 @@ int main(int argc, char** argv) {
   std::string full_file_name = arg_vec[1];
   std::string file_name =
       full_file_name.substr(full_file_name.find_last_of('/') + 1);
-  std::string file_basename = file_name.substr(0, file_name.find_first_of('.'));
+  [[maybe_unused]] std::string file_basename =
+      file_name.substr(0, file_name.find_first_of('.'));
 
   mpact::sim::util::FlatDemandMemory memory;
   auto* watcher = new mpact::sim::util::MemoryWatcher(&memory);
