@@ -26,7 +26,9 @@ namespace {
 using ::mpact::sim::riscv::RiscVState;
 using ::mpact::sim::riscv::RiscVVectorState;
 using ::mpact::sim::riscv::RiscVXlen;
+using ::mpact::sim::riscv::RV32VectorSourceOperand;
 using ::mpact::sim::riscv::RV32VectorTrueOperand;
+using ::mpact::sim::riscv::RVVectorRegister;
 using ::mpact::sim::util::FlatDemandMemory;
 
 constexpr int kVLengthInBytes = 64;
@@ -63,6 +65,59 @@ TEST_F(RV32VectorTrueTest, Register) {
     EXPECT_EQ(span[i], 0xff) << "element: " << i;
   }
   delete op;
+}
+
+TEST_F(RV32VectorTrueTest, SourceOperandOutOfBoundsAccessClampsToLastGroup) {
+  auto* v2 = state_->GetRegister<RVVectorRegister>("v2").first;
+  auto* v3 = state_->GetRegister<RVVectorRegister>("v3").first;
+  auto v2_span = v2->data_buffer()->Get<uint8_t>();
+  auto v3_span = v3->data_buffer()->Get<uint8_t>();
+  for (int i = 0; i < kVLengthInBytes; ++i) {
+    v2_span[i] = 0x00;
+    v3_span[i] = 0xff;
+  }
+  auto* v2_base = RV32VectorSourceOperand(v2, "v2").GetRegister(0);
+  auto* v3_base = RV32VectorSourceOperand(v3, "v3").GetRegister(0);
+  decltype(v2_base) regs[] = {v2_base, v3_base};
+  RV32VectorSourceOperand op(regs, "v2");
+
+  // Group 0 reads from v2 (all zeros).
+  EXPECT_FALSE(op.AsBool(0));
+  EXPECT_EQ(op.AsInt8(0), 0);
+  EXPECT_EQ(op.AsUint8(0), 0U);
+  EXPECT_EQ(op.AsInt16(0), 0);
+  EXPECT_EQ(op.AsUint16(0), 0U);
+  EXPECT_EQ(op.AsInt32(0), 0);
+  EXPECT_EQ(op.AsUint32(0), 0U);
+  EXPECT_EQ(op.AsInt64(0), 0);
+  EXPECT_EQ(op.AsUint64(0), 0ULL);
+  EXPECT_EQ(op.GetRegister(0), v2);
+
+  // Group 1 reads from v3 (all ones).
+  EXPECT_TRUE(op.AsBool(kVLengthInBytes));
+  EXPECT_EQ(op.AsInt8(kVLengthInBytes), -1);
+  EXPECT_EQ(op.AsUint8(kVLengthInBytes), 0xffU);
+  EXPECT_EQ(op.AsInt16(kVLengthInBytes / 2), -1);
+  EXPECT_EQ(op.AsUint16(kVLengthInBytes / 2), 0xffffU);
+  EXPECT_EQ(op.AsInt32(kVLengthInBytes / 4), -1);
+  EXPECT_EQ(op.AsUint32(kVLengthInBytes / 4), 0xffff'ffffU);
+  EXPECT_EQ(op.AsInt64(kVLengthInBytes / 8), -1);
+  EXPECT_EQ(op.AsUint64(kVLengthInBytes / 8), 0xffff'ffff'ffff'ffffULL);
+  EXPECT_EQ(op.GetRegister(1), v3);
+
+  // Out-of-bounds accesses (group >= 2) clamp to the last register in the
+  // group (v3, index 1) rather than reading v2 or past the end of registers_.
+  EXPECT_TRUE(op.AsBool(2 * kVLengthInBytes));
+  EXPECT_EQ(op.AsInt8(2 * kVLengthInBytes), -1);
+  EXPECT_EQ(op.AsUint8(2 * kVLengthInBytes), 0xffU);
+  EXPECT_EQ(op.AsInt16(2 * (kVLengthInBytes / 2)), -1);
+  EXPECT_EQ(op.AsUint16(2 * (kVLengthInBytes / 2)), 0xffffU);
+  EXPECT_EQ(op.AsInt32(2 * (kVLengthInBytes / 4)), -1);
+  EXPECT_EQ(op.AsUint32(2 * (kVLengthInBytes / 4)), 0xffff'ffffU);
+  EXPECT_EQ(op.AsInt64(2 * (kVLengthInBytes / 8)), -1);
+  EXPECT_EQ(op.AsUint64(2 * (kVLengthInBytes / 8)), 0xffff'ffff'ffff'ffffULL);
+  EXPECT_EQ(op.GetRegister(2), v3);
+  EXPECT_EQ(op.GetRegister(7), v3);
 }
 
 }  // namespace

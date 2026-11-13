@@ -83,8 +83,13 @@ using ::mpact::sim::riscv::Vssubu;
 using ::mpact::sim::riscv::Vsub;
 using ::mpact::sim::riscv::Vxor;
 
+using ::mpact::sim::riscv::test::kLmulSettings;
+using ::mpact::sim::riscv::test::kSewSettingsByByteSize;
 using ::mpact::sim::riscv::test::kVd;
 using ::mpact::sim::riscv::test::kVectorLengthInBytes;
+using ::mpact::sim::riscv::test::kVmask;
+using ::mpact::sim::riscv::test::kVmaskName;
+using ::mpact::sim::riscv::test::kVs1;
 using ::mpact::sim::riscv::test::kVs2;
 
 using RVScalarRegister = RV32Register;
@@ -122,6 +127,61 @@ TEST_F(RiscVVectorInstructionsTest, Vadd64VV) {
   BinaryOpTestHelperVV<uint64_t, uint64_t, uint64_t>(
       "Vadd64", /*sew*/ 64, instruction_,
       [](uint64_t val0, uint64_t val1) -> uint64_t { return val0 + val1; });
+}
+
+TEST_F(RiscVVectorInstructionsTest, Vadd64VVMisalignedVs2OutOfBounds) {
+  using ::mpact::sim::riscv::RV32VectorSourceOperand;
+  SetSemanticFunction(&Vadd);
+  // Construct a 1-register source operand for misaligned vs2 = v3.
+  auto* v3_base = RV32VectorSourceOperand(vreg_[3], "v3").GetRegister(0);
+  decltype(v3_base) vs2_regs[] = {v3_base};
+  instruction_->AppendSource(new RV32VectorSourceOperand(vs2_regs, "v3"));
+  AppendVectorRegisterOperands({kVs1, kVmask}, {kVd});
+
+  constexpr int kElementsPerReg = kVectorLengthInBytes / sizeof(uint64_t);
+  uint64_t v3_values[kElementsPerReg];
+  uint64_t sentinel_values[kElementsPerReg];
+  for (int i = 0; i < kElementsPerReg; ++i) {
+    v3_values[i] = 100 + i;
+    sentinel_values[i] = 0xdeadbeef'deadbeefULL;
+  }
+  SetVectorRegisterValues<uint64_t>({{"v3", v3_values}});
+  for (int reg = 4; reg < 11; ++reg) {
+    SetVectorRegisterValues<uint64_t>(
+        {{absl::StrCat("v", reg), sentinel_values}});
+  }
+  for (int reg = 0; reg < 8; ++reg) {
+    uint64_t vs1_reg_values[kElementsPerReg];
+    for (int i = 0; i < kElementsPerReg; ++i) {
+      vs1_reg_values[i] = 1000 + reg * kElementsPerReg + i;
+    }
+    SetVectorRegisterValues<uint64_t>(
+        {{absl::StrCat("v", kVs1 + reg), vs1_reg_values}});
+  }
+  uint8_t all_ones_mask[kVectorLengthInBytes];
+  for (int i = 0; i < kVectorLengthInBytes; ++i) {
+    all_ones_mask[i] = 0xff;
+  }
+  SetVectorRegisterValues<uint8_t>({{kVmaskName, all_ones_mask}});
+
+  // Configure SEW=64 (8 bytes), LMUL=8 (index 6), vl=64.
+  uint32_t vtype = (kSewSettingsByByteSize[8] << 3) | kLmulSettings[6];
+  ConfigureVectorUnit(vtype, /*vlen=*/64);
+  rv_vector_->set_vstart(0);
+  ClearVectorRegisterGroup(kVd, 8);
+
+  instruction_->Execute();
+  EXPECT_FALSE(rv_vector_->vector_exception());
+
+  for (int reg = 0; reg < 8; ++reg) {
+    for (int i = 0; i < kElementsPerReg; ++i) {
+      uint64_t vs2_expected = v3_values[i];
+      uint64_t vs1_expected = 1000 + reg * kElementsPerReg + i;
+      EXPECT_EQ(vreg_[kVd + reg]->data_buffer()->Get<uint64_t>(i),
+                vs2_expected + vs1_expected)
+          << "reg=" << reg << " i=" << i;
+    }
+  }
 }
 
 // Vector-scalar.

@@ -15,6 +15,7 @@
 #ifndef MPACT_RISCV_RISCV_RISCV_REGISTER_H_
 #define MPACT_RISCV_RISCV_RISCV_REGISTER_H_
 
+#include <algorithm>
 #include <any>
 #include <cstdint>
 #include <string>
@@ -73,7 +74,10 @@ class RV32VectorSourceOperand : public generic::SourceOperandInterface {
   // Returns the RegisterBase object wrapped in absl::any.
   std::any GetObject() const override { return std::any(registers_[0]); }
   // Non-inherited method to get the register object.
-  generic::RegisterBase* GetRegister(int i) const { return registers_[i]; }
+  generic::RegisterBase* GetRegister(int i) const {
+    i = std::min(i, static_cast<int>(registers_.size()) - 1);
+    return registers_[i];
+  }
   // Returns the shape of the register.
   std::vector<int> shape() const override { return registers_[0]->shape(); }
   std::string AsString() const override { return registers_[0]->name(); }

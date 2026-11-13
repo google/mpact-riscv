@@ -14,6 +14,7 @@
 
 #include "riscv/riscv_register.h"
 
+#include <algorithm>
 #include <any>
 #include <cstdint>
 #include <limits>
@@ -78,6 +79,7 @@ RV32VectorSourceOperand::RV32VectorSourceOperand(generic::RegisterBase* reg)
 bool RV32VectorSourceOperand::AsBool(int i) {
   int offset = i % vector_byte_size_;
   int group = i / vector_byte_size_;
+  group = std::min(group, group_size_ - 1);
   return static_cast<bool>(
       registers_[group]->data_buffer()->Get<uint8_t>(offset));
 }
@@ -85,48 +87,56 @@ bool RV32VectorSourceOperand::AsBool(int i) {
 int8_t RV32VectorSourceOperand::AsInt8(int i) {
   int offset = i % vector_byte_size_;
   int group = i / vector_byte_size_;
+  group = std::min(group, group_size_ - 1);
   return registers_[group]->data_buffer()->Get<int8_t>(offset);
 }
 
 uint8_t RV32VectorSourceOperand::AsUint8(int i) {
   int offset = i % vector_byte_size_;
   int group = i / vector_byte_size_;
+  group = std::min(group, group_size_ - 1);
   return registers_[group]->data_buffer()->Get<uint8_t>(offset);
 }
 
 int16_t RV32VectorSourceOperand::AsInt16(int i) {
   int offset = i % (vector_byte_size_ >> 1);
   int group = i / (vector_byte_size_ >> 1);
+  group = std::min(group, group_size_ - 1);
   return registers_[group]->data_buffer()->Get<int16_t>(offset);
 }
 
 uint16_t RV32VectorSourceOperand::AsUint16(int i) {
   int offset = i % (vector_byte_size_ >> 1);
   int group = i / (vector_byte_size_ >> 1);
+  group = std::min(group, group_size_ - 1);
   return registers_[group]->data_buffer()->Get<uint16_t>(offset);
 }
 
 int32_t RV32VectorSourceOperand::AsInt32(int i) {
   int offset = i % (vector_byte_size_ >> 2);
   int group = i / (vector_byte_size_ >> 2);
+  group = std::min(group, group_size_ - 1);
   return registers_[group]->data_buffer()->Get<int32_t>(offset);
 }
 
 uint32_t RV32VectorSourceOperand::AsUint32(int i) {
   int offset = i % (vector_byte_size_ >> 2);
   int group = i / (vector_byte_size_ >> 2);
+  group = std::min(group, group_size_ - 1);
   return registers_[group]->data_buffer()->Get<uint32_t>(offset);
 }
 
 int64_t RV32VectorSourceOperand::AsInt64(int i) {
   int offset = i % (vector_byte_size_ >> 3);
   int group = i / (vector_byte_size_ >> 3);
+  group = std::min(group, group_size_ - 1);
   return registers_[group]->data_buffer()->Get<int64_t>(offset);
 }
 
 uint64_t RV32VectorSourceOperand::AsUint64(int i) {
   int offset = i % (vector_byte_size_ >> 3);
   int group = i / (vector_byte_size_ >> 3);
+  group = std::min(group, group_size_ - 1);
   return registers_[group]->data_buffer()->Get<uint64_t>(offset);
 }
 
