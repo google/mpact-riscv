@@ -336,7 +336,7 @@ void RiscVCpop(const Instruction* instruction) {
 }
 
 void RiscVCpopw(const Instruction* instruction) {
-  RiscVUnaryOp<RegisterType, uint32_t, uint32_t>(
+  RiscVUnaryOp<RegisterType, UIntReg, uint32_t>(
       instruction, [](uint32_t a) -> UIntReg { return absl::popcount(a); });
 }
 

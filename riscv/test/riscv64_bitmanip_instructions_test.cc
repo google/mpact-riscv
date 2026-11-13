@@ -341,17 +341,28 @@ TEST_F(RV64BitmanipInstructionTest, RV64Cpopw) {
   AppendRegisterOperands({kX1}, {kX3});
   SetSemanticFunction(&RiscVCpopw);
 
-  SetRegisterValues<uint64_t>({{kX1, 0xffff'ffff'0ff0'f0ffULL}});
+  SetRegisterValues<uint64_t>(
+      {{kX1, 0xffff'ffff'0ff0'f0ffULL}, {kX3, 0xdead'beef'aaaa'5555ULL}});
   instruction_->Execute(nullptr);
-  EXPECT_EQ(GetRegisterValue<int64_t>(kX3), 20);
+  EXPECT_EQ(GetRegisterValue<uint64_t>(kX3), 20ULL);
 
-  SetRegisterValues<uint64_t>({{kX1, 0xffff'ffff'0000'0000ULL}});
+  SetRegisterValues<uint64_t>(
+      {{kX1, 0xffff'ffff'0000'0000ULL}, {kX3, 0x0123'4567'89ab'cdefULL}});
   instruction_->Execute(nullptr);
-  EXPECT_EQ(GetRegisterValue<int64_t>(kX3), 0);
+  EXPECT_EQ(GetRegisterValue<uint64_t>(kX3), 0ULL);
 
-  SetRegisterValues<uint64_t>({{kX1, 0xffff'ffff'ffff'ffffULL}});
+  SetRegisterValues<uint64_t>(
+      {{kX1, 0xffff'ffff'ffff'ffffULL}, {kX3, 0xcafe'babe'ffff'ffffULL}});
   instruction_->Execute(nullptr);
-  EXPECT_EQ(GetRegisterValue<int64_t>(kX3), 32);
+  EXPECT_EQ(GetRegisterValue<uint64_t>(kX3), 32ULL);
+
+  Instruction in_place_inst(kInstAddress, state_.get());
+  in_place_inst.set_size(4);
+  AppendRegisterOperands(&in_place_inst, {kX1}, {kX1});
+  in_place_inst.set_semantic_function(&RiscVCpopw);
+  SetRegisterValues<uint64_t>({{kX1, 0xffff'ffff'8000'0001ULL}});
+  in_place_inst.Execute(nullptr);
+  EXPECT_EQ(GetRegisterValue<uint64_t>(kX1), 2ULL);
 }
 
 TEST_F(RV64BitmanipInstructionTest, RV64Max) {
